@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/firebase_options.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_api.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
@@ -18,8 +20,9 @@ void main() async {
   Get.put(StorageController());
   Get.put(AuthController());
   Get.put(LocationController());
-  Get.put(VicinityApiController());
   Get.put(VicinityController());
+  Get.put(OffersController());
+  Get.put(ChatController());
 
   runApp(const MyApp());
 }

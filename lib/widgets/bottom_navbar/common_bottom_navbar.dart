@@ -22,10 +22,10 @@ class _NewBottomBarState extends State<NewBottomBar> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    MyChatsPage(),
+    const MyChatsPage(),
     // ProductsHomepage(currentIndex: 1),
-    AlertsPage(),
-    ProfileScreen(),
+    const AlertsPage(),
+    const ProfileScreen(),
   ];
 
   final List<String> _iconPaths = [

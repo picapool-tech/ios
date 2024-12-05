@@ -43,8 +43,8 @@ class Chat {
           ? LiveOffer.fromJson(json['liveOffer'])
           : null,
       liveOfferId: json['liveOfferId'],
-      messages: json['messages'] != null
-          ? (json['messages'] as List).map((m) => Message.fromJson(m)).toList()
+      messages: json['Messages'] != null
+          ? (json['Messages'] as List).map((m) => Message.fromJson(m)).toList()
           : null,
       users: json['users'] != null
           ? (json['users'] as List).map((u) => User.fromJson(u)).toList()

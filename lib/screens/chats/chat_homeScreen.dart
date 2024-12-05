@@ -1,14 +1,17 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/screens/chats/archive_page.dart';
 import 'package:picapool/utils/svg_icon.dart';
 
 class MyChatsPage extends StatefulWidget {
   final List<Map<String, dynamic>>? unarchivedChats;
 
-  MyChatsPage({this.unarchivedChats});
+  const MyChatsPage({super.key, this.unarchivedChats});
 
   @override
   _MyChatsPageState createState() => _MyChatsPageState();
@@ -37,6 +40,8 @@ class _MyChatsPageState extends State<MyChatsPage> {
   List<Map<String, dynamic>> archivedChats = []; // Store archived items
   String selectedCategory = 'All Offers';
 
+  final ChatController chatController = Get.find<ChatController>();
+
   @override
   void initState() {
     super.initState();
@@ -44,14 +49,15 @@ class _MyChatsPageState extends State<MyChatsPage> {
     if (widget.unarchivedChats != null) {
       chats.addAll(widget.unarchivedChats!);
     }
+    chatController.getAllChats();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff02005D),
+      backgroundColor: const Color(0xff02005D),
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'My Chats',
           style: TextStyle(
             fontFamily: "MontserratM",
@@ -82,7 +88,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   });
                 }
               },
-              child: Row(
+              child: const Row(
                 children: [
                   ImageIcon(AssetImage('assets/icons/archive.png'),
                       size: 24, color: Color(0xffFFFFFF)),
@@ -99,18 +105,19 @@ class _MyChatsPageState extends State<MyChatsPage> {
           ),
         ],
         elevation: 0,
-        backgroundColor: Color(0xff02005D),
+        backgroundColor: const Color(0xff02005D),
       ),
       body: Column(
         children: [
           // Search Bar remains unchanged
           Container(
               height: 63,
-              color: Color(0xff02005D),
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              color: const Color(0xff02005D),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xff797979), width: 2),
+                  border: Border.all(color: const Color(0xff797979), width: 2),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: ClipRRect(
@@ -152,11 +159,12 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   ),
                 ),
               )),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           // Conditionally show either action bar or category buttons
           selectedIndexes.isNotEmpty
               ? Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 16),
                   color: Colors.white, // Set background to white
                   child: Row(
                     children: [
@@ -164,7 +172,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                         onTap: () => setState(() {
                           selectedIndexes.clear(); // Clear selection
                         }),
-                        child: ImageIcon(
+                        child: const ImageIcon(
                           AssetImage('assets/icons/back_arrow.png'),
                           color: Color(0xffFF8D41),
                         ),
@@ -173,14 +181,14 @@ class _MyChatsPageState extends State<MyChatsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           '${selectedIndexes.length}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: "MontserratM",
                             fontSize: 20,
                             color: Color(0xff000000), // Change text color
                           ),
                         ),
                       ),
-                      Spacer(), // Align actions to the right
+                      const Spacer(), // Align actions to the right
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -190,7 +198,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                               onTap: () {
                                 // Handle delete action
                               },
-                              child: SvgIcon(
+                              child: const SvgIcon(
                                 "assets/icons/trash.svg",
                                 size: 24,
                               ),
@@ -219,7 +227,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                                   ),
                                 );
                               },
-                              child: ImageIcon(
+                              child: const ImageIcon(
                                 AssetImage('assets/icons/receive-square.png'),
                                 color: Color(0xff000000),
                               ),
@@ -238,7 +246,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                                   selectedIndexes.clear();
                                 });
                               },
-                              child: ImageIcon(
+                              child: const ImageIcon(
                                 AssetImage('assets/icons/Group 511.png'),
                                 color: Color(0xff000000),
                               ),
@@ -250,8 +258,8 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   ),
                 )
               : Container(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  color: Color(0xff02005D),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  color: const Color(0xff02005D),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -304,111 +312,127 @@ class _MyChatsPageState extends State<MyChatsPage> {
           // Chat list
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
               ),
-              child: ListView.builder(
-                itemCount: chats.length,
-                itemBuilder: (context, index) {
-                  bool isSelected = selectedIndexes.contains(index);
-                  bool isMuted = chats[index]['muted'] as bool;
-                  return GestureDetector(
-                    onLongPress: () {
-                      setState(() {
-                        if (!selectedIndexes.contains(index)) {
-                          selectedIndexes.add(index);
-                        }
-                      });
-                    },
-                    onTap: () {
-                      setState(() {
-                        if (selectedIndexes.isNotEmpty) {
-                          if (isSelected) {
-                            selectedIndexes.remove(index);
-                          } else {
-                            selectedIndexes.add(index);
-                          }
-                        }
-                      });
-                    },
-                    child: Container(
-                      color:
-                          isSelected ? Color(0xffFFEBDF) : Colors.transparent,
-                      child: ListTile(
-                        leading: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  image: AssetImage(chats[index]['image']!),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              Icon(Icons.check_circle,
-                                  color: Color(0xffFF8D41)),
-                          ],
-                        ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              chats[index]['title']!,
-                              style: TextStyle(
-                                fontFamily: "MontserratM",
-                                fontSize: 16,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Text(
-                              chats[index]['time']!,
-                              style: TextStyle(
-                                fontFamily: "MontserratM",
-                                fontSize: 12,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                        subtitle: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                chats[index]['subtitle']!,
-                                style: TextStyle(
-                                  fontFamily: "MontserratM",
-                                  fontSize: 14,
-                                  color: Color(0xff434343),
-                                ),
-                                overflow: TextOverflow
-                                    .ellipsis, // Truncate with ellipsis if long
-                              ),
-                            ),
-                            if (isMuted)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: ImageIcon(
-                                  AssetImage('assets/icons/Group 511.png'),
-                                  size: 15,
-                                  color: Color(0xff000000),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              child: GetBuilder<ChatController>(builder: (controller) {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.errorMessage.isNotEmpty) {
+                  return Center(child: Text(controller.errorMessage.value));
+                }
+
+                if (controller.chats.isEmpty) {
+                  return const Center(child: Text('No chats found'));
+                }
+
+                return chatList(controller.chats);
+              }),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  ListView chatList(List<Chat> chatList) {
+    return ListView.builder(
+      itemCount: chatList.length,
+      itemBuilder: (context, index) {
+        bool isSelected = selectedIndexes.contains(index);
+        var chat = chatList[index];
+        return GestureDetector(
+          onLongPress: () {
+            setState(() {
+              if (!selectedIndexes.contains(index)) {
+                selectedIndexes.add(index);
+              }
+            });
+          },
+          onTap: () {
+            setState(() {
+              if (selectedIndexes.isNotEmpty) {
+                if (isSelected) {
+                  selectedIndexes.remove(index);
+                } else {
+                  selectedIndexes.add(index);
+                }
+              }
+            });
+          },
+          child: Container(
+            color: isSelected ? const Color(0xffFFEBDF) : Colors.transparent,
+            child: ListTile(
+              leading: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: DecorationImage(
+                        image: AssetImage(chats[0]['image']!),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    const Icon(Icons.check_circle, color: Color(0xffFF8D41)),
+                ],
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    chats[0]['title']!,
+                    style: const TextStyle(
+                      fontFamily: "MontserratM",
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    chats[0]['time']!,
+                    style: const TextStyle(
+                      fontFamily: "MontserratM",
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              subtitle: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      chats[0]['subtitle']!,
+                      style: const TextStyle(
+                        fontFamily: "MontserratM",
+                        fontSize: 14,
+                        color: Color(0xff434343),
+                      ),
+                      overflow: TextOverflow
+                          .ellipsis, // Truncate with ellipsis if long
+                    ),
+                  ),
+                  // if (chat)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: ImageIcon(
+                      AssetImage('assets/icons/Group 511.png'),
+                      size: 15,
+                      color: Color(0xff000000),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -419,7 +443,8 @@ class CategoryButton extends StatelessWidget {
   final String image;
   final VoidCallback onTap;
 
-  CategoryButton({
+  const CategoryButton({
+    super.key,
     required this.label,
     required this.image,
     required this.onTap,
@@ -433,7 +458,7 @@ class CategoryButton extends StatelessWidget {
       child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
           foregroundColor: selected ? Colors.white : Colors.black,
-          backgroundColor: selected ? Color(0xffFF8D41) : Colors.white,
+          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),

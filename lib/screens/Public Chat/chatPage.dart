@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
-import 'package:picapool/models/message_model.dart';
+import 'package:picapool/models/message_model_new.dart';
 
 class ChatPage extends StatefulWidget {
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin {
+class _ChatPageState extends State<ChatPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  TextEditingController _messageController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
   bool _isMessageEmpty = true;
 
   @override
@@ -93,12 +93,12 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           "KFC 50% off",
           style: TextStyle(
             color: Colors.black,
@@ -111,10 +111,10 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
           labelColor: Colors.orange,
           unselectedLabelColor: Colors.grey,
           indicatorColor: Colors.orange,
-          labelStyle: TextStyle(
+          labelStyle: const TextStyle(
             fontFamily: "MontserratR", // Tab bar font style
           ),
-          tabs: [
+          tabs: const [
             Tab(text: "Public Chat"),
             Tab(text: "Private chats (3)"),
           ],
@@ -126,7 +126,9 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
           controller: _tabController,
           children: [
             // Public Chat Tab
-            PublicChatView(messages: publicMessages,),
+            PublicChatView(
+              messages: publicMessages,
+            ),
             // Private Chat Tab
             PrivateChatView(),
           ],
@@ -167,7 +169,6 @@ class PublicChatView extends StatelessWidget {
   }
 }
 
-
 class ChatBubble extends StatelessWidget {
   final String sender;
   final String message;
@@ -197,39 +198,47 @@ class ChatBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment:
+              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
             if (!isMe && showSenderDetails) ...[
               CircleAvatar(
                 backgroundImage: NetworkImage(imageUrl),
                 radius: 20,
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
             ] else if (!isMe) ...[
-              SizedBox(width: 50),
+              const SizedBox(width: 50),
             ],
             Expanded(
               child: Column(
-                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   if (!isMe && showSenderDetails)
                     Text(
                       sender,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black54,
                         fontFamily: "MontserratSB", // Sender's name font
                       ),
                     ),
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isMe ? Color(0xFFF3D7C5) : Color(0xFFDEDEDE), // Main bubble colors
+                      color: isMe
+                          ? const Color(0xFFF3D7C5)
+                          : const Color(0xFFDEDEDE), // Main bubble colors
                       borderRadius: BorderRadius.only(
-                        topLeft: isMe ? Radius.circular(10) : Radius.circular(0),
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: isMe ? Radius.circular(0) : Radius.circular(10),
+                        topLeft: isMe
+                            ? const Radius.circular(10)
+                            : const Radius.circular(0),
+                        topRight: const Radius.circular(10),
+                        bottomLeft: const Radius.circular(10),
+                        bottomRight: isMe
+                            ? const Radius.circular(0)
+                            : const Radius.circular(10),
                       ),
                     ),
                     child: Column(
@@ -237,13 +246,19 @@ class ChatBubble extends StatelessWidget {
                       children: [
                         if (replyToMessage != null && replySender != null)
                           Container(
-                            margin: EdgeInsets.only(bottom: 8),
-                            padding: EdgeInsets.all(8),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: isMe ? Color(0xFFFFE2D0) : Color(0xFFEBEBEB), // Lighter background for reply
+                              color: isMe
+                                  ? const Color(0xFFFFE2D0)
+                                  : const Color(
+                                      0xFFEBEBEB), // Lighter background for reply
                               borderRadius: BorderRadius.circular(10),
-                              border: Border(
-                                left: BorderSide(color: Colors.orange, width: 3), // Orange line to the left of reply
+                              border: const Border(
+                                left: BorderSide(
+                                    color: Colors.orange,
+                                    width:
+                                        3), // Orange line to the left of reply
                               ),
                             ),
                             child: Column(
@@ -253,17 +268,24 @@ class ChatBubble extends StatelessWidget {
                                   replySender!,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontFamily: "MontserratSB", // Replied sender's name font
-                                    color: isMe ? Colors.orange.shade700 : Colors.black,
+                                    fontFamily:
+                                        "MontserratSB", // Replied sender's name font
+                                    color: isMe
+                                        ? Colors.orange.shade700
+                                        : Colors.black,
                                   ),
                                 ),
-                                SizedBox(height: 4), // Small space between name and message
+                                const SizedBox(
+                                    height:
+                                        4), // Small space between name and message
                                 Text(
                                   replyToMessage!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.black,
-                                    fontFamily: "MontserratM", // Replied message font
-                                    fontSize: 14, // Regular size for reply message
+                                    fontFamily:
+                                        "MontserratM", // Replied message font
+                                    fontSize:
+                                        14, // Regular size for reply message
                                   ),
                                 ),
                               ],
@@ -271,16 +293,17 @@ class ChatBubble extends StatelessWidget {
                           ),
                         Text(
                           message,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.black,
                             fontFamily: "MontserratM", // Chat text font
                             fontSize: 14,
                           ),
                         ),
-                        SizedBox(height: 5),
+                        const SizedBox(height: 5),
                         Text(
                           time,
-                          style: TextStyle(fontSize: 12, color: Color(0xff6C6C6C)),
+                          style: const TextStyle(
+                              fontSize: 12, color: Color(0xff6C6C6C)),
                         ),
                       ],
                     ),
@@ -294,8 +317,6 @@ class ChatBubble extends StatelessWidget {
     );
   }
 }
-
-
 
 class ChatInputField extends StatelessWidget {
   final TextEditingController controller;
@@ -326,12 +347,15 @@ class ChatInputField extends StatelessWidget {
                 child: Row(
                   children: [
                     // Smiley icon
-                    Image.asset("assets/icons/Group 497.png", height: 25,),
+                    Image.asset(
+                      "assets/icons/Group 497.png",
+                      height: 25,
+                    ),
                     // Text input field
                     Expanded(
                       child: TextField(
                         controller: controller,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: '  Drag up to confirm',
                           hintStyle: TextStyle(fontFamily: "MontserratM"),
                           border: InputBorder.none,
@@ -339,22 +363,27 @@ class ChatInputField extends StatelessWidget {
                       ),
                     ),
                     // Attach file icon
-                    Image.asset("assets/icons/pinselect.png", height: 25,),
+                    Image.asset(
+                      "assets/icons/pinselect.png",
+                      height: 25,
+                    ),
                   ],
                 ),
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             // Send button
             CircleAvatar(
               radius: 25,
               backgroundColor: Colors.orange,
               child: IconButton(
-                icon: Icon(Icons.send, color: Colors.white),
-                onPressed: isMessageEmpty ? null : () {
-                  // Handle message send action here
-                  controller.clear(); // Clear input after sending
-                },
+                icon: const Icon(Icons.send, color: Colors.white),
+                onPressed: isMessageEmpty
+                    ? null
+                    : () {
+                        // Handle message send action here
+                        controller.clear(); // Clear input after sending
+                      },
               ),
             ),
           ],
@@ -372,15 +401,39 @@ class PrivateChatView extends StatelessWidget {
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(16.0),
-            children: [
-              RoomTile(roomName: "Yash’s room", occupancy: "4 occupied", isJoined: false),
-              RoomTile(roomName: "Akshay’s room", occupancy: "3 occupied", isJoined: true),
-              RoomTile(roomName: "Diya’s room", occupancy: "4 occupied", isJoined: false),
-              RoomTile(roomName: "Rohan’s room", occupancy: "2 occupied", isJoined: true),
-              RoomTile(roomName: "Yash’s room", occupancy: "4 occupied", isJoined: false),
-              RoomTile(roomName: "Dhiraj’s room", occupancy: "3 occupied", isJoined: false),
-              RoomTile(roomName: "Diya’s room", occupancy: "4 occupied", isJoined: false),
-              RoomTile(roomName: "Rohan’s room", occupancy: "2 occupied", isJoined: false),
+            children: const [
+              RoomTile(
+                  roomName: "Yash’s room",
+                  occupancy: "4 occupied",
+                  isJoined: false),
+              RoomTile(
+                  roomName: "Akshay’s room",
+                  occupancy: "3 occupied",
+                  isJoined: true),
+              RoomTile(
+                  roomName: "Diya’s room",
+                  occupancy: "4 occupied",
+                  isJoined: false),
+              RoomTile(
+                  roomName: "Rohan’s room",
+                  occupancy: "2 occupied",
+                  isJoined: true),
+              RoomTile(
+                  roomName: "Yash’s room",
+                  occupancy: "4 occupied",
+                  isJoined: false),
+              RoomTile(
+                  roomName: "Dhiraj’s room",
+                  occupancy: "3 occupied",
+                  isJoined: false),
+              RoomTile(
+                  roomName: "Diya’s room",
+                  occupancy: "4 occupied",
+                  isJoined: false),
+              RoomTile(
+                  roomName: "Rohan’s room",
+                  occupancy: "2 occupied",
+                  isJoined: false),
             ],
           ),
         ),
@@ -391,13 +444,13 @@ class PrivateChatView extends StatelessWidget {
             onPressed: () {
               // Action for creating a room
             },
-            icon: Icon(Icons.add, color: Colors.orange),
-            label: Text(
+            icon: const Icon(Icons.add, color: Colors.orange),
+            label: const Text(
               "Create room",
               style: TextStyle(color: Colors.orange),
             ),
             style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.orange),
+              side: const BorderSide(color: Colors.orange),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -429,15 +482,17 @@ class RoomTile extends StatelessWidget {
         children: [
           ListTile(
             leading: CircleAvatar(
-              backgroundColor: isJoined ? Colors.grey : Colors.orange, // Color based on status
+              backgroundColor: isJoined
+                  ? Colors.grey
+                  : Colors.orange, // Color based on status
               child: Text(
                 roomName[0],
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
             title: Text(
               roomName,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(occupancy),
             trailing: isJoined
@@ -445,9 +500,9 @@ class RoomTile extends StatelessWidget {
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey.shade200,
-                      side: BorderSide(color: Colors.grey),
+                      side: const BorderSide(color: Colors.grey),
                     ),
-                    child: Text(
+                    child: const Text(
                       "Requested",
                       style: TextStyle(color: Colors.grey),
                     ),
@@ -456,9 +511,9 @@ class RoomTile extends StatelessWidget {
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      side: BorderSide(color: Colors.orange),
+                      side: const BorderSide(color: Colors.orange),
                     ),
-                    child: Text(
+                    child: const Text(
                       "Request",
                       style: TextStyle(color: Colors.orange),
                     ),
@@ -469,12 +524,12 @@ class RoomTile extends StatelessWidget {
             padding: const EdgeInsets.only(left: 56.0, top: 4.0),
             child: Row(
               children: [
-                Icon(Icons.circle, size: 8, color: Colors.orange),
-                SizedBox(width: 5),
-                Icon(Icons.circle, size: 8, color: Colors.orange),
-                SizedBox(width: 5),
+                const Icon(Icons.circle, size: 8, color: Colors.orange),
+                const SizedBox(width: 5),
+                const Icon(Icons.circle, size: 8, color: Colors.orange),
+                const SizedBox(width: 5),
                 Icon(Icons.circle, size: 8, color: Colors.grey.shade400),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Icon(Icons.circle, size: 8, color: Colors.grey.shade400),
               ],
             ),

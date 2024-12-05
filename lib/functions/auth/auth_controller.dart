@@ -149,7 +149,7 @@ class AuthController extends GetxController {
         Get.snackbar(
           'Error',
           'Failed to send OTP. Please try again.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
       }
     } catch (e) {

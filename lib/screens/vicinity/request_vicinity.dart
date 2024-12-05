@@ -42,7 +42,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
 
-  bool isLoading = false;
   int poolingUsers = 0;
 
   final AuthController authController = Get.find<AuthController>();
@@ -153,7 +152,9 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   Future<void> _pickImages() async {
-    final pickedFiles = await _picker.pickMultiImage();
+    final pickedFiles = await _picker.pickMultiImage(
+      imageQuality: 50,
+    );
     if (pickedFiles.isNotEmpty) {
       setState(() {
         _imageFiles = pickedFiles.take(3).toList();
@@ -162,15 +163,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   void createVicinity() async {
-    setState(() {
-      isLoading = true;
-    });
-
     if (_titleController.text.isEmpty || _descController.text.isEmpty) {
       debugPrint("Please fill all the fields");
-      setState(() {
-        isLoading = false;
-      });
       return;
     }
 
@@ -178,9 +172,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
     final userId = auth?.user?.id;
     if (userId == null || auth == null) {
-      setState(() {
-        isLoading = false;
-      });
       debugPrint("User ID is null");
       return;
     }
@@ -194,11 +185,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
     if (url == null) {
       debugPrint("Error uploading image");
-      Get.snackbar("Error", "Error uploading image",
-          snackPosition: SnackPosition.TOP);
-      setState(() {
-        isLoading = false;
-      });
       return;
     }
 
@@ -215,10 +201,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
     await vicinityController.createVicinity(
       offer: offer,
     );
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
@@ -646,7 +628,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                child: (isLoading)
+                child: (vicinityController.isLoading.value)
                     ? const CircularProgressIndicator()
                     : const Text(
                         "Start Pooling",

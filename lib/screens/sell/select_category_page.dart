@@ -15,6 +15,8 @@ import 'package:picapool/widgets/sports/SportsPage1.dart';
 import 'package:picapool/widgets/vehicle/VehiclePage1.dart';
 
 class CategorySelectionPage extends StatefulWidget {
+  const CategorySelectionPage({super.key});
+
   @override
   State<CategorySelectionPage> createState() => _CategorySelectionPageState();
 }
@@ -134,58 +136,72 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
               crossAxisCount: 2,
               children: <Widget>[
                 CategoryCard(
-                 label: 'Electronics',
-                 imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                 onTap: () {
-                   Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'electronics'} );
-                 },
+                  label: 'Electronics',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  onTap: () {
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'electronics'});
+                  },
                 ),
                 CategoryCard(
                   label: 'Clothing',
-                  imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                   onTap: () {
-               Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'clothing'} );
-             },
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'clothing'});
+                  },
                 ),
                 CategoryCard(
                   label: 'Sports',
-                  imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                   onTap: () {
-               Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'sports'} );
-             },
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'sports'});
+                  },
                 ),
                 CategoryCard(
                   label: 'Books',
-                  imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                   onTap: () {
-               Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'books'} );
-             },
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'books'});
+                  },
                 ),
                 CategoryCard(
-                 label: 'Vehicle',
-                 imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                 onTap: () {
-                   Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'vehicle'} );
-                 },
+                  label: 'Vehicle',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  onTap: () {
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'vehicle'});
+                  },
                 ),
                 CategoryCard(
                   label: 'Furniture',
-                  imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                   onTap: () {
-               Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'furniture'} );
-             },
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'furniture'});
+                  },
                 ),
                 CategoryCard(
                   label: 'Other',
-                  imagePath: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                  imagePath:
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                   onTap: () {
-               Get.toNamed(GetRoutes.sellProductsFormPage, arguments: {'categoryName': 'other'} );
-             },
+                    Get.toNamed(GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': 'other'});
+                  },
                 ),
               ],
             ),
           ),
-          
+
           // GetBuilder<CategoryController>(
           //     builder: (CategoryController categoryInstance) {
           //   return categoryInstance.categoriesState == CategoriesState.loaded
@@ -251,7 +267,10 @@ class CategoryCard extends StatelessWidget {
   final VoidCallback onTap;
 
   CategoryCard(
-      {required this.imagePath, required this.label, required this.onTap});
+      {super.key,
+      required this.imagePath,
+      required this.label,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +307,7 @@ class CategoryCard extends StatelessWidget {
 class StepIndicator extends StatelessWidget {
   final int currentStep;
 
-  StepIndicator({required this.currentStep});
+  StepIndicator({super.key, required this.currentStep});
 
   @override
   Widget build(BuildContext context) {

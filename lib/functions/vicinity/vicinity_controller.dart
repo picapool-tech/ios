@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
@@ -6,8 +7,7 @@ import 'package:picapool/models/vicinity_offer_model.dart';
 
 class VicinityController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
-  final VicinityApiController vicinityApiController =
-      Get.find<VicinityApiController>();
+  final VicinityApi _vicinityApi = VicinityApi();
 
   var isLoading = false.obs;
   var errorMessage = ''.obs;
@@ -18,36 +18,45 @@ class VicinityController extends GetxController {
   }) async {
     isLoading.value = true;
     errorMessage.value = '';
+    update();
 
-    final result = await vicinityApiController.createVicinity(
+    final result = await _vicinityApi.createVicinity(
       offer: offer,
+      accessToken: authController.auth.value!.accessToken!,
     );
 
     result.fold(
       (failure) {
         errorMessage.value = failure.message;
         Get.snackbar('Error', failure.message,
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.TOP);
       },
       (offer) {
         offers.add(offer);
         Get.snackbar('Success', 'Offer created successfully',
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.TOP);
       },
     );
 
     isLoading.value = false;
+    update();
   }
 
   Future<String?> uploadImage(
       XFile? pickedFile, String uname, String offername) async {
     isLoading.value = true;
     errorMessage.value = '';
+    update();
 
-    final result = await vicinityApiController.uploadImageToServer(
-        pickedFile, uname, offername);
+    final result = await _vicinityApi.uploadImageToServer(
+      pickedFile: pickedFile,
+      uname: uname,
+      offername: offername,
+      accessToken: authController.auth.value!.accessToken!,
+    );
 
     isLoading.value = false;
+    update();
 
     return result.fold(
       (failure) {
@@ -65,8 +74,9 @@ class VicinityController extends GetxController {
   Future<void> searchVicinity() async {
     isLoading.value = true;
     errorMessage.value = '';
+    update();
 
-    final result = await vicinityApiController.searchVicinity();
+    final result = await _vicinityApi.searchVicinity();
 
     result.fold(
       (failure) {
@@ -82,5 +92,6 @@ class VicinityController extends GetxController {
     );
 
     isLoading.value = false;
+    update();
   }
 }

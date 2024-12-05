@@ -8,7 +8,6 @@ import 'package:picapool/screens/create_cab.dart';
 import 'package:picapool/screens/create_pool.dart';
 import 'package:picapool/screens/home_screen.dart';
 import 'package:picapool/screens/sell/sell_product_details_page.dart';
-import 'package:picapool/widgets/Electronics/sell_confirmation_form_page.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/widgets/sell/sell_confirmation_page.dart';
@@ -21,17 +20,16 @@ class GetRoutes {
   static const String signUp = '/signUp';
   static const String forgotPassword = '/forgotPassword';
   static const String profileDetails = '/profileDetails';
-  
 
   static const String productsListPage = '/productsList';
   static const String categoryPage = '/categoryPage';
   static const String sellProductsFormPage = '/sellProductsForm';
   static const String sellProductsSecondFormPage = '/sellProductsSecondForm';
-  static const String sellProductsConfirmationPage = '/sellProductsConfirmation';
+  static const String sellProductsConfirmationPage =
+      '/sellProductsConfirmation';
   static const String sellProductsUserFormPage = '/sellProductsUserForm';
 
   static const String search = '/search';
-
 
   static const String testRoute = '/testRoute';
 
@@ -45,61 +43,52 @@ class GetRoutes {
   // Define the routes list using a more concise structure
   static final List<GetPage<dynamic>> routes = [
     _buildRoute(
-      name: splash, 
-      page: const HomeScreen(), 
-      checkWithNetwork: false
-    ),
+        name: splash, page: const HomeScreen(), checkWithNetwork: false),
     _buildRoute(
-      name: publicChat, 
-      page: PublicChatPage(), 
-      checkWithNetwork: false
-    ),
+        name: publicChat, page: PublicChatPage(), checkWithNetwork: false),
     _buildRoute(
-      name: createCabPool, 
-      page: CreateCabPoolScreen(), 
-      checkWithNetwork: false
-    ),
+        name: createCabPool,
+        page: CreateCabPoolScreen(),
+        checkWithNetwork: false),
     _buildRoute(
-      name: createCabShare, 
-      page: const CreateCabShareScreen(), 
-      checkWithNetwork: false
-    ),
+        name: createCabShare,
+        page: const CreateCabShareScreen(),
+        checkWithNetwork: false),
     _buildRoute(
-      name: createCabShare, 
-      page: CreatePoolScreen(), 
-      checkWithNetwork: false
-    ),
-    
-    // Products 
+        name: createCabShare,
+        page: CreatePoolScreen(),
+        checkWithNetwork: false),
+
+    // Products
     _buildRoute(
-      name: productsListPage, 
-      page: const ProductListsPage(), 
+      name: productsListPage,
+      page: const ProductListsPage(),
       binding: ProductBindings(),
     ),
-    // Category 
+    // Category
     _buildRoute(
-      name: categoryPage, 
-      page: CategorySelectionPage(), 
+      name: categoryPage,
+      page: CategorySelectionPage(),
       binding: CategoryBindings(),
     ),
     _buildRoute(
-      name: sellProductsFormPage, 
-      page: const SellForm(), 
+      name: sellProductsFormPage,
+      page: const SellForm(),
+      binding: CategoryBindings(),
+    ),
+    // _buildRoute(
+    //   name: sellProductsSecondFormPage,
+    //   page: const SellFormSecond(),
+    //   binding: CategoryBindings(),
+    // ),
+    _buildRoute(
+      name: sellProductsConfirmationPage,
+      page: const SellConfirmationPage(),
       binding: CategoryBindings(),
     ),
     _buildRoute(
-      name: sellProductsSecondFormPage, 
-      page: const SellFormSecond(), 
-      binding: CategoryBindings(),
-    ),
-    _buildRoute(
-      name: sellProductsConfirmationPage, 
-      page: const SellConfirmationPage(), 
-      binding: CategoryBindings(),
-    ),
-    _buildRoute(
-      name: sellProductsUserFormPage, 
-      page: CategorySelectionPage(), 
+      name: sellProductsUserFormPage,
+      page: CategorySelectionPage(),
       binding: CategoryBindings(),
     ),
   ];

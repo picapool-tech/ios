@@ -27,10 +27,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       appBar: AppBar(
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Row(
+        title: const Row(
           children: [
             CircleAvatar(
               backgroundImage: NetworkImage(
@@ -63,30 +63,31 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Apple iPad (10th Generation): with A14 Bionic chip, 27.69 cm (10.9")',
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.normal,
                     fontFamily: "MontserratR"),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               ElevatedButton(
                 onPressed: () {
                   // Define what happens when the button is tapped
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xffFFE9DA),
-                  side: BorderSide(color: Color(0xffFF6600)),
+                  backgroundColor: const Color(0xffFFE9DA),
+                  side: const BorderSide(color: Color(0xffFF6600)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: Padding(
+                child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.0),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min, // To minimize the button width
+                    mainAxisSize:
+                        MainAxisSize.min, // To minimize the button width
                     children: [
                       Text(
                         'Go to site',
@@ -97,20 +98,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       ),
                       SizedBox(width: 5), // Space between text and icon
                       Icon(Icons.arrow_circle_right_outlined,
-                          size: 20,
-                          color: Color(0xffFF6600)), // Icon with size
+                          size: 20, color: Color(0xffFF6600)), // Icon with size
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Center(
                 child: Column(
                   children: [
                     CarouselSlider(
                       options: CarouselOptions(
                         height: MediaQuery.of(context).size.width * 9 / 16,
-                        
                         aspectRatio: 16 / 9,
                         autoPlay: true,
                         enlargeCenterPage: false,
@@ -139,7 +138,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           child: Container(
                             width: 8.0,
                             height: 8.0,
-                            margin: EdgeInsets.symmetric(
+                            margin: const EdgeInsets.symmetric(
                                 vertical: 10.0, horizontal: 2.0),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
@@ -157,8 +156,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
-              Row(
+              const SizedBox(height: 20),
+              const Row(
                 children: [
                   Text(
                     'Selling price : ',
@@ -178,15 +177,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                 ],
               ),
-              Text(
+              const Text(
                 '(MRP Rs.70,000 )',
                 style: TextStyle(
                     fontSize: 14,
                     fontFamily: "MontserratM",
                     color: Color(0xff565656)),
               ),
-              SizedBox(height: 20),
-              Column(
+              const SizedBox(height: 20),
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -207,8 +206,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-              Row(
+              const SizedBox(height: 20),
+              const Row(
                 children: [
                   Text(
                     'Description - ',
@@ -227,12 +226,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 _isReadMore
                     ? 'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina display, and support for the new Magic Keyboard Folio, it’s the perfect choice for working, creating, and staying connected. Powered by the A14 Bionic chip with support for the Apple Pencil (1st generation) and available in four colours, iPad lets you unleash your creativity in unprecedented ways.'
                     : 'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina ...',
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 16,
                     fontFamily: "MontserratR",
                     color: Colors.black),
@@ -245,11 +244,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 },
                 child: Text(
                   _isReadMore ? 'Read less' : 'Read more',
-                  style: TextStyle(fontSize: 16, color: Colors.orange),
+                  style: const TextStyle(fontSize: 16, color: Colors.orange),
                 ),
               ),
-              SizedBox(height: 20),
-              Text(
+              const SizedBox(height: 20),
+              const Text(
                 'Details',
                 style: TextStyle(
                     fontSize: 18,
@@ -257,8 +256,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     fontWeight: FontWeight.bold,
                     color: Colors.black),
               ),
-              SizedBox(height: 10),
-              Row(
+              const SizedBox(height: 10),
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
@@ -291,8 +290,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              Row(
+              const SizedBox(height: 10),
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
@@ -334,17 +333,19 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ProductsHomepage(currentIndex: 1,)),
+                  builder: (context) => const ProductsHomepage(
+                        currentIndex: 1,
+                      )),
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xffFF8D41),
+            backgroundColor: const Color(0xffFF8D41),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
             ),
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
