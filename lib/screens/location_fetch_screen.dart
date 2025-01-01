@@ -2,23 +2,25 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 
-class LocationScreen extends ConsumerStatefulWidget {
+class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key});
 
   @override
   _LocationScreenState createState() => _LocationScreenState();
 }
 
-class _LocationScreenState extends ConsumerState<LocationScreen>
+class _LocationScreenState extends State<LocationScreen>
     with SingleTickerProviderStateMixin {
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
@@ -39,25 +41,30 @@ class _LocationScreenState extends ConsumerState<LocationScreen>
   List<Prediction> _predictions = [];
   bool _isKeyboardVisible = false;
 
-  final GoogleMapsPlaces _places =
-      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+  final LocationController locationController = Get.find<LocationController>();
+  final AuthController authController = Get.find<AuthController>();
+
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(
+    apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk',
+  );
 
   @override
   void initState() {
     super.initState();
-    _fetchLocation();
-    _loadSavedLocations();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: false);
-
-    _animation = Tween<double>(begin: 0, end: 100).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchLocation();
+      _loadSavedLocations();
+      _animationController = AnimationController(
+        duration: const Duration(seconds: 2),
+        vsync: this,
+      )..repeat(reverse: false);
+
+      _animation = Tween<double>(begin: 0, end: 100).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+
       _checkKeyboardVisibility();
     });
   }
@@ -96,54 +103,57 @@ class _LocationScreenState extends ConsumerState<LocationScreen>
   }
 
   Future<void> _fetchLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    // bool serviceEnabled;
+    // LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        _locationEnabled = false;
-        _locationMessage = "Device location is not enabled.";
-      });
-      return;
-    }
+    // serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    // if (!serviceEnabled) {
+    //   setState(() {
+    //     _locationEnabled = false;
+    //     _locationMessage = "Device location is not enabled.";
+    //   });
+    //   return;
+    // }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() {
-          _locationEnabled = false;
-          _locationMessage = "Location permissions are denied.";
-        });
-        return;
-      }
-    }
+    // permission = await Geolocator.checkPermission();
+    // if (permission == LocationPermission.denied) {
+    //   permission = await Geolocator.requestPermission();
+    //   if (permission == LocationPermission.denied) {
+    //     setState(() {
+    //       _locationEnabled = false;
+    //       _locationMessage = "Location permissions are denied.";
+    //     });
+    //     return;
+    //   }
+    // }
 
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _locationEnabled = false;
-        _locationMessage = "Location permissions are permanently denied.";
-      });
-      return;
-    }
+    // if (permission == LocationPermission.deniedForever) {
+    //   setState(() {
+    //     _locationEnabled = false;
+    //     _locationMessage = "Location permissions are permanently denied.";
+    //   });
+    //   return;
+    // }
 
-    setState(() {
-      _locationEnabled = true;
-    });
+    // setState(() {
+    //   _locationEnabled = true;
+    // });
 
-    final LocationController locationController =
-        Get.find<LocationController>();
+    // final LocationController locationController =
+    //     Get.find<LocationController>();
+    // await locationController.getLocation();
+
+    // Position position = await Geolocator.getCurrentPosition(
+    //     locationSettings: const LocationSettings(
+    //   accuracy: LocationAccuracy.high,
+    //   distanceFilter: 10,
+    // ));
+
     await locationController.getLocation();
 
-    Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 10,
-    ));
-
     setState(() {
-      _currentPosition = LatLng(position.latitude, position.longitude);
+      var location = locationController.state.value.location;
+      _currentPosition = LatLng(location!.latitude, location.longitude);
 
       _selectedPosition = _currentPosition;
       _updateMarkersAndCircles();
@@ -699,25 +709,48 @@ class _LocationScreenState extends ConsumerState<LocationScreen>
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, _locationMessage);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xffFF8D41),
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                        onPressed: () async {
+                          await authController.updateUser({
+                            "loc": {
+                              "lat": _selectedPosition!.latitude,
+                              "lng": _selectedPosition!.longitude
+                            }
+                          });
+
+                          debugPrint("Location user of : $_locationMessage");
+                          await locationController.updateLocation(
+                            geocoding.Location(
+                              latitude: _selectedPosition!.latitude,
+                              longitude: _selectedPosition!.longitude,
+                              timestamp: DateTime.timestamp(),
+                            ),
+                          );
+                          if (context.mounted) {
+                            Navigator.pop(context, _locationMessage);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xffFF8D41),
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        "Confirm Location",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: "MontserratSB",
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
+                        child: Obx(() {
+                          if (locationController.state.value.isLoading ||
+                              authController.isLoading.value) {
+                            return const CircularProgressIndicator();
+                          }
+
+                          return const Text(
+                            "Confirm Location",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: "MontserratSB",
+                              fontSize: 14,
+                            ),
+                          );
+                        })),
                   ],
                 ),
               ),
@@ -751,22 +784,49 @@ class _LocationScreenState extends ConsumerState<LocationScreen>
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, _locationMessage);
+                      onPressed: () async {
+                        await authController.updateUser({
+                          "loc": {
+                            "lat": _selectedPosition!.latitude,
+                            "lng": _selectedPosition!.longitude
+                          }
+                        });
+
+                        debugPrint("Location user of : $_locationMessage");
+                        await locationController.updateLocation(
+                          geocoding.Location(
+                            latitude: _selectedPosition!.latitude,
+                            longitude: _selectedPosition!.longitude,
+                            timestamp: DateTime.timestamp(),
+                          ),
+                        );
+                        if (context.mounted) {
+                          Navigator.pop(context, _locationMessage);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: const Color(0xffFF8D41),
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: const Text(
-                        "Confirm Location",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: "MontserratSB",
-                            fontSize: 14),
+                      child: Obx(
+                        () {
+                          if (locationController.state.value.isLoading ||
+                              authController.isLoading.value) {
+                            return const CircularProgressIndicator();
+                          }
+
+                          return const Text(
+                            "Confirm Location",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: "MontserratSB",
+                              fontSize: 14,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],

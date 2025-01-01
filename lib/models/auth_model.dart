@@ -8,7 +8,7 @@ import 'package:picapool/models/role_model.dart';
 import 'package:picapool/models/user_model.dart';
 
 class Auth {
-  // final int id;
+  int? id;
   final String? googleSub;
   final String? appleSub;
   final String? mobile;
@@ -23,7 +23,7 @@ class Auth {
   final bool? isGuest;
 
   Auth({
-    // required this.id,
+    this.id,
     this.googleSub,
     this.appleSub,
     this.mobile,
@@ -41,7 +41,7 @@ class Auth {
   factory Auth.fromJson(Map<String, dynamic> json) {
     debugPrint("Auth.fromJson: $json");
     return Auth(
-      // id: json['id'],
+      id: json['id'],
       googleSub: json['googleSub'],
       appleSub: json['appleSub'],
       mobile: json['mobile'],
@@ -49,9 +49,6 @@ class Auth {
       admin: json['admin'] != null ? Admin.fromJson(json['admin']) : null,
       partner:
           json['partner'] != null ? Partner.fromJson(json['partner']) : null,
-      user: json['user'] != null
-          ? User.fromJson(json['user'])
-          : _getUserFromAccessToken(json['accessToken']),
       livePartner: json['livePartner'] != null
           ? LivePartner.fromJson(json['livePartner'])
           : null,
@@ -66,24 +63,24 @@ class Auth {
     );
   }
 
-  static User _getUserFromAccessToken(String accessToken) {
-    var jwt = Token.decode(accessToken);
-    debugPrint("accessToken: $accessToken");
-    var user = User(
-      id: jwt['tenant']['id'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(jwt['iat']),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(jwt['exp']),
-      authId: jwt['authId'],
-    );
-    debugPrint(
-      "User created At: ${user.createdAt} and Updated At: ${user.updatedAt}",
-    );
-    return user;
-  }
+  // static User _getUserFromAccessToken(String accessToken) {
+  //   var jwt = Token.decode(accessToken);
+  //   debugPrint("accessToken: $accessToken");
+  //   var user = User(
+  //     id: jwt['tenant']['id'],
+  //     createdAt: DateTime.fromMillisecondsSinceEpoch(jwt['iat']),
+  //     updatedAt: DateTime.fromMillisecondsSinceEpoch(jwt['exp']),
+  //     authId: jwt['authId'],
+  //   );
+  //   debugPrint(
+  //     "User created At: ${user.createdAt} and Updated At: ${user.updatedAt}",
+  //   );
+  //   return user;
+  // }
 
   Map<String, dynamic> toJson() {
     return {
-      // 'id': id,
+      'id': id,
       'googleSub': googleSub,
       'appleSub': appleSub,
       'mobile': mobile,
@@ -100,6 +97,7 @@ class Auth {
   }
 
   Auth copyWith({
+    int? id,
     String? googleSub,
     String? appleSub,
     String? mobile,
@@ -114,6 +112,7 @@ class Auth {
     bool? isGuest,
   }) {
     return Auth(
+      id: id ?? this.id,
       googleSub: googleSub ?? this.googleSub,
       appleSub: appleSub ?? this.appleSub,
       mobile: mobile ?? this.mobile,

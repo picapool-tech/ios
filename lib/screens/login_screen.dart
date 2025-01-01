@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:get/get.dart';
+import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/screens/public_profile.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +17,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthController authController = Get.find<AuthController>();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _phoneController = TextEditingController();
+
+  final NetworkController _networkController = Get.find<NetworkController>();
 
   String selectedCountryCode = "91";
   String selectedFlag = "🇮🇳";
@@ -31,14 +35,23 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _sendOtp(String phoneNumber) async {
+    if (authController.isLoading.value) {
+      return;
+    }
     await authController.sendOtp(phoneNumber);
   }
 
   void _signInWithGoogle() async {
+    if (authController.isLoading.value) {
+      return;
+    }
     await authController.loginWithGoogle();
   }
 
   void _signInWithApple() async {
+    if (authController.isLoading.value) {
+      return;
+    }
     await authController.loginWithApple();
   }
 
@@ -171,34 +184,59 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                const SizedBox(height: 20),
+                const Text(
+                  "We’ll text you a code to verify you’re really you.",
+                  style: TextStyle(
+                      fontFamily: "MontserratR",
+                      color: Color(0xff757171),
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal),
+                ),
+                const Text(
+                  "Message and data rates may apply.",
+                  style: TextStyle(
+                    fontFamily: "MontserratR",
+                    color: Color(0xff757171),
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
+                    if (_formKey.currentState!.validate() &&
+                        !authController.isLoading.value) {
                       String fullPhoneNumber =
                           "$selectedCountryCode${_phoneController.text}";
                       _sendOtp(fullPhoneNumber);
                     }
                   },
                   style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStateProperty.all(const Color(0xffFF8D41)),
+                    backgroundColor: WidgetStateProperty.all(
+                      const Color(0xffFF8D41),
+                    ),
                     minimumSize: WidgetStateProperty.all(
-                        const Size(double.infinity, 50)),
+                      const Size(double.infinity, 50),
+                    ),
                     shape: WidgetStateProperty.all(RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     )),
                   ),
-                  child: authController.isLoading.value
-                      ? const CircularProgressIndicator()
-                      : const Text(
-                          "Send OTP",
-                          style: TextStyle(
-                            fontFamily: "MontserratSB",
-                            color: Color(0xffFFFFFF),
-                            fontSize: 16,
-                          ),
+                  child: Obx(
+                    () {
+                      if (authController.isLoading.value) {
+                        return const CircularProgressIndicator();
+                      }
+                      return const Text(
+                        "Send OTP",
+                        style: TextStyle(
+                          fontFamily: "MontserratSB",
+                          color: Color(0xffFFFFFF),
+                          fontSize: 16,
                         ),
+                      );
+                    },
+                  ),
                 ),
                 const SizedBox(height: 40),
                 const Row(
@@ -271,19 +309,67 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text("By continuing, you agree to our",
                       style: TextStyle(
                         fontFamily: "MontserratR",
-                        color: Color(0xffA3A3A3),
-                        fontSize: 10,
+                        color: Color(0xff757171),
+                        fontSize: 12,
                         fontWeight: FontWeight.normal,
                       )),
                 ),
-                const Center(
-                  child: Text("Terms & Conditions",
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Terms of Service",
                       style: TextStyle(
-                        fontFamily: "MontserratSB",
-                        color: Color(0xff000000),
-                        fontSize: 10,
+                        decoration: TextDecoration.underline,
+                        fontFamily: "MontserratR",
+                        color: Color(0xff757171),
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
-                      )),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "Privacy Policy",
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontFamily: "MontserratR",
+                        color: Color(0xff757171),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "Content policy",
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontFamily: "MontserratR",
+                        color: Color(0xff757171),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 50),
+                Center(
+                  child: InkWell(
+                    onTap: () {
+                      Get.to(
+                        () => const PublicProfile(),
+                      );
+                    },
+                    child: const Text(
+                      "Continue as a guest",
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontFamily: "MontserratR",
+                        color: Color(0xff757171),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

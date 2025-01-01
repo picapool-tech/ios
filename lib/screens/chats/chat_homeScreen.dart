@@ -1,11 +1,16 @@
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/chats/chat_api.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/chat_model.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/screens/chats/archive_page.dart';
+import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/svg_icon.dart';
 
 class MyChatsPage extends StatefulWidget {
@@ -18,38 +23,38 @@ class MyChatsPage extends StatefulWidget {
 }
 
 class _MyChatsPageState extends State<MyChatsPage> {
-  final List<Map<String, dynamic>> chats = [
-    {
-      'title': 'LEVI sale',
-      'subtitle': 'You: Hi, who all are willing to pool for t...',
-      'time': '2:20 PM',
-      'image': 'assets/icons/levi.png',
-      'muted': false,
-    },
-    {
-      'title': 'KFC offer',
-      'subtitle': 'Pranav: I won\'t be able to pay today...',
-      'time': '2:40 PM',
-      'image': 'assets/icons/levi.png',
-      'muted': false,
-    },
-    // Add more chats as needed
-  ];
-
   List<int> selectedIndexes = []; // Track selected items
   List<Map<String, dynamic>> archivedChats = []; // Store archived items
+  List<Chat> _filteredChats = []; // Filtered chats
   String selectedCategory = 'All Offers';
 
   final ChatController chatController = Get.find<ChatController>();
+  final OffersController _offersController = Get.find<OffersController>();
+  final AuthController _authController = Get.find<AuthController>();
+  final TextEditingController _searchController = TextEditingController();
+
+  String _searchQuery = "";
 
   @override
   void initState() {
     super.initState();
     // If there are unarchived chats, add them back to the chats list
-    if (widget.unarchivedChats != null) {
-      chats.addAll(widget.unarchivedChats!);
+    // if (widget.unarchivedChats != null) {
+    //   chats.addAll(widget.unarchivedChats!);
+    // }
+    if (_authController.user.value != null) {
+      chatController.getAllChats();
     }
-    chatController.getAllChats();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      // _filteredChats = chatController.chats
+      //     .where((chat) => chat.title.contains(_searchController.text))
+      //     .toList();
+      _searchQuery = _searchController.text;
+    });
   }
 
   @override
@@ -66,43 +71,43 @@ class _MyChatsPageState extends State<MyChatsPage> {
           ),
         ),
         automaticallyImplyLeading: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: InkWell(
-              onTap: () async {
-                // Navigate to the Archived page and wait for unarchived chats
-                final unarchivedChats = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArchivedPage(
-                      archivedChats: archivedChats,
-                    ),
-                  ),
-                );
+        actions: const [
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 20),
+          //   child: InkWell(
+          //     onTap: () async {
+          //       // Navigate to the Archived page and wait for unarchived chats
+          //       final unarchivedChats = await Navigator.push(
+          //         context,
+          //         MaterialPageRoute(
+          //           builder: (context) => ArchivedPage(
+          //             archivedChats: archivedChats,
+          //           ),
+          //         ),
+          //       );
 
-                // If there are unarchived chats, add them back to the chats list
-                if (unarchivedChats != null) {
-                  setState(() {
-                    chats.addAll(unarchivedChats);
-                  });
-                }
-              },
-              child: const Row(
-                children: [
-                  ImageIcon(AssetImage('assets/icons/archive.png'),
-                      size: 24, color: Color(0xffFFFFFF)),
-                  SizedBox(width: 10),
-                  Text("Archived",
-                      style: TextStyle(
-                        fontFamily: "MontserratM",
-                        fontSize: 14,
-                        color: Color(0xffFFFFFF),
-                      )),
-                ],
-              ),
-            ),
-          ),
+          //       // If there are unarchived chats, add them back to the chats list
+          //       if (unarchivedChats != null) {
+          //         setState(() {
+          //           chats.addAll(unarchivedChats);
+          //         });
+          //       }
+          //     },
+          //     child: const Row(
+          //       children: [
+          //         ImageIcon(AssetImage('assets/icons/archive.png'),
+          //             size: 24, color: Color(0xffFFFFFF)),
+          //         SizedBox(width: 10),
+          //         Text("Archived",
+          //             style: TextStyle(
+          //               fontFamily: "MontserratM",
+          //               fontSize: 14,
+          //               color: Color(0xffFFFFFF),
+          //             )),
+          //       ],
+          //     ),
+          //   ),
+          // ),
         ],
         elevation: 0,
         backgroundColor: const Color(0xff02005D),
@@ -128,6 +133,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                       elevation: WidgetStateProperty.resolveWith<double>(
                           (Set<WidgetState> states) => 0.0),
                       hintText: "Search",
+                      controller: _searchController,
                       backgroundColor: WidgetStateProperty.resolveWith<Color>(
                         (Set<WidgetState> states) =>
                             const Color(0xff9A9A9A).withOpacity(0.2),
@@ -161,175 +167,229 @@ class _MyChatsPageState extends State<MyChatsPage> {
               )),
           const SizedBox(height: 10),
           // Conditionally show either action bar or category buttons
-          selectedIndexes.isNotEmpty
-              ? Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 16),
-                  color: Colors.white, // Set background to white
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () => setState(() {
-                          selectedIndexes.clear(); // Clear selection
-                        }),
-                        child: const ImageIcon(
-                          AssetImage('assets/icons/back_arrow.png'),
-                          color: Color(0xffFF8D41),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          '${selectedIndexes.length}',
-                          style: const TextStyle(
-                            fontFamily: "MontserratM",
-                            fontSize: 20,
-                            color: Color(0xff000000), // Change text color
-                          ),
-                        ),
-                      ),
-                      const Spacer(), // Align actions to the right
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: InkWell(
-                              onTap: () {
-                                // Handle delete action
-                              },
-                              child: const SvgIcon(
-                                "assets/icons/trash.svg",
-                                size: 24,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: InkWell(
-                              onTap: () {
-                                // Archive selected chats
-                                setState(() {
-                                  selectedIndexes.sort();
-                                  for (var index in selectedIndexes.reversed) {
-                                    archivedChats.add(chats[index]);
-                                    chats.removeAt(index);
-                                  }
-                                  selectedIndexes.clear();
-                                });
+          // selectedIndexes.isNotEmpty
+          //     ? Container(
+          //         padding: const EdgeInsets.symmetric(
+          //             horizontal: 16.0, vertical: 16),
+          //         color: Colors.white, // Set background to white
+          //         child: Row(
+          //           children: [
+          //             InkWell(
+          //               onTap: () => setState(() {
+          //                 selectedIndexes.clear(); // Clear selection
+          //               }),
+          //               child: const ImageIcon(
+          //                 AssetImage('assets/icons/back_arrow.png'),
+          //                 color: Color(0xffFF8D41),
+          //               ),
+          //             ),
+          //             Padding(
+          //               padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          //               child: Text(
+          //                 '${selectedIndexes.length}',
+          //                 style: const TextStyle(
+          //                   fontFamily: "MontserratM",
+          //                   fontSize: 20,
+          //                   color: Color(0xff000000), // Change text color
+          //                 ),
+          //               ),
+          //             ),
+          //             const Spacer(), // Align actions to the right
+          //             Row(
+          //               mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //               children: [
+          //                 Padding(
+          //                   padding: const EdgeInsets.only(right: 20),
+          //                   child: InkWell(
+          //                     onTap: () {
+          //                       // Handle delete action
+          //                     },
+          //                     child: const SvgIcon(
+          //                       "assets/icons/trash.svg",
+          //                       size: 24,
+          //                     ),
+          //                   ),
+          //                 ),
+          //                 Padding(
+          //                   padding: const EdgeInsets.only(right: 20),
+          //                   child: InkWell(
+          //                     onTap: () {
+          //                       // Archive selected chats
+          //                       setState(() {
+          //                         selectedIndexes.sort();
+          //                         for (var index in selectedIndexes.reversed) {
+          //                           archivedChats.add(chats[index]);
+          //                           chats.removeAt(index);
+          //                         }
+          //                         selectedIndexes.clear();
+          //                       });
 
-                                // Navigate to the Archived page
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ArchivedPage(
-                                        archivedChats: archivedChats),
-                                  ),
-                                );
-                              },
-                              child: const ImageIcon(
-                                AssetImage('assets/icons/receive-square.png'),
-                                color: Color(0xff000000),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: InkWell(
-                              onTap: () {
-                                // Handle mute action - toggle mute state
-                                setState(() {
-                                  for (var index in selectedIndexes) {
-                                    chats[index]['muted'] =
-                                        !(chats[index]['muted'] as bool);
-                                  }
-                                  selectedIndexes.clear();
-                                });
-                              },
-                              child: const ImageIcon(
-                                AssetImage('assets/icons/Group 511.png'),
-                                color: Color(0xff000000),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+          //                       // Navigate to the Archived page
+          //                       Navigator.push(
+          //                         context,
+          //                         MaterialPageRoute(
+          //                           builder: (context) => ArchivedPage(
+          //                               archivedChats: archivedChats),
+          //                         ),
+          //                       );
+          //                     },
+          //                     child: const ImageIcon(
+          //                       AssetImage('assets/icons/receive-square.png'),
+          //                       color: Color(0xff000000),
+          //                     ),
+          //                   ),
+          //                 ),
+          //                 Padding(
+          //                   padding: const EdgeInsets.only(right: 20),
+          //                   child: InkWell(
+          //                     onTap: () {
+          //                       // Handle mute action - toggle mute state
+          //                       setState(() {
+          //                         for (var index in selectedIndexes) {
+          //                           chats[index]['muted'] =
+          //                               !(chats[index]['muted'] as bool);
+          //                         }
+          //                         selectedIndexes.clear();
+          //                       });
+          //                     },
+          //                     child: const ImageIcon(
+          //                       AssetImage('assets/icons/Group 511.png'),
+          //                       color: Color(0xff000000),
+          //                     ),
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           ],
+          //         ),
+          //       )
+          //     :
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            color: const Color(0xff02005D),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  CategoryButton(
+                    image: 'assets/icons/all.png',
+                    label: 'All Offers',
+                    selected: selectedCategory == 'All Offers',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'All Offers';
+                      });
+                    },
                   ),
-                )
-              : Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  color: const Color(0xff02005D),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        CategoryButton(
-                          image: 'assets/icons/all.png',
-                          label: 'All Offers',
-                          selected: selectedCategory == 'All Offers',
-                          onTap: () {
-                            setState(() {
-                              selectedCategory = 'All Offers';
-                            });
-                          },
-                        ),
-                        CategoryButton(
-                          image: 'assets/icons/food.png',
-                          label: 'Food',
-                          selected: selectedCategory == 'Food',
-                          onTap: () {
-                            setState(() {
-                              selectedCategory = 'Food';
-                            });
-                          },
-                        ),
-                        CategoryButton(
-                          image: 'assets/icons/ball.png',
-                          label: 'Sports',
-                          selected: selectedCategory == 'Sports',
-                          onTap: () {
-                            setState(() {
-                              selectedCategory = 'Sports';
-                            });
-                          },
-                        ),
-                        CategoryButton(
-                          image: 'assets/icons/ball.png',
-                          label: 'Sports',
-                          selected: selectedCategory == 'Sports',
-                          onTap: () {
-                            setState(() {
-                              selectedCategory = 'Sports';
-                            });
-                          },
-                        ),
-                        // Add more categories if needed
-                      ],
-                    ),
+                  CategoryButton(
+                    image: 'assets/icons/food.png',
+                    label: 'Food',
+                    selected: selectedCategory == 'Food',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Food';
+                      });
+                    },
                   ),
-                ),
+                  CategoryButton(
+                    image: 'assets/icons/tshirt.png',
+                    label: 'Apparel',
+                    selected: selectedCategory == 'Apparel',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Apparel';
+                      });
+                    },
+                  ),
+                  CategoryButton(
+                    image: 'assets/icons/Bell.png',
+                    label: 'Entertainment',
+                    selected: selectedCategory == 'Entertainment',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Entertainment';
+                      });
+                    },
+                  ),
+                  CategoryButton(
+                    image: 'assets/icons/ball.png',
+                    label: 'Sports',
+                    selected: selectedCategory == 'Sports',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Sports';
+                      });
+                    },
+                  ),
+                  CategoryButton(
+                    image: 'assets/icons/ball.png',
+                    label: 'Medicine',
+                    selected: selectedCategory == 'Medicine',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Medicine';
+                      });
+                    },
+                  ),
+                  CategoryButton(
+                    image: 'assets/icons/Frame 59.png',
+                    label: 'Electronics',
+                    selected: selectedCategory == 'Electronics',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Electronics';
+                      });
+                    },
+                  ),
+                  CategoryButton(
+                    image: 'assets/icons/ball.png',
+                    label: 'Music',
+                    selected: selectedCategory == 'Music',
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = 'Music';
+                      });
+                    },
+                  ),
+                  // Add more categories if needed
+                ],
+              ),
+            ),
+          ),
           // Chat list
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
               ),
-              child: GetBuilder<ChatController>(builder: (controller) {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+              child: (_authController.user.value != null)
+                  ? GetBuilder<ChatController>(builder: (controller) {
+                      if (chatController.chats.isEmpty &&
+                          chatController.isLoading.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                if (controller.errorMessage.isNotEmpty) {
-                  return Center(child: Text(controller.errorMessage.value));
-                }
+                      if (chatController.chats.isEmpty) {
+                        return const Center(child: Text('No chats found'));
+                      }
 
-                if (controller.chats.isEmpty) {
-                  return const Center(child: Text('No chats found'));
-                }
-
-                return chatList(controller.chats);
-              }),
+                      var filteredChats = controller.chats.where((model) {
+                        var offername = model.offer.name;
+                        var searchList = _searchQuery.toLowerCase().split(" ");
+                        for (var element in searchList) {
+                          if (offername.toLowerCase().contains(element)) {
+                            return true;
+                          }
+                        }
+                        return false;
+                      }).toList();
+                      return chatList(filteredChats);
+                    })
+                  : const Center(
+                      child: Text(
+                        "You don't have an account to show chats",
+                      ),
+                    ),
             ),
           ),
         ],
@@ -337,29 +397,36 @@ class _MyChatsPageState extends State<MyChatsPage> {
     );
   }
 
-  ListView chatList(List<Chat> chatList) {
+  ListView chatList(List<ChatAndOfferModel> chats) {
     return ListView.builder(
-      itemCount: chatList.length,
+      itemCount: chats.length,
       itemBuilder: (context, index) {
         bool isSelected = selectedIndexes.contains(index);
-        var chat = chatList[index];
+        var chat = chats[index];
         return GestureDetector(
           onLongPress: () {
-            setState(() {
-              if (!selectedIndexes.contains(index)) {
-                selectedIndexes.add(index);
-              }
-            });
+            // setState(() {
+            //   if (!selectedIndexes.contains(index)) {
+            //     selectedIndexes.add(index);
+            //   }
+            // });
           },
           onTap: () {
             setState(() {
-              if (selectedIndexes.isNotEmpty) {
-                if (isSelected) {
-                  selectedIndexes.remove(index);
-                } else {
-                  selectedIndexes.add(index);
-                }
-              }
+              Get.to(() => ChatPage(
+                    chat: chat.chat,
+                    offer: chat.offer,
+                  ))?.then((onValue) {
+                chatController.getAllChats();
+                debugPrint('ChatPage closed:');
+              });
+              // if (selectedIndexes.isNotEmpty) {
+              //   if (isSelected) {
+              //     selectedIndexes.remove(index);
+              //   } else {
+              //     selectedIndexes.add(index);
+              //   }
+              // }
             });
           },
           child: Container(
@@ -374,7 +441,11 @@ class _MyChatsPageState extends State<MyChatsPage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
-                        image: AssetImage(chats[0]['image']!),
+                        image: (chat.offer.images.isNotEmpty)
+                            ? CachedNetworkImageProvider(
+                                chat.offer.images.first)
+                            : const AssetImage("assets/images/harrypotter.jpg")
+                                as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -386,16 +457,28 @@ class _MyChatsPageState extends State<MyChatsPage> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    chats[0]['title']!,
-                    style: const TextStyle(
-                      fontFamily: "MontserratM",
-                      fontSize: 16,
-                      color: Colors.black,
+                  // todo : change the title to chat.title
+                  Expanded(
+                    child: Hero(
+                      tag: "chatTitle",
+                      child: Text(
+                        chat.offer.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: "MontserratM",
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
                   ),
+                  const SizedBox(
+                    width: 4,
+                  ),
                   Text(
-                    chats[0]['time']!,
+                    DateTimeHelper.timeAgoSince(
+                        chat.chat.updatedAt.toIso8601String()),
                     style: const TextStyle(
                       fontFamily: "MontserratM",
                       fontSize: 12,
@@ -406,18 +489,19 @@ class _MyChatsPageState extends State<MyChatsPage> {
               ),
               subtitle: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      chats[0]['subtitle']!,
-                      style: const TextStyle(
-                        fontFamily: "MontserratM",
-                        fontSize: 14,
-                        color: Color(0xff434343),
+                  if (chat.chat.messages != null)
+                    Expanded(
+                      child: Text(
+                        _getLastMessage(chat.chat.messages!),
+                        style: const TextStyle(
+                          fontFamily: "MontserratM",
+                          fontSize: 14,
+                          color: Color(0xff434343),
+                        ),
+                        overflow: TextOverflow
+                            .ellipsis, // Truncate with ellipsis if long
                       ),
-                      overflow: TextOverflow
-                          .ellipsis, // Truncate with ellipsis if long
                     ),
-                  ),
                   // if (chat)
                   const Padding(
                     padding: EdgeInsets.only(left: 8.0),
@@ -434,6 +518,18 @@ class _MyChatsPageState extends State<MyChatsPage> {
         );
       },
     );
+  }
+
+  String _getLastMessage(List<LastMessageModel>? list) {
+    if (list == null) {
+      return "";
+    }
+
+    if (list.isEmpty) {
+      return "";
+    }
+
+    return list.last.content;
   }
 }
 

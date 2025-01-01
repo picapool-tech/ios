@@ -12,8 +12,14 @@ class Item {
   final String imagePath;
   final String text;
   final Widget destinationPage;
+  bool isDisabled;
 
-  Item({required this.imagePath, required this.text, required this.destinationPage});
+  Item({
+    required this.imagePath,
+    required this.text,
+    required this.destinationPage,
+    this.isDisabled = false,
+  });
 }
 
 void showCustomModalBottomSheet(BuildContext context) {
@@ -21,14 +27,41 @@ void showCustomModalBottomSheet(BuildContext context) {
 
   // List of items with image paths, text, and corresponding destination pages
   List<Item> items = [
-    Item(imagePath: "assets/images/request_vicinity.png", text: "Request vicinity", destinationPage: const RequestVicinity()),
-    Item(imagePath: "assets/images/buy_sell.png", text: "Buy and sell", destinationPage: const ProductListsPage()),
-    Item(imagePath: "assets/images/share_a_cab.png", text: "Share a cab", destinationPage: ShareCabScreen()),
+    Item(
+      imagePath: "assets/images/request_vicinity.png",
+      text: "Request vicinity",
+      destinationPage: const RequestVicinity(),
+    ),
+    Item(
+      imagePath: "assets/images/buy_sell.png",
+      text: "Buy and sell",
+      destinationPage: const ProductListsPage(),
+    ),
+    Item(
+      imagePath: "assets/images/share_a_cab.png",
+      text: "Share a cab",
+      destinationPage: ShareCabScreen(),
+    ),
     // Item(imagePath: "assets/images/medical_help.png", text: "Medical help", destinationPage: RequestVicinityPage()),
-    Item(imagePath: "assets/images/trekking.png", text: "Trekking", destinationPage: const TrekkingPage()),
-    Item(imagePath: "assets/images/medical_help.png", text: "Medical help", destinationPage: MedicalAttentionPage()),
-    Item(imagePath: "assets/images/share_turf.png", text: "Share a turf", destinationPage: TurfPage1()),
-    
+    Item(
+      imagePath: "assets/images/trekking.png",
+      text: "Trekking",
+      destinationPage: const TrekkingPage(),
+      isDisabled: true,
+    ),
+    Item(
+      imagePath: "assets/images/medical_help.png",
+      text: "Medical help",
+      destinationPage: MedicalAttentionPage(),
+      isDisabled: true,
+    ),
+    Item(
+      imagePath: "assets/images/share_turf.png",
+      text: "Share a turf",
+      destinationPage: TurfPage1(),
+      isDisabled: true,
+    ),
+
     // Add more items as needed
   ];
 
@@ -62,9 +95,13 @@ void showCustomModalBottomSheet(BuildContext context) {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
+                      if (items[index].isDisabled) {
+                        return;
+                      }
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => items[index].destinationPage),
+                        MaterialPageRoute(
+                            builder: (context) => items[index].destinationPage),
                       );
                     },
                     child: Column(
@@ -73,12 +110,18 @@ void showCustomModalBottomSheet(BuildContext context) {
                         Image.asset(
                           items[index].imagePath,
                           width: size.width * 0.25,
+                          color:
+                              (items[index].isDisabled) ? Colors.white : null,
+                          colorBlendMode: BlendMode.color,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           items[index].text,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12, fontFamily: "MontserratM", color: Colors.black),
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontFamily: "MontserratM",
+                              color: Colors.black),
                         ),
                       ],
                     ),
@@ -92,4 +135,3 @@ void showCustomModalBottomSheet(BuildContext context) {
     },
   );
 }
-

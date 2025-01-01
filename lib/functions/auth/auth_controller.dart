@@ -1,15 +1,17 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
+import 'package:picapool/models/access_token_model.dart';
 import 'package:picapool/models/auth_model.dart';
+import 'package:picapool/models/login_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
+import 'package:picapool/screens/public_profile.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:http/http.dart' as http;
 
@@ -33,7 +35,10 @@ class AuthController extends GetxController {
   /// Load user and auth data from storage at startup.
   Future<void> _loadUserOnStartup() async {
     await _storageController.loadAuth();
+    debugPrint("Past auth loading...");
+
     await _storageController.loadUser();
+    debugPrint("Past user loading...");
 
     final storageState = _storageController;
     auth.value = storageState.auth;
@@ -49,30 +54,36 @@ class AuthController extends GetxController {
       (fail) {
         auth.value = null;
         user.value = null;
-        errorMessage.value = fail.message;
+        debugPrint(fail.message);
         showErrorDialog(fail.message);
       },
-      (authData) async {
-        errorMessage.value = "";
-        await loadAndSaveAuth(authData);
-        checkForExistingUser();
+      (loginModel) async {
+        postLoginAction(loginModel);
+        // errorMessage.value = "";
+        // debugPrint("From LOGIN WITH GOOGLE : ${authData.toJson()}");
+        // await loadAndSaveAuth(authData);
+        // checkForExistingUser();
       },
     );
     isLoading.value = false;
   }
 
-  Future<bool> loadAndSaveAuth(Auth authData) async {
+  Future<bool> loadAndSaveAuth(Auth authData, {int? userId}) async {
     try {
-      var userData =
-          await getUser(authData.user!.id, ats: authData.accessToken);
+      var accessToken = authData.accessToken;
+      var userData = await getUser(
+        userId ?? authData.user!.id,
+        ats: accessToken,
+      );
       if (userData != null) {
-        debugPrint('User from auth: ${userData.toJson()}');
+        debugPrint('User : ${userData.toJson()}');
         authData.user?.update(userData.toJson());
         debugPrint('User from auth: ${authData.toJson()}');
       }
 
       auth.value = authData;
-      user.value = authData.user;
+      auth.value!.user = userData;
+      user.value = userData;
       await _storageController.saveAuth(auth.value!);
       await _storageController.saveUser(user.value!);
       return true;
@@ -94,11 +105,12 @@ class AuthController extends GetxController {
         errorMessage.value = fail.message;
         showErrorDialog(fail.message);
       },
-      (authData) async {
-        await loadAndSaveAuth(authData);
-        errorMessage.value = "";
+      (loginModel) async {
+        postLoginAction(loginModel);
+        // await loadAndSaveAuth(authData);
+        // errorMessage.value = "";
 
-        checkForExistingUser();
+        // checkForExistingUser();
       },
     );
     isLoading.value = false;
@@ -106,7 +118,7 @@ class AuthController extends GetxController {
 
   Future<void> loginWithOtp(String mobile, String otp) async {
     isLoading.value = true;
-    notLoading = true;
+    update();
     final result = await _authApi.loginWithOtp(mobile, otp);
 
     await result.fold(
@@ -116,16 +128,40 @@ class AuthController extends GetxController {
         errorMessage.value = fail.message;
         showErrorDialog(fail.message);
       },
-      (authData) async {
-        await loadAndSaveAuth(authData);
-        errorMessage.value = "";
-        Get.offAll(() => const NewBottomBar());
+      (loginModel) async {
+        await postLoginAction(loginModel);
         debugPrint('User from otp: ${auth.value?.user?.toJson()}');
       },
     );
 
     isLoading.value = false;
-    notLoading = false;
+    update();
+  }
+
+  Future<bool> postLoginAction(LoginModel loginModel) async {
+    var accessToken =
+        AccessTokenModel.fromJson(JwtDecoder.decode(loginModel.accessToken));
+    debugPrint("After ACESSTOKEN MODEL : ${accessToken.toJson()}");
+    var authData = Auth(
+      id: accessToken.authId,
+      accessToken: loginModel.accessToken,
+      refreshToken: loginModel.refreshToken,
+    );
+    await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
+    debugPrint("After LOAD AND SAVE MODEL : ${user.toJson()}");
+
+    // var user = await getUser(accessToken.tenant.id);
+    // if (user != null) {
+    //   authData.user = user;
+    //   user = user;
+    //   await loadAndSaveAuth(authData);
+    //   await _storageController.saveUser(user);
+    //   return true;
+    // }
+
+    errorMessage.value = "";
+    checkForExistingUser();
+    return false;
   }
 
   Future<void> sendOtp(String phoneNumber) async {
@@ -164,11 +200,13 @@ class AuthController extends GetxController {
 
   Future<void> createUser() async {
     isLoading.value = true;
+    update();
 
     try {
+      var accessToken = await getAccessToken();
       final result = await _authApi.createUser(
         user.value!,
-        auth.value!.accessToken!,
+        accessToken!,
       );
 
       await result.fold(
@@ -197,6 +235,7 @@ class AuthController extends GetxController {
     }
 
     isLoading.value = false;
+    update();
   }
 
   Future<void> updateUserData(User user) async {
@@ -208,31 +247,41 @@ class AuthController extends GetxController {
   }
 
   /// Updates the user data and stores it.
-  Future<void> updateUser(Map<String, dynamic> updateValues) async {
+  Future<bool?> updateUser(Map<String, dynamic> updateValues) async {
     isLoading.value = true;
+    update();
 
     try {
+      var accessToken = await getAccessToken();
       final result = await _authApi.updateUser(
         updateValues,
-        auth.value!.accessToken!,
+        accessToken!,
       );
 
-      await result.fold(
+      isLoading.value = false;
+      update();
+      return result.fold(
         (fail) {
           errorMessage.value = fail.message;
           showErrorDialog(fail.message);
+          return false;
         },
         (updatedUser) async {
           auth.value!.user!.update(updateValues);
+          user.value!.update(updateValues);
           await loadAndSaveAuth(auth.value!);
+          update();
           errorMessage.value = "";
+          return true;
         },
       );
     } catch (e) {
       debugPrint('Update User Error: $e');
       showErrorDialog('Failed to update user. Please try again.');
+      return false;
     } finally {
       isLoading.value = false;
+      update();
     }
   }
 
@@ -242,11 +291,41 @@ class AuthController extends GetxController {
     await _storageController.clearAuth();
     auth.value = null;
     user.value = null;
+    // update();
+    // checkForExistingUser();
+  }
+
+  Future<String?> getAccessToken() async {
+    if (auth.value == null) {
+      return null;
+    }
+    var accessToken = auth.value!.accessToken!;
+    debugPrint("GETITNG ACCESS TOKEN : $accessToken");
+    debugPrint("AUTH VALUE : ${auth.value?.toJson()}");
+    if (Jwt.isExpired(accessToken)) {
+      debugPrint("JWT is expired");
+      var newAccessToken = await _authApi.updateAccessToken(
+        accessToken: accessToken,
+        refreshToken: auth.value!.refreshToken!,
+        userId: user.value!.id,
+      );
+
+      newAccessToken.fold((error) {
+        logout();
+        return accessToken;
+      }, (newAccessToken) async {
+        auth.value?.copyWith(accessToken: newAccessToken);
+        await loadAndSaveAuth(auth.value!);
+        return newAccessToken;
+      });
+    }
+    return accessToken;
   }
 
   Future<User?> getUser(int id, {String? ats}) async {
-    final at = auth.value?.accessToken;
+    final at = await getAccessToken();
     if (at == null && ats == null) {
+      logout();
       return null;
     }
 
@@ -254,12 +333,6 @@ class AuthController extends GetxController {
 
     return await result.fold(
       (fail) async {
-        if (_isTokenExpired()) {
-          var update = await updateAccessToken();
-          if (update) {
-            return getUser(id);
-          }
-        }
         showErrorDialog(fail.message);
         return null;
       },
@@ -269,22 +342,17 @@ class AuthController extends GetxController {
     );
   }
 
-  bool _isTokenExpired() {
-    if (auth.value == null || auth.value!.accessToken == null) {
-      return true;
-    }
-    return JwtDecoder.isExpired(auth.value!.accessToken!);
-  }
-
-  /// Check if a user is logged in and navigate accordingly.
+  // Check if a user is logged in and navigate accordingly.
   void checkForExistingUser() {
-    debugPrint('Checking for existing user ${auth.value?.toJson()}');
-    debugPrint('Checking for existing user ${user.value?.toJson()}');
+    debugPrint('Checking for existing user from auth ${auth.value?.toJson()}');
+    debugPrint('Checking for existing user from user ${user.value?.toJson()}');
 
-    if (auth.value == null || auth.value!.accessToken == null) {
+    if (auth.value?.accessToken == null) {
       Get.to(() => const LoginScreen());
-    } else if (user.value == null || user.value!.name == null) {
+    } else if (auth.value?.user?.name == null) {
       Get.to(() => const PersonalDetails());
+    } else if (auth.value?.user?.username == null) {
+      Get.to(() => const PublicProfile());
     } else {
       Get.offAll(() => const NewBottomBar());
     }
@@ -310,42 +378,42 @@ class AuthController extends GetxController {
     );
   }
 
-  Future<bool> updateAccessToken() async {
-    debugPrint('REQUESTED FOR UPDATE ACCESS TOKEN');
-    String rt = auth.value!.refreshToken!;
-    String at = auth.value!.accessToken!;
-    var userId = user.value?.id;
-    debugPrint('Refresh token: $rt');
-    if (userId == null) {
-      return false;
-    }
+  // Future<bool> updateAccessToken() async {
+  //   debugPrint('REQUESTED FOR UPDATE ACCESS TOKEN');
+  //   String rt = auth.value!.refreshToken!;
+  //   String at = auth.value!.accessToken!;
+  //   var userId = user.value?.id;
+  //   debugPrint('Refresh token: $rt');
+  //   if (userId == null) {
+  //     return false;
+  //   }
 
-    final response = await http.post(
-      Uri.parse("https://api.picapool.com/v2/auth/accessToken"),
-      body: jsonEncode({
-        "refreshToken": rt,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': 'Bearer $at',
-      },
-    );
-    debugPrint('UPDATE ACCESS TOKEN RESPONSE CODE : ${response.statusCode}');
+  //   final response = await http.post(
+  //     Uri.parse("https://api.picapool.com/v2/auth/accessToken"),
+  //     body: jsonEncode({
+  //       "refreshToken": rt,
+  //     }),
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       'Authorization': 'Bearer $at',
+  //     },
+  //   );
+  //   debugPrint('UPDATE ACCESS TOKEN RESPONSE CODE : ${response.statusCode}');
 
-    if (response.statusCode < 300) {
-      String newAccessToken = response.body;
-      debugPrint('New Access Token: $newAccessToken');
+  //   if (response.statusCode < 300) {
+  //     String newAccessToken = response.body;
+  //     debugPrint('New Access Token: $newAccessToken');
 
-      auth.value!.copyWith(accessToken: newAccessToken);
+  //     auth.value!.copyWith(accessToken: newAccessToken);
 
-      await _storageController.saveAuth(auth.value!);
-      return true;
-    } else if (response.statusCode == 401) {
-      logout();
-      return false;
-    } else {
-      logout();
-      return false;
-    }
-  }
+  //     await _storageController.saveAuth(auth.value!);
+  //     return true;
+  //   } else if (response.statusCode == 401) {
+  //     logout();
+  //     return false;
+  //   } else {
+  //     logout();
+  //     return false;
+  //   }
+  // }
 }

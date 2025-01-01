@@ -16,7 +16,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+# android version
+# version: 2.6.3+86
+
+# ios version
+version: 2.9.0+85
 
 environment:
   sdk: ">=3.2.4 <4.0.0"
@@ -62,13 +66,12 @@ dependencies:
   google_sign_in: ^6.2.1
   flutter_signin_button: ^2.0.0
   sign_in_with_apple: ^6.1.1
-  sms_autofill: ^2.4.0
   flutter_sms_inbox: ^1.0.3
   flutter_slidable: ^3.1.1
   jwt_decoder: ^2.0.1
   fpdart: ^1.1.0
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.3.1
+  firebase_core: ^3.9.0
+  firebase_auth: ^5.3.4
   flutter_riverpod: ^2.5.3
   http_parser: ^4.0.2
   socket_io_client: ^3.0.0
@@ -76,7 +79,13 @@ dependencies:
   connectivity_plus: ^6.1.0
   logger: ^2.4.0
   get_storage:
-  jwt_decode: 
+  jwt_decode:
+  intl: ^0.19.0
+  url_launcher: ^6.3.1
+  cached_network_image: ^3.4.1
+  flutter_datetime_picker_plus: ^2.2.0
+  internet_connection_checker: ^3.0.1
+  firebase_messaging: ^15.1.6
 
 dev_dependencies:
   flutter_test:

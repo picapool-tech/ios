@@ -1,7 +1,4 @@
-import 'dart:convert';
 
-import 'package:dio/dio.dart';
-import 'package:logger/logger.dart';
 import 'package:picapool/services/products/entities/list_of_products_entity.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
 import 'package:picapool/services/products/payloads/update_product_payload.dart';
@@ -9,9 +6,13 @@ import 'package:picapool/services/products/responses/create_product_response.dar
 import 'package:picapool/services/products/entities/product_entity.dart';
 import 'package:picapool/services/products/responses/get_all_products_response.dart';
 import 'package:picapool/services/products/responses/update_product_response.dart';
+
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:picapool/utils/auth_utils.dart';
 import 'package:picapool/utils/constants.dart';
 import 'package:picapool/utils/http_helper.dart';
+import 'package:logger/logger.dart';
 import 'package:picapool/utils/logger_helper.dart';
 
 class ProductsServices {

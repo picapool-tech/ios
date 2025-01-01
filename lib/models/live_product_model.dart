@@ -1,5 +1,5 @@
 import 'package:picapool/models/auth_model.dart';
-import 'package:picapool/models/live_offer_model.dart';
+import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/vehicle_model.dart';
 
 class LivePartner {

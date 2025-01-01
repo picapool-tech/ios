@@ -4,7 +4,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:picapool/utils/logger_helper.dart';
 
-// TODO: Implement Local storage 
 final GetStorage box = GetStorage();
 
 Future<void> saveAccessToken(String accessToken) async {
@@ -34,7 +33,8 @@ Future<void> removeToken(String token) async {
 String? getToken(String tokenName) {
   try {
     // final String? token = box.read(tokenName);
-    const String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjMsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjQsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzE3Njc1ODcsImV4cCI6MTczMTg1Mzk4N30.hn4YBV5_bTuoQ1Zeh12AKUHwmuqy_DA5MAJhgmH6ZYg";
+    const String token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjQsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDR9LCJSb2xlcyI6W3siaWQiOjEsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzUwNDc4NDQsImV4cCI6MTczNTEzNDI0NH0.ttUveH8-8p77VfVaBUGLHBE3lXX5-tMhPBEF7WQaZp8";
     return token;
   } catch (e) {
     logger.printInfo(info: e.toString());
@@ -60,7 +60,8 @@ Future<String?> getAccessToken() async {
   try {
     // TODO: Merge from Krishna's auth code
     // hardcoding for now
-    final String? accessToken =   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjMsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjQsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzE3Njc1ODcsImV4cCI6MTczMTg1Mzk4N30.hn4YBV5_bTuoQ1Zeh12AKUHwmuqy_DA5MAJhgmH6ZYg";
+    final String? accessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjMsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjQsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzE3Njc1ODcsImV4cCI6MTczMTg1Mzk4N30.hn4YBV5_bTuoQ1Zeh12AKUHwmuqy_DA5MAJhgmH6ZYg";
     // final String? token = getToken('accessToken');
     // if (token != null) {
     //   if (!Jwt.isExpired(token)) {

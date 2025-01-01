@@ -95,7 +95,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                         ),
                         Text(
                           locationController.state.value.errorMessage != null
-                              ? locationController.state.value.errorMessage!
+                              ? "No Location"
                               : mainLocation,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.montserrat(
@@ -111,14 +111,14 @@ class _LocationWidgetState extends State<LocationWidget> {
               ),
             ),
           ),
-          const Spacer(),
-          InkWell(
-            onTap: () {},
-            child: const SvgIcon(
-              "assets/icons/profile.svg",
-              size: 34,
-            ),
-          ),
+          // const Spacer(),
+          // InkWell(
+          //   onTap: () {},
+          //   child: const SvgIcon(
+          //     "assets/icons/profile.svg",
+          //     size: 34,
+          //   ),
+          // ),
         ],
       );
     });

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "685376419732",
+    "project_id": "picapool2-d08dd",
+    "storage_bucket": "picapool2-d08dd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685376419732:android:9f10a192b012650144c181",
+        "android_client_info": {
+          "package_name": "com.picapool.picapool"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "685376419732-tf3rsdmup7t416vq73fbcnlsuk317cva.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.picapool.picapool",
+            "certificate_hash": "581ef937f284d0fcbb6ee0f3ddd099779eeb51fe"
+          }
+        },
+        {
+          "client_id": "685376419732-ni95jo887agrsngmdlfuad651o4odd1r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7Pr0t-0yWvcYZxymjS1oDgh5fwmEyuac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "685376419732-ni95jo887agrsngmdlfuad651o4odd1r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "685376419732-3o9tkuo2bdq57a91baiifeo0cgdulcf6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.picapool.picapool"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

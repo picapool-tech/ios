@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:picapool/models/admin_model.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/message_model.dart';
@@ -13,7 +14,7 @@ class Chat {
   final int? offerId;
   final LiveOffer? liveOffer;
   final int? liveOfferId;
-  final List<Message>? messages;
+  final List<LastMessageModel>? messages;
   final List<User>? users;
   final List<Admin>? admins;
 
@@ -32,6 +33,7 @@ class Chat {
   });
 
   factory Chat.fromJson(Map<String, dynamic> json) {
+    debugPrint("Here I am in Chat.fromJson $json");
     return Chat(
       id: json['id'],
       updatedAt: DateTime.parse(json['updatedAt']),
@@ -44,7 +46,9 @@ class Chat {
           : null,
       liveOfferId: json['liveOfferId'],
       messages: json['Messages'] != null
-          ? (json['Messages'] as List).map((m) => Message.fromJson(m)).toList()
+          ? (json['Messages'] as List)
+              .map((m) => LastMessageModel.fromJson(m))
+              .toList()
           : null,
       users: json['users'] != null
           ? (json['users'] as List).map((u) => User.fromJson(u)).toList()
@@ -68,6 +72,52 @@ class Chat {
       'messages': messages?.map((m) => m.toJson()).toList(),
       'users': users?.map((u) => u.toJson()).toList(),
       'admins': admins?.map((a) => a.toJson()).toList(),
+    };
+  }
+}
+
+class LastMessageModel {
+  final String content;
+  final String? admin;
+  // final MessageModalUser? user;
+
+  LastMessageModel({
+    required this.content,
+    required this.admin,
+    // required this.user,
+  });
+
+  factory LastMessageModel.fromJson(Map<String, dynamic> json) {
+    return LastMessageModel(
+      content: json['content'],
+      admin: json['Admin'],
+      // user: MessageModalUser.fromJson(json['User']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+      'Admin': admin,
+      // 'User': user?.name,
+    };
+  }
+}
+
+class MessageModalUser {
+  final String name;
+
+  MessageModalUser({required this.name});
+
+  factory MessageModalUser.fromJson(Map<String, dynamic> json) {
+    return MessageModalUser(
+      name: json['name'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
     };
   }
 }

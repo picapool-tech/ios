@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/partner_model.dart';
 import 'package:picapool/models/product_model.dart';
@@ -46,6 +47,7 @@ class Offer {
   });
 
   factory Offer.fromJson(Map<String, dynamic> json) {
+    debugPrint("INSIDE OFFER.fromJSON function: $json");
     return Offer(
       id: json['id'],
       name: json['name'],
@@ -62,16 +64,16 @@ class Offer {
           json['partner'] != null ? Partner.fromJson(json['partner']) : null,
       partnerId: json['partnerId'],
       user: json['user'] != null ? User.fromJson(json['user']) : null,
-      userId: json['creatorId'],
-      chats: json['chats'] != null
-          ? (json['chats'] as List).map((c) => Chat.fromJson(c)).toList()
+      userId: json['userId'],
+      chats: json['Chats'] != null
+          ? (json['Chats'] as List).map((c) => Chat.fromJson(c)).toList()
           : null,
       tags: json['tags'] != null
           ? (json['tags'] as List).map((t) => Tag.fromJson(t)).toList()
           : null,
-      products: json['products'] != null
-          ? (json['products'] as List).map((p) => Product.fromJson(p)).toList()
-          : null,
+      products: // json['products'] != null
+          //     ? (json['products'] as List).map((p) => Product.fromJson(p)).toList()
+          null,
     );
   }
 

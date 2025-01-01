@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:picapool/models/message_model_new.dart';
+import 'package:get/get.dart';
+import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/models/chat_model.dart';
+import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/screens/Public%20Chat/chat_info.dart';
+import 'package:picapool/screens/Public%20Chat/public_chat_page.dart';
+import 'package:picapool/utils/date_time_helper.dart';
 
 class ChatPage extends StatefulWidget {
+  final Chat chat;
+  final Offer? offer;
+  const ChatPage({
+    super.key,
+    required this.chat,
+    this.offer,
+  });
+
   @override
   _ChatPageState createState() => _ChatPageState();
 }
@@ -11,84 +27,56 @@ class _ChatPageState extends State<ChatPage>
   late TabController _tabController;
   final TextEditingController _messageController = TextEditingController();
   bool _isMessageEmpty = true;
+  final ScrollController _scrollController = ScrollController();
+  final ChatController chatController = Get.find<ChatController>();
+  final AuthController _authController = Get.find<AuthController>();
+  final OffersController _offersController = Get.find<OffersController>();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    _messageController.addListener(() {
-      setState(() {
-        _isMessageEmpty = _messageController.text.isEmpty;
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      chatController.connectToSocket(
+        _authController.user.value!.id,
+        widget.chat.id,
+      );
+
+      chatController.getAllUsersInChat(widget.chat.id);
+
+      _messageController.addListener(isActive);
+
+      chatController.getAllMessages(widget.chat.id);
+      debugPrint("${widget.chat.toJson()}");
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _messageController.dispose();
+    chatController.disconnectSocket();
     super.dispose();
   }
 
-  final List<MessageModel> publicMessages = [
-    MessageModel(
-      sender: "Shreya Roy",
-      message: "Hi, I am ready to pool, \npaying 400?",
-      time: "5:30 PM",
-      isMe: false,
-      imageUrl: 'https://via.placeholder.com/150',
-      showSenderDetails: true,
-    ),
-    MessageModel(
-      sender: "You",
-      message: "Hi, who all are willing to \npool for this offer?",
-      time: "5:31 PM",
-      isMe: true,
-      imageUrl: '',
-      showSenderDetails: false,
-    ),
-    MessageModel(
-      sender: "Pranav",
-      message: "Hi, I am ready to pool, \npaying 400?",
-      time: "5:32 PM",
-      isMe: false,
-      imageUrl: 'https://via.placeholder.com/150',
-      showSenderDetails: true,
-    ),
-    MessageModel(
-      sender: "Pranav",
-      message: "If you are paying 200 let \nme know",
-      time: "5:32 PM",
-      isMe: false,
-      imageUrl: 'https://via.placeholder.com/150',
-      showSenderDetails: false,
-    ),
-    MessageModel(
-      sender: "You",
-      message: "Hi, who all are willing to pool for \nthis offer?",
-      time: "5:34 PM",
-      isMe: true,
-      imageUrl: '',
-      showSenderDetails: false,
-      replyToMessage: "Hi, I am ready to pool, paying 400?",
-      replySender: "Pranav",
-    ),
-    MessageModel(
-      sender: "Pranav",
-      message: "Hi, I am ready to pool, \npaying 400?",
-      time: "5:36 PM",
-      isMe: false,
-      imageUrl: 'https://via.placeholder.com/150',
-      showSenderDetails: true,
-      replyToMessage: "Hi, who all are willing to pool for this offer?",
-      replySender: "You",
-    ),
-  ];
+  void isActive() {
+    setState(() {
+      _isMessageEmpty = _messageController.text.isEmpty;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+      primary: true,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -98,12 +86,18 @@ class _ChatPageState extends State<ChatPage>
             Navigator.pop(context);
           },
         ),
-        title: const Text(
-          "KFC 50% off",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontFamily: "MontserratSB",
+        centerTitle: false,
+        title: Hero(
+          tag: "chatTitle",
+          child: Text(
+            widget.offer?.name ?? "Chat",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+              fontFamily: "MontserratSB",
+            ),
           ),
         ),
         bottom: TabBar(
@@ -116,226 +110,136 @@ class _ChatPageState extends State<ChatPage>
           ),
           tabs: const [
             Tab(text: "Public Chat"),
-            Tab(text: "Private chats (3)"),
+            Tab(text: "Chat Info"),
           ],
         ),
       ),
-      body: Container(
-        color: Colors.white, // Set chat background to white
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            // Public Chat Tab
-            PublicChatView(
-              messages: publicMessages,
-            ),
-            // Private Chat Tab
-            PrivateChatView(),
-          ],
-        ),
-      ),
-      bottomNavigationBar: ChatInputField(
-        controller: _messageController,
-        isMessageEmpty: _isMessageEmpty,
-      ),
-    );
-  }
-}
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Public Chat Tab
+          Column(
+            children: [
+              Expanded(
+                child: GetBuilder<ChatController>(
+                  builder: (controller) {
+                    if (controller.isLoading.value &&
+                        controller.messages.isEmpty) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-class PublicChatView extends StatelessWidget {
-  final List<MessageModel> messages;
+                    if (controller.errorMessage.isNotEmpty &&
+                        controller.messages.isEmpty) {
+                      return Center(
+                        child: Text(controller.errorMessage.value),
+                      );
+                    }
 
-  PublicChatView({required this.messages});
+                    if (controller.messages.isEmpty) {
+                      return const Center(
+                        child: Text("No messages found"),
+                      );
+                    }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final message = messages[index];
-        return ChatBubble(
-          sender: message.sender,
-          message: message.message,
-          time: message.time,
-          isMe: message.isMe,
-          imageUrl: message.imageUrl ?? '',
-          showSenderDetails: message.showSenderDetails,
-          replyToMessage: message.replyToMessage,
-          replySender: message.replySender,
-        );
-      },
-    );
-  }
-}
+                    debugPrint("${controller.messages.length}");
 
-class ChatBubble extends StatelessWidget {
-  final String sender;
-  final String message;
-  final String time;
-  final bool isMe;
-  final String imageUrl;
-  final bool showSenderDetails;
-  final String? replyToMessage;
-  final String? replySender;
+                    return ListView.builder(
+                      controller: chatController.scrollController,
+                      padding: const EdgeInsets.all(16.0),
+                      itemCount: controller.messages.length,
+                      itemBuilder: (context, index) {
+                        final message = controller.messages[index];
 
-  const ChatBubble({
-    required this.sender,
-    required this.message,
-    required this.time,
-    required this.isMe,
-    required this.imageUrl,
-    required this.showSenderDetails,
-    this.replyToMessage,
-    this.replySender,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment:
-              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-          children: [
-            if (!isMe && showSenderDetails) ...[
-              CircleAvatar(
-                backgroundImage: NetworkImage(imageUrl),
-                radius: 20,
+                        return ChatBubble(
+                          sender: (message.userId != null)
+                              ? chatController.getUserNameFromIdInChat(
+                                      message.userId!) ??
+                                  ""
+                              : "",
+                          message: message.content,
+                          time: DateTimeHelper.timeAgoSince(
+                              message.createdAt.toIso8601String()),
+                          isMe:
+                              message.userId == _authController.user.value?.id,
+                          imageUrl: '',
+                          showSenderDetails: false,
+                          // replyToMessage: message.replyToMessage,
+                          // replySender: message.replySender,
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-              const SizedBox(width: 10),
-            ] else if (!isMe) ...[
-              const SizedBox(width: 50),
+              ChatInputField(
+                controller: _messageController,
+                isMessageEmpty: _isMessageEmpty,
+                onSend: (!_isMessageEmpty)
+                    ? (message) {
+                        debugPrint("Sending..chat");
+                        if (!chatController.isSocketConnected()) {
+                          Get.snackbar(
+                            "No Action",
+                            "No connection to send message",
+                          );
+                        }
+                        chatController.sendMessage(message);
+                        if (_scrollController.hasClients) {
+                          debugPrint("Scrolling to bottom");
+                          _scrollController.animateTo(
+                            _scrollController.position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        }
+                      }
+                    : (message) {},
+              ),
             ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                children: [
-                  if (!isMe && showSenderDetails)
-                    Text(
-                      sender,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black54,
-                        fontFamily: "MontserratSB", // Sender's name font
-                      ),
-                    ),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isMe
-                          ? const Color(0xFFF3D7C5)
-                          : const Color(0xFFDEDEDE), // Main bubble colors
-                      borderRadius: BorderRadius.only(
-                        topLeft: isMe
-                            ? const Radius.circular(10)
-                            : const Radius.circular(0),
-                        topRight: const Radius.circular(10),
-                        bottomLeft: const Radius.circular(10),
-                        bottomRight: isMe
-                            ? const Radius.circular(0)
-                            : const Radius.circular(10),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (replyToMessage != null && replySender != null)
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isMe
-                                  ? const Color(0xFFFFE2D0)
-                                  : const Color(
-                                      0xFFEBEBEB), // Lighter background for reply
-                              borderRadius: BorderRadius.circular(10),
-                              border: const Border(
-                                left: BorderSide(
-                                    color: Colors.orange,
-                                    width:
-                                        3), // Orange line to the left of reply
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  replySender!,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily:
-                                        "MontserratSB", // Replied sender's name font
-                                    color: isMe
-                                        ? Colors.orange.shade700
-                                        : Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(
-                                    height:
-                                        4), // Small space between name and message
-                                Text(
-                                  replyToMessage!,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontFamily:
-                                        "MontserratM", // Replied message font
-                                    fontSize:
-                                        14, // Regular size for reply message
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        Text(
-                          message,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontFamily: "MontserratM", // Chat text font
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          time,
-                          style: const TextStyle(
-                              fontSize: 12, color: Color(0xff6C6C6C)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          // Private Chat Tab
+          ChatInfo(
+            chatId: widget.chat.id,
+            creatorId: widget.offer!.userId!,
+          ),
+        ],
       ),
     );
+  }
+
+  void listen() {
+    if (chatController.socketService.socket == null) {
+      return;
+    }
+    chatController.socketService.socket!.on('receiveMessage', (data) {
+      // final message = Message.fromJson(data);
+      debugPrint("Here I am in the model");
+      chatController.handleIncomingMessage(data);
+    });
   }
 }
 
 class ChatInputField extends StatelessWidget {
   final TextEditingController controller;
   final bool isMessageEmpty;
+  final Function(String message) onSend;
 
   const ChatInputField({
+    super.key,
     required this.controller,
     required this.isMessageEmpty,
+    required this.onSend,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
+    return SafeArea(
+      bottom: true,
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.only(
+            left: 16.0, right: 16.0, top: 10.0, bottom: 10.0),
         child: Row(
           children: [
-            // Chat input field
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -378,12 +282,11 @@ class ChatInputField extends StatelessWidget {
               backgroundColor: Colors.orange,
               child: IconButton(
                 icon: const Icon(Icons.send, color: Colors.white),
-                onPressed: isMessageEmpty
-                    ? null
-                    : () {
-                        // Handle message send action here
-                        controller.clear(); // Clear input after sending
-                      },
+                onPressed: () {
+                  // Handle message send action here
+                  onSend(controller.text);
+                  controller.clear(); // Clear input after sending
+                },
               ),
             ),
           ],
@@ -394,6 +297,8 @@ class ChatInputField extends StatelessWidget {
 }
 
 class PrivateChatView extends StatelessWidget {
+  const PrivateChatView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -403,9 +308,10 @@ class PrivateChatView extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             children: const [
               RoomTile(
-                  roomName: "Yash’s room",
-                  occupancy: "4 occupied",
-                  isJoined: false),
+                roomName: "Yash’s room",
+                occupancy: "4 occupied",
+                isJoined: false,
+              ),
               RoomTile(
                   roomName: "Akshay’s room",
                   occupancy: "3 occupied",
@@ -468,6 +374,7 @@ class RoomTile extends StatelessWidget {
   final bool isJoined;
 
   const RoomTile({
+    super.key,
     required this.roomName,
     required this.occupancy,
     required this.isJoined,

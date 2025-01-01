@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // To format the date
 import 'package:flutter_google_maps_webservices/places.dart';
-import 'package:picapool/screens/cabs/showallcabs.dart'; // For location search and suggestions
+import 'package:picapool/screens/cabs/showallcabs.dart';
+import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
 
 class ShareCabScreen extends StatefulWidget {
+  const ShareCabScreen({super.key});
+
   @override
   _ShareCabScreenState createState() => _ShareCabScreenState();
 }
@@ -13,9 +16,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   static const LatLng _center = LatLng(25.276987, 55.296249);
   String? _selectedCab; // To track the selected cab marker
   DateTime _selectedDate = DateTime.now(); // Current selected date
-  final GoogleMapsPlaces _places = GoogleMapsPlaces(
-      apiKey:
-          'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey:'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
 
   TextEditingController _fromController = TextEditingController();
   TextEditingController _toController = TextEditingController();
@@ -49,7 +50,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   // Function to set the date to tomorrow
   void _setTomorrow() {
     setState(() {
-      _selectedDate = DateTime.now().add(Duration(days: 1));
+      _selectedDate = DateTime.now().add(const Duration(days: 1));
       formattedDate = DateFormat('E, d MMM').format(_selectedDate);
     });
   }
@@ -105,15 +106,15 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
 
     formattedDate = DateFormat('E, d MMM').format(_selectedDate); // Format date
 
-    return Scaffold(
+  return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('Share a Cab', textAlign: TextAlign.left, style: TextStyle(fontFamily: "MontserratSB"),),
+        title: const Text('Share a Cab', textAlign: TextAlign.left, style: TextStyle(fontFamily: "MontserratSB"),),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -135,7 +136,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 8,
                           backgroundColor: Color(0xffFFB889),
                         ),
@@ -144,7 +145,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                           width: 2,
                           color: Colors.orange.shade200,
                         ),
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 8,
                           backgroundColor: Color(0xffFF7519),
                         ),
@@ -156,7 +157,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         right: 20.0, left: 5.0, top: 10.0),
                     child: Container(
                       height: 150,
-                      margin: EdgeInsets.only(left: 30),
+                      margin: const EdgeInsets.only(left: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         border: Border.all(color: Colors.grey),
@@ -170,7 +171,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                 height: 40,
                                 child: TextField(
                                   controller: _fromController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     hintText: 'From',
                                     hintStyle: TextStyle(
                                       color: Color(0xff6d6d6d),
@@ -186,12 +187,12 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                   },
                                 ),
                               ),
-                              Divider(),
+                              const Divider(),
                               SizedBox(
                                 height: 40,
                                 child: TextField(
                                   controller: _toController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     hintText: 'To',
                                     hintStyle: TextStyle(
                                       color: Color(0xff6d6d6d),
@@ -209,63 +210,66 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                               ),
                             ],
                           ),
-                          Divider(height: 1),
+                          const Divider(height: 1),
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                    onTap: () => _selectDate(context),
-                                    child: ImageIcon(AssetImage("assets/icons/calendar.png"),color: Color(0xffFF8D41),)),
-                                SizedBox(width: 8),
-                                Text(
-                                  formattedDate,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: "MontserratSB",
-                                  ),
-                                ),
-                                Spacer(),
-                                ElevatedButton(
-                                  onPressed: _setToday,
-                                  style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.all(0),
-                                    backgroundColor: Color(0xffFFD2B4),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    elevation: 0,
-                                  ),
-                                  child: Text(
-                                    'Today',
-                                    style: TextStyle(
-                                      color: Colors.black,
+                            child: Wrap(
+                              children:[ Row(
+                                children: [
+                                  InkWell(
+                                      onTap: () => _selectDate(context),
+                                      child: const ImageIcon(AssetImage("assets/icons/calendar.png"),color: Color(0xffFF8D41),)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    formattedDate,
+                                    style: const TextStyle(
+                                      fontSize: 14,
                                       fontFamily: "MontserratSB",
-                                      fontSize: 12,
                                     ),
                                   ),
-                                ),
-                                SizedBox(width: 6),
-                                ElevatedButton(
-                                  onPressed: _setTomorrow,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xffFFD2B4),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
+                                  const Spacer(),
+                                  ElevatedButton(
+                                    onPressed: _setToday,
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.all(0),
+                                      backgroundColor: const Color(0xffFFD2B4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      elevation: 0,
                                     ),
-                                    elevation: 0,
-                                  ),
-                                  child: Text(
-                                    'Tomorrow',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontFamily: "MontserratSB",
-                                      fontSize: 12,
+                                    child: const Text(
+                                      'Today',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontFamily: "MontserratSB",
+                                        fontSize: 10,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  ElevatedButton(
+                                    onPressed: _setTomorrow,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xffFFD2B4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: const Text(
+                                      'Tomorrow',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontFamily: "MontserratSB",
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        ]
                             ),
                           ),
                         ],
@@ -290,7 +294,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     return ListTile(
                       title: Text(
                         prediction.description ?? '',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontFamily: "MontserratR",
                           fontSize: 14,
@@ -316,7 +320,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     return ListTile(
                       title: Text(
                         prediction.description ?? '',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontFamily: "MontserratR",
                           fontSize: 14,
@@ -334,14 +338,14 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                 children: [
                   GoogleMap(
                     onMapCreated: (controller) {},
-                    initialCameraPosition: CameraPosition(
+                    initialCameraPosition: const CameraPosition(
                       target: _center,
                       zoom: 14.0,
                     ),
                     markers: {
                       Marker(
-                        markerId: MarkerId('cab1'),
-                        position: LatLng(25.276987, 55.286249),
+                        markerId: const MarkerId('cab1'),
+                        position: const LatLng(25.276987, 55.286249),
                         icon: BitmapDescriptor.defaultMarkerWithHue(
                             BitmapDescriptor.hueBlue),
                         onTap: () {
@@ -351,8 +355,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         },
                       ),
                       Marker(
-                        markerId: MarkerId('cab2'),
-                        position: LatLng(25.276987, 55.306249),
+                        markerId: const MarkerId('cab2'),
+                        position: const LatLng(25.276987, 55.306249),
                         icon: BitmapDescriptor.defaultMarkerWithHue(
                             BitmapDescriptor.hueBlue),
                         onTap: () {
@@ -362,8 +366,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         },
                       ),
                       Marker(
-                        markerId: MarkerId('cab3'),
-                        position: LatLng(25.266987, 55.296249),
+                        markerId: const MarkerId('cab3'),
+                        position: const LatLng(25.266987, 55.296249),
                         icon: BitmapDescriptor.defaultMarkerWithHue(
                             BitmapDescriptor.hueBlue),
                         onTap: () {
@@ -382,10 +386,10 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     child: Container(
                       height: 190, // Fixed height for the bottom container
                       padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
                           topRight: Radius.circular(20),
                         ),
@@ -394,11 +398,11 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                             color: Colors.grey.withOpacity(0.5),
                             spreadRadius: 5,
                             blurRadius: 7,
-                            offset: Offset(0, 3),
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: Column(
+                      child: const Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -407,22 +411,22 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                             style: TextStyle(fontSize: 14, color: Colors.grey,fontFamily: "MontserratR"),
                           ),
                           SizedBox(height: 15),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => ShowAllCabDetails()),
-                              );
-                            },
-                            child: Text(
-                              'Show all >',
-                              style: TextStyle(
-                                  color: Color(0xffFF8D41),
-                                  fontSize: 14,
-                                  fontFamily: "MontserratSB"),
-                            ),
-                          ),
+                          // GestureDetector(
+                          //   onTap: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //           builder: (context) => const ShowAllCabDetails()),
+                          //     );
+                          //   },
+                          //   child: const Text(
+                          //     'Show all >',
+                          //     style: TextStyle(
+                          //         color: Color(0xffFF8D41),
+                          //         fontSize: 14,
+                          //         fontFamily: "MontserratSB"),
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
@@ -444,7 +448,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                               color: Colors.grey.withOpacity(0.5),
                               spreadRadius: 2,
                               blurRadius: 7,
-                              offset: Offset(0, 3),
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
@@ -516,7 +520,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                             color: Colors.grey,
                                             size: screenWidth * 0.05),
                                         SizedBox(width: screenWidth * 0.02),
-                                        Expanded(
+                                        const Expanded(
                                           child: Text(
                                             "6th street, s...",
                                             style:
@@ -545,7 +549,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                   height: screenHeight * 0.05,
                                   width: screenWidth * 0.28,
                                   decoration: BoxDecoration(
-                                    color: Color(0xffFF8D41),
+                                    color: const Color(0xffFF8D41),
                                     borderRadius: BorderRadius.circular(
                                         screenWidth * 0.03),
                                   ),
@@ -554,7 +558,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        ImageIcon(AssetImage("assets/icons/bus.png"), color: Colors.white,
+                                        ImageIcon(const AssetImage("assets/icons/bus.png"), color: Colors.white,
                                             size: screenWidth * 0.05),
                                         // Icon(Icons.car_rental,
                                         //     color: Colors.white,
@@ -586,7 +590,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     right: 40,
                     child: Container(
                       padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
@@ -598,15 +602,15 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                           ),
                         ],
                       ),
-                      child: Center(
+                      child: const Center(
                         child: Text.rich(
                           TextSpan(
-                            text: '3 ',
+                            text: 'Oops! No',
                             style: TextStyle(
                                 fontSize: 16, color: Color(0xffFF8D41),fontFamily: "MontserratR"),
                             children: [
                               TextSpan(
-                                text: 'cabs ',
+                                text: ' cabs ',
                                 style: TextStyle(
                                     color: Color(0xffFF8D41),
                                     fontFamily: "MontserratR"),
@@ -628,6 +632,22 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: const BottomAppBar(color: Color.fromARGB(255, 228, 228, 228),height: 65 , elevation: 7,),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateLiveOffer()   ));
+      },
+      shape: const CircleBorder(),
+      backgroundColor: Colors.orange,
+      elevation: 7,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(36)),
+          border: Border.all(color: Colors.white, width: 2, style: BorderStyle.solid) 
+        ),
+        child: const Icon(Icons.local_taxi, color: Colors.white,size: 24,)),
       ),
     );
   }

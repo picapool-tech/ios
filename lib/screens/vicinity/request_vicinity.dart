@@ -1,20 +1,60 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:http/http.dart' as http;
+import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
-import 'package:picapool/functions/vicinity/vicinity_api.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
-import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/response_model.dart';
+import 'package:picapool/models/user_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+
+class NearUserModel {
+  final int id;
+  final String name;
+  final String? gender;
+  final int age;
+  final String? username;
+  final String? pic;
+  final String? bio;
+  final Location location;
+
+  NearUserModel({
+    required this.id,
+    required this.name,
+    required this.age,
+    this.gender,
+    this.username,
+    this.pic,
+    this.bio,
+    required this.location,
+  });
+
+  factory NearUserModel.fromJson(Map<String, dynamic> json) {
+    return NearUserModel(
+      id: json['id'],
+      name: json['name'],
+      age: json['age'],
+      gender: json['gender'],
+      username: json['username'],
+      pic: json['pic'],
+      bio: json['bio'],
+      location: Location(
+        latitude: json['lat'],
+        longitude: json['lng'],
+        timestamp: DateTime.timestamp(),
+      ),
+    );
+  }
+}
 
 class RequestVicinity extends StatefulWidget {
   const RequestVicinity({super.key});
@@ -37,7 +77,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   Marker? _pinMarker;
   Circle? _currentLocationCircle;
   bool _isMapInitialized = false; // New flag to check if the map is initialized
-  List<dynamic> _nearestUsers = [];
+  List<NearUserModel> _nearestUsers = [];
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -46,6 +86,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   final AuthController authController = Get.find<AuthController>();
   final VicinityController vicinityController = Get.find<VicinityController>();
+
+  final Set<Marker> _markers = {};
 
   @override
   void initState() {
@@ -56,36 +98,17 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   Future<void> _fetchLocation() async {
-    // bool serviceEnabled;
-    // LocationPermission permission;
-
-    // serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    // if (!serviceEnabled) {
-    //   // Handle location service not enabled case
-    //   return;
-    // }
-
-    // permission = await Geolocator.checkPermission();
-    // if (permission == LocationPermission.denied) {
-    //   permission = await Geolocator.requestPermission();
-    //   if (permission == LocationPermission.denied) {
-    //     // Handle permission denied case
-    //     return;
-    //   }
-    // }
-
-    // if (permission == LocationPermission.deniedForever) {
-    //   // Handle permission permanently denied case
-    //   return;
-    // }
-
-    // Position position = await Geolocator.getCurrentPosition(
-    //     desiredAccuracy: LocationAccuracy.high);
-
-    await locationController.getLocation();
+    if (locationController.state.value.location == null) {
+      await locationController.getLocation();
+    }
     var location = locationController.state.value.location;
     if (location == null) {
-      Get.snackbar('Error', 'Failed to get current location.');
+      debugPrint("NULL LOCATION : VICINITY");
+      Get.snackbar(
+        'Error',
+        'Failed to get current location.',
+        snackStyle: SnackStyle.GROUNDED,
+      );
       return;
     }
 
@@ -110,27 +133,30 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   void _updateMarkersAndCircles() {
-    setState(() {
-      if (_currentPosition != null) {
-        _currentLocationCircle = Circle(
-          circleId: const CircleId("currentLocationCircle"),
-          center: _currentPosition!,
-          radius: _radius,
-          strokeColor: Colors.blue,
-          strokeWidth: 2,
-          fillColor: Colors.blue.withOpacity(0.3),
-        );
+    if (_currentPosition != null) {
+      // Add or update the current location marker
+      _pinMarker = Marker(
+        markerId: const MarkerId("currentLocation"),
+        position: _currentPosition!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        infoWindow: const InfoWindow(
+          title: "Your Location",
+        ),
+      );
 
-        _pinMarker = Marker(
-          markerId: const MarkerId("selectedLocation"),
-          position: _currentPosition!,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: const InfoWindow(
-            title: "Your Location",
-          ),
-        );
-      }
-    });
+      // Add the current location marker to the markers set
+      _markers.add(_pinMarker!);
+
+      // Add or update the current location circle
+      _currentLocationCircle = Circle(
+        circleId: const CircleId("currentLocationCircle"),
+        center: _currentPosition!,
+        radius: _radius,
+        strokeColor: Colors.blue,
+        strokeWidth: 2,
+        fillColor: Colors.blue.withOpacity(0.3),
+      );
+    }
   }
 
   void _toggle3DView() {
@@ -163,43 +189,184 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   void createVicinity() async {
-    if (_titleController.text.isEmpty || _descController.text.isEmpty) {
+    if (_titleController.text.isEmpty ||
+        _descController.text.isEmpty ||
+        _imageFiles!.isEmpty) {
       debugPrint("Please fill all the fields");
+      Get.snackbar(
+        "Fields required",
+        "Please fill all the fields",
+      );
       return;
     }
 
     var auth = authController.auth.value;
 
-    final userId = auth?.user?.id;
-    if (userId == null || auth == null) {
-      debugPrint("User ID is null");
-      return;
-    }
-
-    // final vicinityApi = ;
-    var url = await vicinityController.uploadImage(
-      _imageFiles!.first,
-      auth.user!.name!,
-      _titleController.text,
-    );
-
-    if (url == null) {
-      debugPrint("Error uploading image");
-      return;
-    }
-
     final offer = VicinityOffer(
       name: _titleController.text,
-      images: [url],
+      images: [],
       desc: _descController.text,
       expiryAt: DateTime.now().add(Duration(minutes: _waitTime.toInt())),
-      creatorID: auth.user!.id,
-      category: 1,
-      brand: 1,
+      userId: auth!.user!.id,
+      partnerID: null,
+      location: VicinityLocation(
+        lat: _currentPosition!.latitude,
+        long: _currentPosition!.longitude,
+      ),
     );
 
-    await vicinityController.createVicinity(
+    var receivedOffer = await vicinityController.createVicinity(
       offer: offer,
+      pickedFile: _imageFiles!.first,
+      uname: auth.user!.name!,
+      offername: _titleController.text,
+    );
+
+    if (receivedOffer != null) {
+      reset();
+      if (receivedOffer.chats?.isNotEmpty ?? false) {
+        Get.off(
+          () => ChatPage(
+            chat: receivedOffer.chats!.first,
+            offer: receivedOffer,
+          ),
+        );
+      }
+    }
+  }
+
+  void reset() {
+    _titleController.clear();
+    _descController.clear();
+    _imageFiles = [];
+    _radius = 500;
+    _waitTime = 30;
+    _imageFiles?.clear();
+  }
+
+  ExpansionPanel expansionPanel() {
+    return ExpansionPanel(
+      backgroundColor: Colors.white,
+      canTapOnHeader: true,
+      headerBuilder: (context, isExpanded) {
+        return const Row(
+          children: [
+            Expanded(
+              child: Divider(
+                indent: 25,
+                thickness: 1,
+                color: Color(0xffFF8D41),
+              ),
+            ),
+            Text(
+              "  Request Vicinity  ",
+              style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
+            ),
+            Expanded(
+              child: Divider(
+                endIndent: 25,
+                thickness: 1,
+                color: Color(0xffFF8D41),
+              ),
+            ),
+          ],
+        );
+      },
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 4),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: "Add Title",
+                          labelStyle: const TextStyle(
+                              fontFamily: "MontserratM", color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xffFF8D41),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _descController,
+                        decoration: InputDecoration(
+                          labelText: "Add Description",
+                          labelStyle: const TextStyle(
+                              fontFamily: "MontserratM", color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xffFF8D41),
+                            ),
+                          ),
+                        ),
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: _pickImages,
+                  child: Container(
+                    width: 104,
+                    height: 104,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      border: Border.all(color: Colors.grey, width: 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _imageFiles == null || _imageFiles!.isEmpty
+                        ? const Center(
+                            child: Icon(
+                              Icons.add_photo_alternate,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : PageView.builder(
+                            itemCount: _imageFiles!.length,
+                            itemBuilder: (context, index) {
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(_imageFiles![index].path),
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      isExpanded: !_isCollapsed,
     );
   }
 
@@ -211,200 +378,212 @@ class _RequestVicinityState extends State<RequestVicinity> {
       body: SafeArea(
         child: Column(
           children: [
-            // App bar and top section
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: _isCollapsed ? 60 : 230,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                indent: 25,
-                                thickness: 1,
-                                color: Color(0xffFF8D41),
-                              ),
-                            ),
-                            Text(
-                              "  Request Vicinity  ",
-                              style: TextStyle(
-                                  fontSize: 16, fontFamily: "MontserratM"),
-                            ),
-                            Expanded(
-                              child: Divider(
-                                endIndent: 25,
-                                thickness: 1,
-                                color: Color(0xffFF8D41),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (!_isCollapsed)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Column(
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        TextField(
-                                          controller: _titleController,
-                                          decoration: InputDecoration(
-                                            labelText: "Add Title",
-                                            labelStyle: const TextStyle(
-                                                fontFamily: "MontserratM",
-                                                color: Colors.grey),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Color(0xffFF8D41),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        TextField(
-                                          controller: _descController,
-                                          decoration: InputDecoration(
-                                            labelText: "Add Description",
-                                            labelStyle: const TextStyle(
-                                                fontFamily: "MontserratM",
-                                                color: Colors.grey),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Color(0xffFF8D41),
-                                              ),
-                                            ),
-                                          ),
-                                          maxLines: 2,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  GestureDetector(
-                                    onTap: _pickImages,
-                                    child: Container(
-                                      width: 104,
-                                      height: 104,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        border: Border.all(
-                                            color: Colors.grey, width: 1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: _imageFiles == null ||
-                                              _imageFiles!.isEmpty
-                                          ? const Center(
-                                              child: Icon(
-                                                Icons.add_photo_alternate,
-                                                size: 40,
-                                                color: Colors.grey,
-                                              ),
-                                            )
-                                          : PageView.builder(
-                                              itemCount: _imageFiles!.length,
-                                              itemBuilder: (context, index) {
-                                                return ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  child: Image.file(
-                                                    File(_imageFiles![index]
-                                                        .path),
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  Positioned(
-                    bottom: 8,
-                    right: 30,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isCollapsed = !_isCollapsed;
-                        });
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xffFFEEE2),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xffFF8D41),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          _isCollapsed
-                              ? Icons.arrow_drop_down_outlined
-                              : Icons.arrow_drop_up_outlined,
-                          color: const Color(0xffFF8D41),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            ExpansionPanelList(
+              expansionCallback: (int index, bool isExpanded) {
+                setState(() {
+                  _isCollapsed = !isExpanded;
+                });
+              },
+              expandedHeaderPadding: const EdgeInsets.all(0),
+              expandIconColor: Theme.of(context).primaryColor,
+              children: [
+                expansionPanel(),
+              ],
             ),
-            // Map section
+            // App bar and top section
+            // AnimatedContainer(
+            //   duration: const Duration(milliseconds: 300),
+            //   height: _isCollapsed ? 60 : 230,
+            //   decoration: const BoxDecoration(
+            //     color: Colors.white,
+            //     borderRadius: BorderRadius.only(
+            //       bottomLeft: Radius.circular(20),
+            //       bottomRight: Radius.circular(20),
+            //     ),
+            //     boxShadow: [
+            //       BoxShadow(
+            //         color: Colors.black26,
+            //         blurRadius: 10,
+            //         offset: Offset(0, 5),
+            //       ),
+            //     ],
+            //   ),
+            //   child: Stack(
+            //     children: [
+            //       // Column(
+            //       //   children: [
+            //       //     const Padding(
+            //       //       padding: EdgeInsets.all(16.0),
+            //       //       child: Row(
+            //       //         children: [
+            //       //           Expanded(
+            //       //             child: Divider(
+            //       //               indent: 25,
+            //       //               thickness: 1,
+            //       //               color: Color(0xffFF8D41),
+            //       //             ),
+            //       //           ),
+            //       //           Text(
+            //       //             "  Request Vicinity  ",
+            //       //             style: TextStyle(
+            //       //                 fontSize: 16, fontFamily: "MontserratM"),
+            //       //           ),
+            //       //           Expanded(
+            //       //             child: Divider(
+            //       //               endIndent: 25,
+            //       //               thickness: 1,
+            //       //               color: Color(0xffFF8D41),
+            //       //             ),
+            //       //           ),
+            //       //         ],
+            //       //       ),
+            //       //     ),
+            //       //     if (!_isCollapsed)
+            //       //       Padding(
+            //       //         padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            //       //         child: Column(
+            //       //           children: [
+            //       //             Row(
+            //       //               crossAxisAlignment: CrossAxisAlignment.start,
+            //       //               children: [
+            //       //                 Expanded(
+            //       //                   child: Column(
+            //       //                     children: [
+            //       //                       TextField(
+            //       //                         controller: _titleController,
+            //       //                         decoration: InputDecoration(
+            //       //                           labelText: "Add Title",
+            //       //                           labelStyle: const TextStyle(
+            //       //                               fontFamily: "MontserratM",
+            //       //                               color: Colors.grey),
+            //       //                           enabledBorder: OutlineInputBorder(
+            //       //                             borderRadius:
+            //       //                                 BorderRadius.circular(8),
+            //       //                             borderSide: const BorderSide(
+            //       //                               color: Colors.grey,
+            //       //                             ),
+            //       //                           ),
+            //       //                           focusedBorder: OutlineInputBorder(
+            //       //                             borderRadius:
+            //       //                                 BorderRadius.circular(8),
+            //       //                             borderSide: const BorderSide(
+            //       //                               color: Color(0xffFF8D41),
+            //       //                             ),
+            //       //                           ),
+            //       //                         ),
+            //       //                       ),
+            //       //                       const SizedBox(height: 16),
+            //       //                       TextField(
+            //       //                         controller: _descController,
+            //       //                         decoration: InputDecoration(
+            //       //                           labelText: "Add Description",
+            //       //                           labelStyle: const TextStyle(
+            //       //                               fontFamily: "MontserratM",
+            //       //                               color: Colors.grey),
+            //       //                           enabledBorder: OutlineInputBorder(
+            //       //                             borderRadius:
+            //       //                                 BorderRadius.circular(8),
+            //       //                             borderSide: const BorderSide(
+            //       //                               color: Colors.grey,
+            //       //                             ),
+            //       //                           ),
+            //       //                           focusedBorder: OutlineInputBorder(
+            //       //                             borderRadius:
+            //       //                                 BorderRadius.circular(8),
+            //       //                             borderSide: const BorderSide(
+            //       //                               color: Color(0xffFF8D41),
+            //       //                             ),
+            //       //                           ),
+            //       //                         ),
+            //       //                         maxLines: 2,
+            //       //                       ),
+            //       //                     ],
+            //       //                   ),
+            //       //                 ),
+            //       //                 const SizedBox(width: 16),
+            //       //                 GestureDetector(
+            //       //                   onTap: _pickImages,
+            //       //                   child: Container(
+            //       //                     width: 104,
+            //       //                     height: 104,
+            //       //                     decoration: BoxDecoration(
+            //       //                       color: Colors.grey[200],
+            //       //                       border: Border.all(
+            //       //                           color: Colors.grey, width: 1),
+            //       //                       borderRadius: BorderRadius.circular(8),
+            //       //                     ),
+            //       //                     child: _imageFiles == null ||
+            //       //                             _imageFiles!.isEmpty
+            //       //                         ? const Center(
+            //       //                             child: Icon(
+            //       //                               Icons.add_photo_alternate,
+            //       //                               size: 40,
+            //       //                               color: Colors.grey,
+            //       //                             ),
+            //       //                           )
+            //       //                         : PageView.builder(
+            //       //                             itemCount: _imageFiles!.length,
+            //       //                             itemBuilder: (context, index) {
+            //       //                               return ClipRRect(
+            //       //                                 borderRadius:
+            //       //                                     BorderRadius.circular(8),
+            //       //                                 child: Image.file(
+            //       //                                   File(_imageFiles![index]
+            //       //                                       .path),
+            //       //                                   fit: BoxFit.cover,
+            //       //                                 ),
+            //       //                               );
+            //       //                             },
+            //       //                           ),
+            //       //                   ),
+            //       //                 ),
+            //       //               ],
+            //       //             ),
+            //       //             const SizedBox(height: 16),
+            //       //           ],
+            //       //         ),
+            //       //       ),
+            //       //   ],
+            //       // ),
+            //       Positioned(
+            //         bottom: 8,
+            //         right: 30,
+            //         child: GestureDetector(
+            //           onTap: () {
+            //             setState(() {
+            //               _isCollapsed = !_isCollapsed;
+            //             });
+            //           },
+            //           child: Container(
+            //             width: 40,
+            //             height: 40,
+            //             decoration: BoxDecoration(
+            //               color: const Color(0xffFFEEE2),
+            //               shape: BoxShape.circle,
+            //               border: Border.all(
+            //                 color: const Color(0xffFF8D41),
+            //                 width: 2,
+            //               ),
+            //               boxShadow: [
+            //                 BoxShadow(
+            //                   color: Colors.black.withOpacity(0.2),
+            //                   blurRadius: 8,
+            //                 ),
+            //               ],
+            //             ),
+            //             child: Icon(
+            //               _isCollapsed
+            //                   ? Icons.arrow_drop_down_outlined
+            //                   : Icons.arrow_drop_up_outlined,
+            //               color: const Color(0xffFF8D41),
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // // Map section
             Expanded(
               child: Stack(
                 children: [
@@ -415,6 +594,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
                             target: _currentPosition!,
                             zoom: 14.0,
                           ),
+                          myLocationEnabled: true,
+
                           onMapCreated: (GoogleMapController controller) {
                             _controller = controller;
                             _controller!.animateCamera(
@@ -426,7 +607,9 @@ class _RequestVicinityState extends State<RequestVicinity> {
                               ),
                             );
                           },
-                          markers: _pinMarker != null ? {_pinMarker!} : {},
+
+                          // markers: _pinMarker != null ? {_pinMarker!} : {},
+                          markers: _markers,
                           circles: _currentLocationCircle != null
                               ? {_currentLocationCircle!}
                               : {},
@@ -556,6 +739,11 @@ class _RequestVicinityState extends State<RequestVicinity> {
                                 );
                                 _radius = value.toDouble();
                               });
+
+                              getNearestUsers(
+                                authController.auth.value!.user!.id,
+                                value.toDouble(),
+                              );
                             },
                             itemWidth: 50, // Smaller width
                             textStyle: const TextStyle(
@@ -628,15 +816,22 @@ class _RequestVicinityState extends State<RequestVicinity> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                child: (vicinityController.isLoading.value)
-                    ? const CircularProgressIndicator()
-                    : const Text(
-                        "Start Pooling",
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: "MontserratSB",
-                            color: Colors.white),
+                child: Obx(
+                  () {
+                    if (vicinityController.isLoading.value) {
+                      return const CircularProgressIndicator();
+                    }
+
+                    return const Text(
+                      "Start Pooling",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontFamily: "MontserratSB",
+                        color: Colors.white,
                       ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -645,9 +840,75 @@ class _RequestVicinityState extends State<RequestVicinity> {
     );
   }
 
+  void _addNearestUserMarkers() {
+    for (var user in _nearestUsers) {
+      final Marker userMarker = Marker(
+        markerId: MarkerId(user.id.toString()),
+        position: LatLng(user.location.latitude, user.location.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: InfoWindow(
+          title: user.name,
+          snippet: 'Nearby User',
+        ),
+        onTap: () {
+          // Optionally, handle marker tap to show user details
+          _showUserDetailsDialog(user);
+        },
+      );
+
+      setState(() {
+        _markers.add(userMarker);
+      });
+    }
+  }
+
+  void _showUserDetailsDialog(NearUserModel user) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(user.name),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (user.pic != null && user.pic!.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: user.pic!,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                )
+              else
+                const Icon(
+                  Icons.account_circle,
+                  size: 100,
+                ),
+              const SizedBox(height: 10),
+              Text(
+                  'Location: (${user.location.latitude}, ${user.location.longitude})'),
+              // Add more user details as needed
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            // You can add more actions like "Message" or "View Profile"
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> getNearestUsers(int id, double radius) async {
     String endpoint = "https://api.picapool.com/v2/user/nearest";
-    String? at = authController.auth.value?.accessToken;
+    String? at = await authController.getAccessToken();
     if (at == null) {
       return;
     }
@@ -657,46 +918,43 @@ class _RequestVicinityState extends State<RequestVicinity> {
     try {
       final response = await http.post(Uri.parse(endpoint),
           body: jsonEncode({
-            'locationData': {
-              'lat': _currentPosition?.latitude ?? 0,
-              'long': _currentPosition?.longitude ?? 0,
-              'dist': radius,
-              'count': 10
-            }
+            'dist': radius,
+            'id': authController.auth.value?.user!.id,
           }),
           headers: {
             'content-type': 'application/json',
             'Authorization': 'Bearer $at'
           });
 
-      print(response.body);
-
+      debugPrint("NEAREST USERS: ${response.body}");
       if (response.statusCode < 300) {
         var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+
         if (!responseModel.success) {
+          Get.snackbar(
+            "No nearest user",
+            "Not able to find any user near to your vicinity.",
+          );
           return;
         }
 
         var users = responseModel.data as List<dynamic>? ?? [];
-        List<String> usersList = [];
+        List<NearUserModel> usersLocation = [];
 
         for (var user in users) {
-          usersList.add(
-            '${user['latitude']} ${user['longitude']}',
-          );
+          debugPrint("$user");
+          usersLocation.add(NearUserModel.fromJson(user));
         }
 
-        _nearestUsers = usersList;
+        _nearestUsers = usersLocation;
 
         setState(() {
           poolingUsers = users.length;
         });
+
+        _addNearestUserMarkers();
       } else if (response.statusCode == 401) {
         debugPrint('Failed to load getNearestUsers - status code 401');
-        var success = await authController.updateAccessToken();
-        if (success) {
-          await getNearestUsers(id, radius);
-        }
       } else {
         debugPrint('Failed to load getNearestUsers - status code not 200');
         return;

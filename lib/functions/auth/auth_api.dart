@@ -8,12 +8,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/auth_model.dart';
+import 'package:picapool/models/login_model.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthApi {
-  FutureEither<Auth> signInWithGoogle() async {
+  FutureEither<LoginModel> signInWithGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ['profile', 'email'],
       forceCodeForRefreshToken: true,
@@ -32,19 +33,17 @@ class AuthApi {
       final http.Response response =
           await _sendGoogleTokenToServer(googleAuth.idToken!);
 
-      final int statusCode = response.statusCode;
+      debugPrint('Google Sign-In Response : $response');
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
 
-      debugPrint('Google Sign-In Response Status Code: $statusCode');
-
-      if (statusCode >= 200 && statusCode < 300) {
-        var auth = jsonDecode(response.body);
-        return right(Auth.fromJson(auth['data']));
+      if (responseModel.success) {
+        return right(LoginModel.fromJson(responseModel.data));
       } else {
         return left(
           Failure(
-              message:
-                  "Not able to sign in with google : Status Code $statusCode",
-              stackTrace: StackTrace.current),
+            message: responseModel.message,
+            stackTrace: StackTrace.current,
+          ),
         );
       }
     } catch (e) {
@@ -58,7 +57,7 @@ class AuthApi {
     }
   }
 
-  FutureEither<Auth> signInWithApple() async {
+  FutureEither<LoginModel> signInWithApple() async {
     try {
       final AuthorizationCredentialAppleID appleCredential =
           await SignInWithApple.getAppleIDCredential(
@@ -78,17 +77,27 @@ class AuthApi {
       debugPrint('Apple Sign-In Response Status Code: $statusCode');
 
       if (statusCode >= 200 && statusCode < 300) {
-        var auth = jsonDecode(response.body);
-        return right(Auth.fromJson(auth['data']));
+        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+        if (responseModel.success) {
+          return right(LoginModel.fromJson(responseModel.data));
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
       } else {
         return left(
           Failure(
-              message:
-                  "Not able to sign in with apple : status code $statusCode",
-              stackTrace: StackTrace.current),
+            message: "Not able to sign in with apple : status code $statusCode",
+            stackTrace: StackTrace.current,
+          ),
         );
       }
     } catch (e) {
+      debugPrint("ERROR IN APPLE SIGN IN : $e");
       return left(
         Failure(
             message: "Failed to sign in with Apple. Please try again.",
@@ -100,10 +109,14 @@ class AuthApi {
   Future<http.Response> _sendGoogleTokenToServer(String googleToken) async {
     const String url = 'https://api.picapool.com/v2/auth/login/User';
 
+    var body = {
+      "googleToken": googleToken,
+    };
+
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
-      body: '{"authInfo": {"googleToken": "$googleToken", "appleToken": ""}}',
+      body: jsonEncode(body),
     );
 
     log('Google Sign-In Response: ${response.body}');
@@ -114,10 +127,14 @@ class AuthApi {
   Future<http.Response> _sendAppleTokenToServer(String appleToken) async {
     const String url = 'https://api.picapool.com/v2/auth/login/User';
 
+    var body = {
+      "appleToken": appleToken,
+    };
+
     http.Response response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
-      body: '{"authInfo": {"appleToken": "$appleToken"}}',
+      body: jsonEncode(body),
     );
 
     log('Apple Sign-In Response: ${response.body}');
@@ -125,16 +142,16 @@ class AuthApi {
     return response;
   }
 
-  FutureEither<Auth> loginWithOtp(String mobile, String otp) async {
+  FutureEither<LoginModel> loginWithOtp(String mobile, String otp) async {
     const String url = 'https://api.picapool.com/v2/auth/login/User';
 
     var body = {
-      'authInfo': {
-        'msgOTP': {
-          'mobile': mobile,
-          'otp': otp,
-        }
+      // 'authInfo': {
+      'msgOTP': {
+        'mobile': mobile,
+        'otp': otp,
       }
+      // }
     };
 
     final response = await http.post(
@@ -150,13 +167,23 @@ class AuthApi {
     debugPrint('OTP Sign-In Response Status Code: $statusCode');
 
     if (statusCode >= 200 && statusCode < 300) {
-      var auth = jsonDecode(response.body);
-      return right(Auth.fromJson(auth['data']));
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      if (responseModel.success) {
+        return right(LoginModel.fromJson(responseModel.data));
+      } else {
+        return left(
+          Failure(
+            message: responseModel.message,
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
     } else {
       return left(
         Failure(
-            message: "Not able to sign in with otp : Status Code $statusCode",
-            stackTrace: StackTrace.current),
+          message: "Not able to sign in with otp : Status Code $statusCode",
+          stackTrace: StackTrace.current,
+        ),
       );
     }
   }
@@ -246,7 +273,7 @@ class AuthApi {
   //   }
   // }
 
-  FutureEither<int> updateUser(
+  FutureEither<bool> updateUser(
       Map<String, dynamic> updateValues, String accessToken) async {
     try {
       const String url = "https://api.picapool.com/v2/user/update";
@@ -254,13 +281,13 @@ class AuthApi {
       debugPrint("Updated Values: $updateValues");
 
       debugPrint("Access token : $accessToken");
-      var body = {
-        "user": {
-          ...updateValues,
-        }
-      };
+      // var body = {
 
-      debugPrint(body.toString());
+      //     ...updateValues,
+
+      // };
+
+      debugPrint(updateValues.toString());
 
       http.Response response = await http.patch(
         Uri.parse(url),
@@ -268,21 +295,19 @@ class AuthApi {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'
         },
-        body: jsonEncode(body),
+        body: jsonEncode(updateValues),
       );
-      int statusCode = response.statusCode;
-      if (statusCode >= 200 && statusCode < 300) {
-        debugPrint('User Updated: ${response.body}');
-        var json = jsonDecode(response.body);
-        int success = json['data'];
-        debugPrint("$success");
-        return right(success);
+
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      debugPrint('User Updated: ${response.body}');
+      if (responseModel.success) {
+        return right(true);
       } else {
         debugPrint(
-            'Update User Error: $statusCode with response ${response.body}');
+            'Update User Error: ${response.statusCode} with response ${response.body}');
         return left(
           Failure(
-            message: "Not able to create the user : status code $statusCode",
+            message: responseModel.message,
             stackTrace: StackTrace.current,
           ),
         );
@@ -291,7 +316,7 @@ class AuthApi {
       debugPrint('Update User Error: $e');
       return left(
         Failure(
-          message: "Failed to create user. Please try again.",
+          message: "Failed to update user details. Please try again.",
           stackTrace: StackTrace.fromString(
             e.toString(),
           ),
@@ -382,9 +407,7 @@ class AuthApi {
   //       ),
   //     );
 
-  // }
-
-  Future<String?> updateAccessToken({
+  FutureEither<String> updateAccessToken({
     required String accessToken,
     required String refreshToken,
     required int userId,
@@ -404,16 +427,24 @@ class AuthApi {
       );
       debugPrint('UPDATE ACCESS TOKEN RESPONSE CODE : ${response.statusCode}');
 
-      if (response.statusCode < 300) {
-        String newAccessToken = response.body;
-        debugPrint('New Access Token: $newAccessToken');
-        return newAccessToken;
-      } else {
-        return null;
+      debugPrint('Response :  ${response.body}');
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      if (responseModel.success) {
+        String newAccessToken = responseModel.data['newAccessToken'] as String;
+        return right(newAccessToken);
       }
+      return left(Failure(
+          message: responseModel.message, stackTrace: StackTrace.current));
     } catch (e) {
       debugPrint('Error updating access token: $e');
-      return null;
+      return left(
+        Failure(
+          message: "Not able to refresh the access token",
+          stackTrace: StackTrace.fromString(
+            e.toString(),
+          ),
+        ),
+      );
     }
   }
 }

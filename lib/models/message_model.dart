@@ -12,9 +12,7 @@ class Message {
   final int? userId;
   final Admin? admin;
   final int? adminId;
-  final Chat? chat;
   final int? chatId;
-  final Message? parent;
   final int? parentId;
   final List<Message>? children;
   final List<Reaction>? reactions;
@@ -28,9 +26,7 @@ class Message {
     this.userId,
     this.admin,
     this.adminId,
-    this.chat,
     this.chatId,
-    this.parent,
     this.parentId,
     this.children,
     this.reactions,
@@ -46,9 +42,7 @@ class Message {
       userId: json['userId'],
       admin: json['admin'] != null ? Admin.fromJson(json['admin']) : null,
       adminId: json['adminId'],
-      chat: json['chat'] != null ? Chat.fromJson(json['chat']) : null,
       chatId: json['chatId'],
-      parent: json['parent'] != null ? Message.fromJson(json['parent']) : null,
       parentId: json['parentId'],
       children: json['children'] != null
           ? (json['children'] as List).map((m) => Message.fromJson(m)).toList()
@@ -71,12 +65,16 @@ class Message {
       'userId': userId,
       'admin': admin?.toJson(),
       'adminId': adminId,
-      'chat': chat?.toJson(),
       'chatId': chatId,
-      'parent': parent?.toJson(),
       'parentId': parentId,
       'children': children?.map((m) => m.toJson()).toList(),
       'reactions': reactions?.map((r) => r.toJson()).toList(),
     };
+  }
+
+  bool isSameDay(DateTime other) {
+    return createdAt.year == other.year &&
+        createdAt.month == other.month &&
+        createdAt.day == other.day;
   }
 }

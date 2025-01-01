@@ -118,16 +118,19 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         user.age = int.parse(_ageController.text);
                         user.gender = _selectedGender;
                         debugPrint("updateUser: ${user.toJson()}");
-                        await authController.updateUserData(user);
+                        var successful = await authController.updateUser(
+                              {
+                                "name": _nameController.text,
+                                "age": int.parse(_ageController.text),
+                                "gender": _selectedGender.toString(),
+                              },
+                            ) ??
+                            false;
+                        setState(() {});
 
                         // await authController.updateUserData(user);
-                        if (context.mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PublicProfile(),
-                            ),
-                          );
+                        if (successful) {
+                          Get.to(() => const PublicProfile());
                         }
                       }
                     : null,
@@ -182,7 +185,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               : TextInputType.text, // Numeric keyboard for age field
           decoration: InputDecoration(
             filled: true,
-            hintText: authController.user.value?.name ?? 'No user name',
+            hintText: (isAge)
+                ? authController.user.value?.age.toString() ?? "0"
+                : authController.user.value?.name ?? 'No user name',
             hintStyle: const TextStyle(
                 color: Colors.grey, fontFamily: 'MontserratR', fontSize: 12),
             fillColor: Colors.transparent,

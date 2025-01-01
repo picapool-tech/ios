@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 
 class PublicChatPage extends StatefulWidget {
+  const PublicChatPage({super.key});
+
   @override
   _PublicChatPageState createState() => _PublicChatPageState();
 }
@@ -9,67 +11,78 @@ class PublicChatPage extends StatefulWidget {
 class _PublicChatPageState extends State<PublicChatPage> {
   List<Map<String, dynamic>> products = [
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 11 Pro',
       'price': '₹ 40,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 11 Pro',
       'price': '₹ 40,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
     },
     {
-      'image': 'assets/images/image 82.png', // Replace with your actual image path
+      'image':
+          'assets/images/image 82.png', // Replace with your actual image path
       'name': 'OnePlus 10 Pro',
       'price': '₹ 46,000',
       'selected': false,
@@ -84,12 +97,12 @@ class _PublicChatPageState extends State<PublicChatPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           "Buy 1 get 2",
           style: TextStyle(
             fontSize: 18,
@@ -104,20 +117,21 @@ class _PublicChatPageState extends State<PublicChatPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "Select Products to Pool",
               style: TextStyle(
                 fontSize: 16,
                 fontFamily: "MontserratM",
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
                 itemCount: products.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.90, // Adjust the aspect ratio to reduce the height
+                  childAspectRatio:
+                      0.90, // Adjust the aspect ratio to reduce the height
                   mainAxisSpacing: 25,
                   crossAxisSpacing: 16,
                 ),
@@ -125,7 +139,8 @@ class _PublicChatPageState extends State<PublicChatPage> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        products[index]['selected'] = !products[index]['selected'];
+                        products[index]['selected'] =
+                            !products[index]['selected'];
                       });
                     },
                     child: Container(
@@ -143,12 +158,13 @@ class _PublicChatPageState extends State<PublicChatPage> {
                             color: Colors.grey.withOpacity(0.2),
                             spreadRadius: 2,
                             blurRadius: 5,
-                            offset: Offset(0, 3),
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                       child: Stack(
-                        clipBehavior: Clip.none, // This allows the checkbox to go out of bounds if needed
+                        clipBehavior: Clip
+                            .none, // This allows the checkbox to go out of bounds if needed
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,26 +174,29 @@ class _PublicChatPageState extends State<PublicChatPage> {
                                 child: Center(
                                   child: Image.asset(
                                     products[index]['image'],
-                                    height: 120, // Adjust image height to reduce card size
+                                    height:
+                                        120, // Adjust image height to reduce card size
                                     fit: BoxFit.contain,
                                   ),
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Text(
                                   products[index]['name'],
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     fontFamily: "MontserratM",
                                   ),
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Text(
                                   products[index]['price'],
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontFamily: "MontserratM",
                                     color: Colors.black,
@@ -187,8 +206,10 @@ class _PublicChatPageState extends State<PublicChatPage> {
                             ],
                           ),
                           Positioned(
-                            top: -10, // Make sure this positions the checkbox visibly outside
-                            right: -10, // Ensures it aligns with the top-right edge of the card
+                            top:
+                                -10, // Make sure this positions the checkbox visibly outside
+                            right:
+                                -10, // Ensures it aligns with the top-right edge of the card
                             child: Checkbox(
                               value: products[index]['selected'],
                               onChanged: (bool? value) {
@@ -209,13 +230,20 @@ class _PublicChatPageState extends State<PublicChatPage> {
                 },
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage()));
+                  // TODO: Implement the logic to proceed to the chat screen
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => ChatPage(
+                  //         chat: ,
+                  //       ),
+                  //     ));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
@@ -223,7 +251,7 @@ class _PublicChatPageState extends State<PublicChatPage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   "Proceed",
                   style: TextStyle(
                     fontSize: 18,

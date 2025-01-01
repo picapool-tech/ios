@@ -4,7 +4,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/models/button_model.dart';
 import 'package:picapool/screens/cabs/share_cab.dart';
-import 'package:picapool/screens/turf/turf_first_page.dart';
+import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/widgets/home/bottom_modal_sheet.dart';
 import 'package:picapool/widgets/home/carousel.dart';
@@ -12,7 +12,13 @@ import 'package:picapool/widgets/home/divider.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 
 class DownSheet extends StatefulWidget {
-  const DownSheet({Key? key}) : super(key: key);
+  const DownSheet({
+    Key? key,
+    required this.searchQuery,
+    required this.scrollController,
+  }) : super(key: key);
+  final String searchQuery;
+  final ScrollController scrollController;
 
   @override
   State<DownSheet> createState() => _DownSheetState();
@@ -52,128 +58,67 @@ class _DownSheetState extends State<DownSheet> {
         onTap: () {}),
   ];
 
-  final List<Map<String, String>> brands = [
+  final List<Map<String, String>> firstBrandRow = [
     {'name': 'Food', 'asset': 'assets/homepagebottomassets/image 39.png'},
     {'name': 'Apparel', 'asset': 'assets/homepagebottomassets/image 41.png'},
     {'name': 'Entertain', 'asset': 'assets/homepagebottomassets/image 42.png'},
-    {'name': 'Food', 'asset': 'assets/homepagebottomassets/image 39.png'},
+  ];
+
+  final List<Map<String, String>> secondBrandRow = [
     {'name': 'Medicine', 'asset': 'assets/homepagebottomassets/image 43.png'},
     {
       'name': 'Electronics',
       'asset': 'assets/homepagebottomassets/image 44.png'
     },
     {'name': 'Music', 'asset': 'assets/homepagebottomassets/image 46.png'},
-    {'name': 'Medicine', 'asset': 'assets/homepagebottomassets/image 43.png'},
-    // Add more brands as needed
   ];
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return ClipRRect(
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        // margin: const EdgeInsets.only(bottom: 4),
-        alignment: Alignment.topCenter,
-        padding: const EdgeInsets.fromLTRB(24, 2, 24, 0),
-        height: size.height - 270,
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          color: Color(0xffF1F1F1),
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(29), topRight: Radius.circular(29)),
+
+    return Container(
+      alignment: Alignment.topCenter,
+      padding: const EdgeInsets.fromLTRB(24, 2, 24, 0),
+      // height: size.height,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xffF1F1F1),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(29),
+          topRight: Radius.circular(29),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (widget.searchQuery.isEmpty) ...[
               const SizedBox(
                 height: 22,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  InkWell(
+                  mainActionView(
+                    title: "Request Vicinity",
+                    onTap: () {
+                      Get.to(() => const RequestVicinity());
+                    },
+                    assetImage: "assets/images/request_vicinity.png",
+                  ),
+                  mainActionView(
+                    title: "Share a cab",
                     onTap: () {
                       Get.to(() => const CabShareScreen());
                     },
-                    hoverColor: Colors.transparent,
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          "assets/images/share_cab.png",
-                          width: size.width * 0.275,
-                        ),
-                        const SizedBox(
-                          height: 6,
-                        ),
-                        Text(
-                          "Share a cab",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
+                    assetImage: "assets/images/share_cab.png",
                   ),
-                  InkWell(
+                  mainActionView(
+                    title: "Buy and sell",
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProductListsPage(),
-                        ),
-                      );
+                      Get.to(() => const ProductListsPage());
                     },
-                    hoverColor: Colors.transparent,
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          "assets/images/buy_sell.png",
-                          width: size.width * 0.275,
-                        ),
-                        const SizedBox(
-                          height: 6,
-                        ),
-                        Text(
-                          "Buy and sell",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Get.to(() => TurfPage1());
-                    },
-                    hoverColor: Colors.transparent,
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          "assets/images/share_turf.png",
-                          width: size.width * 0.275,
-                        ),
-                        const SizedBox(
-                          height: 6,
-                        ),
-                        Text(
-                          "Share a turf",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
+                    assetImage: "assets/images/buy_sell.png",
                   ),
                 ],
               ),
@@ -207,52 +152,94 @@ class _DownSheetState extends State<DownSheet> {
                               fontWeight: FontWeight.w400),
                         ),
                         const SizedBox(width: 6),
-                        const SvgIcon("assets/icons/down_circular.svg",
-                            size: 14)
+                        const SvgIcon(
+                          "assets/icons/down_circular.svg",
+                          size: 14,
+                        )
                       ],
                     ),
                   ),
                 ),
               ),
-
               const SizedBox(
                 height: 24,
               ),
               const CarouselWidget(),
-              const SizedBox(
-                height: 14,
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: CustomDivider(text: " Pooling Categories "),
-              ),
-              const SizedBox(
-                height: 25,
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children:
-                      brands.map((brand) => _buildBrandItem(brand)).toList(),
-                ),
-              ),
-
-              const SizedBox(
-                height: 25,
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children:
-                      brands.map((brand) => _buildBrandItem(brand)).toList(),
-                ),
-              ),
-              const SizedBox(
-                height: 110,
-              ),
             ],
-          ),
+            const SizedBox(
+              height: 14,
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: CustomDivider(text: " Pooling Categories "),
+            ),
+            const SizedBox(
+              height: 25,
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: firstBrandRow
+                    .where(
+                        (brand) => brand['name']!.contains(widget.searchQuery))
+                    .map((brand) => _buildBrandItem(brand))
+                    .toList(),
+              ),
+            ),
+            const SizedBox(
+              height: 25,
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: secondBrandRow
+                    .where(
+                        (brand) => brand['name']!.contains(widget.searchQuery))
+                    .map((brand) => _buildBrandItem(brand))
+                    .toList(),
+              ),
+            ),
+            const SizedBox(
+              height: 50,
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  InkWell mainActionView({
+    required Function onTap,
+    required String title,
+    required String assetImage,
+  }) {
+    Size size = MediaQuery.of(context).size;
+    return InkWell(
+      onTap: () {
+        onTap();
+      },
+      hoverColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: Column(
+        children: [
+          Image.asset(
+            // "assets/images/share_cab.png",
+            assetImage,
+            width: size.width * 0.275,
+          ),
+          const SizedBox(
+            height: 6,
+          ),
+          Text(
+            title,
+            // "Share a cab",
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          )
+        ],
       ),
     );
   }

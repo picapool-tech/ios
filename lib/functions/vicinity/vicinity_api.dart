@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:fpdart/fpdart.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/date_symbols.dart';
 import 'package:picapool/core/core.dart';
 import 'package:path/path.dart' as path;
 import 'package:picapool/models/offer_model.dart';
@@ -11,7 +12,7 @@ import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class VicinityApi {
-  FutureEither<VicinityOffer> createVicinity({
+  FutureEither<Offer> createVicinity({
     required VicinityOffer offer,
     required String accessToken,
   }) async {
@@ -19,6 +20,7 @@ class VicinityApi {
         'Creating offer with access token $accessToken with offer : ${offer.toJson()}');
     var endpoint = "https://api.picapool.com/v2/offer";
     try {
+      
       final response = await http.post(
         Uri.parse(endpoint),
         body: jsonEncode(offer.toJson()),
@@ -27,7 +29,9 @@ class VicinityApi {
           'Authorization': 'Bearer $accessToken',
         },
       );
-      debugPrint(response.body);
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+
+      debugPrint("CREATE VICINITY: ${response.body}");
       if (response.statusCode == 401) {
         return left(
           Failure(
@@ -36,25 +40,18 @@ class VicinityApi {
           ),
         );
       }
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-        if (responseModel.success) {
-          var offerResponse = VicinityOffer.fromJson(responseModel.data);
-          return right(offerResponse);
-        } else {
-          return left(Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.fromString(response.body),
-          ));
-        }
+      if (responseModel.success) {
+        var offerResponse = Offer.fromJson(responseModel.data);
+
+        return right(offerResponse);
       } else {
         return left(Failure(
-          message: "Failed to create offer",
+          message: responseModel.message,
           stackTrace: StackTrace.fromString(response.body),
         ));
       }
     } catch (err) {
-      debugPrint('Error uploading offer to server: $err');
+      debugPrint('Error creating offer to server: $err');
       return left(Failure(
         message: "Failed to create offer",
         stackTrace: StackTrace.fromString(err.toString()),
@@ -109,35 +106,22 @@ class VicinityApi {
 
       var response = await request.send();
 
-      if (response.statusCode < 300) {
-        var responseModel = ResponseModel.fromJson(
-            jsonDecode(await response.stream.bytesToString()));
-        if (!responseModel.success) {
-          return left(
-            Failure(
-                message: responseModel.message, stackTrace: StackTrace.current),
-          );
-        }
+      var responseModel = ResponseModel.fromJson(
+          jsonDecode(await response.stream.bytesToString()));
 
-        var url = responseModel.data['url'];
-        debugPrint(
-            "Uploading image to server response : ${responseModel.data} with url : $url");
-        return right(url);
-      } else if (response.statusCode == 401) {
+      if (!responseModel.success) {
         return left(
           Failure(
-            message: "Unauthorized",
+            message: responseModel.message,
             stackTrace: StackTrace.current,
           ),
         );
-      } else {
-        debugPrint("$response");
-        debugPrint('Upload failed with status code: ${response.statusCode}');
-        return left(Failure(
-          message: "Failed to upload image",
-          stackTrace: StackTrace.fromString(response.toString()),
-        ));
       }
+
+      var url = responseModel.data['url'];
+      debugPrint(
+          "Uploading image to server response : ${responseModel.data} with url : $url");
+      return right(url);
     } catch (e) {
       debugPrint('Error uploading image to server: $e');
       return left(
@@ -149,8 +133,39 @@ class VicinityApi {
     }
   }
 
-  FutureEither<List<VicinityOffer>> searchVicinity() async {
+  FutureEither<List<Offer>> searchVicinity() async {
     throw UnimplementedError();
+  }
+
+  FutureEither<bool> deleteImage({
+    required String fileName,
+    required String accessToken,
+  }) async {
+    try {
+      var image = getFileName(fileName).split(".").first;
+      debugPrint(image);
+      var response = await http.delete(
+        Uri.parse('https://api.picapool.com/v2/s3/delete/$image'),
+        headers: {
+          'Authorization': "Bearer $accessToken",
+        },
+      );
+      debugPrint("Deleting image: ${response.body}");
+      if (response.statusCode == 200) {
+        return right(true);
+      } else {
+        return left(Failure(
+          message: "Failed to delete image",
+          stackTrace: StackTrace.current,
+        ));
+      }
+    } catch (e) {
+      return left(
+        Failure(
+            message: "Some error while deleting image",
+            stackTrace: StackTrace.current),
+      );
+    }
   }
 }
 

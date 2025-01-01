@@ -1,13 +1,20 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/firebase_options.dart';
+import 'package:picapool/controllers/live_offer_controller.dart';
+import 'package:picapool/controllers/network_controller.dart';
+import 'package:picapool/controllers/product_controller.dart';
+import 'package:picapool/firebase_options_new.dart';
+import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/functions/feedback/feedback_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
-import 'package:picapool/functions/vicinity/vicinity_api.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
@@ -15,7 +22,10 @@ import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    name: "new-picapool",
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   Get.put(StorageController());
   Get.put(AuthController());
@@ -23,8 +33,25 @@ void main() async {
   Get.put(VicinityController());
   Get.put(OffersController());
   Get.put(ChatController());
+  Get.put(FeedbackController());
+  Get.put(AssetsController());
+  Get.put(LiveOfferController());
+  Get.put(ProductController());
+  Get.put(NetworkController());
+  Get.put(TagController());
 
+  NotificationService().requestPermission();
+  handleNotification();
   runApp(const MyApp());
+}
+
+Future<void> handleNotification() async {
+  RemoteMessage? initialMessage =
+      await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    print('Notification opened the app: ${initialMessage.data}');
+    // Handle navigation or other actions.
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -38,16 +65,33 @@ class MyApp extends StatelessWidget {
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
         textSelectionTheme:
             const TextSelectionThemeData(cursorColor: Color(0xffffffff)),
       ),
-      home: Obx(() => _handleAuthState(authController)),
+      home: GetBuilder<AuthController>(
+          init: Get.find<AuthController>(),
+          builder: (controller) {
+            return _handleAuthState(controller);
+          }),
     );
   }
 
+  listenNotification() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Message received in foreground: ${message.notification?.title}');
+      // You can show a dialog, toast, or in-app UI here.
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification clicked while in background: ${message.data}');
+      // Handle navigation or other actions.
+    });
+  }
+
   Widget _handleAuthState(AuthController authController) {
+    debugPrint("INSIDE MAIN METHOD Auth: ${authController.auth.value}");
     if (authController.auth.value == null ||
         authController.auth.value!.accessToken == null) {
       return const LoginScreen();

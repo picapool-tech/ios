@@ -1,7 +1,20 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/feedback/feedback_controller.dart';
+import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/user_model.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:picapool/screens/create_pool.dart';
+import 'package:picapool/screens/login_screen.dart';
+import 'package:picapool/screens/pooling_history.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,12 +25,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
-
   final TextEditingController _usernameController = TextEditingController();
-
   final TextEditingController _phoneController = TextEditingController();
 
+  final TextEditingController _feedbackController = TextEditingController();
+
   final AuthController authController = Get.find<AuthController>();
+  final FeedbackController feedbackController = Get.find<FeedbackController>();
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user == null) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: Text("You need to have an account to access this page"),
         ),
       );
     }
@@ -40,30 +54,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.only(left: 16.0, right: 16.0),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      // Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: 35,
+                  if (Navigator.canPop(context))
+                    IconButton(
+                      onPressed: () {
+                        // Navigator.pop(context);
+                      },
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 35,
+                      ),
                     ),
-                  ),
                   const Spacer(),
                   ElevatedButton(
                     onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //       builder: (context) => CreatePoolScreen()),
-                      // );
+                      // joinnig chat
+                      if (kDebugMode) {
+                        Get.to(
+                          ChatPage(
+                            chat: Chat(
+                              id: 15,
+                              updatedAt: DateTime.now(),
+                              isMain: true,
+                            ),
+                          ),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
-                      backgroundColor: const Color(0xffFF8D41),
+                      backgroundColor: Colors.grey,
                     ),
                     child: const Text(
                       "Help",
@@ -85,17 +107,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey.shade300,
-                    child: (user.pic != null)
-                        ? Image.network(
+                    foregroundImage: (user.pic != null)
+                        ? CachedNetworkImageProvider(
                             user.pic!,
-                            width: 100,
-                            height: 100,
                           )
-                        : Image.asset(
+                        : const AssetImage(
                             'assets/icons/Frame 64.png', // Replace with your image
-                            width: 100,
-                            height: 100,
-                          ),
+                            // width: 100,
+                            // height: 100,
+                          ) as ImageProvider,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -133,9 +153,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Row(
                           children: [
                             GestureDetector(
-                              onTap: () {
-                                _showEditProfileModal(
-                                    context, user); // Open bottom modal
+                              onTap: () async {
+                                await _showEditProfileModal(
+                                  context,
+                                  user,
+                                ); // Open bottom modal
+                                setState(() {});
                               },
                               child: Row(
                                 children: [
@@ -191,11 +214,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               imagePath: "assets/icons/Bell.png",
                               title: 'Notification Preferences',
                             ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/History.png",
-                              title: 'Pooling History',
-                            ),
+                            _buildOptionTile(context,
+                                imagePath: "assets/icons/History.png",
+                                title: 'Pooling History', onTap: () {
+                              Get.to(() => const PoolingHistory());
+                            }),
                             _buildOptionTile(
                               context,
                               imagePath: "assets/icons/Letter Opened.png",
@@ -203,11 +226,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               onTap: () {
                                 _showFeedbackModal(context);
                               },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Group 59.png",
-                              title: 'App Guide',
                             ),
                             _buildOptionTile(
                               context,
@@ -222,6 +240,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               context,
                               imagePath: "assets/icons/File Text.png",
                               title: 'Privacy Policy',
+                              onTap: () async {
+                                // Open privacy policy page
+                                final Uri url = Uri.parse(
+                                  'https://www.picapool.com/privacy-policy',
+                                );
+                                debugPrint(url.toString());
+                                if (!await launchUrl(url)) {
+                                  debugPrint("Could not launch $url");
+                                }
+                              },
+                            ),
+                            _buildOptionTile(
+                              context,
+                              imagePath: "assets/icons/Group 59.png",
+                              title: 'App Guide',
+                              isDisabled: true,
                             ),
                             _buildOptionTile(
                               context,
@@ -229,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               title: 'Logout',
                               onTap: () {
                                 _showLogoutModal(context);
-                                setState(() {});
+                                // setState(() {});
                               },
                             ),
                           ],
@@ -246,10 +280,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildOptionTile(BuildContext context,
-      {required String imagePath,
-      required String title,
-      void Function()? onTap}) {
+  Widget _buildOptionTile(
+    BuildContext context, {
+    required String imagePath,
+    required String title,
+    void Function()? onTap,
+    bool isDisabled = false,
+  }) {
     return Column(
       children: [
         ListTile(
@@ -259,12 +296,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             imagePath, // Use the provided image path
             width: 28, // Adjust the size as needed
             height: 28,
+            color: (isDisabled) ? Colors.grey : null,
           ),
           title: Text(
             title,
-            style: const TextStyle(fontFamily: "MontserratR", fontSize: 16),
+            style: TextStyle(
+              fontFamily: "MontserratR",
+              fontSize: 16,
+              color: (isDisabled) ? Colors.grey : Colors.black,
+            ),
           ),
-          onTap: onTap,
+          onTap: (!isDisabled) ? onTap : null,
         ),
         const Divider(
           color: Colors.grey, // Grey color divider
@@ -364,12 +406,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showEditProfileModal(BuildContext context, User user) {
+  Future<XFile?> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      requestFullMetadata: false,
+      imageQuality: 70,
+    );
+    debugPrint("Image has been picked : ${image?.name}");
+    return image;
+  }
+
+  Future<void> _showEditProfileModal(BuildContext context, User user) async {
     debugPrint(user.toJson().toString());
     _usernameController.text = user.username ?? "";
     _nameController.text = user.name ?? "";
+    _phoneController.text = user.auth?.mobile ?? "";
+    XFile? pickedImage;
 
-    showModalBottomSheet(
+    await showModalBottomSheet(
       backgroundColor: Colors.white,
       context: context,
       isScrollControlled: true, // This makes modal full screen
@@ -377,182 +432,207 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.9, // Initial height of modal
-          maxChildSize: 0.9, // Max height of modal
-          minChildSize: 0.6, // Min height of modal
-          expand: false,
-          builder: (_, scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Circular Profile Image with Edit Icon
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    const Text(
-                      "Edit Profile",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "MontserratSB",
+        return StatefulBuilder(
+          builder: (context, setState) => DraggableScrollableSheet(
+            initialChildSize: 0.9, // Initial height of modal
+            maxChildSize: 0.9, // Max height of modal
+            minChildSize: 0.6, // Min height of modal
+            expand: false,
+            builder: (_, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Circular Profile Image with Edit Icon
+                      const SizedBox(
+                        height: 20,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Update Your Profile Information",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                        fontFamily: "MontserratR",
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.grey.shade300,
-                          child: (user.pic != null)
-                              ? Image.network(
-                                  user.pic!,
-                                  width: 100,
-                                  height: 100,
-                                )
-                              : Image.asset(
-                                  'assets/icons/Frame 64.png', // Profile picture asset
-                                  width: 100,
-                                  height: 100,
-                                ),
+                      const Text(
+                        "Edit Profile",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "MontserratSB",
                         ),
-                        const CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Color(0xffFF8D41),
-                          child: Icon(
-                            Icons.edit,
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 30),
-                    // Profile Information Section with Orange Border
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.orange, width: 1.5),
-                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Column(
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Update Your Profile Information",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                          fontFamily: "MontserratR",
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Stack(
+                        alignment: Alignment.bottomRight,
                         children: [
-                          _buildTextField(
-                              Icons.person, "Name", _nameController),
-                          const Divider(thickness: 1.5),
-                          _buildTextField(
-                              Icons.info, "Username", _usernameController),
-                          const Divider(thickness: 1.5),
-                          _buildTextField(
-                              Icons.phone, "Phone", _phoneController),
-                          // const Divider(thickness: 1.5),
-                          // _buildTextField(
-                          //     Icons.email, "Email", "noemail@gmail.com"),
+                          CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey.shade300,
+                              backgroundImage: (pickedImage == null)
+                                  ? (user.pic == null)
+                                      ? const AssetImage(
+                                          'assets/icons/Frame 64.png', // Profile picture asset
+                                        ) as ImageProvider
+                                      : CachedNetworkImageProvider(user.pic!)
+                                  : FileImage(
+                                      File(pickedImage!.path),
+                                    ) as ImageProvider),
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundColor: const Color(0xffFF8D41),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                size: 18,
+                              ),
+                              onPressed: () async {
+                                // Add your image picker logic here
+                                pickedImage = await _pickImage();
+                                debugPrint(
+                                  "picked image from profile section: ${pickedImage?.name}",
+                                );
+                                setState(() {});
+                              },
+                              color: Colors.white,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    // Submit Button
-                    ElevatedButton(
-                      onPressed: () async {
-                        var updatedValues = <String, String>{};
-                        if (_nameController.text.isNotEmpty &&
-                            _nameController.text != user.name) {
-                          updatedValues["name"] = _nameController.text;
-                        }
-                        if (_usernameController.text.isNotEmpty &&
-                            _usernameController.text != user.username) {
-                          updatedValues["username"] = _usernameController.text;
-                        }
-                        if (_phoneController.text.isNotEmpty &&
-                            _phoneController.text != user.auth?.mobile) {
-                          updatedValues["phone"] = _phoneController.text;
-                        }
-
-                        if (updatedValues.isNotEmpty) {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                          );
-                          await authController.updateUser(updatedValues);
-                          if (context.mounted) {
-                            Navigator.pop(context); // Close the loading dialog
-                            Navigator.pop(context); // Close the modal
-                            setState(() {});
+                      const SizedBox(height: 30),
+                      // Profile Information Section with Orange Border
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.orange, width: 1.5),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildTextField(
+                                Icons.person, "Name", _nameController),
+                            const Divider(thickness: 1.5),
+                            _buildTextField(
+                                Icons.info, "Username", _usernameController),
+                            const Divider(thickness: 1.5),
+                            _buildTextField(
+                                Icons.phone, "Phone", _phoneController),
+                            // const Divider(thickness: 1.5),
+                            // _buildTextField(
+                            //     Icons.email, "Email", "noemail@gmail.com"),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      // Submit Button
+                      ElevatedButton(
+                        onPressed: () async {
+                          var updatedValues = <String, String>{};
+                          if (_nameController.text.isNotEmpty &&
+                              _nameController.text != user.name) {
+                            updatedValues["name"] = _nameController.text;
                           }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xffFF8D41), // Orange background color
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
-                        ),
-                        minimumSize: const Size(
-                            double.infinity, 50), // Full width button
-                      ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(
-                          color: Colors.white, // White text color
-                          fontSize: 18,
-                          fontFamily: "MontserratR",
-                        ),
-                      ),
-                    ),
+                          if (_usernameController.text.isNotEmpty &&
+                              _usernameController.text != user.username) {
+                            updatedValues["username"] =
+                                _usernameController.text;
+                          }
+                          if (_phoneController.text.isNotEmpty &&
+                              _phoneController.text != user.auth?.mobile) {
+                            updatedValues["phone"] = _phoneController.text;
+                          }
 
-                    const SizedBox(height: 20),
+                          var userPic = user.pic;
 
-                    // Go Back Button
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Close the modal
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                            color: Colors.grey), // Grey outline
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
+                          if (pickedImage != null) {
+                            userPic = await Get.find<AssetsController>()
+                                .uploadImage(pickedImage,
+                                    "${DateTime.now()}${user.username}");
+                            if (userPic != null) {
+                              updatedValues['pic'] = userPic;
+                            }
+                          }
+
+                          if (updatedValues.isNotEmpty && context.mounted) {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
+                            await authController.updateUser(updatedValues);
+                            if (context.mounted) {
+                              Navigator.pop(
+                                context,
+                              ); // Close the loading dialog
+                              Navigator.pop(context); // Close the modal
+                              setState(() {});
+                            }
+                          } else {
+                            debugPrint("Update user value : ${updatedValues}");
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(
+                              0xffFF8D41), // Orange background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded corners
+                          ),
+                          minimumSize: const Size(
+                              double.infinity, 50), // Full width button
                         ),
-                        minimumSize: const Size(
-                            double.infinity, 50), // Full width button
-                      ),
-                      child: const Text(
-                        "Go Back",
-                        style: TextStyle(
-                          color: Colors.grey, // Grey text color
-                          fontSize: 16,
-                          fontFamily: "MontserratR",
+                        child: const Text(
+                          "Submit",
+                          style: TextStyle(
+                            color: Colors.white, // White text color
+                            fontSize: 18,
+                            fontFamily: "MontserratR",
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 20),
+
+                      // Go Back Button
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close the modal
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                              color: Colors.grey), // Grey outline
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded corners
+                          ),
+                          minimumSize: const Size(
+                              double.infinity, 50), // Full width button
+                        ),
+                        child: const Text(
+                          "Go Back",
+                          style: TextStyle(
+                            color: Colors.grey, // Grey text color
+                            fontSize: 16,
+                            fontFamily: "MontserratR",
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -619,23 +699,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   border: Border.all(color: Colors.orange, width: 1.5),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const TextField(
+                child: TextField(
                   maxLines: 5,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "Enter your Feedback...",
                     hintStyle: TextStyle(
                         color: Colors.grey, fontFamily: "MontserratR"),
                     border: InputBorder
                         .none, // No border since the container has a border
                   ),
+                  controller: _feedbackController,
                 ),
               ),
               const SizedBox(height: 20),
               // Submit Form Button
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close the modal
-                },
+                onPressed: _feedbackController.text.isNotEmpty
+                    ? () {
+                        _sendFeedback(
+                          _feedbackController.text,
+                        ); // Add your feedback submission logic here
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       const Color(0xffFF8D41), // Orange background color
@@ -645,43 +730,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   minimumSize:
                       const Size(double.infinity, 50), // Full width button
                 ),
-                child: const Text(
-                  "Submit Form",
-                  style: TextStyle(
-                    color: Colors.white, // White text color
-                    fontSize: 18,
-                    fontFamily: "MontserratR",
-                  ),
-                ),
+                child: (feedbackController.isLoading.value)
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        "Submit Form",
+                        style: TextStyle(
+                          color: Colors.white, // White text color
+                          fontSize: 18,
+                          fontFamily: "MontserratR",
+                        ),
+                      ),
               ),
               const SizedBox(height: 20),
               // Rate Us on Play Store Button
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Handle Play Store rating action
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.grey), // Grey outline
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded corners
+              if (Platform.isAndroid)
+                OutlinedButton.icon(
+                  onPressed: () {
+                    // Handle Play Store rating action
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.grey), // Grey outline
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(10), // Rounded corners
+                    ),
+                    minimumSize:
+                        const Size(double.infinity, 50), // Full width button
                   ),
-                  minimumSize:
-                      const Size(double.infinity, 50), // Full width button
-                ),
-                icon: Image.asset(
-                  'assets/icons/playstore.png', // Play Store icon asset
-                  width: 24,
-                  height: 24,
-                ),
-                label: const Text(
-                  "Rate Us on Play Store",
-                  style: TextStyle(
-                    color: Colors.grey, // Grey text color
-                    fontSize: 16,
-                    fontFamily: "MontserratR",
+                  icon: Image.asset(
+                    'assets/icons/playstore.png', // Play Store icon asset
+                    width: 24,
+                    height: 24,
+                  ),
+                  label: const Text(
+                    "Rate Us on Play Store",
+                    style: TextStyle(
+                      color: Colors.grey, // Grey text color
+                      fontSize: 16,
+                      fontFamily: "MontserratR",
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         );
@@ -738,6 +827,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   await authController.logout();
                   if (context.mounted) {
                     Navigator.pop(context); // Close the modal
+                    Get.offAll(() => const LoginScreen());
                   } // Add your logout functionality here
                 },
                 style: ElevatedButton.styleFrom(
@@ -786,5 +876,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  void _sendFeedback(String feedback) async {
+    await feedbackController.sendFeedback(feedback);
+    if (mounted) {
+      Navigator.pop(context); // Close the modal
+    }
   }
 }

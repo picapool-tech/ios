@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' as wg;
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/feedback_model.dart';
@@ -19,8 +20,8 @@ class User {
   String? fcmToken;
   final DateTime createdAt;
   DateTime updatedAt;
-  final Auth? auth; // Assuming Auth is another model
-  final int? authId;
+  Auth? auth; // Assuming Auth is another model
+  int? authId;
   List<Feedback>? feedback;
   List<Chat>? chats;
   List<Message>? messages;
@@ -54,14 +55,15 @@ class User {
 
   // Example of a factory constructor for converting from JSON
   factory User.fromJson(Map<String, dynamic> json) {
+    wg.debugPrint("INSIDE USER FROM JSON: $json");
     return User(
       id: json['id'],
       name: json['name'],
+      username: json['username'],
       pic: json['pic'],
+      bio: json['bio'],
       age: json['age'],
       gender: json['gender'],
-      username: json['username'],
-      bio: json['bio'],
       location: json['location'],
       fcmToken: json['fcmToken'],
       createdAt: json['createdAt'] != null
@@ -70,22 +72,37 @@ class User {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : DateTime.now(),
-      auth: json['auth'] != null ? Auth.fromJson(json['auth']) : null,
+      auth: json['Auth'] != null ? Auth.fromJson(json['Auth']) : null,
       authId: json['authId'],
-      feedback: (json['feedback'] as List?)
-          ?.map((e) => Feedback.fromJson(e))
-          .toList(),
-      chats: (json['chats'] as List?)?.map((e) => Chat.fromJson(e)).toList(),
-      messages:
-          (json['messages'] as List?)?.map((e) => Message.fromJson(e)).toList(),
-      offers: (json['offers'] as List?)?.map((e) => Offer.fromJson(e)).toList(),
-      reactions: (json['reactions'] as List?)
-          ?.map((e) => Reaction.fromJson(e))
-          .toList(),
-      tags: (json['tags'] as List?)?.map((e) => Tag.fromJson(e)).toList(),
-      liveOffers: (json['liveOffers'] as List?)
-          ?.map((e) => LiveOffer.fromJson(e))
-          .toList(),
+      feedback: json['feedback'] != null
+          ? (json['feedback'] as List?)
+              ?.map((e) => Feedback.fromJson(e))
+              .toList()
+          : null,
+      chats: json['chats'] != null
+          ? (json['chats'] as List?)?.map((e) => Chat.fromJson(e)).toList()
+          : null,
+      messages: json['messages'] != null
+          ? (json['messages'] as List?)
+              ?.map((e) => Message.fromJson(e))
+              .toList()
+          : null,
+      offers: json['offers'] != null
+          ? (json['offers'] as List?)?.map((e) => Offer.fromJson(e)).toList()
+          : null,
+      reactions: json['reactions'] != null
+          ? (json['reactions'] as List?)
+              ?.map((e) => Reaction.fromJson(e))
+              .toList()
+          : null,
+      tags: json['tags'] != null
+          ? (json['tags'] as List?)?.map((e) => Tag.fromJson(e)).toList()
+          : null,
+      liveOffers: json['liveOffers'] != null
+          ? (json['liveOffers'] as List?)
+              ?.map((e) => LiveOffer.fromJson(e))
+              .toList()
+          : null,
     );
   }
 

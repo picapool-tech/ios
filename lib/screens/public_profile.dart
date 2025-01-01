@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
@@ -20,6 +21,7 @@ class _PublicProfileState extends State<PublicProfile> {
   File? _profileImage;
   bool _isUsernameValid = true; // Validation flag for username
   final authController = Get.find<AuthController>();
+  final _assetsController = Get.find<AssetsController>();
 
   Future<void> createUser() async {
     final user = authController.user.value;
@@ -28,9 +30,22 @@ class _PublicProfileState extends State<PublicProfile> {
     }
     user.username = _usernameController.text;
     user.bio = _bioController.text;
-    await authController.createUser();
-    await authController.updateUser(user.toJson());
-    authController.checkForExistingUser();
+    var profileUrl = user.pic;
+    if (_profileImage != null) {
+      profileUrl = await _assetsController.uploadImage(
+          XFile(_profileImage!.path),
+          '${user.id}-${user.name}-${DateTime.now().toIso8601String()}.jpg');
+    }
+    // await authController.createUser();
+    var success = await authController.updateUser({
+      "username": _usernameController.text,
+      "bio": _bioController.text,
+      "pic": profileUrl,
+    });
+
+    if (success ?? false) {
+      authController.checkForExistingUser();
+    }
   }
 
   @override
@@ -192,12 +207,16 @@ class _PublicProfileState extends State<PublicProfile> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                child: (!authController.isLoading.value)
-                    ? const Text(
-                        'Finish',
-                        style: TextStyle(fontFamily: "MontserratR"),
-                      )
-                    : const CircularProgressIndicator(),
+                child: Obx(() {
+                  if (authController.isLoading.value) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  return const Text(
+                    'Finish',
+                    style: TextStyle(fontFamily: "MontserratR"),
+                  );
+                }),
               ),
             ],
           ),
@@ -317,7 +336,7 @@ class _PublicProfileState extends State<PublicProfile> {
       );
       if (croppedFile != null) {
         setState(() {
-          _profileImage = File(croppedFile.path);
+          _profileImage = croppedFile;
         });
       }
     }

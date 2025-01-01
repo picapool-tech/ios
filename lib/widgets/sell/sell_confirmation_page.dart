@@ -21,20 +21,30 @@ class _SellConfirmationPageState extends State<SellConfirmationPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 16,),
-          SizedBox(
-          width: MediaQuery.of(context).size.width * 0.4, 
-          height: MediaQuery.of(context).size.height * 0.4, 
-          child: 
-          Lottie.network('https://lottie.host/62aed981-b040-478a-89f3-67a997d90ca4/ws0WCeKT2C.json'),
+          const SizedBox(
+            height: 16,
           ),
-          const SizedBox(height: 16,),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.4,
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: Lottie.network(
+                'https://lottie.host/62aed981-b040-478a-89f3-67a997d90ca4/ws0WCeKT2C.json'),
+          ),
+          const SizedBox(
+            height: 16,
+          ),
           const Text('Your Product is listed for selling!'),
-          const SizedBox(height: 16,),
-          PrimaryButton(onPressed: (){
-            Get.offAllNamed(GetRoutes.productsListPage);
-          } , buttonLabel: 'Go to Products')
-        ],)  ,
+          const SizedBox(
+            height: 16,
+          ),
+          PrimaryButton(
+            onPressed: () {
+              Get.offAllNamed(GetRoutes.productsListPage);
+            },
+            buttonLabel: 'Go to Products',
+          )
+        ],
+      ),
     );
   }
 }

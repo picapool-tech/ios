@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -31,6 +32,7 @@ class StorageController extends GetxController {
 
   Future<void> loadAuth() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    debugPrint("LOAD AUTH");
     String? authData = prefs.getString('auth');
     if (authData != null) {
       Map<String, dynamic> authMap = jsonDecode(authData);

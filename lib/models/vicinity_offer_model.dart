@@ -1,55 +1,76 @@
+class VicinityLocation {
+  final double lat;
+  final double long;
+
+  VicinityLocation({
+    required this.lat,
+    required this.long,
+  });
+
+  factory VicinityLocation.fromJson(Map<String, dynamic> json) {
+    return VicinityLocation(
+      lat: json['lat'],
+      long: json['lng'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'lat': lat,
+      'lng': long,
+    };
+  }
+}
+
 class VicinityOffer {
   final String name;
-  final int category;
-  final int brand;
   final List<String> images;
   final String desc;
   final DateTime expiryAt;
-  final int creatorID;
-  final List<String> products;
-  final List<String> productsMRP;
-  final List<String> productsOfferPrice;
+  int? partnerID;
+  final int userId;
+  final List<String> productIds;
+  final List<String> tagIds;
+  final VicinityLocation location;
 
   VicinityOffer({
     required this.name,
-    this.category = 0,
-    this.brand = 0,
     required this.images,
     required this.desc,
     required this.expiryAt,
-    required this.creatorID,
-    this.products = const [],
-    this.productsMRP = const [],
-    this.productsOfferPrice = const [],
+    required this.userId,
+    required this.location,
+    this.partnerID,
+    this.productIds = const [],
+    this.tagIds = const [],
   });
 
   factory VicinityOffer.fromJson(Map<String, dynamic> json) {
     return VicinityOffer(
       name: json['name'],
-      category: json['category'],
-      brand: json['brand'],
-      images: List<String>.from(json['images']),
+      images: (json['images']) ? List<String>.from(json['images']) : [],
       desc: json['desc'],
       expiryAt: DateTime.parse(json['expiryAt']),
-      creatorID: json['creatorID'],
-      products: List<String>.from(json['products']),
-      productsMRP: List<String>.from(json['productsMRP']),
-      productsOfferPrice: List<String>.from(json['productsOfferPrice']),
+      userId: json['userId'],
+      productIds: (json['productIds'] != null)
+          ? List<String>.from(json['productIds'])
+          : [],
+      partnerID: json['partnerId'],
+      tagIds: (json['tagIds']) ? List<String>.from(json['tags']) : [],
+      location: VicinityLocation.fromJson(json['loc']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'category': category,
-      'brand': brand,
       'images': images,
       'desc': desc,
       'expiryAt': expiryAt.toUtc().toIso8601String(),
-      'creatorID': creatorID,
-      'products': products,
-      'productsMRP': productsMRP,
-      'productsOfferPrice': productsOfferPrice,
+      'userId': userId,
+      'productIds': productIds,
+      'tagIds': tagIds,
+      'loc': location.toJson(),
     };
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -27,18 +29,16 @@ class _OtpScreenState extends State<OtpScreen> {
   int _resendCountdown = 59;
   Timer? _timer;
   String? otpCode;
-  final SmsQuery _smsQuery = SmsQuery();
 
   final authController = Get.find<AuthController>();
 
   @override
   void initState() {
     super.initState();
-    _requestSmsPermission();
+
     for (var controller in _controllers) {
       controller.addListener(_checkOtpComplete);
     }
-    _listenForSms();
   }
 
   @override
@@ -54,53 +54,6 @@ class _OtpScreenState extends State<OtpScreen> {
     super.dispose();
   }
 
-  Future<void> _requestSmsPermission() async {
-    var status = await Permission.sms.status;
-    if (!status.isGranted) {
-      await Permission.sms.request();
-    }
-  }
-
-  void _listenForSms() async {
-    final messages = await _smsQuery.querySms(
-      kinds: [SmsQueryKind.inbox],
-      sort: true,
-      count: 10,
-    );
-
-    var dateTime = DateTime.now();
-
-    for (SmsMessage message in messages) {
-      if (_isOtpComplete) {
-        break; // Stop listening if the user has already entered the code
-      }
-      debugPrint("SMS Received: ${message.body}");
-      if (message.date != null &&
-          message.date!.isAfter(dateTime) &&
-          message.address == "CP-PICAPL" && // Check if the sender is CP-PICAPL
-          message.body != null &&
-          message.body!.contains("Your OTP for phone number verification is") &&
-          message.body!.contains(" -PicaPool")) {
-        otpCode = _extractOtp(message.body!);
-        debugPrint("Extracted OTP: $otpCode");
-        if (otpCode != null && otpCode!.length == 4) {
-          for (int i = 0; i < otpCode!.length; i++) {
-            _controllers[i].text = otpCode![i];
-          }
-          _verifyOtp();
-        }
-        break;
-      }
-    }
-  }
-
-  String? _extractOtp(String message) {
-    final otpRegExp = RegExp(r'\d{4}');
-    final match = otpRegExp.firstMatch(message);
-    print("OTP regex match: ${match?.group(0)}");
-    return match?.group(0);
-  }
-
   void _checkOtpComplete() {
     setState(() {
       _isOtpComplete =
@@ -109,6 +62,7 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _verifyOtp() async {
+    if (authController.isLoading.value) return;
     String otp = _controllers.map((controller) => controller.text).join('');
     String url =
         'https://api.picapool.com/v2/otp/verify?otp=$otp&mobile=${widget.phoneNumber}';
@@ -175,22 +129,28 @@ class _OtpScreenState extends State<OtpScreen> {
           });
           _startResendCountdown();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to resend OTP. $responseBody')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to resend OTP. $responseBody')),
+            );
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to resend OTP. Please try again.')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Failed to resend OTP. Please try again.')),
+          );
+        }
       }
     } catch (e) {
-      print('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('An error occurred. Please try again later.')),
-      );
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('An error occurred. Please try again later.')),
+        );
+      }
     }
   }
 
@@ -209,8 +169,6 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var isLoading = authController.notLoading;
-
     return Scaffold(
       backgroundColor: const Color(0xffffffff),
       appBar: AppBar(
@@ -320,15 +278,18 @@ class _OtpScreenState extends State<OtpScreen> {
                       borderRadius: BorderRadius.circular(25),
                     )),
                   ),
-                  child: (!isLoading)
-                      ? const Text(
-                          "Next",
-                          style: TextStyle(
-                            fontFamily: "MontserratSB",
-                            fontSize: 16,
-                          ),
-                        )
-                      : const CircularProgressIndicator(),
+                  child: Obx(() {
+                    if (authController.isLoading.value) {
+                      return const CircularProgressIndicator();
+                    }
+                    return const Text(
+                      "Next",
+                      style: TextStyle(
+                        fontFamily: "MontserratSB",
+                        fontSize: 16,
+                      ),
+                    );
+                  }),
                 ),
                 const SizedBox(height: 30),
                 const Text(
