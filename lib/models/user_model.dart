@@ -120,7 +120,7 @@ class User {
       'fcmToken': fcmToken,
       'createdAt': createdAt.toUtc().toIso8601String(),
       'updatedAt': updatedAt.toUtc().toIso8601String(),
-      'auth': auth?.toJson(),
+      'Auth': auth?.toJson(),
       'authId': authId,
       'feedback': feedback?.map((e) => e.toJson()).toList(),
       'chats': chats?.map((e) => e.toJson()).toList(),
@@ -134,6 +134,7 @@ class User {
 
   // Update method to modify certain fields
   void update(Map<String, dynamic> fields) {
+    wg.debugPrint("INSIDE USER UPDATE: $fields");
     name = fields['name'] ?? name;
     pic = fields['pic'] ?? pic;
     age = fields['age'] ?? age;

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/create_pool.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/pooling_history.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,14 +27,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
-  final TextEditingController _feedbackController = TextEditingController();
+  final TextEditingController _feedbackTextController = TextEditingController();
 
-  final AuthController authController = Get.find<AuthController>();
-  final FeedbackController feedbackController = Get.find<FeedbackController>();
+  final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
+  final FeedbackController _feedbackController = Get.find<FeedbackController>();
 
   @override
   Widget build(BuildContext context) {
-    var user = authController.user.value;
+    var user = _userController.user.value;
     if (user == null) {
       return const Scaffold(
         body: Center(
@@ -569,7 +569,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 );
                               },
                             );
-                            await authController.updateUser(updatedValues);
+                            await _userController.updateUser(updatedValues);
                             if (context.mounted) {
                               Navigator.pop(
                                 context,
@@ -708,16 +708,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     border: InputBorder
                         .none, // No border since the container has a border
                   ),
-                  controller: _feedbackController,
+                  controller: _feedbackTextController,
                 ),
               ),
               const SizedBox(height: 20),
               // Submit Form Button
               ElevatedButton(
-                onPressed: _feedbackController.text.isNotEmpty
+                onPressed: _feedbackTextController.text.isNotEmpty
                     ? () {
                         _sendFeedback(
-                          _feedbackController.text,
+                          _feedbackTextController.text,
                         ); // Add your feedback submission logic here
                       }
                     : null,
@@ -730,7 +730,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   minimumSize:
                       const Size(double.infinity, 50), // Full width button
                 ),
-                child: (feedbackController.isLoading.value)
+                child: (_feedbackController.isLoading.value)
                     ? const CircularProgressIndicator()
                     : const Text(
                         "Submit Form",
@@ -824,7 +824,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Log Out Button
               ElevatedButton(
                 onPressed: () async {
-                  await authController.logout();
+                  await _authController.logout();
                   if (context.mounted) {
                     Navigator.pop(context); // Close the modal
                     Get.offAll(() => const LoginScreen());
@@ -879,7 +879,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _sendFeedback(String feedback) async {
-    await feedbackController.sendFeedback(feedback);
+    await _feedbackController.sendFeedback(feedback);
     if (mounted) {
       Navigator.pop(context); // Close the modal
     }

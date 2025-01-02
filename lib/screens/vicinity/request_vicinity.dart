@@ -9,11 +9,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:http/http.dart' as http;
-import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/response_model.dart';
-import 'package:picapool/models/user_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 
@@ -64,7 +63,10 @@ class RequestVicinity extends StatefulWidget {
 }
 
 class _RequestVicinityState extends State<RequestVicinity> {
-  var locationController = Get.find<LocationController>();
+  final LocationController _locationController = Get.find<LocationController>();
+  final AuthController _authController = Get.find<AuthController>();
+  final VicinityController _vicinityController = Get.find<VicinityController>();
+  final UserController _userController = Get.find<UserController>();
 
   double _radius = 500;
   double _waitTime = 30;
@@ -84,10 +86,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   int poolingUsers = 0;
 
-  final AuthController authController = Get.find<AuthController>();
-  final VicinityController vicinityController = Get.find<VicinityController>();
-
-  final Set<Marker> _markers = {};
+  Marker? _userMarker;
+  final Set<Marker> _userMarkers = {};
 
   @override
   void initState() {
@@ -98,10 +98,10 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   Future<void> _fetchLocation() async {
-    if (locationController.state.value.location == null) {
-      await locationController.getLocation();
+    if (_locationController.state.value.location == null) {
+      await _locationController.getLocation();
     }
-    var location = locationController.state.value.location;
+    var location = _locationController.state.value.location;
     if (location == null) {
       debugPrint("NULL LOCATION : VICINITY");
       Get.snackbar(
@@ -116,7 +116,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
       _currentPosition = LatLng(location.latitude, location.longitude);
 
       _updateMarkersAndCircles();
-      getNearestUsers(authController.user.value!.id, _radius);
+      getNearestUsers(_userController.user.value!.id, _radius);
 
       if (_controller != null && !_isMapInitialized) {
         _controller!.animateCamera(
@@ -135,17 +135,14 @@ class _RequestVicinityState extends State<RequestVicinity> {
   void _updateMarkersAndCircles() {
     if (_currentPosition != null) {
       // Add or update the current location marker
-      _pinMarker = Marker(
+      _userMarker = Marker(
         markerId: const MarkerId("currentLocation"),
         position: _currentPosition!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow: const InfoWindow(
           title: "Your Location",
         ),
       );
-
-      // Add the current location marker to the markers set
-      _markers.add(_pinMarker!);
 
       // Add or update the current location circle
       _currentLocationCircle = Circle(
@@ -200,14 +197,12 @@ class _RequestVicinityState extends State<RequestVicinity> {
       return;
     }
 
-    var auth = authController.auth.value;
-
     final offer = VicinityOffer(
       name: _titleController.text,
       images: [],
       desc: _descController.text,
       expiryAt: DateTime.now().add(Duration(minutes: _waitTime.toInt())),
-      userId: auth!.user!.id,
+      userId: _userController.user.value!.id,
       partnerID: null,
       location: VicinityLocation(
         lat: _currentPosition!.latitude,
@@ -215,10 +210,10 @@ class _RequestVicinityState extends State<RequestVicinity> {
       ),
     );
 
-    var receivedOffer = await vicinityController.createVicinity(
+    var receivedOffer = await _vicinityController.createVicinity(
       offer: offer,
       pickedFile: _imageFiles!.first,
-      uname: auth.user!.name!,
+      uname: _userController.user.value!.name!,
       offername: _titleController.text,
     );
 
@@ -595,7 +590,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
                             zoom: 14.0,
                           ),
                           myLocationEnabled: true,
-
                           onMapCreated: (GoogleMapController controller) {
                             _controller = controller;
                             _controller!.animateCamera(
@@ -607,9 +601,10 @@ class _RequestVicinityState extends State<RequestVicinity> {
                               ),
                             );
                           },
-
-                          // markers: _pinMarker != null ? {_pinMarker!} : {},
-                          markers: _markers,
+                          markers: {
+                            if (_userMarker != null) _userMarker!,
+                            for (var marker in _userMarkers) marker,
+                          },
                           circles: _currentLocationCircle != null
                               ? {_currentLocationCircle!}
                               : {},
@@ -741,7 +736,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
                               });
 
                               getNearestUsers(
-                                authController.auth.value!.user!.id,
+                                _userController.user.value!.id,
                                 value.toDouble(),
                               );
                             },
@@ -818,7 +813,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
                 ),
                 child: Obx(
                   () {
-                    if (vicinityController.isLoading.value) {
+                    if (_vicinityController.isLoading.value) {
                       return const CircularProgressIndicator();
                     }
 
@@ -841,24 +836,28 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   void _addNearestUserMarkers() {
+    _userMarkers.clear();
     for (var user in _nearestUsers) {
       final Marker userMarker = Marker(
         markerId: MarkerId(user.id.toString()),
         position: LatLng(user.location.latitude, user.location.longitude),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          (user.id == _userController.user.value?.id)
+              ? BitmapDescriptor.hueRed
+              : BitmapDescriptor.hueGreen,
+        ),
         infoWindow: InfoWindow(
           title: user.name,
           snippet: 'Nearby User',
         ),
-        onTap: () {
-          // Optionally, handle marker tap to show user details
-          _showUserDetailsDialog(user);
-        },
       );
 
       setState(() {
-        _markers.add(userMarker);
+        _userMarkers.add(userMarker);
+        _updateMarkersAndCircles();
       });
+
+      debugPrint("TOTAL MARKERS IN LOCATION : ${_userMarkers.length}");
     }
   }
 
@@ -908,18 +907,18 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   Future<void> getNearestUsers(int id, double radius) async {
     String endpoint = "https://api.picapool.com/v2/user/nearest";
-    String? at = await authController.getAccessToken();
+    String? at = await _authController.getAccessToken();
     if (at == null) {
       return;
     }
 
     debugPrint(
-        'Fetching nearest users with coordinates : ${_currentPosition?.latitude}, ${_currentPosition?.longitude}');
+        'Fetching nearest users with coordinates : ${_currentPosition?.latitude}, ${_currentPosition?.longitude} with id: $id');
     try {
       final response = await http.post(Uri.parse(endpoint),
           body: jsonEncode({
             'dist': radius,
-            'id': authController.auth.value?.user!.id,
+            'id': id,
           }),
           headers: {
             'content-type': 'application/json',
@@ -943,7 +942,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
         for (var user in users) {
           debugPrint("$user");
-          usersLocation.add(NearUserModel.fromJson(user));
+          var nearUser = NearUserModel.fromJson(user);
+          usersLocation.add(nearUser);
         }
 
         _nearestUsers = usersLocation;

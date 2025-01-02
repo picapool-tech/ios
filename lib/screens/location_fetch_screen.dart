@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 
@@ -41,8 +42,9 @@ class _LocationScreenState extends State<LocationScreen>
   List<Prediction> _predictions = [];
   bool _isKeyboardVisible = false;
 
-  final LocationController locationController = Get.find<LocationController>();
-  final AuthController authController = Get.find<AuthController>();
+  final LocationController _locationController = Get.find<LocationController>();
+  final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
 
   final GoogleMapsPlaces _places = GoogleMapsPlaces(
     apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk',
@@ -54,6 +56,7 @@ class _LocationScreenState extends State<LocationScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchLocation();
+      //
       _loadSavedLocations();
       _animationController = AnimationController(
         duration: const Duration(seconds: 2),
@@ -102,7 +105,9 @@ class _LocationScreenState extends State<LocationScreen>
     super.dispose();
   }
 
-  Future<void> _fetchLocation() async {
+  Future<void> _fetchLocation({
+    bool fetchActualLocation = false,
+  }) async {
     // bool serviceEnabled;
     // LocationPermission permission;
 
@@ -148,12 +153,23 @@ class _LocationScreenState extends State<LocationScreen>
     //   accuracy: LocationAccuracy.high,
     //   distanceFilter: 10,
     // ));
+    if (fetchActualLocation ||
+        _locationController.state.value.location == null) {
+      await _locationController.getLocation();
+    }
 
-    await locationController.getLocation();
+    var location = _locationController.state.value.location;
+    if (location == null) {
+      Get.snackbar(
+        "Location not found",
+        "Location of this device not found",
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
 
     setState(() {
-      var location = locationController.state.value.location;
-      _currentPosition = LatLng(location!.latitude, location.longitude);
+      _currentPosition = LatLng(location.latitude, location.longitude);
 
       _selectedPosition = _currentPosition;
       _updateMarkersAndCircles();
@@ -396,7 +412,8 @@ class _LocationScreenState extends State<LocationScreen>
                     ),
                     const SizedBox(width: 4),
                     ElevatedButton(
-                      onPressed: _fetchLocation,
+                      onPressed: () =>
+                          _fetchLocation(fetchActualLocation: true),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
@@ -632,7 +649,8 @@ class _LocationScreenState extends State<LocationScreen>
                     SizedBox(
                       width: 250,
                       child: ElevatedButton.icon(
-                        onPressed: _fetchLocation,
+                        onPressed: () =>
+                            _fetchLocation(fetchActualLocation: true),
                         icon: Image.asset(
                           'assets/icons/locationgoto.png', // Replace with your asset path
                           width: 24,
@@ -710,7 +728,7 @@ class _LocationScreenState extends State<LocationScreen>
                     const SizedBox(height: 16),
                     ElevatedButton(
                         onPressed: () async {
-                          await authController.updateUser({
+                          await _userController.updateUser({
                             "loc": {
                               "lat": _selectedPosition!.latitude,
                               "lng": _selectedPosition!.longitude
@@ -718,7 +736,7 @@ class _LocationScreenState extends State<LocationScreen>
                           });
 
                           debugPrint("Location user of : $_locationMessage");
-                          await locationController.updateLocation(
+                          await _locationController.updateLocation(
                             geocoding.Location(
                               latitude: _selectedPosition!.latitude,
                               longitude: _selectedPosition!.longitude,
@@ -737,8 +755,8 @@ class _LocationScreenState extends State<LocationScreen>
                           ),
                         ),
                         child: Obx(() {
-                          if (locationController.state.value.isLoading ||
-                              authController.isLoading.value) {
+                          if (_locationController.state.value.isLoading ||
+                              _userController.isLoading.value) {
                             return const CircularProgressIndicator();
                           }
 
@@ -768,7 +786,8 @@ class _LocationScreenState extends State<LocationScreen>
                     SizedBox(
                       width: 250,
                       child: ElevatedButton.icon(
-                        onPressed: _fetchLocation,
+                        onPressed: () =>
+                            _fetchLocation(fetchActualLocation: true),
                         icon: const Icon(Icons.my_location),
                         label: const Text("Go to current location"),
                         style: ElevatedButton.styleFrom(
@@ -785,7 +804,7 @@ class _LocationScreenState extends State<LocationScreen>
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
-                        await authController.updateUser({
+                        await _userController.updateUser({
                           "loc": {
                             "lat": _selectedPosition!.latitude,
                             "lng": _selectedPosition!.longitude
@@ -793,7 +812,7 @@ class _LocationScreenState extends State<LocationScreen>
                         });
 
                         debugPrint("Location user of : $_locationMessage");
-                        await locationController.updateLocation(
+                        await _locationController.updateLocation(
                           geocoding.Location(
                             latitude: _selectedPosition!.latitude,
                             longitude: _selectedPosition!.longitude,
@@ -813,8 +832,8 @@ class _LocationScreenState extends State<LocationScreen>
                       ),
                       child: Obx(
                         () {
-                          if (locationController.state.value.isLoading ||
-                              authController.isLoading.value) {
+                          if (_locationController.state.value.isLoading ||
+                              _userController.isLoading.value) {
                             return const CircularProgressIndicator();
                           }
 

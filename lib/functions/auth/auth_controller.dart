@@ -4,6 +4,7 @@ import 'package:jwt_decode/jwt_decode.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/access_token_model.dart';
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/login_model.dart';
@@ -18,10 +19,10 @@ import 'package:http/http.dart' as http;
 class AuthController extends GetxController {
   final AuthApi _authApi = AuthApi();
   final StorageController _storageController = Get.find<StorageController>();
+  late final UserController _userController = Get.find<UserController>();
 
   // Use GetX reactive variables for the auth state
   var auth = Rx<Auth?>(null);
-  var user = Rx<User?>(null);
   var isLoading = false.obs;
   var errorMessage = ''.obs;
   var notLoading = false;
@@ -34,15 +35,8 @@ class AuthController extends GetxController {
 
   /// Load user and auth data from storage at startup.
   Future<void> _loadUserOnStartup() async {
-    await _storageController.loadAuth();
-    debugPrint("Past auth loading...");
-
-    await _storageController.loadUser();
-    debugPrint("Past user loading...");
-
-    final storageState = _storageController;
-    auth.value = storageState.auth;
-    user.value = storageState.user;
+    auth.value = await _storageController.loadAuth();
+    _userController.user.value = await _storageController.loadUser();
   }
 
   /// Handle Google login and store auth and user data.
@@ -53,7 +47,7 @@ class AuthController extends GetxController {
     await result.fold(
       (fail) {
         auth.value = null;
-        user.value = null;
+        _userController.user.value = null;
         debugPrint(fail.message);
         showErrorDialog(fail.message);
       },
@@ -68,24 +62,28 @@ class AuthController extends GetxController {
     isLoading.value = false;
   }
 
+// TODO: need to rethink of this approach to limit the api call for getUser
   Future<bool> loadAndSaveAuth(Auth authData, {int? userId}) async {
     try {
       var accessToken = authData.accessToken;
-      var userData = await getUser(
-        userId ?? authData.user!.id,
-        ats: accessToken,
+      var userData = await _userController.getUser(
+        userId ?? _userController.user.value!.id,
+        accessToken: accessToken,
       );
-      if (userData != null) {
-        debugPrint('User : ${userData.toJson()}');
-        authData.user?.update(userData.toJson());
-        debugPrint('User from auth: ${authData.toJson()}');
-      }
 
       auth.value = authData;
-      auth.value!.user = userData;
-      user.value = userData;
+      if (userData != null) {
+        debugPrint('User from laod and auth: ${userData.toJson()}');
+        _userController.user.value = userData;
+        var userAuth = userData.auth;
+        if (userAuth != null) {
+          auth.value?.update(
+            userAuth.toJson(),
+          );
+        }
+      }
       await _storageController.saveAuth(auth.value!);
-      await _storageController.saveUser(user.value!);
+      await _storageController.saveUser(_userController.user.value!);
       return true;
     } catch (e) {
       debugPrint('Error: $e');
@@ -101,7 +99,7 @@ class AuthController extends GetxController {
     await result.fold(
       (fail) {
         auth.value = null;
-        user.value = null;
+        _userController.user.value = null;
         errorMessage.value = fail.message;
         showErrorDialog(fail.message);
       },
@@ -124,13 +122,13 @@ class AuthController extends GetxController {
     await result.fold(
       (fail) {
         auth.value = null;
-        user.value = null;
+        _userController.user.value = null;
         errorMessage.value = fail.message;
         showErrorDialog(fail.message);
       },
       (loginModel) async {
         await postLoginAction(loginModel);
-        debugPrint('User from otp: ${auth.value?.user?.toJson()}');
+        debugPrint('User from otp: ${_userController.user.value?.toJson()}');
       },
     );
 
@@ -148,16 +146,7 @@ class AuthController extends GetxController {
       refreshToken: loginModel.refreshToken,
     );
     await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
-    debugPrint("After LOAD AND SAVE MODEL : ${user.toJson()}");
-
-    // var user = await getUser(accessToken.tenant.id);
-    // if (user != null) {
-    //   authData.user = user;
-    //   user = user;
-    //   await loadAndSaveAuth(authData);
-    //   await _storageController.saveUser(user);
-    //   return true;
-    // }
+    debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
 
     errorMessage.value = "";
     checkForExistingUser();
@@ -198,45 +187,45 @@ class AuthController extends GetxController {
 
   Future<void> verifyOtp(String phoneNumber) async {}
 
-  Future<void> createUser() async {
-    isLoading.value = true;
-    update();
+  // Future<void> createUser() async {
+  //   isLoading.value = true;
+  //   update();
 
-    try {
-      var accessToken = await getAccessToken();
-      final result = await _authApi.createUser(
-        user.value!,
-        accessToken!,
-      );
+  //   try {
+  //     var accessToken = await getAccessToken();
+  //     final result = await _authApi.createUser(
+  //       user.value!,
+  //       accessToken!,
+  //     );
 
-      await result.fold(
-        (fail) async {
-          errorMessage.value = fail.message;
-          var userData = await getUser(user.value!.id);
-          auth.value!.user!.update(userData!.toJson());
-          user.value!.update(userData.toJson());
+  //     await result.fold(
+  //       (fail) async {
+  //         errorMessage.value = fail.message;
+  //         var userData = await getUser(user.value!.id);
+  //         auth.value!.user!.update(userData!.toJson());
+  //         user.value!.update(userData.toJson());
 
-          await _storageController.saveUser(user.value!);
-          await _storageController.saveAuth(auth.value!);
+  //         await _storageController.saveUser(user.value!);
+  //         await _storageController.saveAuth(auth.value!);
 
-          showErrorDialog(fail.message);
-        },
-        (createdUser) async {
-          errorMessage.value = "";
-          auth.value!.user!.update(createdUser.toJson());
-          user.value!.update(createdUser.toJson());
-          await _storageController.saveUser(user.value!);
-          await _storageController.saveAuth(auth.value!);
-        },
-      );
-    } catch (e) {
-      debugPrint('Create User Error: $e');
-      showErrorDialog('Failed to create user. Please try again.');
-    }
+  //         showErrorDialog(fail.message);
+  //       },
+  //       (createdUser) async {
+  //         errorMessage.value = "";
+  //         auth.value!.user!.update(createdUser.toJson());
+  //         user.value!.update(createdUser.toJson());
+  //         await _storageController.saveUser(user.value!);
+  //         await _storageController.saveAuth(auth.value!);
+  //       },
+  //     );
+  //   } catch (e) {
+  //     debugPrint('Create User Error: $e');
+  //     showErrorDialog('Failed to create user. Please try again.');
+  //   }
 
-    isLoading.value = false;
-    update();
-  }
+  //   isLoading.value = false;
+  //   update();
+  // }
 
   Future<void> updateUserData(User user) async {
     if (auth.value == null) {
@@ -247,51 +236,13 @@ class AuthController extends GetxController {
   }
 
   /// Updates the user data and stores it.
-  Future<bool?> updateUser(Map<String, dynamic> updateValues) async {
-    isLoading.value = true;
-    update();
-
-    try {
-      var accessToken = await getAccessToken();
-      final result = await _authApi.updateUser(
-        updateValues,
-        accessToken!,
-      );
-
-      isLoading.value = false;
-      update();
-      return result.fold(
-        (fail) {
-          errorMessage.value = fail.message;
-          showErrorDialog(fail.message);
-          return false;
-        },
-        (updatedUser) async {
-          auth.value!.user!.update(updateValues);
-          user.value!.update(updateValues);
-          await loadAndSaveAuth(auth.value!);
-          update();
-          errorMessage.value = "";
-          return true;
-        },
-      );
-    } catch (e) {
-      debugPrint('Update User Error: $e');
-      showErrorDialog('Failed to update user. Please try again.');
-      return false;
-    } finally {
-      isLoading.value = false;
-      update();
-    }
-  }
 
   /// Logs out the user and clears the stored auth and user data.
   Future<void> logout() async {
     await _storageController.clearUser();
     await _storageController.clearAuth();
     auth.value = null;
-    user.value = null;
-    // update();
+    _userController.user.value = null;
     // checkForExistingUser();
   }
 
@@ -307,51 +258,35 @@ class AuthController extends GetxController {
       var newAccessToken = await _authApi.updateAccessToken(
         accessToken: accessToken,
         refreshToken: auth.value!.refreshToken!,
-        userId: user.value!.id,
+        userId: _userController.user.value!.id,
       );
 
-      newAccessToken.fold((error) {
-        logout();
-        return accessToken;
-      }, (newAccessToken) async {
-        auth.value?.copyWith(accessToken: newAccessToken);
-        await loadAndSaveAuth(auth.value!);
-        return newAccessToken;
-      });
+      newAccessToken.fold(
+        (error) {
+          logout();
+          return accessToken;
+        },
+        (newAccessToken) async {
+          auth.value?.copyWith(accessToken: newAccessToken);
+          await loadAndSaveAuth(auth.value!);
+          return newAccessToken;
+        },
+      );
     }
     return accessToken;
-  }
-
-  Future<User?> getUser(int id, {String? ats}) async {
-    final at = await getAccessToken();
-    if (at == null && ats == null) {
-      logout();
-      return null;
-    }
-
-    final result = await _authApi.getUser(userId: id, accessToken: ats ?? at!);
-
-    return await result.fold(
-      (fail) async {
-        showErrorDialog(fail.message);
-        return null;
-      },
-      (user) {
-        return user;
-      },
-    );
   }
 
   // Check if a user is logged in and navigate accordingly.
   void checkForExistingUser() {
     debugPrint('Checking for existing user from auth ${auth.value?.toJson()}');
-    debugPrint('Checking for existing user from user ${user.value?.toJson()}');
+    debugPrint(
+        'Checking for existing user from user ${_userController.user.value?.toJson()}');
 
     if (auth.value?.accessToken == null) {
       Get.to(() => const LoginScreen());
-    } else if (auth.value?.user?.name == null) {
+    } else if (_userController.user.value?.name == null) {
       Get.to(() => const PersonalDetails());
-    } else if (auth.value?.user?.username == null) {
+    } else if (_userController.user.value?.username == null) {
       Get.to(() => const PublicProfile());
     } else {
       Get.offAll(() => const NewBottomBar());

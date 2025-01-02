@@ -3,13 +3,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_api.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
-import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/chats/archive_page.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/svg_icon.dart';
 
@@ -25,12 +23,10 @@ class MyChatsPage extends StatefulWidget {
 class _MyChatsPageState extends State<MyChatsPage> {
   List<int> selectedIndexes = []; // Track selected items
   List<Map<String, dynamic>> archivedChats = []; // Store archived items
-  List<Chat> _filteredChats = []; // Filtered chats
   String selectedCategory = 'All Offers';
 
   final ChatController chatController = Get.find<ChatController>();
-  final OffersController _offersController = Get.find<OffersController>();
-  final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
   final TextEditingController _searchController = TextEditingController();
 
   String _searchQuery = "";
@@ -42,7 +38,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
     // if (widget.unarchivedChats != null) {
     //   chats.addAll(widget.unarchivedChats!);
     // }
-    if (_authController.user.value != null) {
+    if (_userController.user.value != null) {
       chatController.getAllChats();
     }
     _searchController.addListener(_onSearchChanged);
@@ -362,7 +358,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
               decoration: const BoxDecoration(
                 color: Colors.white,
               ),
-              child: (_authController.user.value != null)
+              child: (_userController.user.value != null)
                   ? GetBuilder<ChatController>(builder: (controller) {
                       if (chatController.chats.isEmpty &&
                           chatController.isLoading.value) {

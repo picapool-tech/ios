@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_api.dart';
-import 'package:picapool/models/chat_model.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/services/socket.service.dart';
@@ -10,6 +10,7 @@ import 'package:picapool/services/socket.service.dart';
 class ChatController extends GetxController {
   final ChatApi _chatApi = ChatApi();
   final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
   final SocketService socketService = SocketService();
 
   var isLoading = false.obs;
@@ -88,7 +89,7 @@ class ChatController extends GetxController {
     var result = await _chatApi.createChatWithOfferId(
       accessToken: accessToken!,
       offerId: offerId,
-      userId: _authController.auth.value!.user!.id,
+      userId: _userController.user.value!.id,
     );
 
     isLoading.value = false;
@@ -117,9 +118,9 @@ class ChatController extends GetxController {
     var accessToken = await _authController.getAccessToken();
     debugPrint("GETTING ACCESS TOKEN: $accessToken");
     socketService.createSocketConnection(
-      userId: _authController.user.value!.id,
+      userId: _userController.user.value!.id,
       roomId: chatId,
-      userName: _authController.user.value!.name ?? "No Name",
+      userName: _userController.user.value!.name ?? "No Name",
       accessToken: accessToken!,
     );
     var socket = socketService.socket;

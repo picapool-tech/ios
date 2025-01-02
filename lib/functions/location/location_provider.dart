@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 
 class LocationState {
   final Location? location;
@@ -35,7 +36,7 @@ class LocationState {
 class LocationController extends GetxController {
   // Reactive state variable
   Rx<LocationState> state = LocationState().obs;
-  final authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();  
 
   // Request permission and fetch the current location
   Future<void> getLocation() async {
@@ -87,7 +88,7 @@ class LocationController extends GetxController {
       );
 
       try {
-        await authController.updateUser(
+        await _userController.updateUser(
           {
             "loc": {"lat": position.latitude, "lng": position.longitude}
           },

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chat_info.dart';
@@ -29,7 +30,7 @@ class _ChatPageState extends State<ChatPage>
   bool _isMessageEmpty = true;
   final ScrollController _scrollController = ScrollController();
   final ChatController chatController = Get.find<ChatController>();
-  final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
   final OffersController _offersController = Get.find<OffersController>();
 
   @override
@@ -39,7 +40,7 @@ class _ChatPageState extends State<ChatPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       chatController.connectToSocket(
-        _authController.user.value!.id,
+        _userController.user.value!.id,
         widget.chat.id,
       );
 
@@ -160,7 +161,7 @@ class _ChatPageState extends State<ChatPage>
                           time: DateTimeHelper.timeAgoSince(
                               message.createdAt.toIso8601String()),
                           isMe:
-                              message.userId == _authController.user.value?.id,
+                              message.userId == _userController.user.value!.id,
                           imageUrl: '',
                           showSenderDetails: false,
                           // replyToMessage: message.replyToMessage,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/models/admin_model.dart';
 import 'package:picapool/models/live_product_model.dart';
 import 'package:picapool/models/partner_model.dart';
@@ -16,7 +15,6 @@ class Auth {
   final String? accessToken;
   final Admin? admin;
   final Partner? partner;
-  User? user;
   final LivePartner? livePartner;
   final List<Role>? roles;
   final bool? isNew;
@@ -30,7 +28,6 @@ class Auth {
     this.refreshToken,
     this.admin,
     this.partner,
-    this.user,
     this.livePartner,
     this.roles,
     this.isNew,
@@ -87,7 +84,6 @@ class Auth {
       'refreshToken': refreshToken,
       'admin': admin?.toJson(),
       'partner': partner?.toJson(),
-      'user': user?.toJson(),
       'livePartner': livePartner?.toJson(),
       'isNew': isNew,
       'roles': roles?.map((role) => role.toJson()).toList(),
@@ -120,11 +116,36 @@ class Auth {
       accessToken: accessToken ?? this.accessToken,
       admin: admin ?? this.admin,
       partner: partner ?? this.partner,
-      user: user ?? this.user,
       livePartner: livePartner ?? this.livePartner,
       roles: roles ?? this.roles,
       isNew: isNew ?? this.isNew,
       isGuest: isGuest ?? this.isGuest,
+    );
+  }
+
+  // update auth with auth paramteres
+  Auth update(Map<String, dynamic> fields) {
+    return Auth(
+      id: fields['id'] ?? id,
+      googleSub: fields['googleSub'] ?? googleSub,
+      appleSub: fields['appleSub'] ?? appleSub,
+      mobile: fields['mobile'] ?? mobile,
+      refreshToken: fields['refreshToken'] ?? refreshToken,
+      accessToken: fields['accessToken'] ?? accessToken,
+      admin: fields['admin'] != null ? Admin.fromJson(fields['admin']) : admin,
+      partner: fields['partner'] != null
+          ? Partner.fromJson(fields['partner'])
+          : partner,
+      livePartner: fields['livePartner'] != null
+          ? LivePartner.fromJson(fields['livePartner'])
+          : livePartner,
+      roles: fields['roles'] != null
+          ? (fields['roles'] as List)
+              .map((role) => Role.fromJson(role))
+              .toList()
+          : roles,
+      isNew: fields['isNew'] ?? isNew,
+      isGuest: fields['isGuest'] ?? isGuest,
     );
   }
 }

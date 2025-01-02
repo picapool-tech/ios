@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/screens/Public%20Chat/publicChatScreen.dart';
@@ -24,14 +25,14 @@ class _AlertsPageState extends State<AlertsPage> {
 
   final OffersController _offers = Get.find<OffersController>();
   final ChatController _chatController = Get.find<ChatController>();
-  final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
   List<Offer> offers = [];
 
   @override
   void initState() {
     super.initState();
 
-    if (_authController.user.value != null) {
+    if (_userController.user.value != null) {
       _offers.fetchOffers();
     }
   }
@@ -161,7 +162,7 @@ class _AlertsPageState extends State<AlertsPage> {
                 decoration: const BoxDecoration(color: Colors.white),
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: (_authController.user.value != null)
+                  child: (_userController.user.value != null)
                       ? GetBuilder<OffersController>(builder: (controller) {
                           if (controller.offers.isEmpty &&
                               controller.isLoading.value) {
@@ -480,9 +481,8 @@ class _AlertsPageState extends State<AlertsPage> {
 
   void _joinChat(Offer offer) async {
     var chat = await _offers.getChatFromOfferId(offerId: offer.id);
-    var authController = Get.find<AuthController>();
     debugPrint("INSIDE ALERT PAGE : ${offer.userId}");
-    if (chat == null && offer.userId == authController.auth.value?.user?.id) {
+    if (chat == null && offer.userId == _userController.user.value!.id) {
       debugPrint("Here is in the chat");
       var chatAndOfferModel =
           await _chatController.createChatWithOfferId(offer.id);

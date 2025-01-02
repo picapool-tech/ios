@@ -14,7 +14,7 @@ class OffersApi {
   }) async {
     try {
       var response = await http.get(
-        Uri.parse("https://api.picapool.com/v2/offer"),
+        Uri.parse("https://api.picapool.com/v2/offer/all"),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 

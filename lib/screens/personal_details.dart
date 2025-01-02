@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/public_profile.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
@@ -18,7 +20,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   String? _selectedGender;
-  final authController = Get.find<AuthController>();
+  final AuthController authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
 
   @override
   Widget build(BuildContext context) {
@@ -71,12 +74,22 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ),
               ),
               const SizedBox(height: 10),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.visibility_off, color: Colors.grey, size: 16),
-                  SizedBox(width: 5),
-                  Text(
+                  InkWell(
+                    onTap: () async {
+                      var storage = Get.find<StorageController>();
+                      await storage.clearAuth();
+                      await storage.clearUser();
+
+                      authController.logout();
+                    },
+                    child: const Icon(Icons.visibility_off,
+                        color: Colors.grey, size: 16),
+                  ),
+                  const SizedBox(width: 5),
+                  const Text(
                     'This is invisible for others',
                     style: TextStyle(
                       color: Colors.grey,
@@ -109,7 +122,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 onPressed: _isFormValid()
                     ? () async {
                         // Update user details
-                        final user = authController.user.value;
+                        final user = _userController.user.value;
                         if (user == null) {
                           return;
                         }
@@ -118,14 +131,13 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         user.age = int.parse(_ageController.text);
                         user.gender = _selectedGender;
                         debugPrint("updateUser: ${user.toJson()}");
-                        var successful = await authController.updateUser(
-                              {
-                                "name": _nameController.text,
-                                "age": int.parse(_ageController.text),
-                                "gender": _selectedGender.toString(),
-                              },
-                            ) ??
-                            false;
+                        var successful = await _userController.updateUser(
+                          {
+                            "name": _nameController.text,
+                            "age": int.parse(_ageController.text),
+                            "gender": _selectedGender.toString(),
+                          },
+                        );
                         setState(() {});
 
                         // await authController.updateUserData(user);
@@ -145,7 +157,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                child: (authController.isLoading.value)
+                child: (_userController.isLoading.value)
                     ? const CircularProgressIndicator()
                     : const Text('Next'),
               ),
@@ -186,8 +198,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           decoration: InputDecoration(
             filled: true,
             hintText: (isAge)
-                ? authController.user.value?.age.toString() ?? "0"
-                : authController.user.value?.name ?? 'No user name',
+                ? _userController.user.value?.age.toString() ?? "0"
+                : _userController.user.value?.name ?? 'No user name',
             hintStyle: const TextStyle(
                 color: Colors.grey, fontFamily: 'MontserratR', fontSize: 12),
             fillColor: Colors.transparent,

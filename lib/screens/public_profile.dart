@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
@@ -20,11 +21,12 @@ class _PublicProfileState extends State<PublicProfile> {
   final TextEditingController _bioController = TextEditingController();
   File? _profileImage;
   bool _isUsernameValid = true; // Validation flag for username
-  final authController = Get.find<AuthController>();
+  final _authController = Get.find<AuthController>();
+  final _userController = Get.find<UserController>();
   final _assetsController = Get.find<AssetsController>();
 
   Future<void> createUser() async {
-    final user = authController.user.value;
+    final user = _userController.user.value;
     if (user == null) {
       return;
     }
@@ -37,14 +39,14 @@ class _PublicProfileState extends State<PublicProfile> {
           '${user.id}-${user.name}-${DateTime.now().toIso8601String()}.jpg');
     }
     // await authController.createUser();
-    var success = await authController.updateUser({
+    var success = await _userController.updateUser({
       "username": _usernameController.text,
       "bio": _bioController.text,
       "pic": profileUrl,
     });
 
-    if (success ?? false) {
-      authController.checkForExistingUser();
+    if (success) {
+      _authController.checkForExistingUser();
     }
   }
 
@@ -208,7 +210,7 @@ class _PublicProfileState extends State<PublicProfile> {
                   ),
                 ),
                 child: Obx(() {
-                  if (authController.isLoading.value) {
+                  if (_authController.isLoading.value) {
                     return const CircularProgressIndicator();
                   }
 
@@ -257,7 +259,7 @@ class _PublicProfileState extends State<PublicProfile> {
             fillColor: Colors.transparent,
             hintText: maxLines > 1
                 ? 'Tell us about yourself'
-                : 'Your Username ${authController.user.value?.name}',
+                : 'Your Username ${_userController.user.value?.name}',
             hintStyle: const TextStyle(
                 color: Colors.grey, fontFamily: 'MontserratR', fontSize: 12),
             enabledBorder: OutlineInputBorder(

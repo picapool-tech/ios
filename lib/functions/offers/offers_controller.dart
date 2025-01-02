@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/offers/offers_api.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/offer_model.dart';
 
@@ -16,6 +17,7 @@ class OffersController extends GetxController {
   var poolingOffers = <Offer>[].obs;
 
   final AuthController _authController = Get.find<AuthController>();
+  final UserController _userController = Get.find<UserController>();
   final OffersApi _offersApi = OffersApi();
 
   Future<void> fetchOffers() async {
@@ -105,7 +107,7 @@ class OffersController extends GetxController {
 
     var accessToken = await _authController.getAccessToken();
     var result = await _offersApi.getAllUsersOffer(
-      userId: _authController.auth.value!.user!.id,
+      userId: _userController.user.value!.id,
       accessToken: accessToken!,
     );
 

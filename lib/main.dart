@@ -15,6 +15,7 @@ import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/tags/tag_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
@@ -28,6 +29,7 @@ void main() async {
   );
 
   Get.put(StorageController());
+  Get.put(UserController());
   Get.put(AuthController());
   Get.put(LocationController());
   Get.put(VicinityController());
@@ -60,6 +62,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
+    listenNotification();
 
     return GetMaterialApp(
       title: 'Picapool',
@@ -70,15 +73,11 @@ class MyApp extends StatelessWidget {
         textSelectionTheme:
             const TextSelectionThemeData(cursorColor: Color(0xffffffff)),
       ),
-      home: GetBuilder<AuthController>(
-          init: Get.find<AuthController>(),
-          builder: (controller) {
-            return _handleAuthState(controller);
-          }),
+      home: _handleAuthState(authController),
     );
   }
 
-  listenNotification() {
+  static listenNotification() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
       // You can show a dialog, toast, or in-app UI here.
@@ -91,12 +90,13 @@ class MyApp extends StatelessWidget {
   }
 
   Widget _handleAuthState(AuthController authController) {
+    final UserController userController = Get.find<UserController>();
     debugPrint("INSIDE MAIN METHOD Auth: ${authController.auth.value}");
     if (authController.auth.value == null ||
         authController.auth.value!.accessToken == null) {
       return const LoginScreen();
-    } else if (authController.user.value == null ||
-        authController.user.value!.name == null) {
+    } else if (userController.user.value == null ||
+        userController.user.value!.name == null) {
       return const PersonalDetails();
     } else {
       return const NewBottomBar();
