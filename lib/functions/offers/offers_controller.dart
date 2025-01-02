@@ -5,6 +5,7 @@ import 'package:picapool/functions/offers/offers_api.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 
 class OffersController extends GetxController {
   var isLoading = false.obs;
@@ -13,6 +14,7 @@ class OffersController extends GetxController {
 
 // for showing pooling history
   var allOffers = <Offer>[].obs;
+
 
   var poolingOffers = <Offer>[].obs;
 
@@ -119,5 +121,27 @@ class OffersController extends GetxController {
 
     isLoading.value = false;
     update();
+  }
+
+  Future<void> getOffersInVicinity({
+    required VicinityLocation location,
+  }) async {
+    isLoading.value = true;
+    update();
+    var accessToken = await _authController.getAccessToken();
+    var result = await _offersApi.getOffersInVicinity(
+      accessToken: accessToken!,
+      location: location,
+    );
+
+    result.fold(
+      (error) {
+        Get.snackbar(
+          "Error",
+          error.message,
+        );
+      },
+      (nearestOffers) {},
+    );
   }
 }

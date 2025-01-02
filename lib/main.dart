@@ -43,17 +43,15 @@ void main() async {
   Get.put(TagController());
 
   NotificationService().requestPermission();
-  handleNotification();
+  FirebaseMessaging.onBackgroundMessage(handleNotification);
+  NotificationService().handleTokenGeneration();
   runApp(const MyApp());
 }
 
-Future<void> handleNotification() async {
-  RemoteMessage? initialMessage =
-      await FirebaseMessaging.instance.getInitialMessage();
-  if (initialMessage != null) {
-    print('Notification opened the app: ${initialMessage.data}');
-    // Handle navigation or other actions.
-  }
+@pragma('vm:entry-point')
+Future<void> handleNotification(RemoteMessage message) async {
+  debugPrint('Notification opened the app: ${message.data}');
+  // Handle navigation or other actions.
 }
 
 class MyApp extends StatelessWidget {
@@ -77,7 +75,7 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  static listenNotification() {
+  listenNotification() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
       // You can show a dialog, toast, or in-app UI here.

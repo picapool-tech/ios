@@ -7,6 +7,7 @@ import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:picapool/models/response_model.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 
 class OffersApi {
   FutureEither<List<Offer>> getAllOffers({
@@ -129,6 +130,60 @@ class OffersApi {
       return left(
         Failure(
           message: "Not able to fetch pooling history at this time.",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<List<Offer>> getOffersInVicinity({
+    required String accessToken,
+    required VicinityLocation location,
+  }) async {
+    try {
+      var body = {
+        "loc": {
+          ...location.toJson(),
+        },
+        "radius": 1000,
+      };
+
+      var response = await http.post(
+        Uri.parse("https://api.picapool.com/v2/offer/nearest"),
+        headers: {'Authorization': "Bearer $accessToken"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+
+        if (responseModel.success) {
+          return right(
+            responseModel.data
+                .map<Offer>((offer) => Offer.fromJson(offer))
+                .toList(),
+          );
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      } else {
+        return left(
+          Failure(
+            message: "Something went wrong",
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error in getOffersInVicinity : $e");
+      return left(
+        Failure(
+          message: "Not able to get offers in vicinity",
           stackTrace: StackTrace.current,
         ),
       );

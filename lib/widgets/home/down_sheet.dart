@@ -180,8 +180,10 @@ class _DownSheetState extends State<DownSheet> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: firstBrandRow
-                    .where(
-                        (brand) => brand['name']!.contains(widget.searchQuery))
+                    .where((brand) => brand['name']!
+                        .toLowerCase()
+                        .trim()
+                        .contains(widget.searchQuery.toLowerCase().trim()))
                     .map((brand) => _buildBrandItem(brand))
                     .toList(),
               ),
@@ -193,8 +195,10 @@ class _DownSheetState extends State<DownSheet> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: secondBrandRow
-                    .where(
-                        (brand) => brand['name']!.contains(widget.searchQuery))
+                    .where((brand) => brand['name']!
+                        .toLowerCase()
+                        .trim()
+                        .contains(widget.searchQuery.toLowerCase().trim()))
                     .map((brand) => _buildBrandItem(brand))
                     .toList(),
               ),

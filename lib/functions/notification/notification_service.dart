@@ -1,5 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
@@ -23,6 +25,16 @@ class NotificationService {
     } else {
       debugPrint('User denied permission');
     }
+  }
+
+  void handleTokenGeneration() {
+    _fcm.onTokenRefresh.listen((token) async {
+      var userController = Get.find<UserController>();
+      debugPrint("Token updated from fcm");
+      await userController.updateUser(
+        {'fcmToken': token},
+      );
+    });
   }
 
   Future<String?> retrieveToken() async {
