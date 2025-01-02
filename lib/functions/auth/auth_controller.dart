@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
+import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/access_token_model.dart';
@@ -75,6 +76,7 @@ class AuthController extends GetxController {
       if (userData != null) {
         debugPrint('User from laod and auth: ${userData.toJson()}');
         _userController.user.value = userData;
+        handleFCMToken();
         var userAuth = userData.auth;
         if (userAuth != null) {
           auth.value?.update(
@@ -88,6 +90,22 @@ class AuthController extends GetxController {
     } catch (e) {
       debugPrint('Error: $e');
       return false;
+    }
+  }
+
+  Future<void> handleFCMToken() async {
+    debugPrint("handle fcm token");
+    if (_userController.user.value!.fcmToken == null) {
+      var fcm = await NotificationService().retrieveToken();
+
+      if (fcm != null) {
+        debugPrint("FCM TOKEN : $fcm");
+        await _userController.updateUser({
+          "fcmToken": fcm,
+        });
+      }
+    } else {
+      debugPrint("FCM TOKEN : ${_userController.user.value?.fcmToken}");
     }
   }
 

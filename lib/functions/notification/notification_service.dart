@@ -25,8 +25,7 @@ class NotificationService {
     }
   }
 
-  Future<void> retrieveToken() async {
-    String? token = await _fcm.getToken();
-    debugPrint('FCM Token: $token');
+  Future<String?> retrieveToken() async {
+    return _fcm.getToken();
   }
 }
