@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 
@@ -36,7 +37,7 @@ class LocationState {
 class LocationController extends GetxController {
   // Reactive state variable
   Rx<LocationState> state = LocationState().obs;
-  final UserController _userController = Get.find<UserController>();  
+  final UserController _userController = Get.find<UserController>();
 
   // Request permission and fetch the current location
   Future<void> getLocation() async {
@@ -71,10 +72,35 @@ class LocationController extends GetxController {
       }
 
       if (permission == geo.LocationPermission.deniedForever) {
+        debugPrint("Location permission permanently denied");
+
         state.value = state.value.copyWith(
           isLoading: false,
           errorMessage:
               'Location permissions are permanently denied, we cannot request permissions.',
+        );
+        Get.dialog(
+          AlertDialog.adaptive(
+            title: const Text("Location Permission"),
+            content: const Text(
+              "Location permissions are permanently denied, we cannot request permissions.\nClick on 'Go to Settings' to enable location permissions.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                },
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () {
+                  openAppSettings();
+                  Get.back();
+                },
+                child: const Text("Go to Settings"),
+              ),
+            ],
+          ),
         );
         return;
       }
@@ -96,7 +122,7 @@ class LocationController extends GetxController {
         debugPrint(
             "Updated user location {lat: ${position.latitude}, long: ${position.longitude}}");
       } catch (e) {
-        debugPrint(e.toString());
+        debugPrint("UPDATING USER LOCATION ERROR : ${e.toString()}");
       }
 
       debugPrint("Location: ${position.latitude}, ${position.longitude}");
@@ -121,7 +147,7 @@ class LocationController extends GetxController {
       );
     } catch (e) {
       // Handle any errors
-      debugPrint(e.toString());
+      debugPrint("USER LOCATION FETCH ERROR: ${e.toString()}");
       state.value = state.value.copyWith(
         isLoading: false,
         errorMessage: 'Failed to get location: ${e.toString()}',

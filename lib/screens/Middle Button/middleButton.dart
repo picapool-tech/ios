@@ -23,22 +23,45 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
     mapController = controller;
   }
 
+  void updateCenter() {
+    if (_locationController.state.value.location != null) {
+      debugPrint(
+          "UPDATING CENTER : ${_locationController.state.value.location}");
+      setState(() {
+        _center = LatLng(
+          _locationController.state.value.location!.latitude,
+          _locationController.state.value.location!.longitude,
+        );
+      });
+    } else {
+      debugPrint("Location is null");
+    }
+  }
+
+  Future<void> fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      debugPrint("FETCHING LOCATION");
+      await _locationController.getLocation();
+      updateCenter();
+    } else {
+      updateCenter();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-
-    _center = LatLng(
-      _locationController.state.value.location!.latitude,
-      _locationController.state.value.location!.longitude,
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((duration) {
-      _offersController.getOffersInVicinity(
-        location: VicinityLocation(
-          lat: _center.latitude,
-          long: _center.longitude,
-        ),
-      );
+    fetchLocation();
+    WidgetsBinding.instance.addPostFrameCallback((duration) async {
+      if (_locationController.state.value.location != null) {
+        debugPrint("MAP IS UPDATED: WITH LOCATION : $_center");
+        _offersController.getOffersInVicinity(
+          location: VicinityLocation(
+            lat: _center.latitude,
+            long: _center.longitude,
+          ),
+        );
+      }
     });
   }
 

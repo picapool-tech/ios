@@ -460,7 +460,7 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
   ListView showOfferList() {
-    debugPrint("${_offers.offers.first.toJson()}");
+    debugPrint("${_offers.allOffers.first.toJson()}");
     return ListView.builder(
       itemCount: _offers.allOffers.length,
       itemBuilder: (context, index) {

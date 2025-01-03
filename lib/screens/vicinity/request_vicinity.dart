@@ -197,6 +197,17 @@ class _RequestVicinityState extends State<RequestVicinity> {
       return;
     }
 
+    if (_currentPosition == null ||
+        _currentPosition?.latitude == null ||
+        _currentPosition?.longitude == null) {
+      Get.snackbar(
+        "Location required",
+        "Please check location services is working",
+      );
+      await _fetchLocation();
+      return;
+    }
+
     final offer = VicinityOffer(
       name: _titleController.text,
       images: [],

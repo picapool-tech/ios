@@ -804,6 +804,11 @@ class _LocationScreenState extends State<LocationScreen>
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
+                        if (_selectedPosition == null) {
+                          await _fetchLocation();
+                          return;
+                        }
+
                         await _userController.updateUser({
                           "loc": {
                             "lat": _selectedPosition!.latitude,
