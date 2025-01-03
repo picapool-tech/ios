@@ -456,7 +456,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   // todo : change the title to chat.title
                   Expanded(
                     child: Hero(
-                      tag: "chatTitle",
+                      tag: chat.chat.id,
                       child: Text(
                         chat.offer.name,
                         maxLines: 1,

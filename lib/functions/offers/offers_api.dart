@@ -42,24 +42,42 @@ class OffersApi {
     }
   }
 
-  static FutureEither<List<Offer>> getOffers(String at) async {
+  FutureEither<List<Offer>> getOffersForUser({
+    required int userId,
+    required String accessToken,
+  }) async {
     try {
       final response = await http.get(
-          Uri.parse('https://api.picapool.com/v2/offer/all'),
-          headers: {'Authorization': "Bearer $at"});
+        Uri.parse('https://api.picapool.com/v2/user/$userId/offers'),
+        headers: {
+          'Authorization': "Bearer $accessToken",
+        },
+      );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      debugPrint("FROM OFFERS API : ${response.body}");
-      if (responseModel.success) {
-        return right(
-          responseModel.data
-              .map<Offer>((offer) => Offer.fromJson(offer))
-              .toList(),
-        );
-      } else {
+      debugPrint("FROM OFEER FOR USER API : ${response.body}");
+      if (response.statusCode < 200 || response.statusCode > 300) {
         return left(Failure(
-            message: responseModel.message, stackTrace: StackTrace.current));
+          message: "Not able to get offers for user",
+          stackTrace: StackTrace.current,
+        ));
       }
+
+      var offers = jsonDecode(response.body) as List;
+      List<Offer> offersList =
+          offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
+      return right(offersList);
+
+      // var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      // if (responseModel.success) {
+      //   return right(
+      //     responseModel.data
+      //         .map<Offer>((offer) => Offer.fromJson(offer))
+      //         .toList(),
+      //   );
+      // } else {
+      //   return left(Failure(
+      //       message: responseModel.message, stackTrace: StackTrace.current));
+      // }
     } catch (e) {
       return left(
         Failure(
@@ -143,16 +161,21 @@ class OffersApi {
     try {
       var body = {
         "loc": {
-          ...location.toJson(),
+          "lat": location.lat,
+          "long": location.long,
         },
         "radius": 1000,
       };
+
+      debugPrint("Request body of nearest offer: ${body.toString()}");
 
       var response = await http.post(
         Uri.parse("https://api.picapool.com/v2/offer/nearest"),
         headers: {'Authorization': "Bearer $accessToken"},
         body: jsonEncode(body),
       );
+
+      debugPrint("GET OFFERS IN VICINITY : ${response.body}");
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         var responseModel = ResponseModel.fromJson(jsonDecode(response.body));

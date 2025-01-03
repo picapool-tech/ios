@@ -21,6 +21,8 @@ class NetworkController extends GetxController {
     super.onClose();
   }
 
+  // this will handle the connectivity status all the time..
+  // if network disconnects, it will handle that also..at any point of time.
   void _startListening() {
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((results) async {
@@ -30,6 +32,7 @@ class NetworkController extends GetxController {
   }
 
   // Check initial connectivity status when the app starts
+  // this function is not useful at this time..
   Future<void> _checkInitialConnectivity() async {
     final result = await _connectivity.checkConnectivity();
     isConnected.value = (result != ConnectivityResult.none);

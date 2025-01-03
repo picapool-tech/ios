@@ -50,7 +50,9 @@ void main() async {
 
 @pragma('vm:entry-point')
 Future<void> handleNotification(RemoteMessage message) async {
-  debugPrint('Notification opened the app: ${message.data}');
+  debugPrint('Notification opened the app: ${message.notification?.title}');
+  debugPrint('Notification opened the app: ${message.data.toString()}');
+  debugPrint('Notification opened the app: ${message.notification?.body}');
   // Handle navigation or other actions.
 }
 

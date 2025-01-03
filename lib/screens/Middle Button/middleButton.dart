@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
 class PoolOffersScreen extends StatefulWidget {
@@ -25,13 +26,19 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
   @override
   void initState() {
     super.initState();
+
     _center = LatLng(
       _locationController.state.value.location!.latitude,
       _locationController.state.value.location!.longitude,
     );
 
     WidgetsBinding.instance.addPostFrameCallback((duration) {
-      _offersController.fetchAllOffers();
+      _offersController.getOffersInVicinity(
+        location: VicinityLocation(
+          lat: _center.latitude,
+          long: _center.longitude,
+        ),
+      );
     });
   }
 
@@ -103,7 +110,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                     const SizedBox(height: 4),
                     Obx(() {
                       return Text(
-                        _offersController.allOffers.length.toString(),
+                        _offersController.nearestOffers.length.toString(),
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -246,21 +253,21 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                     child: GetBuilder<OffersController>(
                         init: _offersController,
                         builder: (controller) {
-                          if (controller.allOffers.isEmpty &&
+                          if (controller.nearestOffers.isEmpty &&
                               controller.isLoading.value) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          if (controller.allOffers.isEmpty) {
+                          if (controller.nearestOffers.isEmpty) {
                             return const Center(
                               child: Text("No offers available"),
                             );
                           }
 
                           return ListView.builder(
-                            itemCount: controller.allOffers.length,
+                            itemCount: controller.nearestOffers.length,
                             itemBuilder: (context, index) {
                               var offer = controller.allOffers[index];
 

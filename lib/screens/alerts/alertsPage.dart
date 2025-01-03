@@ -33,7 +33,7 @@ class _AlertsPageState extends State<AlertsPage> {
     super.initState();
 
     if (_userController.user.value != null) {
-      _offers.fetchOffers();
+      _offers.fetchAllOffers();
     }
   }
 
@@ -164,22 +164,22 @@ class _AlertsPageState extends State<AlertsPage> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: (_userController.user.value != null)
                       ? GetBuilder<OffersController>(builder: (controller) {
-                          if (controller.offers.isEmpty &&
+                          if (controller.allOffers.isEmpty &&
                               controller.isLoading.value) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          if (controller.offers.isEmpty) {
+                          if (controller.allOffers.isEmpty) {
                             return const Center(
                               child: Text("No offers"),
                             );
                           } else {
                             if (expandedStates.length !=
-                                controller.offers.length) {
+                                controller.allOffers.length) {
                               expandedStates = List<bool>.filled(
-                                controller.offers.length,
+                                controller.allOffers.length,
                                 false,
                               );
                             }
@@ -189,7 +189,7 @@ class _AlertsPageState extends State<AlertsPage> {
                         })
                       : const Center(
                           child: Text(
-                            "You don't have an account to show chats",
+                            "You don't have an account to show alerts",
                           ),
                         ),
                 ),
@@ -462,9 +462,9 @@ class _AlertsPageState extends State<AlertsPage> {
   ListView showOfferList() {
     debugPrint("${_offers.offers.first.toJson()}");
     return ListView.builder(
-      itemCount: _offers.offers.length,
+      itemCount: _offers.allOffers.length,
       itemBuilder: (context, index) {
-        var offer = _offers.offers[index];
+        var offer = _offers.allOffers[index];
         return listItem(
           offer: offer,
           onTap: () {

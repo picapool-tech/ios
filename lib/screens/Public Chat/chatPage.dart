@@ -89,7 +89,7 @@ class _ChatPageState extends State<ChatPage>
         ),
         centerTitle: false,
         title: Hero(
-          tag: "chatTitle",
+          tag: widget.chat.id,
           child: Text(
             widget.offer?.name ?? "Chat",
             maxLines: 1,

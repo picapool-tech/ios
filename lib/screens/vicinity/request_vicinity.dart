@@ -116,7 +116,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
       _currentPosition = LatLng(location.latitude, location.longitude);
 
       _updateMarkersAndCircles();
-      getNearestUsers(_userController.user.value!.id, _radius);
+      getNearestUsers(_userController.user.value?.id, _radius);
 
       if (_controller != null && !_isMapInitialized) {
         _controller!.animateCamera(
@@ -736,7 +736,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
                               });
 
                               getNearestUsers(
-                                _userController.user.value!.id,
+                                _userController.user.value?.id,
                                 value.toDouble(),
                               );
                             },
@@ -801,9 +801,11 @@ class _RequestVicinityState extends State<RequestVicinity> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: () {
-                  createVicinity();
-                },
+                onPressed: (_userController.user.value?.id != null)
+                    ? () {
+                        createVicinity();
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   backgroundColor: const Color(0xffFF8D41),
@@ -817,9 +819,11 @@ class _RequestVicinityState extends State<RequestVicinity> {
                       return const CircularProgressIndicator();
                     }
 
-                    return const Text(
-                      "Start Pooling",
-                      style: TextStyle(
+                    return Text(
+                      (_userController.user.value?.id != null)
+                          ? "Start Pooling"
+                          : "Sign in required",
+                      style: const TextStyle(
                         fontSize: 18,
                         fontFamily: "MontserratSB",
                         color: Colors.white,
@@ -905,10 +909,11 @@ class _RequestVicinityState extends State<RequestVicinity> {
     );
   }
 
-  Future<void> getNearestUsers(int id, double radius) async {
+  Future<void> getNearestUsers(int? id, double radius) async {
     String endpoint = "https://api.picapool.com/v2/user/nearest";
     String? at = await _authController.getAccessToken();
-    if (at == null) {
+
+    if (at == null || id == null) {
       return;
     }
 

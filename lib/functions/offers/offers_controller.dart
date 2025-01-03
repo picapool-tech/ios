@@ -12,9 +12,11 @@ class OffersController extends GetxController {
   var errorMessage = ''.obs;
   var offers = <Offer>[].obs;
 
-// for showing pooling history
-  var allOffers = <Offer>[].obs;
+// for showing pooling history // used in middle button
+  var nearestOffers = <Offer>[].obs;
 
+  // all offers not necessarily for user
+  var allOffers = <Offer>[].obs;
 
   var poolingOffers = <Offer>[].obs;
 
@@ -22,16 +24,19 @@ class OffersController extends GetxController {
   final UserController _userController = Get.find<UserController>();
   final OffersApi _offersApi = OffersApi();
 
-  Future<void> fetchOffers() async {
+  Future<void> getOffersForUser() async {
     isLoading.value = true;
     errorMessage.value = '';
     update();
     var accessToken = await _authController.getAccessToken();
     if (accessToken == null) {
-      debugPrint("Not updated");
+      debugPrint("Access Token Not Updated");
       return;
     }
-    final result = await OffersApi.getOffers(accessToken);
+    final result = await _offersApi.getOffersForUser(
+      userId: _userController.user.value!.id,
+      accessToken: accessToken,
+    );
 
     result.fold(
       (failure) {
@@ -129,8 +134,16 @@ class OffersController extends GetxController {
     isLoading.value = true;
     update();
     var accessToken = await _authController.getAccessToken();
+
+    if (accessToken == null) {
+      debugPrint("Access Token Not Updated");
+      isLoading.value = false;
+      update();
+      return;
+    }
+
     var result = await _offersApi.getOffersInVicinity(
-      accessToken: accessToken!,
+      accessToken: accessToken,
       location: location,
     );
 
@@ -141,7 +154,11 @@ class OffersController extends GetxController {
           error.message,
         );
       },
-      (nearestOffers) {},
+      (nearestOffersResponse) {
+        nearestOffers.value = nearestOffersResponse;
+      },
     );
+    isLoading.value = false;
+    update();
   }
 }

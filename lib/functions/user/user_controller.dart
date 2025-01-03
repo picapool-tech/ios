@@ -15,6 +15,10 @@ class UserController extends GetxController {
     isLoading.value = true;
     update();
 
+    if (user.value == null || user.value?.id == null) {
+      return false;
+    }
+
     try {
       var accessToken = await _storageController.getAccessToken();
       final result = await _userApi.updateUser(
