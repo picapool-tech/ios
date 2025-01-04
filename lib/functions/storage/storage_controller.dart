@@ -6,10 +6,12 @@ import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/user_model.dart';
 
 class StorageController extends GetxController {
+  var auth = Rx<Auth?>(null);
+  var user = Rx<User?>(null);
+
   @override
   void onInit() {
     super.onInit();
-
     loadAuth();
     loadUser();
   }
@@ -29,9 +31,10 @@ class StorageController extends GetxController {
     if (authData != null) {
       Map<String, dynamic> authMap = jsonDecode(authData);
       Auth auth = Auth.fromJson(authMap);
+      this.auth.value = auth;
+      update();
       return auth;
     }
-
     return null;
   }
 
@@ -53,6 +56,8 @@ class StorageController extends GetxController {
     if (userData != null) {
       Map<String, dynamic> userMap = jsonDecode(userData);
       User user = User.fromJson(userMap);
+      this.user.value = user;
+      update();
       return user;
     }
     return null;

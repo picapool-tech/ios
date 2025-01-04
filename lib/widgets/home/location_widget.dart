@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/screens/location_fetch_screen.dart';
-import 'package:picapool/utils/svg_icon.dart';
 
 class LocationWidget extends StatefulWidget {
   const LocationWidget({
@@ -33,30 +32,30 @@ class _LocationWidgetState extends State<LocationWidget> {
     }
   }
 
-  String _extractMainLocation(String location) {
-    // Splitting the address based on commas
-    List<String> parts = location.split(',');
+  // String _extractMainLocation(String location) {
+  //   // Splitting the address based on commas
+  //   List<String> parts = location.split(',');
 
-    // Assuming the last part is the country, the second last is the city
-    if (parts.length >= 3) {
-      // This will show the second last part as the main location (like the city or major area)
-      return parts[parts.length - 3].trim();
-    } else if (parts.length >= 2) {
-      // If the address is short, show the last part before the country
-      return parts[parts.length - 1].trim();
-    } else {
-      // If the address is too short, just return the entire address
-      return location;
-    }
-  }
+  //   // Assuming the last part is the country, the second last is the city
+  //   if (parts.length >= 3) {
+  //     // This will show the second last part as the main location (like the city or major area)
+  //     return parts[parts.length - 3].trim();
+  //   } else if (parts.length >= 2) {
+  //     // If the address is short, show the last part before the country
+  //     return parts[parts.length - 1].trim();
+  //   } else {
+  //     // If the address is too short, just return the entire address
+  //     return location;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      String mainLocation = locationController.state.value.location != null
-          ? _extractMainLocation(
-              locationController.state.value.locationName ?? "")
-          : "Locating...";
+      String mainLocation =
+          locationController.state.value.locationName?.name != null
+              ? locationController.state.value.locationName!.name ?? ""
+              : "Locating...";
 
       return Row(
         children: [
@@ -96,7 +95,9 @@ class _LocationWidgetState extends State<LocationWidget> {
                         Text(
                           locationController.state.value.errorMessage != null
                               ? "No Location"
-                              : mainLocation,
+                              : locationController
+                                      .state.value.locationName?.locality ??
+                                  "Locality unknown",
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.montserrat(
                             fontSize: 12,

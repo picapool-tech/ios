@@ -161,8 +161,7 @@ class OffersApi {
     try {
       var body = {
         "loc": {
-          "lat": location.lat,
-          "long": location.long,
+          ...location.toJson(),
         },
         "radius": 1000,
       };

@@ -20,7 +20,7 @@ import 'package:http/http.dart' as http;
 class AuthController extends GetxController {
   final AuthApi _authApi = AuthApi();
   final StorageController _storageController = Get.find<StorageController>();
-  late final UserController _userController = Get.find<UserController>();
+  final UserController _userController = Get.find<UserController>();
 
   // Use GetX reactive variables for the auth state
   var auth = Rx<Auth?>(null);
@@ -36,8 +36,10 @@ class AuthController extends GetxController {
 
   /// Load user and auth data from storage at startup.
   Future<void> _loadUserOnStartup() async {
-    auth.value = await _storageController.loadAuth();
-    _userController.user.value = await _storageController.loadUser();
+    auth.value =
+        _storageController.auth.value ??= await _storageController.loadAuth();
+    debugPrint("loading auth controller from storage!.");
+    update();
   }
 
   /// Handle Google login and store auth and user data.
@@ -86,6 +88,7 @@ class AuthController extends GetxController {
       }
       await _storageController.saveAuth(auth.value!);
       await _storageController.saveUser(_userController.user.value!);
+      update();
       return true;
     } catch (e) {
       debugPrint('Error: $e');

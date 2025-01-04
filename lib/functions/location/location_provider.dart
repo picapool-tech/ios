@@ -3,14 +3,13 @@ import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 
 class LocationState {
   final Location? location;
   final bool isLoading;
   final String? errorMessage;
-  final String? locationName;
+  final Placemark? locationName;
 
   LocationState({
     this.location,
@@ -23,7 +22,7 @@ class LocationState {
     Location? location,
     bool? isLoading,
     String? errorMessage,
-    String? locationName,
+    Placemark? locationName,
   }) {
     return LocationState(
       location: location ?? this.location,
@@ -55,6 +54,7 @@ class LocationController extends GetxController {
           isLoading: false,
           errorMessage: 'Location services are disabled.',
         );
+        update();
       }
 
       // Check and request location permissions
@@ -67,6 +67,7 @@ class LocationController extends GetxController {
             isLoading: false,
             errorMessage: 'Location permission not granted.',
           );
+          update();
           return;
         }
       }
@@ -79,6 +80,7 @@ class LocationController extends GetxController {
           errorMessage:
               'Location permissions are permanently denied, we cannot request permissions.',
         );
+        update();
         Get.dialog(
           AlertDialog.adaptive(
             title: const Text("Location Permission"),
@@ -166,15 +168,21 @@ class LocationController extends GetxController {
         String address =
             "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
 
-        state.value = state.value.copyWith(locationName: address);
+        state.value = state.value.copyWith(
+          locationName: place,
+        );
         debugPrint("Added location name");
       } else {
-        state.value = state.value.copyWith(locationName: "Unknown location");
+        state.value = state.value.copyWith(
+          locationName: const Placemark(name: "Unknown Location"),
+        );
       }
     } catch (e) {
       debugPrint(e.toString());
       state.value = state.value.copyWith(
-        locationName: "Failed to get address: ${e.toString()}",
+        locationName: Placemark(
+          name: "Failed to get address: ${e.toString()}",
+        ),
       );
     }
   }

@@ -11,6 +11,18 @@ class UserController extends GetxController {
   Rx<bool> isLoading = false.obs;
   var user = Rx<User?>(null);
 
+  @override
+  void onInit() {
+    super.onInit();
+    _initializeUser();
+  }
+
+  Future<void> _initializeUser() async {
+    user.value =
+        _storageController.user.value ??= await _storageController.loadUser();
+    update();
+  }
+
   Future<bool> updateUser(Map<String, dynamic> updateValues) async {
     isLoading.value = true;
     update();

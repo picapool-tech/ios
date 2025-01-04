@@ -43,7 +43,7 @@ class _LocationScreenState extends State<LocationScreen>
   bool _isKeyboardVisible = false;
 
   final LocationController _locationController = Get.find<LocationController>();
-  final AuthController _authController = Get.find<AuthController>();
+
   final UserController _userController = Get.find<UserController>();
 
   final GoogleMapsPlaces _places = GoogleMapsPlaces(

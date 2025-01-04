@@ -41,7 +41,6 @@ void main() async {
   Get.put(ProductController());
   Get.put(NetworkController());
   Get.put(TagController());
-
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
   NotificationService().handleTokenGeneration();
@@ -56,14 +55,26 @@ Future<void> handleNotification(RemoteMessage message) async {
   // Handle navigation or other actions.
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final AuthController authController = Get.find<AuthController>();
-    listenNotification();
+  State<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> {
+  // final AuthController authController = Get.find<AuthController>();
+  // final UserController userController = Get.find<UserController>();
+  final StorageController storageController = Get.find<StorageController>();
+
+  @override
+  void initState() {
+    super.initState();
+    listenNotification();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
@@ -73,7 +84,11 @@ class MyApp extends StatelessWidget {
         textSelectionTheme:
             const TextSelectionThemeData(cursorColor: Color(0xffffffff)),
       ),
-      home: _handleAuthState(authController),
+      home: GetBuilder(
+          init: storageController,
+          builder: (controller) {
+            return _handleAuthState();
+          }),
     );
   }
 
@@ -89,14 +104,13 @@ class MyApp extends StatelessWidget {
     });
   }
 
-  Widget _handleAuthState(AuthController authController) {
-    final UserController userController = Get.find<UserController>();
-    debugPrint("INSIDE MAIN METHOD Auth: ${authController.auth.value}");
-    if (authController.auth.value == null ||
-        authController.auth.value!.accessToken == null) {
+  Widget _handleAuthState() {
+    debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
+    if (storageController.auth.value == null ||
+        storageController.auth.value!.accessToken == null) {
       return const LoginScreen();
-    } else if (userController.user.value == null ||
-        userController.user.value!.name == null) {
+    } else if (storageController.user.value == null ||
+        storageController.user.value!.name == null) {
       return const PersonalDetails();
     } else {
       return const NewBottomBar();
