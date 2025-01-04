@@ -25,7 +25,8 @@ class ProductController extends GetxController {
   CreateProductState createProductState = CreateProductState.created;
   IndividualProductsState individualProductsState = IndividualProductsState.productsLoading;
   
-  List<ProductData> productsList = <ProductData>[];
+  List<ProductData> _allProducts = []; // Store original list
+  List<ProductData> productsList = [];
   late ProductData productDetails;
   List<String> imageURLs = <String>[];
   int currentIndex = 1;
@@ -38,8 +39,8 @@ class ProductController extends GetxController {
     try {
       final List<ProductData> response = await ProductsServices.getAllProducts(accessToken ?? "");
       if (response.isNotEmpty || response != []) {
-        productsList = response;
-        // productsList = response.data ?? [];
+        _allProducts = response; // Store original list
+        productsList = response; // Display list
         productsState = ProductsState.productsLoaded;
       } else {
         productsState = ProductsState.productsCantLoad;
@@ -47,6 +48,18 @@ class ProductController extends GetxController {
     } catch (e) {
       productsState = ProductsState.productsCantLoad;
       print('Error getting products list: $e');
+    }
+    update();
+  }
+
+  /// Filter products based on search query
+  void filterProducts(String query) {
+    if (query.isEmpty) {
+      productsList = _allProducts; // Restore original list
+    } else {
+      productsList = _allProducts.where((product) => 
+        product.name?.toLowerCase().contains(query) ?? false
+      ).toList();
     }
     update();
   }
