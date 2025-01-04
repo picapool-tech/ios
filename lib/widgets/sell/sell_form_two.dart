@@ -20,11 +20,62 @@ class _SellFormTwoState extends State<SellFormTwo> {
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController emailIdController = TextEditingController();
 
+  Future<void> handleProductCreation() async {
+    if (sellformTwoKey.currentState?.validate() ?? false) {
+      try {
+        formController.saveFormTwoData(saveFormTwoData());
+        
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF8D41)),
+              ),
+            );
+          },
+        );
+
+        // Attempt to create the product
+        final bool success = await formController.instantiateCreateProduct(context);
+        
+        // Hide loading indicator
+        Navigator.pop(context);
+
+        if (success) {
+          // Navigate to success page only if product creation was successful
+          Get.toNamed(GetRoutes.sellProductsConfirmationPage);
+        }
+      } catch (e) {
+        // Hide loading indicator if it's showing
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        
+        // Show error message
+        Get.snackbar(
+          'Error',
+          'Failed to create product: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } else {
+      showSnackBar(
+        content: 'Please fill all the required fields',
+        context: context
+      );
+    }
+  }
+    final formController = Get.find<FormController>();
+    final sellformTwoKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    final formController = Get.find<FormController>();
 
-    final sellformTwoKey = GlobalKey<FormState>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -157,18 +208,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
                     const SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (sellformTwoKey.currentState?.validate() ??
-                              false) {
-                            formController.saveFormTwoData(saveFormTwoData());
-                            formController.instantiateCreateProduct(context);
-                            Get.toNamed(GetRoutes.sellProductsConfirmationPage);
-                          } else {
-                            showSnackBar(
-                                content: 'Please fill all the fields',
-                                context: context);
-                          }
-                        },
+                        onPressed: handleProductCreation,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xffFF8D41),
                           shape: RoundedRectangleBorder(
