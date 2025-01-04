@@ -2,9 +2,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/controllers/brand_controller.dart';
+import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/controllers/product_controller.dart';
+import 'package:picapool/controllers/sell_form_controller.dart';
 import 'package:picapool/firebase_options_new.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
@@ -19,6 +22,7 @@ import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
+import 'package:picapool/utils/routes.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 
 void main() async {
@@ -39,8 +43,12 @@ void main() async {
   Get.put(AssetsController());
   Get.put(LiveOfferController());
   Get.put(ProductController());
+  Get.put(BrandController());
+  Get.put(FormController());
   Get.put(NetworkController());
   Get.put(TagController());
+  Get.put(CategoryController());
+
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
   NotificationService().handleTokenGeneration();
@@ -76,6 +84,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      getPages: GetRoutes.routes,
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

@@ -74,18 +74,18 @@ class AuthController extends GetxController {
         accessToken: accessToken,
       );
 
-      auth.value = authData;
       if (userData != null) {
         debugPrint('User from laod and auth: ${userData.toJson()}');
         _userController.user.value = userData;
         handleFCMToken();
         var userAuth = userData.auth;
         if (userAuth != null) {
-          auth.value?.update(
+          authData.update(
             userAuth.toJson(),
           );
         }
       }
+      auth.value = authData;
       await _storageController.saveAuth(auth.value!);
       await _storageController.saveUser(_userController.user.value!);
       update();

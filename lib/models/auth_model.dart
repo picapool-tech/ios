@@ -125,6 +125,7 @@ class Auth {
 
   // update auth with auth paramteres
   Auth update(Map<String, dynamic> fields) {
+    debugPrint("Updating auth: ${fields.toString()}");
     return Auth(
       id: fields['id'] ?? id,
       googleSub: fields['googleSub'] ?? googleSub,

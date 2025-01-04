@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // To format the date
 import 'package:flutter_google_maps_webservices/places.dart';
+import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/screens/cabs/showallcabs.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
+import 'package:get/get.dart';
+import 'package:picapool/controllers/live_offer_controller.dart';
+import 'package:geolocator/geolocator.dart';
 
 class ShareCabScreen extends StatefulWidget {
   const ShareCabScreen({super.key});
@@ -17,12 +22,110 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   String? _selectedCab; // To track the selected cab marker
   DateTime _selectedDate = DateTime.now(); // Current selected date
   final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey:'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
+  GoogleMapController? mapController;
+  Position? currentPosition;
+  Set<Marker> _markers = {};
 
   TextEditingController _fromController = TextEditingController();
   TextEditingController _toController = TextEditingController();
   List<Prediction> _fromPredictions = [];
   List<Prediction> _toPredictions = [];
   String formattedDate = '';
+
+  final LiveOfferController liveOfferController = Get.find();
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+    liveOfferController.getAllLiveOffers().then((_) {
+      _initializeMarkers(); // Initialize markers after offers are loaded
+    });
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high
+      );
+      setState(() {
+        currentPosition = position;
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('currentLocation'),
+            position: LatLng(position.latitude, position.longitude),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+            infoWindow: const InfoWindow(title: 'Your Location'),
+          ),
+        );
+      });
+      
+      // Move camera to current location
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 14.0,
+          ),
+        ),
+      );
+    } catch (e) {
+      print("Error getting location: $e");
+    }
+  }
+
+  Future<void> _addOfferMarkers(List<LiveOffer> offers) async {
+    // Clear existing offer markers (keep user's location marker if exists)
+    _markers.removeWhere((marker) => !marker.markerId.value.startsWith('current'));
+    
+    for (var offer in offers) {
+      if (offer.fromAddress != null && offer.fromAddress!.isNotEmpty) {
+        try {
+          final places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+          final PlacesSearchResponse response = await places.searchByText(
+            offer.fromAddress!,
+            region: "IN",
+            // components: [Component(Component.country, "IN")], // Restrict to India
+          );
+
+          if (response.status == 'OK' && response.results.isNotEmpty) {
+            final location = response.results.first.geometry!.location;
+            
+            setState(() {
+              _markers.add(
+                Marker(
+                  markerId: MarkerId('offer_${offer.id}'),
+                  position: LatLng(location.lat, location.lng),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+                  infoWindow: InfoWindow(
+                    title: DateFormat('hh:mm a').format(offer.updatedAt!),
+                    snippet: '${offer.seats} seats available',
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedCab = 'offer_${offer.id}';
+                    });
+                  },
+                ),
+              );
+            });
+
+            print("Added marker for offer ${offer.id} at ${location.lat}, ${location.lng}");
+          }
+        } catch (e) {
+          print("Error adding marker for offer ${offer.id}: $e");
+        }
+      }
+    }
+  }
+
+  // Add this method to initialize markers when offers are loaded
+  void _initializeMarkers() {
+    final offers = liveOfferController.liveOffersList;
+    if (offers.isNotEmpty) {
+      _addOfferMarkers(offers);
+    }
+  }
 
   // Function to open a date picker and allow the user to select a date
   Future<void> _selectDate(BuildContext context) async {
@@ -97,6 +200,50 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
         _toPredictions.clear();
       }
     });
+  }
+
+      List<LiveOffer> _filterOffersByDate(List<LiveOffer> offers) {
+    if (_selectedDate == null) {
+      return offers; // Return all offers if no date is selected
+    }
+
+    final selectedDateStart = DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
+    final selectedDateEnd = selectedDateStart.add(const Duration(days: 1));
+
+    return offers.where((offer) {
+      final updatedAt = offer.updatedAt;
+      return updatedAt!.isAfter(selectedDateStart) && updatedAt.isBefore(selectedDateEnd);
+    }).toList();
+  }
+
+  Widget buildAddressRow(String label, String address) {
+    return Row(
+      children: [
+        Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: "MontserratM",
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                address,
+                style: const TextStyle(fontFamily: "MontserratM"),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -337,46 +484,31 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
               child: Stack(
                 children: [
                   GoogleMap(
-                    onMapCreated: (controller) {},
-                    initialCameraPosition: const CameraPosition(
-                      target: _center,
+                    onMapCreated: (GoogleMapController controller) {
+                      mapController = controller;
+                      if (currentPosition != null) {
+                        controller.animateCamera(
+                          CameraUpdate.newCameraPosition(
+                            CameraPosition(
+                              target: LatLng(
+                                currentPosition!.latitude,
+                                currentPosition!.longitude,
+                              ),
+                              zoom: 14.0,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    initialCameraPosition: CameraPosition(
+                      target: currentPosition != null 
+                        ? LatLng(currentPosition!.latitude, currentPosition!.longitude)
+                        : const LatLng(0, 0), // Default position until we get location
                       zoom: 14.0,
                     ),
-                    markers: {
-                      Marker(
-                        markerId: const MarkerId('cab1'),
-                        position: const LatLng(25.276987, 55.286249),
-                        icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueBlue),
-                        onTap: () {
-                          setState(() {
-                            _selectedCab = 'cab1';
-                          });
-                        },
-                      ),
-                      Marker(
-                        markerId: const MarkerId('cab2'),
-                        position: const LatLng(25.276987, 55.306249),
-                        icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueBlue),
-                        onTap: () {
-                          setState(() {
-                            _selectedCab = 'cab2';
-                          });
-                        },
-                      ),
-                      Marker(
-                        markerId: const MarkerId('cab3'),
-                        position: const LatLng(25.266987, 55.296249),
-                        icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueBlue),
-                        onTap: () {
-                          setState(() {
-                            _selectedCab = 'cab3';
-                          });
-                        },
-                      ),
-                    },
+                    markers: _markers,
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: true,
                   ),
                   // Bottom fixed container
                   Positioned(
@@ -384,9 +516,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     left: 0,
                     right: 0,
                     child: Container(
-                      height: 190, // Fixed height for the bottom container
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      height: 250,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: const BorderRadius.only(
@@ -402,31 +533,160 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                           ),
                         ],
                       ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Click on the cab to see details',
-                            style: TextStyle(fontSize: 14, color: Colors.grey,fontFamily: "MontserratR"),
+                          const Text(
+                            "Available Rides",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "MontserratSB"
+                            ),
                           ),
-                          SizedBox(height: 15),
-                          // GestureDetector(
-                          //   onTap: () {
-                          //     Navigator.push(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //           builder: (context) => const ShowAllCabDetails()),
-                          //     );
-                          //   },
-                          //   child: const Text(
-                          //     'Show all >',
-                          //     style: TextStyle(
-                          //         color: Color(0xffFF8D41),
-                          //         fontSize: 14,
-                          //         fontFamily: "MontserratSB"),
-                          //   ),
-                          // ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 180,
+                            child: GetBuilder<LiveOfferController>(
+                              builder: (liveOfferInstance) {
+                                if (liveOfferInstance.allLiveofferState == GetAllLiveOfferState.allLiveOffersLoaded) {
+                                  final filteredOffers = _filterOffersByDate(liveOfferInstance.liveOffersList);
+                                  
+                                  if (filteredOffers.isEmpty) {
+                                    return Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.no_transfer, size: 48, color: Colors.grey[400]),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            _selectedDate == null 
+                                              ? "No rides available"
+                                              : "No rides available for ${DateFormat('yyyy-MM-dd').format(_selectedDate)}",
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 16,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  return ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: filteredOffers.length,
+                                    itemBuilder: (context, index) {
+                                      final offer = filteredOffers[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 16.0),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedCab = 'cab${index + 1}';
+                                            });
+                                          },
+                                          child: Container(
+                                            width: MediaQuery.of(context).size.width * 0.8,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(12),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.2),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 3,
+                                                  offset: const Offset(0, 1),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(16.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        DateFormat('hh:mm a').format(offer.updatedAt!),
+                                                        style: const TextStyle(
+                                                          fontFamily: "MontserratM",
+                                                          fontSize: 20
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                        decoration: BoxDecoration(
+                                                          border: Border.all(color: Colors.grey[300]!),
+                                                          borderRadius: BorderRadius.circular(12),
+                                                        ),
+                                                        child: Row(
+                                                          children: List.generate(
+                                                            offer.seats ?? 0,
+                                                            (index) => const Padding(
+                                                              padding: EdgeInsets.only(right: 2),
+                                                              child: Icon(Icons.person, size: 16, color: Color(0xffFF8D41)),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
+                                                  const SizedBox(height: 8),
+                                                  buildAddressRow("To", offer.toAddress ?? "EMPTY"),
+                                                  const Spacer(),
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: ElevatedButton(
+                                                      onPressed: () {},
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: const Color(0xffFF8D41),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                      ),
+                                                      child: const Padding(
+                                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                            ImageIcon(
+                                                              AssetImage("assets/icons/bus.png"),
+                                                              color: Colors.white,
+                                                              size: 16,
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Text(
+                                                              "Join Chat",
+                                                              style: TextStyle(
+                                                                fontFamily: "MontserratR",
+                                                                color: Colors.white,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }
+                                return const Center(
+                                  child: LinearProgressIndicator(color: Colors.orange)
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -585,7 +845,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                     ),
                   // The "3 cabs available nearby for this date" container
                   Positioned(
-                    bottom: 180, // Positioned above the bottom container
+                    bottom: MediaQuery.of(context).size.height * 0.3, // Positioned above the bottom container
                     left: 40,
                     right: 40,
                     child: Container(
@@ -602,28 +862,38 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Text.rich(
-                          TextSpan(
-                            text: 'Oops! No',
-                            style: TextStyle(
-                                fontSize: 16, color: Color(0xffFF8D41),fontFamily: "MontserratR"),
-                            children: [
+                      child: GetBuilder<LiveOfferController>(
+                        builder: (liveOfferInstance) {
+                          final offersCount = liveOfferInstance.liveOffersList.length;
+                          return Center(
+                            child: Text.rich(
                               TextSpan(
-                                text: ' cabs ',
-                                style: TextStyle(
-                                    color: Color(0xffFF8D41),
-                                    fontFamily: "MontserratR"),
+                                text: offersCount > 0 ? '$offersCount' : 'Oops! No',
+                                style: const TextStyle(
+                                  fontSize: 16, 
+                                  color: Color(0xffFF8D41),
+                                  fontFamily: "MontserratR"
+                                ),
+                                children: const [
+                                  TextSpan(
+                                    text: ' cabs ',
+                                    style: TextStyle(
+                                      color: Color(0xffFF8D41),
+                                      fontFamily: "MontserratR"
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: 'available nearby for this date.',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontFamily: "MontserratR"
+                                    ),
+                                  ),
+                                ],
                               ),
-                              TextSpan(
-                                text: 'available nearby for this date.',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontFamily: "MontserratR"),
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -650,5 +920,18 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
         child: const Icon(Icons.local_taxi, color: Colors.white,size: 24,)),
       ),
     );
+  }
+
+  // Update the didUpdateWidget method
+  @override
+  void didUpdateWidget(covariant ShareCabScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _initializeMarkers(); // Refresh markers when widget updates
+  }
+
+  @override
+  void dispose() {
+    mapController?.dispose();
+    super.dispose();
   }
 }

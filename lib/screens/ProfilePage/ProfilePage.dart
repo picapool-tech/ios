@@ -10,7 +10,7 @@ import 'package:picapool/functions/feedback/feedback_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/user_model.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage_m.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/pooling_history.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -69,17 +69,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ElevatedButton(
                     onPressed: () {
                       // joinnig chat
-                      if (kDebugMode) {
-                        Get.to(
-                          ChatPage(
-                            chat: Chat(
-                              id: 15,
-                              updatedAt: DateTime.now(),
-                              isMain: true,
-                            ),
-                          ),
-                        );
-                      }
+                      // if (kDebugMode) {
+                        // Get.to(
+                        //   ChatPage(
+                        //     chat: Chat(
+                        //       id: 15,
+                        //       updatedAt: DateTime.now(),
+                        //       isMain: true,
+                        //     ),
+                        //   ),
+                        // );
+                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(

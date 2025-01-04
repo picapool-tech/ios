@@ -2,6 +2,8 @@ import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/vehicle_model.dart';
 
+import 'live_offer/live_offer_entity.dart';
+
 class LivePartner {
   final int id;
   final String? name;

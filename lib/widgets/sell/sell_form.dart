@@ -46,6 +46,7 @@ class _SellFormState extends State<SellForm> {
   Future<void> _pickImage() async {
     final ImagePicker _picker = ImagePicker();
     final List<XFile>? images = await _picker.pickMultiImage();
+    
     if (images != null) {
       for (var image in images) {
         File? croppedImage = await _cropImage(File(image.path));
@@ -54,6 +55,14 @@ class _SellFormState extends State<SellForm> {
             _imageFiles.add(croppedImage);
           });
         }
+      }
+      
+      // Upload images and get URLs
+      if (_imageFiles.isNotEmpty) {
+        List<String> urls = await formController.uploadProductImages(_imageFiles);
+        setState(() {
+          imagesList = urls;
+        });
       }
     }
   }
@@ -109,11 +118,10 @@ List<String> imagesList = [];
 
   int currentCategory = 1;
 
+  final FormController formController = Get.find<FormController>();
+
   @override
   Widget build(BuildContext context) {
-
-
-    final formController = Get.find<FormController>();
 
 
     final sellformKey = GlobalKey<FormState>();
@@ -179,7 +187,7 @@ List<String> imagesList = [];
                 Column(
                   children: [
                     ClothingForm(
-                      styleController: controllers['style']!, 
+                      styleController: _nameController, 
                       brandController: controllers['brand']!, 
                       priceController: _priceController, 
                       fabricController: controllers['fabric']!, 
@@ -198,7 +206,7 @@ List<String> imagesList = [];
                : categoryName.trim().toLowerCase() == "sports" ?
                 Column(
                   children: [
-                    SportsForm(typeController: controllers['type']!, 
+                    SportsForm(typeController: _nameController, 
                     brandController: controllers['brand']!, 
                     priceController: _priceController, 
                     sizeController: controllers['size']!, 
@@ -217,7 +225,7 @@ List<String> imagesList = [];
                : categoryName.trim().toLowerCase() == "books" ?
                 Column(
                   children: [
-                    BooksForm(titleController: controllers['title']!, 
+                    BooksForm(titleController: _nameController, 
                     authorController: controllers['author']!, 
                     priceController: _priceController, 
                     genreController: controllers['genre']!, 
@@ -237,7 +245,7 @@ List<String> imagesList = [];
                 Column(
                   children: [
                     VehicleForm(
-                      typeController: controllers['type']!, 
+                      typeController: _nameController, 
                       yearController: controllers['year']!, 
                       brandController: controllers['brand']!, 
                       kmsController: controllers['kmsDriven']!, 
@@ -259,7 +267,7 @@ List<String> imagesList = [];
                 Column(
                   children: [
                     FurnitureForm(
-                      typeController: controllers['type']!, 
+                      typeController: _nameController, 
                     brandController: controllers['brand']!, 
                     priceController: _priceController, 
                     materialController: controllers['material']!, 
@@ -310,35 +318,66 @@ List<String> imagesList = [];
 
   Map<String, dynamic> saveFormData() {
     Map<String, dynamic> formOneData = {};
-    formOneData['category'] =   currentCategory;
-    // formOneData['name'] = _nameController.text.toString() == "" ? null :  _nameController.text.toString()   ;
-    formOneData['name'] = "productName";
-    formOneData['price'] = _priceController.text.toString() == "" ? null : _priceController.text.toString()   ;
-    formOneData['pic'] = imagesList ;
+    formOneData['category'] = currentCategory;
+    formOneData['name'] = _nameController.text.trim();
+    formOneData['price'] = double.tryParse(_priceController.text) ?? 0.0;
+    formOneData['images'] = imagesList;
     formOneData['condition'] = selectedCondition;
-    formOneData['partner'] = "1" ;
-    formOneData['description'] = _descriptionController.text.toString() == "" ? null :  _descriptionController.text.toString()   ;
-    formOneData['deviceType'] = controllers['deviceType']?.text.toString() == "" ? null : controllers['deviceType']?.text.toString()   ;
-    formOneData['modelName'] = controllers['modelName']?.text.toString() == "" ? null : controllers['modelName']?.text.toString()   ;
-    formOneData['brand'] = controllers['brand']?.text.toString() == "" ? null : controllers['brand']?.text.toString()   ;
-    formOneData['accessories'] = controllers['accessories']?.text.toString() == "" ? null : controllers['accessories']?.text.toString()   ;
-    formOneData['style'] = controllers['style']?.text.toString() == "" ? null : controllers['style']?.text.toString()   ;
-    formOneData['fabric'] = controllers['fabric']?.text.toString() == "" ? null : controllers['fabric']?.text.toString()   ;
-    formOneData['type'] = controllers['type']?.text.toString() == "" ? null : controllers['type']?.text.toString()   ;
-    formOneData['size'] = controllers['size']?.text.toString() == "" ? null : controllers['size']?.text.toString()   ;
-    // formOneData['title'] = controllers['title']?.text.toString() == "" ? null : controllers['title']?.text.toString()   ;
-    formOneData['author'] = controllers['author']?.text.toString() == "" ? null : controllers['author']?.text.toString()   ;
-    formOneData['genre'] = controllers['genre']?.text.toString() == "" ? null : controllers['genre']?.text.toString()   ;
-    // formOneData['vehicleType'] = controllers['vehicleType']?.text.toString() == "" ? null : controllers['vehicleType']?.text.toString()   ;
-    formOneData['year'] = controllers['year']?.text.toString() == "" ? null : controllers['year']?.text.toString()   ;
-    formOneData['kmsDriven'] = controllers['kmsDriven']?.text.toString() == "" ? null : controllers['kmsDriven']?.text.toString()   ;
-    formOneData['specifications'] = controllers['specs']?.text.toString() == "" ? null : controllers['specs']?.text.toString()   ;
-    // formOneData['furnitureType'] = controllers['furnitureType']?.text.toString() == "" ? null : controllers['furnitureType']?.text.toString()   ;
-    formOneData['material'] = controllers['material']?.text.toString() == "" ? null : controllers['material']?.text.toString()   ;
-    formOneData['length'] = controllers['length']?.text.toString() == "" ? null : controllers['length']?.text.toString()   ;
-    formOneData['breadth'] = controllers['breadth']?.text.toString() == "" ? null : controllers['breadth']?.text.toString()   ;
-    formOneData['height'] = controllers['height']?.text.toString() == "" ? null : controllers['height']?.text.toString()   ;
-    print(formOneData);
-    return formOneData; // populated map
+    formOneData['description'] = _descriptionController.text.trim();
+    
+    if (controllers['deviceType']?.text.isNotEmpty ?? false) {
+      formOneData['deviceType'] = controllers['deviceType']?.text.trim();
+    }
+    if (controllers['modelName']?.text.isNotEmpty ?? false) {
+      formOneData['modelName'] = controllers['modelName']?.text.trim();
+    }
+    if (controllers['brand']?.text.isNotEmpty ?? false) {
+      formOneData['brand'] = controllers['brand']?.text.trim();
+    }
+    if (controllers['accessories']?.text.isNotEmpty ?? false) {
+      formOneData['accessories'] = controllers['accessories']?.text.trim();
+    }
+    if (controllers['style']?.text.isNotEmpty ?? false) {
+      formOneData['style'] = controllers['style']?.text.trim();
+    }
+    if (controllers['fabric']?.text.isNotEmpty ?? false) {
+      formOneData['fabric'] = controllers['fabric']?.text.trim();
+    }
+    if (controllers['type']?.text.isNotEmpty ?? false) {
+      formOneData['type'] = controllers['type']?.text.trim();
+    }
+    if (controllers['size']?.text.isNotEmpty ?? false) {
+      formOneData['size'] = controllers['size']?.text.trim();
+    }
+    if (controllers['author']?.text.isNotEmpty ?? false) {
+      formOneData['author'] = controllers['author']?.text.trim();
+    }
+    if (controllers['genre']?.text.isNotEmpty ?? false) {
+      formOneData['genre'] = controllers['genre']?.text.trim();
+    }
+    if (controllers['year']?.text.isNotEmpty ?? false) {
+      formOneData['year'] = controllers['year']?.text.trim();
+    }
+    if (controllers['kmsDriven']?.text.isNotEmpty ?? false) {
+      formOneData['kmsDriven'] = controllers['kmsDriven']?.text.trim();
+    }
+    if (controllers['specs']?.text.isNotEmpty ?? false) {
+      formOneData['specifications'] = controllers['specs']?.text.trim();
+    }
+    if (controllers['material']?.text.isNotEmpty ?? false) {
+      formOneData['material'] = controllers['material']?.text.trim();
+    }
+    if (controllers['length']?.text.isNotEmpty ?? false) {
+      formOneData['length'] = controllers['length']?.text.trim();
+    }
+    if (controllers['breadth']?.text.isNotEmpty ?? false) {
+      formOneData['breadth'] = controllers['breadth']?.text.trim();
+    }
+    if (controllers['height']?.text.isNotEmpty ?? false) {
+      formOneData['height'] = controllers['height']?.text.trim();
+    }
+    
+    print('Form One Data: $formOneData');
+    return formOneData;
   }
 }

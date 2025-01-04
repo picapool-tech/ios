@@ -4,12 +4,14 @@ import 'package:intl/intl.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class CreateCabPoolScreen extends StatefulWidget {
+  const CreateCabPoolScreen({super.key});
+
   @override
   _CreateCabPoolScreenState createState() => _CreateCabPoolScreenState();
 }
 
 class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   var hour = 5;
   var minute = 45;
@@ -21,18 +23,18 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffF0F0F0),
+      backgroundColor: const Color(0xffF0F0F0),
       appBar: AppBar(
-        title: Text('Create your pool',
+        title: const Text('Create your pool',
             style: TextStyle(
               color: Colors.black,
               fontSize: 18,
               fontFamily: 'MontserratSB',
             )),
-        backgroundColor: Color(0xffF0F0F0),
+        backgroundColor: const Color(0xffF0F0F0),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -42,14 +44,14 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
           Positioned.fill(
             top: 70,
             child: GoogleMap(
-              initialCameraPosition: CameraPosition(
+              initialCameraPosition: const CameraPosition(
                 target: _initialPosition,
                 zoom: 14.0,
               ),
               onMapCreated: (GoogleMapController controller) {},
               markers: {
                 Marker(
-                  markerId: MarkerId('pool_marker'),
+                  markerId: const MarkerId('pool_marker'),
                   position: _initialPosition,
                   icon: BitmapDescriptor.defaultMarkerWithHue(
                       BitmapDescriptor.hueOrange),
@@ -65,7 +67,7 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
             right: 20,
             child: Container(
               height: 50,
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(25),
@@ -78,12 +80,12 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.location_on, color: Color(0xffFF8D41)),
-                  SizedBox(width: 8),
+                  const Icon(Icons.location_on, color: Color(0xffFF8D41)),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _searchController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: '6th st, Connaught place, New Delhi...',
                         border: InputBorder.none,
                         hintStyle: TextStyle(
@@ -94,7 +96,7 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                       ),
                     ),
                   ),
-                  Icon(Icons.favorite_border, color: Color(0xffFF8D41)),
+                  const Icon(Icons.favorite_border, color: Color(0xffFF8D41)),
                 ],
               ),
             ),
@@ -109,7 +111,7 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
               height: 400,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
@@ -122,21 +124,21 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
               ),
               child: Column(
                 children: [
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Container(
                       height: 50,
                       decoration: BoxDecoration(
-                        color:
-                            Color(0xfff5f5f5), // Light grey color as background
+                        color: const Color(
+                            0xfff5f5f5), // Light grey color as background
                         borderRadius:
                             BorderRadius.circular(25), // Rounded corners
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: 16),
                             child: Icon(Icons.location_on,
                                 color:
                                     Color(0xffFF8D41)), // Orange location icon
@@ -158,25 +160,27 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Row(
-                children: [
-                  Expanded(child: Divider(color: Color(0xffFF8D41))),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('Select Your Cab Timing',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontFamily: "MontserratM",
-                            fontWeight: FontWeight.w500)),
+                      children: [
+                        Expanded(child: Divider(color: Color(0xffFF8D41))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('Select Your Cab Timing',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: "MontserratM",
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        Expanded(child: Divider(color: Color(0xffFF8D41))),
+                      ],
+                    ),
                   ),
-                  Expanded(child: Divider(color: Color(0xffFF8D41))),
-                ],
-              ),
-                  ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -187,15 +191,16 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                           clipBehavior: Clip.none,
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Color(0xffFF8D41)),
+                                border:
+                                    Border.all(color: const Color(0xffFF8D41)),
                                 borderRadius: BorderRadius.circular(50),
                               ),
                               child: Text(
-                                "${_formatDate(selectedDate)}",
-                                style: TextStyle(
+                                _formatDate(selectedDate),
+                                style: const TextStyle(
                                   fontFamily: "MontserratM",
                                   fontSize: 14,
                                   color: Color(0xffFF8D41),
@@ -206,12 +211,12 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                               right: 10,
                               top: -5,
                               child: Container(
-                                padding: EdgeInsets.all(2),
-                                decoration: BoxDecoration(
+                                padding: const EdgeInsets.all(2),
+                                decoration: const BoxDecoration(
                                   color: Color(0xffFF8D41),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.edit,
                                   color: Colors.white,
                                   size: 12,
@@ -230,8 +235,8 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                               hour = value;
                             });
                           }),
-                          SizedBox(width: 10),
-                          Text(
+                          const SizedBox(width: 10),
+                          const Text(
                             ":",
                             style: TextStyle(
                               fontFamily: "MontserratM",
@@ -239,19 +244,19 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                               color: Colors.grey,
                             ),
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           _buildNumberPicker(minute, 0, 59, (value) {
                             setState(() {
                               minute = value;
                             });
                           }),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           _buildAmPmPicker(),
                         ],
                       ),
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                   SizedBox(
                     width: double.infinity,
                     child: Padding(
@@ -261,12 +266,12 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                           // Handle Confirm action
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xffFF8D41),
+                          backgroundColor: const Color(0xffFF8D41),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Confirm',
                           style: TextStyle(
                             fontSize: 18,
@@ -297,9 +302,9 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
       itemWidth: 50,
       itemHeight: 60,
       onChanged: onChanged,
-      textStyle: TextStyle(color: Colors.grey, fontSize: 14),
-      selectedTextStyle: TextStyle(color: Colors.black, fontSize: 14),
-      decoration: BoxDecoration(
+      textStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+      selectedTextStyle: const TextStyle(color: Colors.black, fontSize: 14),
+      decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(color: Colors.grey),
           bottom: BorderSide(color: Colors.grey),
@@ -312,8 +317,14 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
     return Container(
       height: 60,
       width: 65,
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey),
+          bottom: BorderSide(color: Colors.grey),
+        ),
+      ),
       child: ListWheelScrollView.useDelegate(
-        physics: FixedExtentScrollPhysics(),
+        physics: const FixedExtentScrollPhysics(),
         itemExtent: 60,
         diameterRatio: 1.5,
         onSelectedItemChanged: (index) {
@@ -334,12 +345,6 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
               ),
             );
           }).toList(),
-        ),
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey),
-          bottom: BorderSide(color: Colors.grey),
         ),
       ),
     );

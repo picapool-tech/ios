@@ -1,18 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg package
+// Import flutter_svg package
 import 'package:get/get.dart';
 import 'package:picapool/controllers/category_controller.dart';
-import 'package:picapool/screens/location_fetch_screen.dart';
 import 'package:picapool/utils/routes.dart';
-import 'package:picapool/widgets/Electronics/ElectronicsPage1.dart';
-import 'package:picapool/widgets/books/BooksPage1.dart';
-import 'package:picapool/widgets/clothes/ClothesPage1.dart';
-import 'package:picapool/widgets/furniture/Furniturepage1.dart';
+import 'package:picapool/widgets/home/location_widget.dart';
 import 'package:picapool/widgets/others/OtherPage1.dart';
-import 'package:picapool/widgets/sports/SportsPage1.dart';
-import 'package:picapool/widgets/vehicle/VehiclePage1.dart';
 
 class CategorySelectionPage extends StatefulWidget {
   const CategorySelectionPage({super.key});
@@ -22,20 +16,12 @@ class CategorySelectionPage extends StatefulWidget {
 }
 
 class _CategorySelectionPageState extends State<CategorySelectionPage> {
-  CategoryController get categoryController => Get.find();
+  CategoryController get categoryController => Get.find<CategoryController>();
 
   @override
   void initState() {
     categoryController.getAllCategories();
     super.initState();
-  }
-
-  String currentLocation = "6th st, Connaught place, New Delhi, India";
-
-  void _updateLocation(String location) {
-    setState(() {
-      currentLocation = location;
-    });
   }
 
   @override
@@ -45,73 +31,10 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
       body: Column(
         children: [
           const SizedBox(height: 50),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                  onTap: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LocationScreen(),
-                      ),
-                    );
-                    if (result != null) {
-                      _updateLocation(result);
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        size: 35,
-                        color: Colors.black,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Text(
-                                'Location',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                size: 20,
-                                color: Colors.black,
-                              ),
-                            ],
-                          ),
-                          Text(
-                            currentLocation.length > 30
-                                ? '${currentLocation.substring(0, 30)}...'
-                                : currentLocation,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.black,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: LocationWidget(
+              color: Colors.black,
             ),
           ),
           Padding(
@@ -140,8 +63,10 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                   imagePath:
                       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                   onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'electronics'});
+                    Get.toNamed(
+                      GetRoutes.sellProductsFormPage,
+                      arguments: {'categoryName': 'electronics'},
+                    );
                   },
                 ),
                 CategoryCard(

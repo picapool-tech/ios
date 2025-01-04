@@ -1,29 +1,29 @@
 // To parse this JSON data, do
 //
-//     final getAllProductsResponse = getAllProductsResponseFromJson(jsonString);
+//     final getAllProductResponse = getAllProductResponseFromJson(jsonString);
 
 import 'dart:convert';
 
-import '../entities/product_entity.dart';
+import 'package:picapool/services/products/entities/product_entity.dart';
 
-GetAllProductsResponse getAllProductsResponseFromJson(String str) => GetAllProductsResponse.fromJson(json.decode(str));
+GetAllProductResponse getAllProductResponseFromJson(String str) => GetAllProductResponse.fromJson(json.decode(str));
 
-String getAllProductsResponseToJson(GetAllProductsResponse data) => json.encode(data.toJson());
+String getAllProductResponseToJson(GetAllProductResponse data) => json.encode(data.toJson());
 
-class GetAllProductsResponse {
+class GetAllProductResponse {
     bool? success;
-    List<Product>? data;
+    List<ProductData>? data;
     String? message;
 
-    GetAllProductsResponse({
+    GetAllProductResponse({
         this.success,
         this.data,
         this.message,
     });
 
-    factory GetAllProductsResponse.fromJson(Map<String, dynamic> json) => GetAllProductsResponse(
+    factory GetAllProductResponse.fromJson(Map<String, dynamic> json) => GetAllProductResponse(
         success: json["success"],
-        data: json["data"] == null ? [] : List<Product>.from(json["data"]!.map((x) => Product.fromJson(x))),
+        data: json["data"] == null ? [] : List<ProductData>.from(json["data"]!.map((x) => ProductData.fromJson(x))),
         message: json["message"],
     );
 
@@ -33,4 +33,3 @@ class GetAllProductsResponse {
         "message": message,
     };
 }
-

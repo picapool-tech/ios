@@ -8,6 +8,7 @@ import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/widgets/bottom_navbar/bottom_nav_bar_products.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
+import 'package:picapool/widgets/home/location_widget.dart';
 
 class ProductListsPage extends StatefulWidget {
   const ProductListsPage({super.key});
@@ -48,22 +49,29 @@ class ProductListsPageState extends State<ProductListsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
-      // bottomNavigationBar: NewBottomBarProduct(),
+      bottomNavigationBar: const BottomAppBar(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
-          backgroundColor: const Color(0xffFF8D41),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
+          shape: const CircleBorder(),
+          backgroundColor: Colors.orange,
+          elevation: 7,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(36)),
+                border: Border.all(
+                    color: Colors.white, width: 2, style: BorderStyle.solid)),
+            child: const Icon(
+              Icons.label_important_outlined,
+              color: Colors.white,
+            ),
           ),
           onPressed: () {
-            Navigator.push(context, 
-              MaterialPageRoute(builder: 
-                (context)=> const CategorySelectionPage()
-               )
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CategorySelectionPage(),
+              ),
             );
             // Get.toNamed(
             //   GetRoutes.categoryPage,
@@ -79,76 +87,13 @@ class ProductListsPageState extends State<ProductListsPage> {
                 Column(
                   children: [
                     const SizedBox(height: 50),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          InkWell(
-                            onTap: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const LocationScreen(),
-                                ),
-                              );
-                              if (result != null) {
-                                _updateLocation(result);
-                              }
-                            },
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  size: 35,
-                                  color: Colors.black,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Text(
-                                          'Location',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.arrow_drop_down,
-                                          size: 20,
-                                          color: Colors.black,
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      currentLocation.length > 30
-                                          ? '${currentLocation.substring(0, 30)}...'
-                                          : currentLocation,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.black,
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: LocationWidget(
+                        color: Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Padding(
@@ -157,14 +102,13 @@ class ProductListsPageState extends State<ProductListsPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             InkWell(
-                              onTap: (){
-                                Get.toNamed(
-                                  GetRoutes.brandListPage
-                                );
-                              } ,
+                              onTap: () {
+                                Get.toNamed(GetRoutes.brandListPage);
+                              },
                               child: Container(
                                 width: MediaQuery.of(context).size.width * 0.7,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
                                 decoration: BoxDecoration(
                                   color: Colors.grey[100],
                                   borderRadius: BorderRadius.circular(24),
@@ -198,7 +142,8 @@ class ProductListsPageState extends State<ProductListsPage> {
                             ),
                             Container(
                               width: 105,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
                                 color: Colors.grey[100],
                                 borderRadius: BorderRadius.circular(24),
@@ -208,9 +153,13 @@ class ProductListsPageState extends State<ProductListsPage> {
                                 children: [
                                   DropdownButton<String>(
                                     value: '100m',
-                                    items: <String>['100m', '200m', '500m', '1km']
-                                        .map<DropdownMenuItem<String>>(
-                                            (String value) {
+                                    items: <String>[
+                                      '100m',
+                                      '200m',
+                                      '500m',
+                                      '1km'
+                                    ].map<DropdownMenuItem<String>>(
+                                        (String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(
@@ -233,44 +182,6 @@ class ProductListsPageState extends State<ProductListsPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Container(
-                    //   height: 50,
-                    //   child: ListView.builder(
-                    //     scrollDirection: Axis.horizontal,
-                    //     itemCount: categories.length,
-                    //     itemBuilder: (context, index) {
-                    //       final category = categories[index];
-                    //       return Container(
-                    //         width: 150,
-                    //         margin: const EdgeInsets.only(left: 10),
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.transparent,
-                    //           borderRadius: BorderRadius.circular(30),
-                    //           border: Border.all(color: const Color(0xffDFDFDF)),
-                    //         ),
-                    //         child: Row(
-                    //           crossAxisAlignment: CrossAxisAlignment.center,
-                    //           mainAxisAlignment: MainAxisAlignment.center,
-                    //           children: [
-                    //             SvgIcon(
-                    //               category['icon']!,
-                    //               size: 24,
-                    //             ),
-                    //             const SizedBox(width: 10),
-                    //             Text(
-                    //               ' ${category['name']}',
-                    //               style: const TextStyle(
-                    //                   color: Colors.black,
-                    //                   fontFamily: "MontserratR",
-                    //                   fontSize: 14),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       );
-                    //     },
-                    //   ),
-                    // ),
-                    const SizedBox(height: 20),
                     const Row(children: <Widget>[
                       Expanded(
                           child: Divider(
@@ -291,7 +202,7 @@ class ProductListsPageState extends State<ProductListsPage> {
                       )),
                     ]),
                     const SizedBox(height: 20),
-                    Expanded(child: ProductGrid())
+                    const Expanded(child: ProductGrid())
                   ],
                 ),
               ],

@@ -1,24 +1,42 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:get/get.dart';
+import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/screens/Products/products_homePage.dart';
 import 'package:picapool/widgets/Sell_Form_Page0.dart';
+
+extension StringExtension on String {
+  String toTitleCase() {
+    if (length <= 1) return toUpperCase();
+    return split(' ').map((word) {
+      if (word.length <= 1) return word.toUpperCase();
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+}
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key});
 
   @override
-  _ProductDetailsPageState createState() => _ProductDetailsPageState();
+  State<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
-  int _currentIndex = 0;
-  bool _isReadMore = false;
+  final ProductController productController = Get.find();
+  late final String productId;
 
-  final List<String> imgList = [
-    'assets/images/bgproduct.png',
-    'assets/images/bgproduct.png',
-    'assets/images/bgproduct.png',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    productId = Get.arguments['productId'];
+    // Fetch data after widget is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      productController.getProductDetails(productId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,299 +48,300 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150'), // Seller image URL
-            ),
-            SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Dilip kumar',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontFamily: "MontserratR")),
-                Text('(Seller)',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                        fontFamily: "MontserratR")),
-              ],
-            ),
-          ],
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Apple iPad (10th Generation): with A14 Bionic chip, 27.69 cm (10.9")',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.normal,
-                    fontFamily: "MontserratR"),
-              ),
-              const SizedBox(height: 5),
-              ElevatedButton(
-                onPressed: () {
-                  // Define what happens when the button is tapped
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xffFFE9DA),
-                  side: const BorderSide(color: Color(0xffFF6600)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Row(
-                    mainAxisSize:
-                        MainAxisSize.min, // To minimize the button width
-                    children: [
-                      Text(
-                        'Go to site',
-                        style: TextStyle(
-                            fontFamily: "MontserratR",
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffFF6600)),
-                      ),
-                      SizedBox(width: 5), // Space between text and icon
-                      Icon(Icons.arrow_circle_right_outlined,
-                          size: 20, color: Color(0xffFF6600)), // Icon with size
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: Column(
-                  children: [
-                    CarouselSlider(
-                      options: CarouselOptions(
-                        height: MediaQuery.of(context).size.width * 9 / 16,
-                        aspectRatio: 16 / 9,
-                        autoPlay: true,
-                        enlargeCenterPage: false,
-                        viewportFraction: 1.0,
-                        onPageChanged: (index, reason) {
-                          setState(() {
-                            _currentIndex = index;
-                          });
-                        },
-                      ),
-                      items: imgList.map((item) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return Image.asset(item, fit: BoxFit.cover);
+          child: GetBuilder<ProductController>(
+            builder: (productInstance) {
+              return productInstance.individualProductsState ==
+                      IndividualProductsState.productsLoaded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          productInstance.productDetails.name.toString(),
+                          style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.normal,
+                              fontFamily: "MontserratR"),
+                        ),
+                        const SizedBox(height: 5),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Define what happens when the button is tapped
                           },
-                        );
-                      }).toList(),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: imgList.asMap().entries.map((entry) {
-                        return GestureDetector(
-                          onTap: () => setState(() {
-                            _currentIndex = entry.key;
-                          }),
-                          child: Container(
-                            width: 8.0,
-                            height: 8.0,
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 2.0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.orange)
-                                  .withOpacity(
-                                      _currentIndex == entry.key ? 0.9 : 0.4),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xffFFE9DA),
+                            side: const BorderSide(color: Color(0xffFF6600)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize
+                                  .min, // To minimize the button width
+                              children: [
+                                Text(
+                                  'Go to site',
+                                  style: TextStyle(
+                                      fontFamily: "MontserratR",
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xffFF6600)),
+                                ),
+                                SizedBox(
+                                    width: 5), // Space between text and icon
+                                Icon(Icons.arrow_circle_right_outlined,
+                                    size: 20,
+                                    color: Color(0xffFF6600)), // Icon with size
+                              ],
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Row(
-                children: [
-                  Text(
-                    'Selling price : ',
-                    style: TextStyle(
-                        fontFamily: "MontserratM",
-                        fontSize: 20,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black),
-                  ),
-                  Text(
-                    ' Rs. 55,000',
-                    style: TextStyle(
-                        fontFamily: "MontserratM",
-                        fontSize: 20,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.orange),
-                  ),
-                ],
-              ),
-              const Text(
-                '(MRP Rs.70,000 )',
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: "MontserratM",
-                    color: Color(0xff565656)),
-              ),
-              const SizedBox(height: 20),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Reason for selling : ',
-                    style: TextStyle(
-                        fontFamily: "MontserratR",
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  Text(
-                    'Upgrading to a better table.',
-                    style: TextStyle(
-                        fontFamily: "MontserratR",
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Row(
-                children: [
-                  Text(
-                    'Description - ',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: "MontserratR",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  Text(
-                    '(2 years old)',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: "MontserratR",
-                        color: Colors.black),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text(
-                _isReadMore
-                    ? 'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina display, and support for the new Magic Keyboard Folio, it’s the perfect choice for working, creating, and staying connected. Powered by the A14 Bionic chip with support for the Apple Pencil (1st generation) and available in four colours, iPad lets you unleash your creativity in unprecedented ways.'
-                    : 'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina ...',
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontFamily: "MontserratR",
-                    color: Colors.black),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isReadMore = !_isReadMore;
-                  });
-                },
-                child: Text(
-                  _isReadMore ? 'Read less' : 'Read more',
-                  style: const TextStyle(fontSize: 16, color: Colors.orange),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Details',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontFamily: "MontserratR",
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text('Brand- ',
-                          style: TextStyle(
+                        ),
+                        const SizedBox(height: 20),
+                        Center(
+                          child: Column(
+                            children: [
+                              if (productInstance.productDetails.images !=
+                                      null &&
+                                  productInstance
+                                      .productDetails.images!.isNotEmpty)
+                                CarouselSlider(
+                                  items: productInstance.productDetails.images!
+                                      .map((imageUrl) {
+                                    return Builder(
+                                      builder: (BuildContext context) {
+                                        return Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 5.0),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: Image.network(
+                                              imageUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                print(
+                                                    'Error loading image: $error');
+                                                return Container(
+                                                  color: Colors.grey[200],
+                                                  child: const Center(
+                                                    child: Icon(
+                                                      Icons.error_outline,
+                                                      color: Colors.grey,
+                                                      size: 40,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null) {
+                                                  return child;
+                                                }
+                                                return Container(
+                                                  color: Colors.grey[200],
+                                                  child: Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      value: loadingProgress
+                                                                  .expectedTotalBytes !=
+                                                              null
+                                                          ? loadingProgress
+                                                                  .cumulativeBytesLoaded /
+                                                              loadingProgress
+                                                                  .expectedTotalBytes!
+                                                          : null,
+                                                      color: Colors.orange,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }).toList(),
+                                  options: CarouselOptions(
+                                    height: MediaQuery.of(context).size.width *
+                                        9 /
+                                        16,
+                                    aspectRatio: 16 / 9,
+                                    viewportFraction: 1.0,
+                                    autoPlay: true,
+                                    autoPlayInterval:
+                                        const Duration(seconds: 3),
+                                    autoPlayAnimationDuration:
+                                        const Duration(milliseconds: 800),
+                                    autoPlayCurve: Curves.fastOutSlowIn,
+                                    enlargeCenterPage: true,
+                                    enlargeFactor: 0.3,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            const Text(
+                              'Selling price : ',
+                              style: TextStyle(
+                                  fontFamily: "MontserratM",
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.black),
+                            ),
+                            Text(
+                              productInstance.productDetails.offerPrice
+                                  .toString(),
+                              style: const TextStyle(
+                                  fontFamily: "MontserratM",
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.orange),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '(MRP Rs. ${productInstance.productDetails.mrp.toString()} )',
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: "MontserratM",
+                              color: Color(0xff565656)),
+                        ),
+                        const SizedBox(height: 20),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Reason for selling : ',
+                              style: TextStyle(
+                                  fontFamily: "MontserratR",
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                            Text(
+                              productInstance.productDetails.attributes
+                                      ?.reasonForSell ??
+                                  "N/A",
+                              style: TextStyle(
+                                  fontFamily: "MontserratR",
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Text(
+                              'Description - ',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontFamily: "MontserratR",
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          productInstance.productDetails.description.toString(),
+                          style: const TextStyle(
                               fontSize: 16,
+                              fontFamily: "MontserratR",
+                              color: Colors.black),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Details',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: "MontserratR",
                               fontWeight: FontWeight.bold,
-                              fontFamily: "MontserratR")),
-                      Text('Apple',
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "MontserratR")),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text('Color- ',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "MontserratR")),
-                      Text('Silver',
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "MontserratR")),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Model Name - ',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "MontserratR")),
-                      Text('iPad',
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "MontserratR")),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Storage - ',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "MontserratR")),
-                      Text('64 GB',
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "MontserratR")),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                              color: Colors.black),
+                        ),
+                        const SizedBox(height: 10),
+                        if (productInstance.productDetails.attributes !=
+                            null) ...[
+                          Builder(
+                            builder: (context) {
+                              // Convert Attributes class to Map using toJson()
+                              final attributes = productInstance
+                                  .productDetails.attributes!
+                                  .toJson();
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: attributes.entries
+                                    .where((entry) => entry.value != null)
+                                    .map((entry) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            entry.key
+                                                .replaceAll('_', ' ')
+                                                .toTitleCase(),
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontFamily: "MontserratR",
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            entry.value?.toString() ?? 'N/A',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontFamily: "MontserratR",
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ],
+                      ],
+                    )
+                  : const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: LinearProgressIndicator(color: Colors.orange),
+                      ),
+                    );
+            },
           ),
         ),
       ),

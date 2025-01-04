@@ -12,7 +12,7 @@ String updateProductResponseToJson(UpdateProductResponse data) => json.encode(da
 
 class UpdateProductResponse {
     bool? success;
-    Product? data;
+    ProductData? data;
     String? message;
 
     UpdateProductResponse({
@@ -23,7 +23,7 @@ class UpdateProductResponse {
 
     factory UpdateProductResponse.fromJson(Map<String, dynamic> json) => UpdateProductResponse(
         success: json["success"],
-        data: json["data"] == null ? null : Product.fromJson(json["data"]),
+        data: json["data"] == null ? null : ProductData.fromJson(json["data"]),
         message: json["message"],
     );
 

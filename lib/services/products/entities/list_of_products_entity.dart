@@ -1,7 +1,7 @@
 import 'package:picapool/services/products/entities/product_entity.dart';
 
 class ProductsList {
-  List<Product> productsList;
+  List<ProductData> productsList;
   int count;
   ProductsList({
     required this.productsList,
@@ -10,8 +10,8 @@ class ProductsList {
 
   factory ProductsList.fromJson(Map<String, dynamic> json) => ProductsList(
         productsList:
-            List<Product>.from(json["data"].map((x) => Product.fromJson(x))),
-        count: List<Product>.from(json["data"].map((x) => Product.fromJson(x))).length,
+            List<ProductData>.from(json["data"].map((x) => ProductData.fromJson(x))),
+        count: List<ProductData>.from(json["data"].map((x) => ProductData.fromJson(x))).length,
       );
 
   Map<String, dynamic> toJson() => {

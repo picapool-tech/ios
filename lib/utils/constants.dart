@@ -9,6 +9,6 @@ class Constants {
   static const createLiveOfferEndpoint = "/liveOffer";
 
   // endpoints that need an ID
-  static const getProductEndoint = "product/";
+  static const getProductEndoint = "/product/";
   
 }

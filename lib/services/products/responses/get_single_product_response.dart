@@ -12,7 +12,7 @@ String getSingleProductResponseToJson(GetSingleProductResponse data) => json.enc
 
 class GetSingleProductResponse {
     bool? success;
-    Product? data;
+    ProductData? data;
     String? message;
 
     GetSingleProductResponse({
@@ -23,7 +23,7 @@ class GetSingleProductResponse {
 
     factory GetSingleProductResponse.fromJson(Map<String, dynamic> json) => GetSingleProductResponse(
         success: json["success"],
-        data: json["data"] == null ? null : Product.fromJson(json["data"]),
+        data: json["data"] == null ? null : ProductData.fromJson(json["data"]),
         message: json["message"],
     );
 

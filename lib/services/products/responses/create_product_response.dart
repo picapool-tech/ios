@@ -12,7 +12,7 @@ String createProductResponseToJson(CreateProductResponse data) => json.encode(da
 
 class CreateProductResponse {
     bool? success;
-    Product? data;
+    ProductData? data;
     String? message;
 
     CreateProductResponse({
@@ -23,7 +23,7 @@ class CreateProductResponse {
 
     factory CreateProductResponse.fromJson(Map<String, dynamic> json) => CreateProductResponse(
         success: json["success"],
-        data: json["data"] == null ? null : Product.fromJson(json["data"]),
+        data: json["data"] == null ? null : ProductData.fromJson(json["data"]),
         message: json["message"],
     );
 
@@ -33,3 +33,4 @@ class CreateProductResponse {
         "message": message,
     };
 }
+

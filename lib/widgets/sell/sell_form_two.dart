@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
-import 'package:picapool/screens/location_fetch_screen.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/utils/routes.dart';
-import 'package:picapool/widgets/Sell_Form_Page0.dart';
+import 'package:picapool/widgets/Sell_Form_Page0.dart' as page0;
 import 'package:picapool/widgets/sell/build_field.dart';
 
 class SellFormTwo extends StatefulWidget {
@@ -63,7 +62,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // StepIndicator(currentStep: 3),
+                    StepIndicator(currentStep: 3),
                     const SizedBox(height: 20),
                     const Text(
                       "Time Held",
@@ -162,6 +161,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
                           if (sellformTwoKey.currentState?.validate() ??
                               false) {
                             formController.saveFormTwoData(saveFormTwoData());
+                            formController.instantiateCreateProduct(context);
                             Get.toNamed(GetRoutes.sellProductsConfirmationPage);
                           } else {
                             showSnackBar(
@@ -208,28 +208,23 @@ class _SellFormTwoState extends State<SellFormTwo> {
 
   Map<String, dynamic> saveFormTwoData() {
     Map<String, dynamic> formTwoData = {};
-    formTwoData['timeHeldYears'] = yearsController.text.toString() == ""
-        ? null
-        : yearsController.text.toString();
-    formTwoData['timeHeldMonths'] = monthsController.text.toString() == ""
-        ? null
-        : monthsController.text.toString();
-    formTwoData['offerPriceMin'] = reasonForSellController.text.toString() == ""
-        ? null
-        : reasonForSellController.text.toString();
-    formTwoData['offerPriceMax'] = reasonForSellController.text.toString() == ""
-        ? null
-        : reasonForSellController.text.toString();
-    formTwoData['breadth'] = sellingPriceController.text.toString() == ""
-        ? null
-        : sellingPriceController.text.toString();
-    formTwoData['phone'] = phoneNumberController.text.toString() == ""
-        ? null
-        : phoneNumberController.text.toString();
-    formTwoData['email'] = emailIdController.text.toString() == ""
-        ? null
-        : emailIdController.text.toString();
-    print(formTwoData);
-    return formTwoData; // populated map
+
+    // Time held
+    if (!isLessThanMonth) {
+      formTwoData['timeHeldYears'] = int.tryParse(yearsController.text) ?? 0;
+      formTwoData['timeHeldMonths'] = int.tryParse(monthsController.text) ?? 0;
+    } else {
+      formTwoData['timeHeldMonths'] = 1; // Less than a month
+    }
+
+    // Required fields
+    formTwoData['reasonForSell'] = reasonForSellController.text.trim();
+    formTwoData['sellingPrice'] =
+        double.tryParse(sellingPriceController.text) ?? 0.0;
+    formTwoData['phone'] = phoneNumberController.text.trim();
+    formTwoData['email'] = emailIdController.text.trim();
+
+    print('Form Two Data: $formTwoData');
+    return formTwoData;
   }
 }
