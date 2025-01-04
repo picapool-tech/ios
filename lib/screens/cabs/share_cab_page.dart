@@ -97,6 +97,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                   markerId: MarkerId('offer_${offer.id}'),
                   position: LatLng(location.lat, location.lng),
                   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+                  // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
                   infoWindow: InfoWindow(
                     title: DateFormat('hh:mm a').format(offer.updatedAt!),
                     snippet: '${offer.seats} seats available',
