@@ -65,9 +65,6 @@ class _SellFormTwoState extends State<SellFormTwo> {
           colorText: Colors.white,
         );
       }
-    } else {
-      showSnackBar(
-          content: 'Please fill all the required fields', context: context);
     }
   }
 

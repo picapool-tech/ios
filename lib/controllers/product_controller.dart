@@ -19,8 +19,6 @@ class ProductController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
   String? get accessToken => authController.auth.value?.accessToken;
 
-  // String accessToken  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjcsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjEsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzU5MTA0NjYsImV4cCI6MTczNTk5Njg2Nn0.wDXYeKUYelQYh0XH7wU-bBs-yLpJnc-BLhxqxrqgtTs";
-
   ProductsState productsState = ProductsState.productsLoaded;
   CreateProductState createProductState = CreateProductState.created;
   IndividualProductsState individualProductsState = IndividualProductsState.productsLoading;
@@ -77,13 +75,14 @@ class ProductController extends GetxController {
         return true;
       } else {
         createProductState = CreateProductState.error;
-        Get.snackbar(
-          'Error',
-          response.message ?? 'Failed to create product',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        print(response);
+        // Get.snackbar(
+        //   'Error',
+        //   response.message ?? 'Failed to create product',
+        //   snackPosition: SnackPosition.BOTTOM,
+        //   backgroundColor: Colors.red,
+        //   colorText: Colors.white,
+        // );
         return false;
       }
     } catch (e) {

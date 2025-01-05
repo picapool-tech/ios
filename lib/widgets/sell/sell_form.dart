@@ -172,7 +172,7 @@ List<String> imagesList = [];
                   Column(
                     children: [
                       ElectronicsForm(
-                        deviceTypeController: controllers['deviceType']!, 
+                        deviceTypeController: _nameController, 
                         modelNameController: controllers['modelName']!, 
                         brandController: controllers['brand']!, 
                         accessoriesController: controllers['accessories']!, 

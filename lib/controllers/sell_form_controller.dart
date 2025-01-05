@@ -36,16 +36,16 @@ class FormController extends GetxController {
 
   Future<bool> instantiateCreateProduct(BuildContext context) async {
     try {
-      if (!validateForms()) {
-        Get.snackbar(
-          'Error',
-          'Please fill all required fields',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-        return false;
-      }
+      // if (!validateForms()) {
+      //   Get.snackbar(
+      //     'Error',
+      //     'Please fill all required fields',
+      //     snackPosition: SnackPosition.BOTTOM,
+      //     backgroundColor: Colors.red,
+      //     colorText: Colors.white,
+      //   );
+      //   return false;
+      // }
 
       return await productController.createProduct(combinedFormData);
     } catch (e) {
@@ -100,16 +100,16 @@ class FormController extends GetxController {
   }
 
   // Add validation method
-  bool validateForms() {
-    // Basic required fields validation
-    if (formOneData['name']?.isEmpty ?? true) return false;
-    if (formOneData['price'] == null || formOneData['price'] <= 0) return false;
-    if (formOneData['category'] == null) return false;
-    if (formTwoData['email']?.isEmpty ?? true) return false;
-    if (formTwoData['phone']?.isEmpty ?? true) return false;
+  // bool validateForms() {
+  //   // Basic required fields validation
+  //   if (formOneData['name']?.isEmpty ?? true) return false;
+  //   if (formOneData['price'] == null || formOneData['price'] <= 0) return false;
+  //   if (formOneData['category'] == null) return false;
+  //   if (formTwoData['email']?.isEmpty ?? true) return false;
+  //   if (formTwoData['phone']?.isEmpty ?? true) return false;
 
-    return true;
-  }
+  //   return true;
+  // }
 
   Future<String?> uploadProductImage(File imageFile) async {
     try {
