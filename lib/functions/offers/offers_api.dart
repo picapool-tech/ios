@@ -160,9 +160,7 @@ class OffersApi {
   }) async {
     try {
       var body = {
-        "loc": {
-          ...location.toJson(),
-        },
+        "loc": location.toJson(),
         "radius": 1000,
       };
 
@@ -170,8 +168,17 @@ class OffersApi {
 
       var response = await http.post(
         Uri.parse("https://api.picapool.com/v2/offer/nearest"),
-        headers: {'Authorization': "Bearer $accessToken"},
-        body: jsonEncode(body),
+        headers: {
+          'Authorization': "Bearer $accessToken",
+          'Content-Type': 'application/json'
+        },
+        body: json.encode({
+          "loc": {
+            "lat": location.lat.toDouble(),
+            "lng": location.long.toDouble(),
+          },
+          "radius": 2000,
+        }),
       );
 
       debugPrint("GET OFFERS IN VICINITY : ${response.body}");

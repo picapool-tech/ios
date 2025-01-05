@@ -116,41 +116,15 @@ class _NewBottomBarState extends State<NewBottomBar> {
             top: -30, // Adjust this value to move the icon up or down
             left: MediaQuery.of(context).size.width / 2 -
                 35, // Center the icon horizontally
-            child: const InkWell(
-              onTap: null
-              //  () {
-              // Get.to(
-              //   () => const PoolOffersScreen(),
-              // );
-              // }
-              ,
-              child: ColorFiltered(
-                colorFilter: ColorFilter.matrix(<double>[
-                  0.2126,
-                  0.7152,
-                  0.0722,
-                  0,
-                  0,
-                  0.2126,
-                  0.7152,
-                  0.0722,
-                  0,
-                  0,
-                  0.2126,
-                  0.7152,
-                  0.0722,
-                  0,
-                  0,
-                  0,
-                  0,
-                  0,
-                  1,
-                  0,
-                ]),
-                child: SvgIcon(
-                  "assets/bottombar/live.svg",
-                  size: 70, // Size of the center icon
-                ),
+            child: InkWell(
+              onTap: () {
+                Get.to(
+                  () => const PoolOffersScreen(),
+                );
+              },
+              child: const SvgIcon(
+                "assets/bottombar/live.svg",
+                size: 70, // Size of the center icon
               ),
             ),
           ),

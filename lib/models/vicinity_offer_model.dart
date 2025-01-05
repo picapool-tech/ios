@@ -16,8 +16,8 @@ class VicinityLocation {
 
   Map<String, dynamic> toJson() {
     return {
-      'lat': lat,
-      'lng': long,
+      "lat": lat,
+      "lng": long,
     };
   }
 }

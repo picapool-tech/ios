@@ -373,64 +373,77 @@ class OfferContainer extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        fontFamily: "MontserratM",
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Text(
-                      timeAgo,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontFamily: "MontserratM",
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(icon, color: Colors.orange),
-                    const SizedBox(width: 5),
-                    Text(
-                      subtitle.length > 15
-                          ? '${subtitle.substring(0, 12)}...'
-                          : subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontFamily: "MontserratM",
-                      ),
-                    ),
-                    const SizedBox(width: 10), // Added spacing
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time, color: Colors.orange),
-                        const SizedBox(width: 5),
-                        Text(
-                          countdown,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title.replaceAll("- FROM BRANDS", ""),
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
+                            fontSize: 18,
                             fontFamily: "MontserratM",
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        timeAgo,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontFamily: "MontserratM",
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(icon, color: Colors.orange),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                subtitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontFamily: "MontserratM",
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10), // Added spacing
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.access_time, color: Colors.orange),
+                            const SizedBox(width: 5),
+                            Text(
+                              countdown,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "MontserratM",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const CircleAvatar(
               radius: 15,
