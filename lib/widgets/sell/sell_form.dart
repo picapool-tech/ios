@@ -157,7 +157,14 @@ List<String> imagesList = [];
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                ImagePickerWidget(imageFiles: imagesList,),
+                ImagePickerWidget(
+                  imageFiles: imagesList,
+                  onImagesUploaded: (List<String> urls) {
+                    setState(() {
+                      imagesList.addAll(urls);
+                    });
+                  },
+                ),
                 const SizedBox(height: 16),
                     
                 

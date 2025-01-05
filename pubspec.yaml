@@ -49,17 +49,19 @@ dependencies:
       ref: master
   google_places_flutter: ^2.0.8
   google_maps_flutter: ^2.5.3
+  flutter_google_maps_webservices: ^1.1.1
   intl_phone_number_input: ^0.7.4
+  intl:
   get: ^4.6.6
   step_progress_indicator: ^1.0.2
   geolocator: ^13.0.1
   geocoding: ^3.0.0
-  flutter_google_places_sdk: ^0.3.2+1
-  flutter_google_maps_webservices: ^1.1.1
+  # flutter_google_places_sdk: ^0.3.2+1
   http: ^1.0.0
   shared_preferences: ^2.3.1
   flutter_material_pickers: ^3.7.0
   numberpicker: ^2.1.2
+  flutter_datetime_picker_plus: ^2.2.0
   permission_handler: ^11.3.1
   location: ^6.0.2
   google_sign_in: ^6.2.1
@@ -79,10 +81,10 @@ dependencies:
   logger: ^2.4.0
   get_storage:
   jwt_decode:
-  intl: ^0.19.0
+  # intl: ^0.19.0
   url_launcher: ^6.3.1
   cached_network_image: ^3.4.1
-  flutter_datetime_picker_plus: ^2.2.0
+  # flutter_datetime_picker_plus: ^2.2.0
   internet_connection_checker: ^3.0.1
   firebase_messaging: ^15.1.6
 

@@ -156,30 +156,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
           //         )
           //       : const LinearProgressIndicator();
           // }),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => OtherPage1()),
-                );
-              },
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Other ",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: "MontserratR",
-                    ),
-                  ),
-                  Icon(Icons.add_circle, size: 16),
-                ],
-              ),
-            ),
-          ),
+        
         ],
       ),
     );

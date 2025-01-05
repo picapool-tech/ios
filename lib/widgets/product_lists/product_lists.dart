@@ -22,8 +22,22 @@ class ProductListsPageState extends State<ProductListsPage> {
 
   @override
   void initState() {
-    productController.getAllProducts();
     super.initState();
+    productController.getAllProducts();
+    // Add listener for search
+    _productSearchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _productSearchController.removeListener(_onSearchChanged);
+    _productSearchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = _productSearchController.text.toLowerCase();
+    productController.filterProducts(query);
   }
 
   //TODO: Implement location services
@@ -44,6 +58,8 @@ class ProductListsPageState extends State<ProductListsPage> {
       currentLocation = location;
     });
   }
+
+  TextEditingController _productSearchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -94,91 +110,51 @@ class ProductListsPageState extends State<ProductListsPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                Get.toNamed(GetRoutes.brandListPage);
-                              },
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(24),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Row(
+                              children: [
+                                const SvgIcon(
+                                  'assets/icons/search_icon.svg',
+                                  size: 24,
                                 ),
-                                child: const Row(
-                                  children: [
-                                    SvgIcon(
-                                      'assets/icons/search_icon.svg',
-                                      size: 24,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextField(
-                                        enabled: false,
-                                        decoration: InputDecoration(
-                                          hintText: 'Find Offers and Brands',
-                                          hintStyle: TextStyle(
-                                            color: Colors.black,
-                                            fontFamily: "MontserratR",
-                                          ),
-                                          border: InputBorder.none,
-                                        ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _productSearchController,
+                                    enabled: true,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Find Offers and Brands',
+                                      hintStyle: TextStyle(
+                                        color: Colors.black,
+                                        fontFamily: "MontserratR",
                                       ),
+                                      border: InputBorder.none,
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Container(
-                              width: 105,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  DropdownButton<String>(
-                                    value: '100m',
-                                    items: <String>[
-                                      '100m',
-                                      '200m',
-                                      '500m',
-                                      '1km'
-                                    ].map<DropdownMenuItem<String>>(
-                                        (String value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(
-                                          value,
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontFamily: "MontserratR",
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {},
-                                    underline: const SizedBox(),
                                   ),
-                                ],
-                              ),
+                                ),
+                                if (_productSearchController.text.isNotEmpty)
+                                  IconButton(
+                                    icon: const Icon(Icons.clear, size: 20),
+                                    onPressed: () {
+                                      _productSearchController.clear();
+                                    },
+                                  ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 20),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
@@ -18,13 +19,14 @@ class ProductController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
   String? get accessToken => authController.auth.value?.accessToken;
 
-  String manualToken  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjcsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjEsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzU5MTA0NjYsImV4cCI6MTczNTk5Njg2Nn0.wDXYeKUYelQYh0XH7wU-bBs-yLpJnc-BLhxqxrqgtTs";
+  // String accessToken  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjcsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjEsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzU5MTA0NjYsImV4cCI6MTczNTk5Njg2Nn0.wDXYeKUYelQYh0XH7wU-bBs-yLpJnc-BLhxqxrqgtTs";
 
   ProductsState productsState = ProductsState.productsLoaded;
   CreateProductState createProductState = CreateProductState.created;
   IndividualProductsState individualProductsState = IndividualProductsState.productsLoading;
   
-  List<ProductData> productsList = <ProductData>[];
+  List<ProductData> _allProducts = []; // Store original list
+  List<ProductData> productsList = [];
   late ProductData productDetails;
   List<String> imageURLs = <String>[];
   int currentIndex = 1;
@@ -35,10 +37,10 @@ class ProductController extends GetxController {
     update();
 
     try {
-      final List<ProductData> response = await ProductsServices.getAllProducts(manualToken ?? "");
+      final List<ProductData> response = await ProductsServices.getAllProducts(accessToken ?? "");
       if (response.isNotEmpty || response != []) {
-        productsList = response;
-        // productsList = response.data ?? [];
+        _allProducts = response; // Store original list
+        productsList = response; // Display list
         productsState = ProductsState.productsLoaded;
       } else {
         productsState = ProductsState.productsCantLoad;
@@ -50,19 +52,53 @@ class ProductController extends GetxController {
     update();
   }
 
+  /// Filter products based on search query
+  void filterProducts(String query) {
+    if (query.isEmpty) {
+      productsList = _allProducts; // Restore original list
+    } else {
+      productsList = _allProducts.where((product) => 
+        product.name?.toLowerCase().contains(query) ?? false
+      ).toList();
+    }
+    update();
+  }
+
   /// Create a new product
-  Future<void> createProduct(CreateProductPayload createProductPayload) async {
+  Future<bool> createProduct(CreateProductPayload createProductPayload) async {
     createProductState = CreateProductState.creating;
     update();
 
-    final CreateProductResponse response = await ProductsServices.createProduct(createProductPayload, manualToken ?? "");
-    if (response.success ?? false) {
-      createProductState = CreateProductState.created;
-      await getAllProducts();  // Refresh the products list after creation
-    } else {
+    try {
+      final CreateProductResponse response = await ProductsServices.createProduct(createProductPayload, accessToken ?? "");
+      if (response.success ?? false) {
+        createProductState = CreateProductState.created;
+        await getAllProducts();  // Refresh the products list after creation
+        return true;
+      } else {
+        createProductState = CreateProductState.error;
+        Get.snackbar(
+          'Error',
+          response.message ?? 'Failed to create product',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+    } catch (e) {
       createProductState = CreateProductState.error;
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    } finally {
+      update();
     }
-    update();
   }
 
   /// Update an existing product
@@ -71,7 +107,7 @@ class ProductController extends GetxController {
     update();
 
     try {
-      final UpdateProductResponse response = await ProductsServices.updateProduct(productId, updateProductPayload, manualToken ?? "");
+      final UpdateProductResponse response = await ProductsServices.updateProduct(productId, updateProductPayload, accessToken ?? "");
       if (response.success ?? false) {
         individualProductsState = IndividualProductsState.productsLoaded;
         await getAllProducts();  // Refresh the products list after updating
@@ -92,7 +128,7 @@ class ProductController extends GetxController {
     
     try {
       final GetSingleProductResponse response = 
-          await ProductsServices.getProductDetails(productId, manualToken);
+          await ProductsServices.getProductDetails(productId, accessToken ?? "s");
       
       // Debug log
       print('Controller response: ${response.data?.toJson()}');

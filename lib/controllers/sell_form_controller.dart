@@ -34,8 +34,30 @@ class FormController extends GetxController {
     formTwoData.assignAll(data);
   }
 
-  void instantiateCreateProduct(BuildContext context) {
-    productController.createProduct(combinedFormData);
+  Future<bool> instantiateCreateProduct(BuildContext context) async {
+    try {
+      if (!validateForms()) {
+        Get.snackbar(
+          'Error',
+          'Please fill all required fields',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+
+      return await productController.createProduct(combinedFormData);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to process request: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
   }
 
   // Function to get the combined data
@@ -128,7 +150,7 @@ class FormController extends GetxController {
 
       var response = await request.send();
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         var responseData = await response.stream.bytesToString();
         var responseModel = ResponseModel.fromJson(jsonDecode(responseData));
         if (responseModel.success) {
