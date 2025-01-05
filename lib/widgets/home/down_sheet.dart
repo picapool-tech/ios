@@ -3,6 +3,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/models/button_model.dart';
+import 'package:picapool/screens/Products/products_homePage.dart';
 import 'package:picapool/screens/cabs/share_cab.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/svg_icon.dart';
@@ -251,7 +252,11 @@ class _DownSheetState extends State<DownSheet> {
 
 Widget _buildBrandItem(Map<String, String> brand) {
   return GestureDetector(
-    onTap: () {},
+    onTap: () {
+      if (brand['name'] == "Electronics") {
+        Get.to(() => const ProductsHomepage(currentIndex: 0));
+      }
+    },
     child: Container(
       margin: const EdgeInsets.only(right: 20),
       child: Column(

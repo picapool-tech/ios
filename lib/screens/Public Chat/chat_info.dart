@@ -21,7 +21,6 @@ class ChatInfo extends StatefulWidget {
 
 class _ChatInfoState extends State<ChatInfo> {
   final ChatController _chatController = Get.find<ChatController>();
-  final AuthController _authController = Get.find<AuthController>();
 
   @override
   void initState() {
@@ -75,12 +74,13 @@ class _ChatInfoState extends State<ChatInfo> {
               ), // Color based on status
       ),
       title: Text(
-        user.name ?? "User",
+        user.username ?? "Picapool User",
         style: const TextStyle(
           fontWeight: FontWeight.bold,
         ),
       ),
-      subtitle: Text(user.username ?? ""),
+      contentPadding: const EdgeInsets.all(8),
+      subtitle: (user.id == widget.creatorId) ? const Text("Admin") : null,
       // trailing: (widget.creatorId == user.id)
       //     ? ElevatedButton(
       //         onPressed: () {},

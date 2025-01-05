@@ -28,8 +28,11 @@ class AssetsController extends GetxController {
 
     return result.fold(
       (failure) {
-        Get.snackbar('Error', failure.message,
-            snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          failure.message,
+          snackPosition: SnackPosition.TOP,
+        );
         return null;
       },
       (url) {

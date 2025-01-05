@@ -1,4 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/date_symbols.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Products/selected_brand_page.dart';
 
@@ -24,6 +28,8 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
     // Add more brands as needed
   ];
 
+  final UserController _userController = Get.find<UserController>();
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -41,7 +47,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
             child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Color(0xffF0F0F0), width: 1),
+                  border: Border.all(color: const Color(0xffF0F0F0), width: 1),
                   shape: BoxShape.circle),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.orange),
@@ -55,7 +61,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(20),
             ),
-            child: TextField(
+            child: const TextField(
               decoration: InputDecoration(
                 hintText: 'Find Offers and Brands',
                 hintStyle: TextStyle(
@@ -73,7 +79,11 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: CircleAvatar(
-                backgroundImage: AssetImage('assets/avatar.jpg'),
+                backgroundImage: (_userController.user.value?.pic != null)
+                    ? CachedNetworkImageProvider(
+                        _userController.user.value!.pic!)
+                    : const AssetImage('assets/icons/Frame 64.png')
+                        as ImageProvider,
               ),
             ),
           ],
@@ -84,17 +94,17 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 10),
-                Row(
+                const SizedBox(height: 10),
+                const Row(
                   children: [
                     Expanded(
                       child: Divider(
                         indent: 40,
                         thickness: 1,
-                        color: const Color(0xffFF8D41),
+                        color: Color(0xffFF8D41),
                       ),
                     ),
-                    const Text(
+                    Text(
                       "  Brands  ",
                       style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
                     ),
@@ -102,22 +112,23 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                       child: Divider(
                         endIndent: 40,
                         thickness: 1,
-                        color: const Color(0xffFF8D41),
+                        color: Color(0xffFF8D41),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: brands.map((brand) => _buildBrandItem(brand)).toList(),
+                    children:
+                        brands.map((brand) => _buildBrandItem(brand)).toList(),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () => _showBrandBottomSheet(context, brands),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
@@ -137,19 +148,19 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildCommunitySaleCard(),
-                SizedBox(height: 20),
-                Row(
+                const SizedBox(height: 20),
+                const Row(
                   children: [
                     Expanded(
                       child: Divider(
                         indent: 40,
                         thickness: 1,
-                        color: const Color(0xffFF8D41),
+                        color: Color(0xffFF8D41),
                       ),
                     ),
-                    const Text(
+                    Text(
                       "  Best Offers  ",
                       style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
                     ),
@@ -157,18 +168,18 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                       child: Divider(
                         endIndent: 40,
                         thickness: 1,
-                        color: const Color(0xffFF8D41),
+                        color: Color(0xffFF8D41),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildCommunitySaleCard(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildCommunitySaleCard(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildCommunitySaleCard(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildCommunitySaleCard(),
               ],
             ),
@@ -190,7 +201,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
         // You can add more conditions for other brands to navigate to different pages.
       },
       child: Container(
-        margin: EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(right: 20),
         child: Column(
           children: [
             Container(
@@ -204,22 +215,22 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     color: Colors.grey.withOpacity(0.3),
                     spreadRadius: 1,
                     blurRadius: 5,
-                    offset: Offset(0, 3),
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
               child: Padding(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: Image.asset(
                   brand['asset']!,
                   fit: BoxFit.contain,
                 ),
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               brand['name']!,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontFamily: "MontserratR",
               ),
@@ -258,12 +269,13 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                 );
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
+                child: const Text(
                   'See Details',
                   style: TextStyle(
                     color: Colors.black,
@@ -279,19 +291,20 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
     );
   }
 
-  void _showBrandBottomSheet(BuildContext context, List<Map<String, String>> brands) {
+  void _showBrandBottomSheet(
+      BuildContext context, List<Map<String, String>> brands) {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
       builder: (BuildContext context) {
         return Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
           ),
-          padding: EdgeInsets.all(15),
+          padding: const EdgeInsets.all(15),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,17 +322,17 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-              Row(
+              const SizedBox(height: 20),
+              const Row(
                 children: [
                   Expanded(
                     child: Divider(
                       indent: 40,
                       thickness: 1,
-                      color: const Color(0xffFF8D41),
+                      color: Color(0xffFF8D41),
                     ),
                   ),
-                  const Text(
+                  Text(
                     "  Brands  ",
                     style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
                   ),
@@ -327,15 +340,15 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     child: Divider(
                       endIndent: 40,
                       thickness: 1,
-                      color: const Color(0xffFF8D41),
+                      color: Color(0xffFF8D41),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Expanded(
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 15.0,
                     mainAxisSpacing: 15.0,
@@ -360,9 +373,10 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                               width: 40,
                               height: 40,
                               fit: BoxFit.contain,
-                              color: _getBrandColor(brand['name']!) == Colors.white
-                                  ? null
-                                  : Colors.white,
+                              color:
+                                  _getBrandColor(brand['name']!) == Colors.white
+                                      ? null
+                                      : Colors.white,
                             ),
                           ),
                           Padding(
@@ -382,15 +396,15 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                                         : Colors.white,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.star,
                                       color: Colors.orange,
                                       size: 14,
                                     ),
-                                    SizedBox(width: 4),
+                                    const SizedBox(width: 4),
                                     Text(
                                       _getBrandRating(brand['name']!),
                                       style: TextStyle(
@@ -403,7 +417,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
                                   _getBrandDistance(brand['name']!),
                                   style: TextStyle(

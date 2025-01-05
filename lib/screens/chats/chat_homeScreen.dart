@@ -260,98 +260,101 @@ class _MyChatsPageState extends State<MyChatsPage> {
           //         ),
           //       )
           //     :
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            color: const Color(0xff02005D),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  CategoryButton(
-                    image: 'assets/icons/all.png',
-                    label: 'All Offers',
-                    selected: selectedCategory == 'All Offers',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'All Offers';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/food.png',
-                    label: 'Food',
-                    selected: selectedCategory == 'Food',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Food';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/tshirt.png',
-                    label: 'Apparel',
-                    selected: selectedCategory == 'Apparel',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Apparel';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/Bell.png',
-                    label: 'Entertainment',
-                    selected: selectedCategory == 'Entertainment',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Entertainment';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/ball.png',
-                    label: 'Sports',
-                    selected: selectedCategory == 'Sports',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Sports';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/ball.png',
-                    label: 'Medicine',
-                    selected: selectedCategory == 'Medicine',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Medicine';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/Frame 59.png',
-                    label: 'Electronics',
-                    selected: selectedCategory == 'Electronics',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Electronics';
-                      });
-                    },
-                  ),
-                  CategoryButton(
-                    image: 'assets/icons/ball.png',
-                    label: 'Music',
-                    selected: selectedCategory == 'Music',
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = 'Music';
-                      });
-                    },
-                  ),
-                  // Add more categories if needed
-                ],
-              ),
-            ),
-          ),
+
+          // TODO: NEED TO REIMPLEMENT IT AFTER BUY SELL OR OFFER LIST GOES > 100
+          // Container(
+          //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+          //   color: const Color(0xff02005D),
+          //   child: SingleChildScrollView(
+          //     scrollDirection: Axis.horizontal,
+          //     child: Row(
+          //       children: [
+          //         CategoryButton(
+          //           image: 'assets/icons/all.png',
+          //           label: 'All Offers',
+          //           selected: selectedCategory == 'All Offers',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'All Offers';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/food.png',
+          //           label: 'Food',
+          //           selected: selectedCategory == 'Food',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Food';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/tshirt.png',
+          //           label: 'Apparel',
+          //           selected: selectedCategory == 'Apparel',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Apparel';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/Bell.png',
+          //           label: 'Entertainment',
+          //           selected: selectedCategory == 'Entertainment',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Entertainment';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/ball.png',
+          //           label: 'Sports',
+          //           selected: selectedCategory == 'Sports',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Sports';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/ball.png',
+          //           label: 'Medicine',
+          //           selected: selectedCategory == 'Medicine',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Medicine';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/Frame 59.png',
+          //           label: 'Electronics',
+          //           selected: selectedCategory == 'Electronics',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Electronics';
+          //             });
+          //           },
+          //         ),
+          //         CategoryButton(
+          //           image: 'assets/icons/ball.png',
+          //           label: 'Music',
+          //           selected: selectedCategory == 'Music',
+          //           onTap: () {
+          //             setState(() {
+          //               selectedCategory = 'Music';
+          //             });
+          //           },
+          //         ),
+          //         // Add more categories if needed
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
           // Chat list
           Expanded(
             child: Container(
@@ -458,7 +461,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                     child: Hero(
                       tag: chat.chat.id,
                       child: Text(
-                        chat.offer.name,
+                        chat.offer.name.replaceAll("- FROM BRANDS", ""),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -474,7 +477,8 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   ),
                   Text(
                     DateTimeHelper.timeAgoSince(
-                        chat.chat.updatedAt.toIso8601String()),
+                      chat.chat.updatedAt.toIso8601String(),
+                    ),
                     style: const TextStyle(
                       fontFamily: "MontserratM",
                       fontSize: 12,
@@ -499,14 +503,14 @@ class _MyChatsPageState extends State<MyChatsPage> {
                       ),
                     ),
                   // if (chat)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 8.0),
-                    child: ImageIcon(
-                      AssetImage('assets/icons/Group 511.png'),
-                      size: 15,
-                      color: Color(0xff000000),
-                    ),
-                  ),
+                  // const Padding(
+                  //   padding: EdgeInsets.only(left: 8.0),
+                  //   child: ImageIcon(
+                  //     AssetImage('assets/icons/Group 511.png'),
+                  //     size: 15,
+                  //     color: Color(0xff000000),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

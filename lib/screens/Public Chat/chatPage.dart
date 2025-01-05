@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
@@ -9,6 +10,7 @@ import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chat_info.dart';
 import 'package:picapool/screens/Public%20Chat/public_chat_page.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
   final Chat chat;
@@ -32,6 +34,7 @@ class _ChatPageState extends State<ChatPage>
   final ChatController chatController = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
   final OffersController _offersController = Get.find<OffersController>();
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   void initState() {
@@ -87,11 +90,77 @@ class _ChatPageState extends State<ChatPage>
             Navigator.pop(context);
           },
         ),
+        actions: [
+          if (widget.offer?.name.toLowerCase().contains("- from brands") ??
+              false)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: MaterialButton(
+                onPressed: () async {
+                  // send?phone=917654389675&text=Hello%2C%20I%20want%20to%20have%20a%20convo%20with%20you
+                  // final TextEditingController textController =
+                  //     TextEditingController();
+                  // var dialog = showDialog(
+                  //   context: context,
+                  //   builder: (context) {
+                  //     return AlertDialog(
+                  //       title: const Text("Enter your custom message"),
+                  //       content: TextField(
+                  //         controller: textController,
+                  //         decoration: const InputDecoration(
+                  //           hintText: "Write your message here",
+                  //         ),
+                  //       ),
+                  //       actions: [
+                  //         TextButton(
+                  //           onPressed: () {
+                  //             Navigator.of(context).pop({});
+                  //           },
+                  //           child: const Text("Cancel"),
+                  //         ),
+                  //         TextButton(
+                  //           onPressed: () async {
+                  //             if (textController.text.isEmpty) {
+                  //               Get.snackbar(
+                  //                 "Field should not be empty",
+                  //                 "You need to write custom message in order to proceed.",
+                  //               );
+                  //               return;
+                  //             }
+
+                  //           },
+                  //           child: const Text("Send"),
+                  //         )
+                  //       ],
+                  //     );
+                  //   },
+                  // );
+                  var formattedString =
+                      "Hi,\nThis side ${_userController.user.value!.username} from chat: ${widget.chat.id} want to go ahead with buying the product";
+                  var urlString =
+                      "https://api.whatsapp.com/send/?phone=917224052216&text=$formattedString&type=phone_number&app_absent=0";
+                  final Uri url = Uri.parse(urlString);
+                  debugPrint(url.toString());
+                  if (!await launchUrl(url)) {
+                    Get.snackbar(
+                      "Oop! something occured",
+                      "Something went wrong processing your requeset.",
+                    );
+                  }
+                },
+                color: Colors.orange,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: const Text("Good to go"),
+              ),
+            ),
+        ],
         centerTitle: false,
         title: Hero(
           tag: widget.chat.id,
           child: Text(
-            widget.offer?.name ?? "Chat",
+            widget.offer?.name.replaceAll("- FROM BRANDS", "") ?? "Chat",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -252,10 +321,10 @@ class ChatInputField extends StatelessWidget {
                 child: Row(
                   children: [
                     // Smiley icon
-                    Image.asset(
-                      "assets/icons/Group 497.png",
-                      height: 25,
-                    ),
+                    // Image.asset(
+                    //   "assets/icons/Group 497.png",
+                    //   height: 25,
+                    // ),
                     // Text input field
                     Expanded(
                       child: TextField(
@@ -268,10 +337,10 @@ class ChatInputField extends StatelessWidget {
                       ),
                     ),
                     // Attach file icon
-                    Image.asset(
-                      "assets/icons/pinselect.png",
-                      height: 25,
-                    ),
+                    // Image.asset(
+                    //   "assets/icons/pinselect.png",
+                    //   height: 25,
+                    // ),
                   ],
                 ),
               ),

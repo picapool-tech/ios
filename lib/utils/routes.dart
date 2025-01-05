@@ -8,11 +8,9 @@ import 'package:picapool/screens/Public%20Chat/publicChatScreen.dart';
 import 'package:picapool/screens/cabs/CreateCab.dart';
 import 'package:picapool/screens/create_cab.dart';
 import 'package:picapool/screens/create_pool.dart';
-import 'package:picapool/screens/home_screen.dart';
-import 'package:picapool/screens/sell/sell_product_details_page.dart';
+import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/brands/brand_listing.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
-// import 'package:picapool/widgets/Electronics/sell_confirmation_form_page.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/widgets/sell/sell_confirmation_page.dart';
@@ -52,7 +50,7 @@ class GetRoutes {
   // Define the routes list using a more concise structure
   static final List<GetPage<dynamic>> routes = [
     _buildRoute(
-        name: splash, page: const HomeScreen(), checkWithNetwork: false),
+        name: splash, page: const NewBottomBar(), checkWithNetwork: false),
     _buildRoute(
         name: publicChat,
         page: const PublicChatPage(),

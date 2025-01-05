@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:picapool/screens/Middle%20Button/middleButton.dart';
 import 'package:picapool/screens/alerts/alertsPage.dart';
 import 'package:picapool/screens/ProfilePage/ProfilePage.dart';
@@ -117,10 +118,8 @@ class _NewBottomBarState extends State<NewBottomBar> {
                 35, // Center the icon horizontally
             child: InkWell(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const PoolOffersScreen()),
+                Get.to(
+                  () => const PoolOffersScreen(),
                 );
               },
               child: const SvgIcon(

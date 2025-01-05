@@ -14,7 +14,10 @@ import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
+import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:picapool/utils/image_utils.dart';
 
 class NearUserModel {
   final int id;
@@ -80,6 +83,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   Circle? _currentLocationCircle;
   bool _isMapInitialized = false; // New flag to check if the map is initialized
   List<NearUserModel> _nearestUsers = [];
+  bool fromBrands = false;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -92,8 +96,23 @@ class _RequestVicinityState extends State<RequestVicinity> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    var model = Get.arguments;
+    debugPrint("$model");
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _fetchLocation();
+      if (model != null) {
+        var brand = BrandOfferModel.fromJson(model['brands']);
+        _titleController.text = brand.title;
+        _descController.text = brand.description;
+        var imageUrl = await ImageUtils.imageToFile(
+          assetName: brand.imageUrl,
+        );
+        _imageFiles?.add(XFile(imageUrl.path));
+        setState(() {
+          _imageFiles;
+          fromBrands = true;
+        });
+      }
     });
   }
 
@@ -208,8 +227,12 @@ class _RequestVicinityState extends State<RequestVicinity> {
       return;
     }
 
+    var title = fromBrands
+        ? "${_titleController.text} - FROM BRANDS"
+        : _titleController.text;
+
     final offer = VicinityOffer(
-      name: _titleController.text,
+      name: title,
       images: [],
       desc: _descController.text,
       expiryAt: DateTime.now().add(Duration(minutes: _waitTime.toInt())),

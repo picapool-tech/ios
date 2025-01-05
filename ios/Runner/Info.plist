@@ -37,16 +37,23 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need this permission so that you can use camera to click a profile picture instead of choosing one from the gallery.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to show nearby offers and locations when you are not active in the app.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We need your location to always show relevant pools based on your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to show nearby offers when you are using your app.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location to show nearby offers and locations when you are not active in the app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Description of why you are wanting this permission</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -64,9 +71,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>We need this permission so that you can use camera to click a profile picture instead of choosing one from the gallery.</string>
-	<!-- <key>NSMicrophoneUsageDescription</key>
-	<string>your usage description here</string> -->
 </dict>
 </plist>

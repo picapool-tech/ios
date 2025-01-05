@@ -259,7 +259,7 @@ class _PoolingHistoryState extends State<PoolingHistory> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  offer.name,
+                  offer.name.replaceAll("- FROM BRANDS", ""),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

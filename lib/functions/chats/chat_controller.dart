@@ -212,7 +212,7 @@ class ChatController extends GetxController {
       return null;
     }
 
-    return usersInChat.firstWhereOrNull((user) => user.id == userId)?.name;
+    return usersInChat.firstWhereOrNull((user) => user.id == userId)?.username;
   }
 
   @override

@@ -152,7 +152,7 @@ class LocationController extends GetxController {
       debugPrint("USER LOCATION FETCH ERROR: ${e.toString()}");
       state.value = state.value.copyWith(
         isLoading: false,
-        errorMessage: 'Failed to get location: ${e.toString()}',
+        errorMessage: 'Failed to get location',
       );
     }
   }

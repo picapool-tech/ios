@@ -28,6 +28,19 @@ class NetworkController extends GetxController {
         Connectivity().onConnectivityChanged.listen((results) async {
       isConnected.value =
           await InternetConnectionChecker.instance.hasConnection;
+
+      // var snackBar = Get.showSnackbar(const GetSnackBar(
+      //   snackPosition: SnackPosition.TOP,
+      //   title: "No internet connection",
+      //   message: "You don't have active internet connection right now.",
+      //   isDismissible: false,
+      // ));
+
+      // if (isConnected.value) {
+      //   snackBar.close();
+      // } else {
+      //   snackBar.show();
+      // }
     });
   }
 

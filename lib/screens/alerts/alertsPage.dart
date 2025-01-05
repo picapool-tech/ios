@@ -33,7 +33,7 @@ class _AlertsPageState extends State<AlertsPage> {
     super.initState();
 
     if (_userController.user.value != null) {
-      _offers.getOffersForUser();
+      _offers.fetchAllOffers();
     }
   }
 
@@ -60,100 +60,102 @@ class _AlertsPageState extends State<AlertsPage> {
       body: Column(
         children: [
           // Category Buttons
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            color: const Color(0xff02005D),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Row(
-                  children: [
-                    CategoryButton(
-                      image: 'assets/icons/all.png',
-                      label: 'All Offers',
-                      selected: selectedCategory == 'All Offers',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'All Offers';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/food.png',
-                      label: 'Food',
-                      selected: selectedCategory == 'Food',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Food';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/tshirt.png',
-                      label: 'Apparel',
-                      selected: selectedCategory == 'Apparel',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Apparel';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/Bell.png',
-                      label: 'Entertainment',
-                      selected: selectedCategory == 'Entertainment',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Entertainment';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/ball.png',
-                      label: 'Sports',
-                      selected: selectedCategory == 'Sports',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Sports';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/ball.png',
-                      label: 'Medicine',
-                      selected: selectedCategory == 'Medicine',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Medicine';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/Frame 59.png',
-                      label: 'Electronics',
-                      selected: selectedCategory == 'Electronics',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Electronics';
-                        });
-                      },
-                    ),
-                    CategoryButton(
-                      image: 'assets/icons/ball.png',
-                      label: 'Music',
-                      selected: selectedCategory == 'Music',
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = 'Music';
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // need to reimplement after offer list goes > 100.
+          // Container(
+          //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+          //   color: const Color(0xff02005D),
+          //   child: SingleChildScrollView(
+          //     scrollDirection: Axis.horizontal,
+          //     child: Padding(
+          //       padding: const EdgeInsets.only(left: 8.0),
+          //       child: Row(
+          //         children: [
+          //           CategoryButton(
+          //             image: 'assets/icons/all.png',
+          //             label: 'All Offers',
+          //             selected: selectedCategory == 'All Offers',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'All Offers';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/food.png',
+          //             label: 'Food',
+          //             selected: selectedCategory == 'Food',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Food';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/tshirt.png',
+          //             label: 'Apparel',
+          //             selected: selectedCategory == 'Apparel',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Apparel';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/Bell.png',
+          //             label: 'Entertainment',
+          //             selected: selectedCategory == 'Entertainment',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Entertainment';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/ball.png',
+          //             label: 'Sports',
+          //             selected: selectedCategory == 'Sports',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Sports';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/ball.png',
+          //             label: 'Medicine',
+          //             selected: selectedCategory == 'Medicine',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Medicine';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/Frame 59.png',
+          //             label: 'Electronics',
+          //             selected: selectedCategory == 'Electronics',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Electronics';
+          //               });
+          //             },
+          //           ),
+          //           CategoryButton(
+          //             image: 'assets/icons/ball.png',
+          //             label: 'Music',
+          //             selected: selectedCategory == 'Music',
+          //             onTap: () {
+          //               setState(() {
+          //                 selectedCategory = 'Music';
+          //               });
+          //             },
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
+
           // Alert List
           Expanded(
             child: Padding(
@@ -164,22 +166,22 @@ class _AlertsPageState extends State<AlertsPage> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: (_userController.user.value != null)
                       ? GetBuilder<OffersController>(builder: (controller) {
-                          if (controller.offers.isEmpty &&
+                          if (controller.allOffers.isEmpty &&
                               controller.isLoading.value) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          if (controller.offers.isEmpty) {
+                          if (controller.allOffers.isEmpty) {
                             return const Center(
                               child: Text("No offers"),
                             );
                           } else {
                             if (expandedStates.length !=
-                                controller.offers.length) {
+                                controller.allOffers.length) {
                               expandedStates = List<bool>.filled(
-                                controller.offers.length,
+                                controller.allOffers.length,
                                 false,
                               );
                             }
@@ -246,7 +248,7 @@ class _AlertsPageState extends State<AlertsPage> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    offer.name,
+                                    offer.name.replaceAll("- FROM BRANDS", ""),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -257,7 +259,8 @@ class _AlertsPageState extends State<AlertsPage> {
                                 const SizedBox(width: 8),
                                 Text(
                                   DateTimeHelper.timeAgoSince(
-                                      offer.createdAt.toIso8601String()),
+                                    offer.createdAt.toIso8601String(),
+                                  ),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontFamily: "MontserratM",
@@ -460,11 +463,11 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
   ListView showOfferList() {
-    debugPrint("${_offers.offers.firstOrNull?.toJson()}");
+    debugPrint("${_offers.allOffers.firstOrNull?.toJson()}");
     return ListView.builder(
-      itemCount: _offers.offers.length,
+      itemCount: _offers.allOffers.length,
       itemBuilder: (context, index) {
-        var offer = _offers.offers[index];
+        var offer = _offers.allOffers[index];
         return listItem(
           offer: offer,
           onTap: () {
