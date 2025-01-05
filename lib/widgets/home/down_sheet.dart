@@ -103,7 +103,9 @@ class _DownSheetState extends State<DownSheet> {
                   mainActionView(
                     title: "Request Vicinity",
                     onTap: () {
-                      Get.to(() => const RequestVicinity());
+                      Get.to(
+                        () => const RequestVicinity(),
+                      );
                     },
                     assetImage: "assets/images/request_vicinity.png",
                   ),
@@ -113,6 +115,7 @@ class _DownSheetState extends State<DownSheet> {
                       Get.to(() => const CabShareScreen());
                     },
                     assetImage: "assets/images/share_cab.png",
+                    isDisabled: true,
                   ),
                   mainActionView(
                     title: "Buy and sell",
@@ -120,6 +123,7 @@ class _DownSheetState extends State<DownSheet> {
                       Get.to(() => const ProductListsPage());
                     },
                     assetImage: "assets/images/buy_sell.png",
+                    isDisabled: true,
                   ),
                 ],
               ),
@@ -217,12 +221,15 @@ class _DownSheetState extends State<DownSheet> {
     required Function onTap,
     required String title,
     required String assetImage,
+    isDisabled = false,
   }) {
     Size size = MediaQuery.of(context).size;
     return InkWell(
-      onTap: () {
-        onTap();
-      },
+      onTap: (!isDisabled)
+          ? () {
+              onTap();
+            }
+          : null,
       hoverColor: Colors.transparent,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -232,6 +239,8 @@ class _DownSheetState extends State<DownSheet> {
             // "assets/images/share_cab.png",
             assetImage,
             width: size.width * 0.275,
+            color: (isDisabled) ? Colors.white : null,
+            colorBlendMode: BlendMode.color,
           ),
           const SizedBox(
             height: 6,

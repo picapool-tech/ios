@@ -332,8 +332,9 @@ class AuthApi {
         String newAccessToken = responseModel.data['newAccessToken'] as String;
         return right(newAccessToken);
       }
-      return left(Failure(
-          message: responseModel.message, stackTrace: StackTrace.current));
+      return left(
+        Failure(message: responseModel.message, stackTrace: StackTrace.current),
+      );
     } catch (e) {
       debugPrint('Error updating access token: $e');
       return left(
