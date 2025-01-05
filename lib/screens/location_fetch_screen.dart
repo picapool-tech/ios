@@ -108,7 +108,6 @@ class _LocationScreenState extends State<LocationScreen>
   Future<void> _fetchLocation({
     bool fetchActualLocation = false,
   }) async {
-    
     if (fetchActualLocation ||
         _locationController.state.value.location == null) {
       await _locationController.getLocation();
@@ -128,8 +127,9 @@ class _LocationScreenState extends State<LocationScreen>
       _currentPosition = LatLng(location.latitude, location.longitude);
 
       _selectedPosition = _currentPosition;
-      _updateMarkersAndCircles();
     });
+    await _updateMarkersAndCircles();
+    _mapController?.animateCamera(CameraUpdate.newLatLng(_selectedPosition!));
   }
 
   Future<BitmapDescriptor> _getCustomMarker() async {
@@ -146,7 +146,7 @@ class _LocationScreenState extends State<LocationScreen>
     });
   }
 
-  void _updateMarkersAndCircles() async {
+  Future<void> _updateMarkersAndCircles() async {
     BitmapDescriptor customMarker = await _getCustomMarker();
 
     setState(() {
@@ -163,9 +163,9 @@ class _LocationScreenState extends State<LocationScreen>
         circleId: const CircleId("centerDotCircle"),
         center: _currentPosition!,
         radius: 8, // Fixed radius for the center dot
-        strokeColor: Color.fromARGB(255, 192, 237, 11),
+        strokeColor: const Color.fromARGB(255, 192, 237, 11),
         strokeWidth: 2,
-        fillColor: Color.fromARGB(255, 158, 227, 146),
+        fillColor: const Color.fromARGB(255, 158, 227, 146),
       );
 
       _pinMarker = Marker(
@@ -742,8 +742,9 @@ class _LocationScreenState extends State<LocationScreen>
                     SizedBox(
                       width: 250,
                       child: ElevatedButton.icon(
-                        onPressed: () =>
-                            _fetchLocation(fetchActualLocation: true),
+                        onPressed: () => _fetchLocation(
+                          fetchActualLocation: true,
+                        ),
                         icon: const Icon(Icons.my_location),
                         label: const Text("Go to current location"),
                         style: ElevatedButton.styleFrom(
