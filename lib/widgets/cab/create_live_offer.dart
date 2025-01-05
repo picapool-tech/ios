@@ -289,12 +289,12 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     }
 
   void _handleCreateLiveOffer() {
-    if (!_validateInputs()) return;
+    // if (!_validateInputs()) return;
 
     final payload = CreateLiveOfferPayload(
       createdAt: _selectedDateTime ?? DateTime.now(),
       expiryAt: updateDefaultExpiryDate(),
-      fromAddress: _fromAddress ?? "empty",
+      fromAddress: _fromController.text ?? "empty",
       seats: 3,
       toAddress: _toAddress ?? "empty",
     );
@@ -343,10 +343,12 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                       isFromField: true,
                     ),
                     const SizedBox(height: 16),
-                    _buildLocationField(
-                      controller: _toController,
-                      label: 'drop-off',
-                      isFromField: false,
+                    Container(
+                      child: _buildLocationField(
+                        controller: _toController,
+                        label: 'drop-off',
+                        isFromField: false,
+                      ),
                     ),
                   ],
                 ),
