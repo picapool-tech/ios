@@ -511,12 +511,12 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                           padding: const EdgeInsets.only(right: 16.0),
                                           child: GestureDetector(
                                             onTap: () {
-                                              setState(() {
-                                                _selectedCab = 'cab${index + 1}';
-                                              });
+                                              // setState(() {
+                                              //   _selectedCab = 'cab${index + 1}';
+                                              // });
                                             },
                                             child: Container(
-                                              width: MediaQuery.of(context).size.width * 0.8,
+                                              width: MediaQuery.of(context).size.width * 0.7,
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius: BorderRadius.circular(12),
@@ -530,7 +530,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                                 ],
                                               ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(16.0),
+                                                padding: const EdgeInsets.symmetric(horizontal:  16.0),
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
@@ -566,7 +566,6 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                                     buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
                                                     const SizedBox(height: 8),
                                                     buildAddressRow("To", offer.toAddress ?? "EMPTY"),
-                                                    const Spacer(),
                                                     SizedBox(
                                                       width: double.infinity,
                                                       child: ElevatedButton(
@@ -619,158 +618,6 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         ),
                       ),
                     ),
-                    if (_selectedCab != null)
-                      Positioned(
-                        bottom: 40, // Positioned above the bottom container
-                        left: 16,
-                        right: 16,
-                        child: Container(
-                          height: 110,
-                          padding: EdgeInsets.all(screenWidth * 0.03),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                                BorderRadius.circular(screenWidth * 0.04),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 7,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "5:45 pm",
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.05,
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: "MontserratM"
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.person,
-                                          color: Colors.orange,
-                                          size: screenWidth * 0.05),
-                                      SizedBox(width: screenWidth * 0.01),
-                                      Text(
-                                        "2 In room",
-                                        style: TextStyle(
-                                          fontFamily: "MontserratR",
-                                            fontSize: screenWidth * 0.04),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.arrow_drop_down,
-                                          color: Colors.orange,
-                                          size: screenWidth * 0.05),
-                                      SizedBox(width: screenWidth * 0.01),
-                                      Text(
-                                        "105m away",
-                                        style: TextStyle(
-                                          fontFamily: "MontserratR",
-                                            fontSize: screenWidth * 0.04),
-                                      ),
-                                      SizedBox(width: screenWidth * 0.01),
-                                      Icon(Icons.directions_walk,
-                                          color: Colors.green,
-                                          size: screenWidth * 0.05),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: screenHeight * 0.01),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: screenWidth * 0.03),
-                                      height: screenHeight * 0.05,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.grey),
-                                        borderRadius: BorderRadius.circular(
-                                            screenWidth * 0.07),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.location_on,
-                                              color: Colors.grey,
-                                              size: screenWidth * 0.05),
-                                          SizedBox(width: screenWidth * 0.02),
-                                          const Expanded(
-                                            child: Text(
-                                              "6th street, s...",
-                                              style:
-                                                  TextStyle(color: Colors.black, fontFamily: "MontserratR"),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          Text(
-                                            "See Route",
-                                            style: TextStyle(
-                                              fontFamily: "MontserratR",
-                                              color: Colors.orange,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: screenWidth * 0.03,
-                                            ),
-                                          ),
-                                          Icon(Icons.arrow_drop_down,
-                                              color: Colors.orange,
-                                              size: screenWidth * 0.05),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: screenWidth * 0.03),
-                                  Container(
-                                    height: screenHeight * 0.05,
-                                    width: screenWidth * 0.28,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xffFF8D41),
-                                      borderRadius: BorderRadius.circular(
-                                          screenWidth * 0.03),
-                                    ),
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          ImageIcon(const AssetImage("assets/icons/bus.png"), color: Colors.white,
-                                              size: screenWidth * 0.05),
-                                          // Icon(Icons.car_rental,
-                                          //     color: Colors.white,
-                                          //     size: screenWidth * 0.05),
-                                          SizedBox(width: screenWidth * 0.02),
-                                          Text(
-                                            "Join Chat",
-                                            style: TextStyle(
-                                              fontFamily: "MontserratSB",
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: screenWidth * 0.03,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     // The "3 cabs available nearby for this date" container
                     Positioned(
                       bottom: MediaQuery.of(context).size.height * 0.3, // Positioned above the bottom container
