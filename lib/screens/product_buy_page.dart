@@ -5,7 +5,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/screens/Products/products_homePage.dart';
-import 'package:picapool/widgets/Sell_Form_Page0.dart';
 
 extension StringExtension on String {
   String toTitleCase() {

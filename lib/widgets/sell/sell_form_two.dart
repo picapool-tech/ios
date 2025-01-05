@@ -3,10 +3,11 @@ import 'package:get/get.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/utils/routes.dart';
-import 'package:picapool/widgets/Sell_Form_Page0.dart' as page0;
 import 'package:picapool/widgets/sell/build_field.dart';
 
 class SellFormTwo extends StatefulWidget {
+  const SellFormTwo({super.key});
+
   @override
   State<SellFormTwo> createState() => _SellFormTwoState();
 }
@@ -24,7 +25,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
     if (sellformTwoKey.currentState?.validate() ?? false) {
       try {
         formController.saveFormTwoData(saveFormTwoData());
-        
+
         // Show loading indicator
         showDialog(
           context: context,
@@ -39,8 +40,9 @@ class _SellFormTwoState extends State<SellFormTwo> {
         );
 
         // Attempt to create the product
-        final bool success = await formController.instantiateCreateProduct(context);
-        
+        final bool success =
+            await formController.instantiateCreateProduct(context);
+
         // Hide loading indicator
         Navigator.pop(context);
 
@@ -53,7 +55,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        
+
         // Show error message
         Get.snackbar(
           'Error',
@@ -65,18 +67,15 @@ class _SellFormTwoState extends State<SellFormTwo> {
       }
     } else {
       showSnackBar(
-        content: 'Please fill all the required fields',
-        context: context
-      );
+          content: 'Please fill all the required fields', context: context);
     }
   }
-    final formController = Get.find<FormController>();
-    final sellformTwoKey = GlobalKey<FormState>();
+
+  final formController = Get.find<FormController>();
+  final sellformTwoKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
