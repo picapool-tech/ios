@@ -99,7 +99,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
                   // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
                   infoWindow: InfoWindow(
-                    title: DateFormat('hh:mm a').format(offer.updatedAt!),
+                    title: DateFormat('hh:mm a').format(offer.createdAt!),
                     snippet: '${offer.seats} seats available',
                   ),
                   onTap: () {
@@ -212,8 +212,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     final selectedDateEnd = selectedDateStart.add(const Duration(days: 1));
 
     return offers.where((offer) {
-      final updatedAt = offer.updatedAt;
-      return updatedAt!.isAfter(selectedDateStart) && updatedAt.isBefore(selectedDateEnd);
+      final createdAt = offer.createdAt;
+      return createdAt!.isAfter(selectedDateStart) && createdAt.isBefore(selectedDateEnd);
     }).toList();
   }
 
@@ -478,7 +478,13 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                               child: GetBuilder<LiveOfferController>(
                                 builder: (liveOfferInstance) {
                                   if (liveOfferInstance.allLiveofferState == GetAllLiveOfferState.allLiveOffersLoaded) {
-                                    final filteredOffers = _filterOffersByDate(liveOfferInstance.liveOffersList);
+                                    final filteredOffers = _selectedDate != null 
+                                      ? liveOfferInstance.liveOffersList.where((offer) {
+                                          final offerDate = offer.createdAt;
+                                          return offerDate != null && 
+                                                 DateUtils.isSameDay(offerDate, _selectedDate);
+                                        }).toList()
+                                      : liveOfferInstance.liveOffersList;
                                     
                                     if (filteredOffers.isEmpty) {
                                       return Center(
@@ -538,7 +544,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                       children: [
                                                         Text(
-                                                          DateFormat('hh:mm a').format(offer.updatedAt!),
+                                                          DateFormat('hh:mm a').format(offer.createdAt!),
                                                           style: const TextStyle(
                                                             fontFamily: "MontserratM",
                                                             fontSize: 20
@@ -639,7 +645,16 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         ),
                         child: GetBuilder<LiveOfferController>(
                           builder: (liveOfferInstance) {
-                            final offersCount = liveOfferInstance.liveOffersList.length;
+                            final filteredOffers = _selectedDate != null 
+                              ? liveOfferInstance.liveOffersList.where((offer) {
+                                  final offerDate = offer.createdAt;
+                                  return offerDate != null && 
+                                         DateUtils.isSameDay(offerDate, _selectedDate);
+                                }).toList()
+                              : liveOfferInstance.liveOffersList;
+                            
+                            final offersCount = filteredOffers.length;
+                            
                             return Center(
                               child: Text.rich(
                                 TextSpan(
@@ -649,8 +664,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                     color: Color(0xffFF8D41),
                                     fontFamily: "MontserratR"
                                   ),
-                                  children: const [
-                                    TextSpan(
+                                  children: [
+                                    const TextSpan(
                                       text: ' cabs ',
                                       style: TextStyle(
                                         color: Color(0xffFF8D41),
@@ -658,8 +673,10 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: 'available nearby for this date.',
-                                      style: TextStyle(
+                                      text: _selectedDate != null 
+                                        ? 'available for ${DateFormat('MMM dd, yyyy').format(_selectedDate!)}'
+                                        : 'available nearby.',
+                                      style: const TextStyle(
                                         color: Colors.black,
                                         fontFamily: "MontserratR"
                                       ),
