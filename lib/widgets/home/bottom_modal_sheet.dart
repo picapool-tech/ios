@@ -35,13 +35,11 @@ void showCustomModalBottomSheet(BuildContext context) {
       imagePath: "assets/images/share_a_cab.png",
       text: "Share a cab",
       destinationPage: const ShareCabScreen(),
-      isDisabled: true,
     ),
     Item(
       imagePath: "assets/images/buy_sell.png",
       text: "Buy and sell",
       destinationPage: const ProductListsPage(),
-      isDisabled: true,
     ),
     // Item(imagePath: "assets/images/medical_help.png", text: "Medical help", destinationPage: RequestVicinityPage()),
     Item(

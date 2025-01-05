@@ -115,7 +115,6 @@ class _DownSheetState extends State<DownSheet> {
                       Get.to(() => const CabShareScreen());
                     },
                     assetImage: "assets/images/share_cab.png",
-                    isDisabled: true,
                   ),
                   mainActionView(
                     title: "Buy and sell",
@@ -123,7 +122,6 @@ class _DownSheetState extends State<DownSheet> {
                       Get.to(() => const ProductListsPage());
                     },
                     assetImage: "assets/images/buy_sell.png",
-                    isDisabled: true,
                   ),
                 ],
               ),

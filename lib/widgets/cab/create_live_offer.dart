@@ -17,7 +17,7 @@ import 'package:picapool/screens/cabs/location_pick_fields.dart';
 import '../../models/live_offer/live_offer_entity.dart';
 
 class CreateLiveOffer extends StatefulWidget {
-  CreateLiveOffer({super.key});
+  const CreateLiveOffer({super.key});
 
   @override
   State<CreateLiveOffer> createState() => _CreateLiveOfferState();
@@ -28,28 +28,28 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   final LiveOfferController liveOfferController = Get.find();
   final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
-  
-    final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+
+  final GoogleMapsPlaces _places =
+      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
   List<Prediction> _predictions = [];
-  
+
   DateTime? _selectedDateTime;
   DateTime? _defaultExpiryDate;
   DateTime updateDefaultExpiryDate() {
-  if (_selectedDateTime != null) {
-    setState(() {
-    _defaultExpiryDate = _selectedDateTime!.add(Duration(days: 3));
-    });
-  } else {
-    _defaultExpiryDate = null; // Handle case where _selectedDate is null
+    if (_selectedDateTime != null) {
+      setState(() {
+        _defaultExpiryDate = _selectedDateTime!.add(Duration(days: 3));
+      });
+    } else {
+      _defaultExpiryDate = null; // Handle case where _selectedDate is null
+    }
+    return _defaultExpiryDate ?? DateTime.now();
   }
-  return _defaultExpiryDate ?? DateTime.now();
-}
 
   bool isLoading = false;
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
   LatLng? _selectedPosition;
-
 
   // Location data
   LatLng? _fromLatLng;
@@ -62,9 +62,10 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   bool _isMapInitialized = false;
   // DateTime _selectedDateTime = DateTime.now();
   // DateTime _defaultExpiryDate  = DateTime.now();
-  final places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); 
-  
-    bool _isSearchingFrom = false; // Track which field is being searched
+  final places =
+      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+
+  bool _isSearchingFrom = false; // Track which field is being searched
 
   @override
   void initState() {
@@ -90,7 +91,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       final location = details.result.geometry?.location;
       if (location != null) {
         final newPosition = LatLng(location.lat, location.lng);
-        
+
         setState(() {
           if (_isSearchingFrom) {
             _fromLatLng = newPosition;
@@ -150,12 +151,12 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
           border: InputBorder.none,
           prefixIcon: const Icon(Icons.location_on, color: Colors.orange),
         ),
-              onTap: () async {
+        onTap: () async {
           _isSearchingFrom = isFromField;
           final Prediction? result = await showSearch<Prediction>(
-                  context: context,
+            context: context,
             delegate: LocationSearchDelegate(places: _places),
-                );
+          );
           if (result != null) {
             _selectPlace(result);
           }
@@ -173,13 +174,13 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
           locationController.state.value.location!.longitude,
         );
         _fromLatLng = _currentPosition; // Set initial pickup location
-        _fromController.text = locationController.state.value.locationName?.locality ?? '';
+        _fromController.text =
+            locationController.state.value.locationName?.locality ?? '';
         _fromAddress = _fromController.text;
       });
     }
   }
 
-  
   Future<void> _fetchLocation({
     bool fetchActualLocation = false,
   }) async {
@@ -200,17 +201,18 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
 
     setState(() {
       _currentPosition = LatLng(location.latitude, location.longitude);
-       Placemark firstPlacemark = locationController.state.value.locationName ?? Placemark();
-            
-      _fromController.text = '${firstPlacemark.name}, ${firstPlacemark.locality}, ${firstPlacemark.thoroughfare}, ${firstPlacemark.administrativeArea}' ?? "Cant Fetch current location";
+      Placemark firstPlacemark =
+          locationController.state.value.locationName ?? Placemark();
+
+      _fromController.text =
+          '${firstPlacemark.name}, ${firstPlacemark.locality}, ${firstPlacemark.thoroughfare}, ${firstPlacemark.administrativeArea}' ??
+              "Cant Fetch current location";
       _selectedPosition = _currentPosition;
       _updateMarkersAndCircles();
     });
   }
 
-
-    void _updateMarkersAndCircles() async {
-
+  void _updateMarkersAndCircles() async {
     setState(() {
       _currentLocationCircle = Circle(
         circleId: const CircleId("currentLocationCircle"),
@@ -223,7 +225,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     });
   }
 
-    Future<void> _getAddressFromLatLng(LatLng position) async {
+  Future<void> _getAddressFromLatLng(LatLng position) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(
       position.latitude,
       position.longitude,
@@ -265,11 +267,11 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     }
   }
 
-
   bool _validateInputs() {
     if (_fromLatLng == null || _toLatLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both pickup and drop-off locations')),
+        const SnackBar(
+            content: Text('Please select both pickup and drop-off locations')),
       );
       return false;
     }
@@ -286,7 +288,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       return false;
     }
     return true;
-    }
+  }
 
   void _handleCreateLiveOffer() {
     // if (!_validateInputs()) return;
@@ -300,16 +302,18 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     );
 
     liveOfferController.createLiveOffer(payload).then((_) {
-      if (liveOfferController.createLiveOfferState == CreateLiveOfferState.created) {
+      if (liveOfferController.createLiveOfferState ==
+          CreateLiveOfferState.created) {
         // Get the first chat ID from the response
-        final chatId = liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
+        final chatId =
+            liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
         // if (chatId != null) {
-          Navigator.push(
-            context, 
-            MaterialPageRoute(
-              builder: (context) => ChatPage(chatId: chatId.toString()),
-            ),
-          );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatPage(chatId: chatId.toString()),
+          ),
+        );
         // }
       }
     });
@@ -353,7 +357,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                   ],
                 ),
               ),
-              
+
               // Predictions List
               if (_predictions.isNotEmpty)
                 Container(
@@ -423,7 +427,9 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                         ),
                       ),
                   },
-                  circles: _currentLocationCircle != null ? {_currentLocationCircle!} : {},
+                  circles: _currentLocationCircle != null
+                      ? {_currentLocationCircle!}
+                      : {},
                 ),
               ),
               Padding(
@@ -455,8 +461,8 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                 padding: const EdgeInsets.all(16.0),
                 child: GetBuilder<LiveOfferController>(
                   builder: (liveOfferInstance) {
-                    return liveOfferInstance.createLiveOfferState == 
-                           CreateLiveOfferState.creating
+                    return liveOfferInstance.createLiveOfferState ==
+                            CreateLiveOfferState.creating
                         ? const LinearProgressIndicator(color: Colors.orange)
                         : ElevatedButton(
                             onPressed: _handleCreateLiveOffer,
@@ -551,6 +557,6 @@ class LocationSearchDelegate extends SearchDelegate<Prediction> {
           },
         );
       },
-);
-}
+    );
+  }
 }

@@ -176,7 +176,11 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
                                   fontFamily: "MontserratM",
                                   fontWeight: FontWeight.w500)),
                         ),
-                        Expanded(child: Divider(color: Color(0xffFF8D41))),
+                        Expanded(
+                          child: Divider(
+                            color: Color(0xffFF8D41),
+                          ),
+                        ),
                       ],
                     ),
                   ),
