@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/utils/routes.dart';
+import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
 import 'package:picapool/widgets/others/OtherPage1.dart';
 
@@ -50,80 +51,29 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
           ),
 
           Expanded(
-            child: GridView.count(
-              shrinkWrap: true,
-              primary: false,
-              padding: const EdgeInsets.all(20),
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              crossAxisCount: 2,
-              children: <Widget>[
-                CategoryCard(
-                  label: 'Electronics',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(
-                      GetRoutes.sellProductsFormPage,
-                      arguments: {'categoryName': 'electronics'},
-                    );
-                  },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.0, // Makes cells square
                 ),
-                CategoryCard(
-                  label: 'Clothing',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'clothing'});
-                  },
-                ),
-                CategoryCard(
-                  label: 'Sports',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'sports'});
-                  },
-                ),
-                CategoryCard(
-                  label: 'Books',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'books'});
-                  },
-                ),
-                CategoryCard(
-                  label: 'Vehicle',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'vehicle'});
-                  },
-                ),
-                CategoryCard(
-                  label: 'Furniture',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'furniture'});
-                  },
-                ),
-                CategoryCard(
-                  label: 'Other',
-                  imagePath:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-                  onTap: () {
-                    Get.toNamed(GetRoutes.sellProductsFormPage,
-                        arguments: {'categoryName': 'other'});
-                  },
-                ),
-              ],
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  return CategoryCard(
+                    label: categories[index].name,
+                    imagePath: categories[index].imagePath,
+                    onTap: () {
+                      Get.toNamed(
+                        GetRoutes.sellProductsFormPage,
+                        arguments: {'categoryName': categories[index].name.toLowerCase()},
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
 
@@ -168,38 +118,48 @@ class CategoryCard extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  CategoryCard(
-      {super.key,
-      required this.imagePath,
-      required this.label,
-      required this.onTap});
+  const CategoryCard({
+    super.key,
+    required this.imagePath,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xffD4D4D4)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                  width: 12,
-                  height: 12,
-                  color: Colors.amber,
-                  child: Image.memory(base64Decode(imagePath))),
-              const SizedBox(height: 8),
-              Text(label,
-                  style:
-                      const TextStyle(fontSize: 14, fontFamily: "MontserratR")),
-            ],
-          ),
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffD4D4D4)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 40, // Increased size for better visibility
+              height: 40, // Increased size for better visibility
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SvgIcon(
+                imagePath,
+                size: 36,
+                // fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontFamily: "MontserratR",
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -228,4 +188,45 @@ class StepIndicator extends StatelessWidget {
               )),
     );
   }
+}
+
+final List<CategoryModel> categories = [
+  CategoryModel(
+    name: 'Electronics',
+    imagePath: 'assets/icons/electronics.svg',
+  ),
+  CategoryModel(
+    name: 'Clothing',
+    imagePath: 'assets/icons/clothes.svg',
+  ),
+  CategoryModel(
+    name: 'Sports',
+    imagePath: 'assets/icons/sports-1.svg',
+  ),
+  CategoryModel(
+    name: 'Books',
+    imagePath: 'assets/icons/books-1.svg',
+  ),
+  CategoryModel(
+    name: 'Vehicle',
+    imagePath: 'assets/icons/vehicle-1.svg',
+  ),
+  CategoryModel(
+    name: 'Furniture',
+    imagePath: 'assets/icons/furniture.svg',
+  ),
+  CategoryModel(
+    name: 'Other',
+    imagePath: 'assets/icons/new.svg',
+  ),
+];
+
+class CategoryModel {
+  final String name;
+  final String imagePath;
+
+  CategoryModel({
+    required this.name,
+    required this.imagePath,
+  });
 }
