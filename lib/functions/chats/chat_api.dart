@@ -197,4 +197,49 @@ class ChatApi {
       );
     }
   }
+
+  FutureEither<Chat> getChatFromLiveOfferId({
+    required String accessToken,
+    required int liveOfferId,
+  }) async {
+    try {
+      var response = await http.get(
+        Uri.parse("https://api.picapool.com/v2/chat/liveOffer/$liveOfferId"),
+        headers: {
+          "Authorization": "Bearer $accessToken",
+        },
+      );
+
+      debugPrint("GET CHAT FROM LVIE OFFER ID RESPONSE: ${response.body}");
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+        if (responseModel.success) {
+          var chat = Chat.fromJson(responseModel.data);
+          return right(chat);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      } else {
+        return left(
+          Failure(
+            message: "Something went wrong",
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("GET CAHT FROM LIVE OFFER ID ERROR: $e");
+      return left(
+        Failure(
+          message: "Not able to get the chat for respective offer",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
 }

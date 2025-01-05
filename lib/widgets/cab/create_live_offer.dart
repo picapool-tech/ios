@@ -32,19 +32,19 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   final GoogleMapsPlaces _places =
       GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
   List<Prediction> _predictions = [];
-  
+
   // DateTime? _selectedDateTime;
   // DateTime? _defaultExpiryDate;
   DateTime _selectedDateTime = DateTime.now();
-  DateTime _defaultExpiryDate  = DateTime.now();
+  DateTime _defaultExpiryDate = DateTime.now();
   DateTime updateDefaultExpiryDate() {
-  if (_selectedDateTime != null) {
-    setState(() {
-    _defaultExpiryDate = _selectedDateTime!.add(Duration(days: 3));
-    });
-  }
+    if (_selectedDateTime != null) {
+      setState(() {
+        _defaultExpiryDate = _selectedDateTime!.add(Duration(days: 3));
+      });
+    }
     return _defaultExpiryDate ?? DateTime.now();
-}
+  }
 
   bool isLoading = false;
   GoogleMapController? _mapController;
@@ -60,9 +60,10 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   String _locationMessage = "Loading...";
   double _radius = 500; // Default radius
   bool _isMapInitialized = false;
-  final places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); 
-  
-    bool _isSearchingFrom = false; // Track which field is being searched
+  final places =
+      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+
+  bool _isSearchingFrom = false; // Track which field is being searched
 
   @override
   void initState() {

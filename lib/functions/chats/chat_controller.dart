@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_api.dart';
 import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/services/socket.service.dart';
@@ -216,6 +217,29 @@ class ChatController extends GetxController {
     }
 
     return usersInChat.firstWhereOrNull((user) => user.id == userId)?.username;
+  }
+
+  Future<Chat?> getChatFromLiveOfferId(int liveOfferId) async {
+    isLoading.value = true;
+    update();
+
+    var result = await _chatApi.getChatFromLiveOfferId(
+      accessToken: _authController.auth.value!.accessToken!,
+      liveOfferId: liveOfferId,
+    );
+
+    isLoading.value = false;
+    update();
+
+    return result.fold(
+      (error) {
+        Get.snackbar("Error", error.message);
+        return null;
+      },
+      (chat) {
+        return chat;
+      },
+    );
   }
 
   @override
