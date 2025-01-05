@@ -35,8 +35,11 @@ class ChatController extends GetxController {
     result.fold(
       (failure) {
         errorMessage.value = failure.message;
-        Get.snackbar('Error', failure.message,
-            snackPosition: SnackPosition.TOP);
+        Get.snackbar(
+          'Error',
+          failure.message,
+          snackPosition: SnackPosition.TOP,
+        );
       },
       (chatsList) {
         chats.value = chatsList;

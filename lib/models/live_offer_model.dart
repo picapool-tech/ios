@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_product_model.dart';
 import 'package:picapool/models/user_model.dart';
@@ -32,10 +33,11 @@ class LiveOffer {
   });
 
   factory LiveOffer.fromJson(Map<String, dynamic> json) {
-    return LiveOffer(
+    debugPrint("INSIDE LIVE OFFER JSON: $json");
+    var liveOffer = LiveOffer(
       id: json['id'],
-      from: json['from'],
-      to: json['to'],
+      from: json['fromAddress'],
+      to: json['toAddress'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       expiryAt: DateTime.parse(json['expiryAt']),
@@ -50,13 +52,15 @@ class LiveOffer {
           ? (json['chats'] as List).map((c) => Chat.fromJson(c)).toList()
           : null,
     );
+    debugPrint("OUTSIDE LIVE OFFER JSON: $json");
+    return liveOffer;
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'from': from,
-      'to': to,
+      'fromAddress': from,
+      'toAddress': to,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'expiryAt': expiryAt.toIso8601String(),

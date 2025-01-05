@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:picapool/models/chat_model.dart';
+
 CreateLiveOfferResponse createLiveOfferResponseFromJson(String str) => CreateLiveOfferResponse.fromJson(json.decode(str));
 
 String createLiveOfferResponseToJson(CreateLiveOfferResponse data) => json.encode(data.toJson());
@@ -84,22 +86,22 @@ class CreatedLiveOffer {
     };
 }
 
-class Chat {
-    int? id;
-    bool? isMain;
+// class Chat {
+//     int? id;
+//     bool? isMain;
 
-    Chat({
-        this.id,
-        this.isMain,
-    });
+//     Chat({
+//         this.id,
+//         this.isMain,
+//     });
 
-    factory Chat.fromJson(Map<String, dynamic> json) => Chat(
-        id: json["id"],
-        isMain: json["isMain"],
-    );
+//     factory Chat.fromJson(Map<String, dynamic> json) => Chat(
+//         id: json["id"],
+//         isMain: json["isMain"],
+//     );
 
-    Map<String, dynamic> toJson() => {
-        "id": id,
-        "isMain": isMain,
-    };
-}
+//     Map<String, dynamic> toJson() => {
+//         "id": id,
+//         "isMain": isMain,
+//     };
+// }

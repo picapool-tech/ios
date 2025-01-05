@@ -11,7 +11,7 @@ import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage_m.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/screens/cabs/location_pick_fields.dart';
 
 import '../../models/live_offer/live_offer_entity.dart';
@@ -296,7 +296,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     final payload = CreateLiveOfferPayload(
       createdAt: _selectedDateTime ?? DateTime.now(),
       expiryAt: updateDefaultExpiryDate(),
-      fromAddress: _fromController.text ?? "empty",
+      fromAddress: _fromController.text,
       seats: 3,
       toAddress: _toAddress ?? "empty",
     );
@@ -305,15 +305,28 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       if (liveOfferController.createLiveOfferState ==
           CreateLiveOfferState.created) {
         // Get the first chat ID from the response
+
         final chatId =
-            liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
-        // if (chatId != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatPage(chatId: chatId.toString()),
-          ),
-        );
+            liveOfferController.createLiveOfferResponse?.data?.chats?.first;
+
+        if (chatId != null && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                chat: chatId,
+              ),
+            ),
+          );
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to not able to have chat right now'),
+              ),
+            );
+          }
+        }
         // }
       }
     });

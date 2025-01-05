@@ -39,11 +39,8 @@ class Chat {
       updatedAt: DateTime.parse(json['updatedAt']),
       isMain: json['isMain'],
       status: json['status'],
-      offer: json['offer'] != null ? Offer.fromJson(json['offer']) : null,
+      offer: json['Offer'] != null ? Offer.fromJson(json['Offer']) : null,
       offerId: json['offerId'],
-      liveOffer: json['liveOffer'] != null
-          ? LiveOffer.fromJson(json['liveOffer'])
-          : null,
       liveOfferId: json['liveOfferId'],
       messages: json['Messages'] != null
           ? (json['Messages'] as List)
@@ -55,6 +52,9 @@ class Chat {
           : null,
       admins: json['admins'] != null
           ? (json['admins'] as List).map((a) => Admin.fromJson(a)).toList()
+          : null,
+      liveOffer: json['LiveOffer'] != null
+          ? LiveOffer.fromJson(json['LiveOffer'])
           : null,
     );
   }
@@ -88,6 +88,7 @@ class LastMessageModel {
   });
 
   factory LastMessageModel.fromJson(Map<String, dynamic> json) {
+    debugPrint("INSIDE LAST MESSAGE MODAL: $json");
     return LastMessageModel(
       content: json['content'],
       admin: json['Admin'],

@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/response_model.dart';
@@ -12,11 +14,13 @@ import 'package:picapool/models/user_model.dart';
 
 class ChatAndOfferModel {
   Chat chat;
-  Offer offer;
+  Offer? offer;
+  LiveOffer? liveOffer;
 
   ChatAndOfferModel({
     required this.chat,
-    required this.offer,
+    this.offer,
+    this.liveOffer,
   });
 }
 
@@ -30,6 +34,7 @@ class ChatApi {
         'Authorization': 'Bearer $accessToken',
       });
       debugPrint('getChats response: ${response.body}');
+      log('getChats response: ${response.body}');
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
       if (responseModel.success) {
         List<ChatAndOfferModel> chats = [];
@@ -37,14 +42,16 @@ class ChatApi {
 
         for (var chat in data) {
           debugPrint("chat: $chat");
-          var offer = chat['Offer'];
-
+          var chatModel = Chat.fromJson(chat);
+          debugPrint("adding chatModel");
           chats.add(
             ChatAndOfferModel(
-              chat: Chat.fromJson(chat),
-              offer: Offer.fromJson(offer),
+              chat: chatModel,
+              offer: chatModel.offer,
+              liveOffer: chatModel.liveOffer,
             ),
           );
+          debugPrint("Chat added...");
         }
         return right(chats);
       } else {
@@ -56,9 +63,13 @@ class ChatApi {
         );
       }
     } catch (e) {
-      debugPrint("Error on getChats: $e");
+      debugPrint(
+          "Error on getChats: $e with errorStack : \n ${StackTrace.current}");
       return left(
-        Failure(message: e.toString(), stackTrace: StackTrace.current),
+        Failure(
+          message: e.toString(),
+          stackTrace: StackTrace.current,
+        ),
       );
     }
   }

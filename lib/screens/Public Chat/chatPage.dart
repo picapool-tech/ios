@@ -6,6 +6,7 @@ import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
+import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chat_info.dart';
 import 'package:picapool/screens/Public%20Chat/public_chat_page.dart';
@@ -15,10 +16,12 @@ import 'package:url_launcher/url_launcher.dart';
 class ChatPage extends StatefulWidget {
   final Chat chat;
   final Offer? offer;
+  final LiveOffer? liveOffer;
   const ChatPage({
     super.key,
     required this.chat,
     this.offer,
+    this.liveOffer,
   });
 
   @override
@@ -270,7 +273,7 @@ class _ChatPageState extends State<ChatPage>
           // Private Chat Tab
           ChatInfo(
             chatId: widget.chat.id,
-            creatorId: widget.offer!.userId!,
+            creatorId: widget.offer?.userId! ?? -1,
           ),
         ],
       ),

@@ -373,7 +373,8 @@ class _MyChatsPageState extends State<MyChatsPage> {
                       }
 
                       var filteredChats = controller.chats.where((model) {
-                        var offername = model.offer.name;
+                        var offername =
+                            model.offer?.name ?? model.liveOffer?.from ?? "";
                         var searchList = _searchQuery.toLowerCase().split(" ");
                         for (var element in searchList) {
                           if (offername.toLowerCase().contains(element)) {
@@ -396,6 +397,21 @@ class _MyChatsPageState extends State<MyChatsPage> {
     );
   }
 
+  ImageProvider _handleImage(ChatAndOfferModel chat) {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return CachedNetworkImageProvider(offer.images.first);
+      } else {
+        return const AssetImage("assets/icons/Frame 64.png");
+      }
+    } else if (chat.liveOffer != null) {
+      return const AssetImage("assets/images/share_a_cab.png");
+    } else {
+      return const AssetImage("assets/icons/Frame 64.png");
+    }
+  }
+
   ListView chatList(List<ChatAndOfferModel> chats) {
     return ListView.builder(
       itemCount: chats.length,
@@ -415,10 +431,12 @@ class _MyChatsPageState extends State<MyChatsPage> {
               Get.to(() => ChatPage(
                     chat: chat.chat,
                     offer: chat.offer,
-                  ))?.then((onValue) {
-                chatController.getAllChats();
-                debugPrint('ChatPage closed:');
-              });
+                  ))?.then(
+                (onValue) {
+                  chatController.getAllChats();
+                  debugPrint('ChatPage closed:');
+                },
+              );
               // if (selectedIndexes.isNotEmpty) {
               //   if (isSelected) {
               //     selectedIndexes.remove(index);
@@ -440,11 +458,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
-                        image: (chat.offer.images.isNotEmpty)
-                            ? CachedNetworkImageProvider(
-                                chat.offer.images.first)
-                            : const AssetImage("assets/images/harrypotter.jpg")
-                                as ImageProvider,
+                        image: _handleImage(chat),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -461,7 +475,9 @@ class _MyChatsPageState extends State<MyChatsPage> {
                     child: Hero(
                       tag: chat.chat.id,
                       child: Text(
-                        chat.offer.name.replaceAll("- FROM BRANDS", ""),
+                        chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
+                            chat.liveOffer?.from ??
+                            "No Title",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
