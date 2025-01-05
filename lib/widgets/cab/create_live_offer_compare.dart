@@ -11,7 +11,7 @@ import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage_m.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/screens/cabs/location_pick_fields.dart';
 
 import '../../models/live_offer/live_offer_entity.dart';
@@ -29,7 +29,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
   
-    final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
   List<Prediction> _predictions = [];
   
   DateTime? _selectedDateTime;
@@ -48,28 +48,18 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   bool isLoading = false;
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
-  LatLng? _selectedPosition;
-
-
+  
   // Location data
   LatLng? _fromLatLng;
   LatLng? _toLatLng;
   String? _fromAddress;
   String? _toAddress;
-  Circle? _currentLocationCircle;
-  String _locationMessage = "Loading...";
-  double _radius = 500; // Default radius
-  bool _isMapInitialized = false;
-  // DateTime _selectedDateTime = DateTime.now();
-  // DateTime _defaultExpiryDate  = DateTime.now();
-  final places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); 
-  
-    bool _isSearchingFrom = false; // Track which field is being searched
+  bool _isSearchingFrom = false; // Track which field is being searched
 
   @override
   void initState() {
-    _fetchLocation();
     super.initState();
+    _initializeLocation();
   }
 
   @override
@@ -78,6 +68,32 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     _toController.dispose();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _searchPlaces(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _predictions.clear();
+      });
+      return;
+    }
+
+    try {
+      var response = await _places.autocomplete(
+        query,
+        components: [Component(Component.country, "IN")],
+      );
+
+      if (response.isOkay) {
+        setState(() {
+          _predictions = response.predictions;
+        });
+      } else {
+        debugPrint(response.errorMessage);
+      }
+    } catch (e) {
+      debugPrint('Error searching places: $e');
+    }
   }
 
   Future<void> _selectPlace(Prediction prediction) async {
@@ -150,12 +166,12 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
           border: InputBorder.none,
           prefixIcon: const Icon(Icons.location_on, color: Colors.orange),
         ),
-              onTap: () async {
+        onTap: () async {
           _isSearchingFrom = isFromField;
           final Prediction? result = await showSearch<Prediction>(
-                  context: context,
+            context: context,
             delegate: LocationSearchDelegate(places: _places),
-                );
+          );
           if (result != null) {
             _selectPlace(result);
           }
@@ -179,93 +195,6 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     }
   }
 
-  
-  Future<void> _fetchLocation({
-    bool fetchActualLocation = false,
-  }) async {
-    if (fetchActualLocation ||
-        locationController.state.value.location == null) {
-      await locationController.getLocation();
-    }
-
-    var location = locationController.state.value.location;
-    if (location == null) {
-      Get.snackbar(
-        "Location not found",
-        "Location of this device not found",
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-
-    setState(() {
-      _currentPosition = LatLng(location.latitude, location.longitude);
-       Placemark firstPlacemark = locationController.state.value.locationName ?? Placemark();
-            
-      _fromController.text = '${firstPlacemark.name}, ${firstPlacemark.locality}, ${firstPlacemark.thoroughfare}, ${firstPlacemark.administrativeArea}' ?? "Cant Fetch current location";
-      _selectedPosition = _currentPosition;
-      _updateMarkersAndCircles();
-    });
-  }
-
-
-    void _updateMarkersAndCircles() async {
-
-    setState(() {
-      _currentLocationCircle = Circle(
-        circleId: const CircleId("currentLocationCircle"),
-        center: _currentPosition!,
-        radius: 200,
-        strokeColor: const Color(0xff333399).withOpacity(0.20),
-        strokeWidth: 2,
-        fillColor: const Color(0xff5000FF).withOpacity(0.16),
-      );
-    });
-  }
-
-    Future<void> _getAddressFromLatLng(LatLng position) async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-    if (placemarks.isNotEmpty) {
-      Placemark place = placemarks.first;
-      String address =
-          "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
-      setState(() {
-        _locationMessage = address;
-        _selectedPosition = position;
-        _updateMarkersAndCircles();
-      });
-    } else {
-      setState(() {
-        _locationMessage = "No address available for this location.";
-      });
-    }
-  }
-
-  Future<void> _searchPlaces(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        _predictions.clear();
-      });
-      return;
-    }
-
-    var sessionToken = 'xyzabc_1234';
-    var response =
-        await _places.autocomplete(query, sessionToken: sessionToken);
-
-    if (response.isOkay) {
-      setState(() {
-        _predictions = response.predictions;
-      });
-    } else {
-      print(response.errorMessage);
-    }
-  }
-
-
   bool _validateInputs() {
     if (_fromLatLng == null || _toLatLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -286,7 +215,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       return false;
     }
     return true;
-    }
+  }
 
   void _handleCreateLiveOffer() {
     if (!_validateInputs()) return;
@@ -304,12 +233,12 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
         // Get the first chat ID from the response
         final chatId = liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
         // if (chatId != null) {
-          Navigator.push(
-            context, 
-            MaterialPageRoute(
-              builder: (context) => ChatPage(chatId: chatId.toString()),
-            ),
-          );
+          // Navigator.push(
+          //   context, 
+          //   MaterialPageRoute(
+          //     builder: (context) => ChatPage(),
+          //   ),
+          // );
         // }
       }
     });
@@ -390,19 +319,10 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
               Expanded(
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
-                    target: _currentPosition ?? const LatLng(28.6139, 77.2090),
+                  target: _currentPosition ?? const LatLng(92, 92),
                     zoom: 15,
                   ),
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  onMapCreated: (GoogleMapController controller) {
-                    _mapController = controller;
-                    if (_currentPosition != null) {
-                      controller.animateCamera(
-                        CameraUpdate.newLatLngZoom(_currentPosition!, 15),
-                      );
-                    }
-                  },
+                  onMapCreated: (controller) => _mapController = controller,
                   markers: {
                     if (_fromLatLng != null)
                       Marker(
@@ -421,9 +341,9 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                         ),
                       ),
                   },
-                  circles: _currentLocationCircle != null ? {_currentLocationCircle!} : {},
                 ),
               ),
+              // DateTime Picker
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -549,6 +469,6 @@ class LocationSearchDelegate extends SearchDelegate<Prediction> {
           },
         );
       },
-);
-}
+    );
+  }
 }

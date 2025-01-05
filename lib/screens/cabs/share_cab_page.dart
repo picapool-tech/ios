@@ -269,445 +269,193 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       ),
       body: Container(
         color: Colors.white,
-        child: Column(
-          children: [
-            // Top section (search, location inputs, etc.)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 0,
-                    top: 35,
-                    bottom: 0,
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      right: 8, left: 8, top: 10.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        const CircleAvatar(
-                          radius: 8,
-                          backgroundColor: Color(0xffFFB889),
-                        ),
-                        Container(
-                          height: 33,
-                          width: 2,
-                          color: Colors.orange.shade200,
-                        ),
-                        const CircleAvatar(
-                          radius: 8,
-                          backgroundColor: Color(0xffFF7519),
+                        const Divider(height: 1),
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Wrap(
+                            children:[ Row(
+                              children: [
+                                InkWell(
+                                    onTap: () => _selectDate(context),
+                                    child: const ImageIcon(AssetImage("assets/icons/calendar.png"),color: Color(0xffFF8D41),)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  formattedDate,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: "MontserratSB",
+                                  ),
+                                ),
+                                const Spacer(),
+                                ElevatedButton(
+                                  onPressed: _setToday,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.all(0),
+                                    backgroundColor: const Color(0xffFFD2B4),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text(
+                                    'Today',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontFamily: "MontserratSB",
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                ElevatedButton(
+                                  onPressed: _setTomorrow,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xffFFD2B4),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text(
+                                    'Tomorrow',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontFamily: "MontserratSB",
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                      ]
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        right: 20.0, left: 5.0, top: 10.0),
-                    child: Container(
-                      height: 150,
-                      margin: const EdgeInsets.only(left: 30),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Column(
-                            children: [
-                              SizedBox(
-                                height: 40,
-                                child: TextField(
-                                  controller: _fromController,
-                                  decoration: const InputDecoration(
-                                    hintText: 'From',
-                                    hintStyle: TextStyle(
-                                      color: Color(0xff6d6d6d),
-                                      fontFamily: "MontserratR",
-                                      fontSize: 14,
-                                    ),
-                                    contentPadding: EdgeInsets.only(left: 10.0),
-                                    border: InputBorder.none,
-                                  ),
-                                  onChanged: (value) {
-                                    _searchPlaces(
-                                        value, true); // Search from location
-                                  },
-                                ),
-                              ),
-                              const Divider(),
-                              SizedBox(
-                                height: 40,
-                                child: TextField(
-                                  controller: _toController,
-                                  decoration: const InputDecoration(
-                                    hintText: 'To',
-                                    hintStyle: TextStyle(
-                                      color: Color(0xff6d6d6d),
-                                      fontFamily: "MontserratR",
-                                      fontSize: 14,
-                                    ),
-                                    contentPadding: EdgeInsets.only(left: 10.0),
-                                    border: InputBorder.none,
-                                  ),
-                                  onChanged: (value) {
-                                    _searchPlaces(
-                                        value, false); // Search to location
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 1),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Wrap(
-                              children:[ Row(
-                                children: [
-                                  InkWell(
-                                      onTap: () => _selectDate(context),
-                                      child: const ImageIcon(AssetImage("assets/icons/calendar.png"),color: Color(0xffFF8D41),)),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    formattedDate,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: "MontserratSB",
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  ElevatedButton(
-                                    onPressed: _setToday,
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.all(0),
-                                      backgroundColor: const Color(0xffFFD2B4),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: const Text(
-                                      'Today',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontFamily: "MontserratSB",
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  ElevatedButton(
-                                    onPressed: _setTomorrow,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xffFFD2B4),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: const Text(
-                                      'Tomorrow',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontFamily: "MontserratSB",
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                        ]
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                ),
+              ),
+              // Suggestion boxes as seen in the image
+              if (_fromPredictions.isNotEmpty)
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                ],
-              ),
-            ),
-            // Suggestion boxes as seen in the image
-            if (_fromPredictions.isNotEmpty)
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: ListView.builder(
-                  itemCount: _fromPredictions.length,
-                  itemBuilder: (context, index) {
-                    var prediction = _fromPredictions[index];
-                    return ListTile(
-                      title: Text(
-                        prediction.description ?? '',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontFamily: "MontserratR",
-                          fontSize: 14,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      onTap: () => _selectPlace(prediction, true),
-                    );
-                  },
-                ),
-              ),
-            if (_toPredictions.isNotEmpty)
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: ListView.builder(
-                  itemCount: _toPredictions.length,
-                  itemBuilder: (context, index) {
-                    var prediction = _toPredictions[index];
-                    return ListTile(
-                      title: Text(
-                        prediction.description ?? '',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontFamily: "MontserratR",
-                          fontSize: 14,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      onTap: () => _selectPlace(prediction, false),
-                    );
-                  },
-                ),
-              ),
-            // Map section and bottom container
-            Expanded(
-              child: Stack(
-                children: [
-                  GoogleMap(
-                    onMapCreated: (GoogleMapController controller) {
-                      mapController = controller;
-                      if (currentPosition != null) {
-                        controller.animateCamera(
-                          CameraUpdate.newCameraPosition(
-                            CameraPosition(
-                              target: LatLng(
-                                currentPosition!.latitude,
-                                currentPosition!.longitude,
-                              ),
-                              zoom: 14.0,
-                            ),
+                  child: ListView.builder(
+                    itemCount: _fromPredictions.length,
+                    itemBuilder: (context, index) {
+                      var prediction = _fromPredictions[index];
+                      return ListTile(
+                        title: Text(
+                          prediction.description ?? '',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontFamily: "MontserratR",
+                            fontSize: 14,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        );
-                      }
+                        ),
+                        onTap: () => _selectPlace(prediction, true),
+                      );
                     },
-                    initialCameraPosition: CameraPosition(
-                      target: currentPosition != null 
-                        ? LatLng(currentPosition!.latitude, currentPosition!.longitude)
-                        : const LatLng(0, 0), // Default position until we get location
-                      zoom: 14.0,
-                    ),
-                    markers: _markers,
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
                   ),
-                  // Bottom fixed container
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 250,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
+                ),
+              if (_toPredictions.isNotEmpty)
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: ListView.builder(
+                    itemCount: _toPredictions.length,
+                    itemBuilder: (context, index) {
+                      var prediction = _toPredictions[index];
+                      return ListTile(
+                        title: Text(
+                          prediction.description ?? '',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontFamily: "MontserratR",
+                            fontSize: 14,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Available Rides",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "MontserratSB"
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            height: 180,
-                            child: GetBuilder<LiveOfferController>(
-                              builder: (liveOfferInstance) {
-                                if (liveOfferInstance.allLiveofferState == GetAllLiveOfferState.allLiveOffersLoaded) {
-                                  final filteredOffers = _filterOffersByDate(liveOfferInstance.liveOffersList);
-                                  
-                                  if (filteredOffers.isEmpty) {
-                                    return Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.no_transfer, size: 48, color: Colors.grey[400]),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            _selectedDate == null 
-                                              ? "No rides available"
-                                              : "No rides available for ${DateFormat('yyyy-MM-dd').format(_selectedDate)}",
-                                            style: GoogleFonts.montserrat(
-                                              fontSize: 16,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-
-                                  return ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: filteredOffers.length,
-                                    itemBuilder: (context, index) {
-                                      final offer = filteredOffers[index];
-                                      return Padding(
-                                        padding: const EdgeInsets.only(right: 16.0),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedCab = 'cab${index + 1}';
-                                            });
-                                          },
-                                          child: Container(
-                                            width: MediaQuery.of(context).size.width * 0.8,
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(12),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.2),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 3,
-                                                  offset: const Offset(0, 1),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(16.0),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        DateFormat('hh:mm a').format(offer.updatedAt!),
-                                                        style: const TextStyle(
-                                                          fontFamily: "MontserratM",
-                                                          fontSize: 20
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                        decoration: BoxDecoration(
-                                                          border: Border.all(color: Colors.grey[300]!),
-                                                          borderRadius: BorderRadius.circular(12),
-                                                        ),
-                                                        child: Row(
-                                                          children: List.generate(
-                                                            offer.seats ?? 0,
-                                                            (index) => const Padding(
-                                                              padding: EdgeInsets.only(right: 2),
-                                                              child: Icon(Icons.person, size: 16, color: Color(0xffFF8D41)),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
-                                                  const SizedBox(height: 8),
-                                                  buildAddressRow("To", offer.toAddress ?? "EMPTY"),
-                                                  const Spacer(),
-                                                  SizedBox(
-                                                    width: double.infinity,
-                                                    child: ElevatedButton(
-                                                      onPressed: () {},
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: const Color(0xffFF8D41),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(10),
-                                                        ),
-                                                      ),
-                                                      child: const Padding(
-                                                        padding: EdgeInsets.symmetric(vertical: 12),
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            ImageIcon(
-                                                              AssetImage("assets/icons/bus.png"),
-                                                              color: Colors.white,
-                                                              size: 16,
-                                                            ),
-                                                            SizedBox(width: 8),
-                                                            Text(
-                                                              "Join Chat",
-                                                              style: TextStyle(
-                                                                fontFamily: "MontserratR",
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                }
-                                return const Center(
-                                  child: LinearProgressIndicator(color: Colors.orange)
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        onTap: () => _selectPlace(prediction, false),
+                      );
+                    },
                   ),
-                  if (_selectedCab != null)
+                ),
+              // Map section and bottom container
+              Expanded(
+                child: Stack(
+                  children: [
+                    GoogleMap(
+                      onMapCreated: (GoogleMapController controller) {
+                        mapController = controller;
+                        if (currentPosition != null) {
+                          controller.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                              CameraPosition(
+                                target: LatLng(
+                                  currentPosition!.latitude,
+                                  currentPosition!.longitude,
+                                ),
+                                zoom: 14.0,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      initialCameraPosition: CameraPosition(
+                        target: currentPosition != null 
+                          ? LatLng(currentPosition!.latitude, currentPosition!.longitude)
+                          : const LatLng(0, 0), // Default position until we get location
+                        zoom: 14.0,
+                      ),
+                      markers: _markers,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: true,
+                    ),
+                    // Bottom fixed container
                     Positioned(
-                      bottom: 40, // Positioned above the bottom container
-                      left: 16,
-                      right: 16,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
                       child: Container(
-                        height: 110,
-                        padding: EdgeInsets.all(screenWidth * 0.03),
+                        height: 250,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(screenWidth * 0.04),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
+                              spreadRadius: 5,
                               blurRadius: 7,
                               offset: const Offset(0, 3),
                             ),
@@ -716,192 +464,372 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "5:45 pm",
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.05,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: "MontserratM"
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(Icons.person,
-                                        color: Colors.orange,
-                                        size: screenWidth * 0.05),
-                                    SizedBox(width: screenWidth * 0.01),
-                                    Text(
-                                      "2 In room",
-                                      style: TextStyle(
-                                        fontFamily: "MontserratR",
-                                          fontSize: screenWidth * 0.04),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(Icons.arrow_drop_down,
-                                        color: Colors.orange,
-                                        size: screenWidth * 0.05),
-                                    SizedBox(width: screenWidth * 0.01),
-                                    Text(
-                                      "105m away",
-                                      style: TextStyle(
-                                        fontFamily: "MontserratR",
-                                          fontSize: screenWidth * 0.04),
-                                    ),
-                                    SizedBox(width: screenWidth * 0.01),
-                                    Icon(Icons.directions_walk,
-                                        color: Colors.green,
-                                        size: screenWidth * 0.05),
-                                  ],
-                                ),
-                              ],
+                            const Text(
+                              "Available Rides",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "MontserratSB"
+                              ),
                             ),
-                            SizedBox(height: screenHeight * 0.01),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: screenWidth * 0.03),
-                                    height: screenHeight * 0.05,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(
-                                          screenWidth * 0.07),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.location_on,
-                                            color: Colors.grey,
-                                            size: screenWidth * 0.05),
-                                        SizedBox(width: screenWidth * 0.02),
-                                        const Expanded(
-                                          child: Text(
-                                            "6th street, s...",
-                                            style:
-                                                TextStyle(color: Colors.black, fontFamily: "MontserratR"),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              height: 180,
+                              child: GetBuilder<LiveOfferController>(
+                                builder: (liveOfferInstance) {
+                                  if (liveOfferInstance.allLiveofferState == GetAllLiveOfferState.allLiveOffersLoaded) {
+                                    final filteredOffers = _filterOffersByDate(liveOfferInstance.liveOffersList);
+                                    
+                                    if (filteredOffers.isEmpty) {
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.no_transfer, size: 48, color: Colors.grey[400]),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              _selectedDate == null 
+                                                ? "No rides available"
+                                                : "No rides available for ${DateFormat('yyyy-MM-dd').format(_selectedDate)}",
+                                              style: GoogleFonts.montserrat(
+                                                fontSize: 16,
+                                                color: Colors.grey[600],
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          "See Route",
-                                          style: TextStyle(
-                                            fontFamily: "MontserratR",
-                                            color: Colors.orange,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: screenWidth * 0.03,
+                                      );
+                                    }
+          
+                                    return ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: filteredOffers.length,
+                                      itemBuilder: (context, index) {
+                                        final offer = filteredOffers[index];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 16.0),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedCab = 'cab${index + 1}';
+                                              });
+                                            },
+                                            child: Container(
+                                              width: MediaQuery.of(context).size.width * 0.8,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.circular(12),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.2),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 3,
+                                                    offset: const Offset(0, 1),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          DateFormat('hh:mm a').format(offer.updatedAt!),
+                                                          style: const TextStyle(
+                                                            fontFamily: "MontserratM",
+                                                            fontSize: 20
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                          decoration: BoxDecoration(
+                                                            border: Border.all(color: Colors.grey[300]!),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: Row(
+                                                            children: List.generate(
+                                                              offer.seats ?? 0,
+                                                              (index) => const Padding(
+                                                                padding: EdgeInsets.only(right: 2),
+                                                                child: Icon(Icons.person, size: 16, color: Color(0xffFF8D41)),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
+                                                    const SizedBox(height: 8),
+                                                    buildAddressRow("To", offer.toAddress ?? "EMPTY"),
+                                                    const Spacer(),
+                                                    SizedBox(
+                                                      width: double.infinity,
+                                                      child: ElevatedButton(
+                                                        onPressed: () {},
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: const Color(0xffFF8D41),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(10),
+                                                          ),
+                                                        ),
+                                                        child: const Padding(
+                                                          padding: EdgeInsets.symmetric(vertical: 12),
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              ImageIcon(
+                                                                AssetImage("assets/icons/bus.png"),
+                                                                color: Colors.white,
+                                                                size: 16,
+                                                              ),
+                                                              SizedBox(width: 8),
+                                                              Text(
+                                                                "Join Chat",
+                                                                style: TextStyle(
+                                                                  fontFamily: "MontserratR",
+                                                                  color: Colors.white,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        Icon(Icons.arrow_drop_down,
-                                            color: Colors.orange,
-                                            size: screenWidth * 0.05),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: screenWidth * 0.03),
-                                Container(
-                                  height: screenHeight * 0.05,
-                                  width: screenWidth * 0.28,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xffFF8D41),
-                                    borderRadius: BorderRadius.circular(
-                                        screenWidth * 0.03),
-                                  ),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        ImageIcon(const AssetImage("assets/icons/bus.png"), color: Colors.white,
-                                            size: screenWidth * 0.05),
-                                        // Icon(Icons.car_rental,
-                                        //     color: Colors.white,
-                                        //     size: screenWidth * 0.05),
-                                        SizedBox(width: screenWidth * 0.02),
-                                        Text(
-                                          "Join Chat",
-                                          style: TextStyle(
-                                            fontFamily: "MontserratSB",
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: screenWidth * 0.03,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                  return const Center(
+                                    child: LinearProgressIndicator(color: Colors.orange)
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  // The "3 cabs available nearby for this date" container
-                  Positioned(
-                    bottom: MediaQuery.of(context).size.height * 0.3, // Positioned above the bottom container
-                    left: 40,
-                    right: 40,
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            spreadRadius: 3,
-                            blurRadius: 5,
+                    if (_selectedCab != null)
+                      Positioned(
+                        bottom: 40, // Positioned above the bottom container
+                        left: 16,
+                        right: 16,
+                        child: Container(
+                          height: 110,
+                          padding: EdgeInsets.all(screenWidth * 0.03),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.circular(screenWidth * 0.04),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 7,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: GetBuilder<LiveOfferController>(
-                        builder: (liveOfferInstance) {
-                          final offersCount = liveOfferInstance.liveOffersList.length;
-                          return Center(
-                            child: Text.rich(
-                              TextSpan(
-                                text: offersCount > 0 ? '$offersCount' : 'Oops! No',
-                                style: const TextStyle(
-                                  fontSize: 16, 
-                                  color: Color(0xffFF8D41),
-                                  fontFamily: "MontserratR"
-                                ),
-                                children: const [
-                                  TextSpan(
-                                    text: ' cabs ',
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "5:45 pm",
                                     style: TextStyle(
-                                      color: Color(0xffFF8D41),
-                                      fontFamily: "MontserratR"
+                                      fontSize: screenWidth * 0.05,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: "MontserratM"
                                     ),
                                   ),
-                                  TextSpan(
-                                    text: 'available nearby for this date.',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontFamily: "MontserratR"
+                                  Row(
+                                    children: [
+                                      Icon(Icons.person,
+                                          color: Colors.orange,
+                                          size: screenWidth * 0.05),
+                                      SizedBox(width: screenWidth * 0.01),
+                                      Text(
+                                        "2 In room",
+                                        style: TextStyle(
+                                          fontFamily: "MontserratR",
+                                            fontSize: screenWidth * 0.04),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.arrow_drop_down,
+                                          color: Colors.orange,
+                                          size: screenWidth * 0.05),
+                                      SizedBox(width: screenWidth * 0.01),
+                                      Text(
+                                        "105m away",
+                                        style: TextStyle(
+                                          fontFamily: "MontserratR",
+                                            fontSize: screenWidth * 0.04),
+                                      ),
+                                      SizedBox(width: screenWidth * 0.01),
+                                      Icon(Icons.directions_walk,
+                                          color: Colors.green,
+                                          size: screenWidth * 0.05),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: screenHeight * 0.01),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: screenWidth * 0.03),
+                                      height: screenHeight * 0.05,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(
+                                            screenWidth * 0.07),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.location_on,
+                                              color: Colors.grey,
+                                              size: screenWidth * 0.05),
+                                          SizedBox(width: screenWidth * 0.02),
+                                          const Expanded(
+                                            child: Text(
+                                              "6th street, s...",
+                                              style:
+                                                  TextStyle(color: Colors.black, fontFamily: "MontserratR"),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Text(
+                                            "See Route",
+                                            style: TextStyle(
+                                              fontFamily: "MontserratR",
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: screenWidth * 0.03,
+                                            ),
+                                          ),
+                                          Icon(Icons.arrow_drop_down,
+                                              color: Colors.orange,
+                                              size: screenWidth * 0.05),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: screenWidth * 0.03),
+                                  Container(
+                                    height: screenHeight * 0.05,
+                                    width: screenWidth * 0.28,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xffFF8D41),
+                                      borderRadius: BorderRadius.circular(
+                                          screenWidth * 0.03),
+                                    ),
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          ImageIcon(const AssetImage("assets/icons/bus.png"), color: Colors.white,
+                                              size: screenWidth * 0.05),
+                                          // Icon(Icons.car_rental,
+                                          //     color: Colors.white,
+                                          //     size: screenWidth * 0.05),
+                                          SizedBox(width: screenWidth * 0.02),
+                                          Text(
+                                            "Join Chat",
+                                            style: TextStyle(
+                                              fontFamily: "MontserratSB",
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: screenWidth * 0.03,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    // The "3 cabs available nearby for this date" container
+                    Positioned(
+                      bottom: MediaQuery.of(context).size.height * 0.3, // Positioned above the bottom container
+                      left: 40,
+                      right: 40,
+                      child: Container(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 3,
+                              blurRadius: 5,
                             ),
-                          );
-                        },
+                          ],
+                        ),
+                        child: GetBuilder<LiveOfferController>(
+                          builder: (liveOfferInstance) {
+                            final offersCount = liveOfferInstance.liveOffersList.length;
+                            return Center(
+                              child: Text.rich(
+                                TextSpan(
+                                  text: offersCount > 0 ? '$offersCount' : 'Oops! No',
+                                  style: const TextStyle(
+                                    fontSize: 16, 
+                                    color: Color(0xffFF8D41),
+                                    fontFamily: "MontserratR"
+                                  ),
+                                  children: const [
+                                    TextSpan(
+                                      text: ' cabs ',
+                                      style: TextStyle(
+                                        color: Color(0xffFF8D41),
+                                        fontFamily: "MontserratR"
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'available nearby for this date.',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontFamily: "MontserratR"
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const BottomAppBar(color: Color.fromARGB(255, 228, 228, 228),height: 65 , elevation: 7,),

@@ -46,7 +46,7 @@ class LocationController extends GetxController {
 
   // Request permission and fetch the current location
   Future<void> getLocation() async {
-    // Set loading state before async operations
+    // TODO: Set loading state before async operations
     state(LocationState(isLoading: true));
 
     try {
