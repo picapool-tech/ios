@@ -108,51 +108,7 @@ class _LocationScreenState extends State<LocationScreen>
   Future<void> _fetchLocation({
     bool fetchActualLocation = false,
   }) async {
-    // bool serviceEnabled;
-    // LocationPermission permission;
-
-    // serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    // if (!serviceEnabled) {
-    //   setState(() {
-    //     _locationEnabled = false;
-    //     _locationMessage = "Device location is not enabled.";
-    //   });
-    //   return;
-    // }
-
-    // permission = await Geolocator.checkPermission();
-    // if (permission == LocationPermission.denied) {
-    //   permission = await Geolocator.requestPermission();
-    //   if (permission == LocationPermission.denied) {
-    //     setState(() {
-    //       _locationEnabled = false;
-    //       _locationMessage = "Location permissions are denied.";
-    //     });
-    //     return;
-    //   }
-    // }
-
-    // if (permission == LocationPermission.deniedForever) {
-    //   setState(() {
-    //     _locationEnabled = false;
-    //     _locationMessage = "Location permissions are permanently denied.";
-    //   });
-    //   return;
-    // }
-
-    // setState(() {
-    //   _locationEnabled = true;
-    // });
-
-    // final LocationController locationController =
-    //     Get.find<LocationController>();
-    // await locationController.getLocation();
-
-    // Position position = await Geolocator.getCurrentPosition(
-    //     locationSettings: const LocationSettings(
-    //   accuracy: LocationAccuracy.high,
-    //   distanceFilter: 10,
-    // ));
+    
     if (fetchActualLocation ||
         _locationController.state.value.location == null) {
       await _locationController.getLocation();
@@ -207,9 +163,9 @@ class _LocationScreenState extends State<LocationScreen>
         circleId: const CircleId("centerDotCircle"),
         center: _currentPosition!,
         radius: 8, // Fixed radius for the center dot
-        strokeColor: const Color(0xff2D0090),
+        strokeColor: Color.fromARGB(255, 192, 237, 11),
         strokeWidth: 2,
-        fillColor: const Color(0xff2D0090),
+        fillColor: Color.fromARGB(255, 158, 227, 146),
       );
 
       _pinMarker = Marker(
@@ -565,7 +521,7 @@ class _LocationScreenState extends State<LocationScreen>
               right: 20,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.amber,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(

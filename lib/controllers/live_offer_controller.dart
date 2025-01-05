@@ -16,9 +16,7 @@ enum CreateLiveOfferState { initial, creating, created, error }
 class LiveOfferController extends GetxController {
 
   final AuthController authController = Get.find<AuthController>();
-
-  String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoSWQiOjcsInRlbmFudCI6eyJ0eXBlIjoiVXNlciIsImlkIjoxMDd9LCJSb2xlcyI6W3siaWQiOjEsInJvbGUiOiJVc2VyIn1dLCJpYXQiOjE3MzU5MTA0NjYsImV4cCI6MTczNTk5Njg2Nn0.wDXYeKUYelQYh0XH7wU-bBs-yLpJnc-BLhxqxrqgtTs";
-  // String? get accessToken => authController.auth.value?.accessToken;
+  String? get accessToken => authController.auth.value?.accessToken;
 
 
   List<LiveOffer> liveOffersList = <LiveOffer>[];
