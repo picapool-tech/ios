@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:picapool/screens/Medical/medical_first_page.dart';
-import 'package:picapool/screens/cabs/share_cab.dart';
 import 'package:picapool/screens/cabs/share_cab_page.dart';
 import 'package:picapool/screens/trekking/trekking_page.dart';
 import 'package:picapool/screens/turf/turf_first_page.dart';
@@ -33,14 +32,14 @@ void showCustomModalBottomSheet(BuildContext context) {
       destinationPage: const RequestVicinity(),
     ),
     Item(
+      imagePath: "assets/images/share_a_cab.png",
+      text: "Share a cab",
+      destinationPage: const ShareCabScreen(),
+    ),
+    Item(
       imagePath: "assets/images/buy_sell.png",
       text: "Buy and sell",
       destinationPage: const ProductListsPage(),
-    ),
-    Item(
-      imagePath: "assets/images/share_a_cab.png",
-      text: "Share a cab",
-      destinationPage: ShareCabScreen(),
     ),
     // Item(imagePath: "assets/images/medical_help.png", text: "Medical help", destinationPage: RequestVicinityPage()),
     Item(

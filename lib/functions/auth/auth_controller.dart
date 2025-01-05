@@ -68,10 +68,10 @@ class AuthController extends GetxController {
 // TODO: need to rethink of this approach to limit the api call for getUser
   Future<bool> loadAndSaveAuth(Auth authData, {int? userId}) async {
     try {
-      var accessToken = authData.accessToken;
+      var accessToken = await getAccessToken();
       var userData = await _userController.getUser(
         userId ?? _userController.user.value!.id,
-        accessToken: accessToken,
+        accessToken: accessToken ?? authData.accessToken!,
       );
 
       if (userData != null) {
@@ -282,14 +282,15 @@ class AuthController extends GetxController {
         userId: _userController.user.value!.id,
       );
 
-      newAccessToken.fold(
+      return newAccessToken.fold(
         (error) {
           logout();
           return accessToken;
         },
         (newAccessToken) async {
-          auth.value?.copyWith(accessToken: newAccessToken);
+          auth.value!.copyWith(accessToken: newAccessToken);
           await loadAndSaveAuth(auth.value!);
+          accessToken = newAccessToken;
           return newAccessToken;
         },
       );
