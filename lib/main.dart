@@ -90,8 +90,6 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
-        textSelectionTheme:
-            const TextSelectionThemeData(cursorColor: Color(0xffffffff)),
       ),
       home: GetBuilder(
           init: storageController,
@@ -115,14 +113,20 @@ class _MyAppState extends State<MyApp> {
 
   Widget _handleAuthState() {
     debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
-    if (storageController.auth.value == null ||
+
+    if (storageController.auth.value != null &&
         storageController.auth.value!.accessToken == null) {
       return const LoginScreen();
-    } else if (storageController.user.value == null ||
+    } else if (storageController.user.value != null &&
         storageController.user.value!.name == null) {
       return const PersonalDetails();
-    } else {
+    } else if (storageController.auth.value != null &&
+        storageController.auth.value!.accessToken != null &&
+        storageController.user.value != null &&
+        storageController.user.value!.name != null) {
       return const NewBottomBar();
+    } else {
+      return const LoginScreen();
     }
   }
 }

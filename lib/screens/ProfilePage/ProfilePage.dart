@@ -70,15 +70,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: () {
                       // joinnig chat
                       // if (kDebugMode) {
-                        // Get.to(
-                        //   ChatPage(
-                        //     chat: Chat(
-                        //       id: 15,
-                        //       updatedAt: DateTime.now(),
-                        //       isMain: true,
-                        //     ),
-                        //   ),
-                        // );
+                      // Get.to(
+                      //   ChatPage(
+                      //     chat: Chat(
+                      //       id: 15,
+                      //       updatedAt: DateTime.now(),
+                      //       isMain: true,
+                      //     ),
+                      //   ),
+                      // );
                       // }
                     },
                     style: ElevatedButton.styleFrom(
@@ -411,7 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
       requestFullMetadata: false,
-      imageQuality: 70,
+      imageQuality: 10,
     );
     debugPrint("Image has been picked : ${image?.name}");
     return image;

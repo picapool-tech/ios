@@ -239,11 +239,14 @@ class _PoolingHistoryState extends State<PoolingHistory> {
               borderRadius: BorderRadius.circular(9),
             ),
             clipBehavior: Clip.hardEdge,
-            child: CachedNetworkImage(
-              imageUrl: offer.images.first,
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-              fit: BoxFit.cover,
-            ),
+            child: (offer.images.isNotEmpty)
+                ? CachedNetworkImage(
+                    imageUrl: offer.images.first,
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                    fit: BoxFit.cover,
+                  )
+                : Image.asset("assets/images/request_vicinity.png"),
             // Image.network(
             //   offer.images.first,
             //   fit: BoxFit.cover,

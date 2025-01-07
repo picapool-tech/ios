@@ -195,7 +195,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   Future<void> _pickImages() async {
     final pickedFiles = await _picker.pickMultiImage(
-      imageQuality: 50,
+      imageQuality: 10,
     );
     if (pickedFiles.isNotEmpty) {
       setState(() {
@@ -205,9 +205,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   void createVicinity() async {
-    if (_titleController.text.isEmpty ||
-        _descController.text.isEmpty ||
-        _imageFiles!.isEmpty) {
+    if (_titleController.text.isEmpty || _descController.text.isEmpty) {
       debugPrint("Please fill all the fields");
       Get.snackbar(
         "Fields required",
@@ -246,7 +244,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
     var receivedOffer = await _vicinityController.createVicinity(
       offer: offer,
-      pickedFile: _imageFiles!.first,
+      pickedFile: _imageFiles?.firstOrNull,
       uname: _userController.user.value!.name!,
       offername: _titleController.text,
     );
@@ -330,6 +328,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
                             ),
                           ),
                         ),
+                        showCursor: true,
                       ),
                       const SizedBox(height: 16),
                       TextField(

@@ -450,7 +450,7 @@ class _AlertsPageState extends State<AlertsPage> {
                           ),
                         )
                       : Image.asset(
-                          "assets/images/harrypotter.jpg",
+                          "assets/images/request_vicinity.png",
                           fit: BoxFit.cover,
                         ),
                 ),

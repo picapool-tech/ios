@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_api.dart';
 import 'package:picapool/models/user_model.dart';
@@ -68,10 +69,16 @@ class UserController extends GetxController {
     int id, {
     String? accessToken,
   }) async {
+    isLoading.value = true;
+    update();
+
     final at = await _storageController.getAccessToken();
 
     final result =
         await _userApi.getUser(userId: id, accessToken: accessToken ?? at!);
+
+    isLoading.value = false;
+    update();
 
     return await result.fold(
       (fail) async {

@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jwt_decode/jwt_decode.dart';
+import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/user_model.dart';
 
 class StorageController extends GetxController {
+  final AuthApi _authApi = AuthApi();
+
   var auth = Rx<Auth?>(null);
   var user = Rx<User?>(null);
 
   @override
   void onInit() {
     super.onInit();
-    loadAuth();
-    loadUser();
+    initialize();
+  }
+
+  void initialize() async {
+    await loadAuth();
+    await loadUser();
   }
 
   Future<void> saveAuth(Auth auth) async {
@@ -52,6 +60,7 @@ class StorageController extends GetxController {
 
   Future<User?> loadUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    debugPrint("LOAD USER");
     String? userData = prefs.getString('user');
     if (userData != null) {
       Map<String, dynamic> userMap = jsonDecode(userData);
@@ -69,9 +78,30 @@ class StorageController extends GetxController {
   }
 
   Future<String?> getAccessToken() async {
-    var auth = await loadAuth();
-    if (auth != null) {
-      return auth.accessToken;
+    var storageAuth = await loadAuth();
+    if (storageAuth != null && storageAuth.accessToken != null) {
+      if (Jwt.isExpired(storageAuth.accessToken!)) {
+        final result = await _authApi.updateAccessToken(
+          accessToken: storageAuth.accessToken!,
+          refreshToken: storageAuth.refreshToken!,
+          userId: user.value!.id,
+        );
+        return result.fold(
+          (fail) {
+            clearAuth();
+            clearUser();
+            Get.offAllNamed('/login');
+            return null;
+          },
+          (newAccessToken) async {
+            var newAuth = storageAuth.copyWith(accessToken: newAccessToken);
+            await saveAuth(newAuth);
+            auth.value = storageAuth;
+            return newAccessToken;
+          },
+        );
+      }
+      return storageAuth.accessToken;
     }
     return null;
   }

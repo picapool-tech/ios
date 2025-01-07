@@ -1,19 +1,17 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_sms_inbox/flutter_sms_inbox.dart'; // SMS inbox package
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'dart:async';
 import 'dart:convert';
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
+  final bool returnValue;
 
-  const OtpScreen({super.key, required this.phoneNumber});
+  const OtpScreen(
+      {super.key, required this.phoneNumber, this.returnValue = false});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -72,11 +70,15 @@ class _OtpScreenState extends State<OtpScreen> {
         headers: {'Content-Type': 'application/json'},
       );
 
+      debugPrint('Response: ${response.body}');
       if (response.statusCode == 200) {
         final responseBody = response.body;
-        debugPrint('Response: $responseBody');
         if (responseBody.contains('"type":"success"') ||
             responseBody.contains('already verified')) {
+          if (widget.returnValue) {
+            Get.back(result: true);
+            return;
+          }
           await authController.loginWithOtp(widget.phoneNumber, otp);
         } else {
           setState(() {
@@ -282,9 +284,9 @@ class _OtpScreenState extends State<OtpScreen> {
                     if (authController.isLoading.value) {
                       return const CircularProgressIndicator();
                     }
-                    return const Text(
-                      "Next",
-                      style: TextStyle(
+                    return Text(
+                      (widget.returnValue) ? "Done" : "Verify",
+                      style: const TextStyle(
                         fontFamily: "MontserratSB",
                         fontSize: 16,
                       ),

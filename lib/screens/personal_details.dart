@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
-import 'package:picapool/models/user_model.dart';
+import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/public_profile.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
@@ -267,8 +267,22 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               padding: const EdgeInsets.only(right: 8.0, top: 4.0, bottom: 4.0),
               child: ElevatedButton(
                 onPressed: _phoneController.text.length == 10
-                    ? () {
+                    ? () async {
                         // Handle verify button press
+                        var auth = Get.find<AuthController>();
+                        var phone = "91${_phoneController.text}";
+                        await auth.sendOtp(phone);
+                        var value = await Get.to(
+                          () => OtpScreen(
+                            phoneNumber: phone,
+                            returnValue: true,
+                          ),
+                        ) as bool?;
+
+                        if (value != null && value) {
+                          // Verify successful
+                          debugPrint("$value is from OTP");
+                        }
                       }
                     : null,
                 style: ElevatedButton.styleFrom(

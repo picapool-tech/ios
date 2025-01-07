@@ -14,7 +14,6 @@ class VicinityController extends GetxController {
   final VicinityApi _vicinityApi = VicinityApi();
   final AssetsController _assetsController = AssetsController();
 
-
   var isLoading = false.obs;
   var offers = <Offer>[].obs;
 
@@ -26,18 +25,20 @@ class VicinityController extends GetxController {
   }) async {
     isLoading.value = true;
     update();
+    String? uploadedImage = '';
+    if (pickedFile != null) {
+      uploadedImage = await _assetsController.uploadImage(pickedFile,
+          '$uname-$offername-${DateTime.now().toIso8601String()}.jpg');
 
-    final uploadedImage = await _assetsController.uploadImage(pickedFile,
-        '$uname-$offername-${DateTime.now().toIso8601String()}.jpg');
-
-    if (uploadedImage == null) {
-      Get.snackbar("Error", "Not able to upload image");
-      return null;
+      if (uploadedImage == null) {
+        Get.snackbar("Error", "Not able to upload image");
+        return null;
+      }
     }
 
     var newOffer = VicinityOffer(
       name: offer.name,
-      images: [uploadedImage],
+      images: (uploadedImage.isNotEmpty) ? [uploadedImage] : [],
       desc: offer.desc,
       expiryAt: offer.expiryAt,
       userId: _userController.user.value!.id,
@@ -60,7 +61,10 @@ class VicinityController extends GetxController {
       (failure) async {
         Get.snackbar('Error', failure.message,
             snackPosition: SnackPosition.TOP);
-        await deleteImage(uploadedImage);
+        if (uploadedImage != null) {
+          await deleteImage(
+              "$uname-$offername-${DateTime.now().toIso8601String()}.jpg");
+        }
         return null;
       },
       (offer) {
