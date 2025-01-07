@@ -493,6 +493,7 @@ class _AlertsPageState extends State<AlertsPage> {
         Get.to(() => ChatPage(
               chat: chatAndOfferModel.chat,
               offer: chatAndOfferModel.offer,
+              chatTitle: chatAndOfferModel.chat.offer?.name ?? "Chat",
             ));
       }
 
@@ -506,6 +507,7 @@ class _AlertsPageState extends State<AlertsPage> {
     Get.to(() => ChatPage(
           chat: chat,
           offer: offer,
+          chatTitle: chat.offer?.name ?? "Chat",
         ));
   }
 }

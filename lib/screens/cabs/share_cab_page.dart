@@ -843,6 +843,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     if (chat != null) {
       Get.to(() => ChatPage(
             chat: chat,
+            chatTitle: chat.offer?.name ?? "String" ,
             // liveOffer: liveOfferController.liveOffersList[index]?,
           ));
     } else {
