@@ -40,32 +40,32 @@ class _SellFormState extends State<SellForm> {
 
   String? selectedCondition;
 
-  List<File> _imageFiles = []; // Store cropped images
+  List<String> imagesList = [];
 
   // Functions
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final List<XFile>? images = await _picker.pickMultiImage();
+  // Future<void> _pickImage() async {
+  //   final ImagePicker _picker = ImagePicker();
+  //   final List<XFile>? images = await _picker.pickMultiImage();
     
-    if (images != null) {
-      for (var image in images) {
-        File? croppedImage = await _cropImage(File(image.path));
-        if (croppedImage != null) {
-          setState(() {
-            _imageFiles.add(croppedImage);
-          });
-        }
-      }
+  //   if (images != null) {
+  //     for (var image in images) {
+  //       File? croppedImage = await _cropImage(File(image.path));
+  //       if (croppedImage != null) {
+  //         setState(() {
+  //           _imageFiles.add(croppedImage);
+  //         });
+  //       }
+  //     }
       
-      // Upload images and get URLs
-      if (_imageFiles.isNotEmpty) {
-        List<String> urls = await formController.uploadProductImages(_imageFiles);
-        setState(() {
-          imagesList = urls;
-        });
-      }
-    }
-  }
+  //     // Upload images and get URLs
+  //     if (_imageFiles.isNotEmpty) {
+  //       List<String> urls = await formController.uploadProductImages(_imageFiles);
+  //       setState(() {
+  //         imagesList = urls;
+  //       });
+  //     }
+  //   }
+  // }
 
   Future<File?> _cropImage(File imageFile) async {
     return await ImageCropper().cropImage(
@@ -114,8 +114,6 @@ class _SellFormState extends State<SellForm> {
   'breadth': TextEditingController(),
 };
 
-List<String> imagesList = [];
-
   int currentCategory = 1;
 
   final FormController formController = Get.find<FormController>();
@@ -147,7 +145,10 @@ List<String> imagesList = [];
     });
 
     return Scaffold(
-      appBar: const LocationAppBar(hasBackRoute: true),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -161,7 +162,7 @@ List<String> imagesList = [];
                   imageFiles: imagesList,
                   onImagesUploaded: (List<String> urls) {
                     setState(() {
-                      imagesList.addAll(urls);
+                      imagesList = urls;
                     });
                   },
                 ),
