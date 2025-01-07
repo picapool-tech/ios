@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/models/button_model.dart';
 import 'package:picapool/screens/Products/products_homePage.dart';
 import 'package:picapool/screens/cabs/share_cab.dart';
+import 'package:picapool/screens/cabs/share_cab_page.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/widgets/home/bottom_modal_sheet.dart';
@@ -112,7 +113,7 @@ class _DownSheetState extends State<DownSheet> {
                   mainActionView(
                     title: "Share a cab",
                     onTap: () {
-                      Get.to(() => const CabShareScreen());
+                      Get.to(() => const ShareCabScreen());
                     },
                     assetImage: "assets/images/share_cab.png",
                   ),

@@ -589,46 +589,47 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                                             fontSize: 20,
                                                           ),
                                                         ),
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 4,
-                                                          ),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            border: Border.all(
-                                                              color: Colors
-                                                                  .grey[300]!,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        12),
-                                                          ),
-                                                          child: Row(
-                                                            children:
-                                                                List.generate(
-                                                              offer.seats ?? 0,
-                                                              (index) =>
-                                                                  const Padding(
-                                                                padding:
-                                                                    EdgeInsets
-                                                                        .only(
-                                                                  right: 2,
-                                                                ),
-                                                                child: Icon(
-                                                                  Icons.person,
-                                                                  size: 16,
-                                                                  color: Color(
-                                                                    0xffFF8D41,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
+                                                        // TODO: Uncomment after seats is fixed from the backend
+                                                        // Container(
+                                                        //   padding:
+                                                        //       const EdgeInsets
+                                                        //           .symmetric(
+                                                        //     horizontal: 8,
+                                                        //     vertical: 4,
+                                                        //   ),
+                                                        //   decoration:
+                                                        //       BoxDecoration(
+                                                        //     border: Border.all(
+                                                        //       color: Colors
+                                                        //           .grey[300]!,
+                                                        //     ),
+                                                        //     borderRadius:
+                                                        //         BorderRadius
+                                                        //             .circular(
+                                                        //                 12),
+                                                        //   ),
+                                                          // child: Row(
+                                                          //   children:
+                                                          //       List.generate(
+                                                          //     offer.seats ?? 0,
+                                                          //     (index) =>
+                                                          //         const Padding(
+                                                          //       padding:
+                                                          //           EdgeInsets
+                                                          //               .only(
+                                                          //         right: 2,
+                                                          //       ),
+                                                          //       child: Icon(
+                                                          //         Icons.person,
+                                                          //         size: 16,
+                                                          //         color: Color(
+                                                          //           0xffFF8D41,
+                                                          //         ),
+                                                          //       ),
+                                                          //     ),
+                                                          //   ),
+                                                          // ),
+                                                        // ),
                                                       ],
                                                     ),
                                                     const SizedBox(height: 16),
