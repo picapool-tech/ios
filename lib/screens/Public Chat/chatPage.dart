@@ -15,11 +15,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
   final Chat chat;
+  final String chatTitle;
   final Offer? offer;
   final LiveOffer? liveOffer;
   const ChatPage({
     super.key,
     required this.chat,
+    required this.chatTitle,
     this.offer,
     this.liveOffer,
   });
@@ -163,7 +165,7 @@ class _ChatPageState extends State<ChatPage>
         title: Hero(
           tag: widget.chat.id,
           child: Text(
-            widget.offer?.name.replaceAll("- FROM BRANDS", "") ?? "Chat",
+            widget.chatTitle ?? "Chat",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(

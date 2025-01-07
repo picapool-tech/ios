@@ -313,6 +313,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
             MaterialPageRoute(
               builder: (context) => ChatPage(
                 chat: chatId,
+                chatTitle: "Chat" ,
               ),
             ),
           );

@@ -24,33 +24,47 @@ class ImagePickerWidget extends StatefulWidget {
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   final FormController formController = Get.find<FormController>();
   List<File> _imageFiles = []; // Store cropped images
+  Set<String> _uploadedImageUrls = {}; // Use Set to prevent duplicates
 
   Future<void> pickImage(List<String> imageURLs) async {
     final ImagePicker picker = ImagePicker();
     final List<XFile>? images = await picker.pickMultiImage();
     
     if (images != null) {
+      List<File> newCroppedImages = [];
+      
       for (var image in images) {
         File? croppedImage = await _cropImage(File(image.path));
         if (croppedImage != null) {
-          setState(() {
-            _imageFiles.add(croppedImage);
-          });
+          newCroppedImages.add(croppedImage);
         }
       }
       
       // Upload images and get URLs
-      if (_imageFiles.isNotEmpty) {
+      if (newCroppedImages.isNotEmpty) {
         try {
-          List<String> urls = await formController.uploadProductImages(_imageFiles);
-          setState(() {
-            widget.imageFiles.addAll(urls);
-          });
+          List<String> urls = await formController.uploadProductImages(newCroppedImages);
+          
+          // Add only unique URLs
+          for (String url in urls) {
+            if (!_uploadedImageUrls.contains(url)) {
+              _uploadedImageUrls.add(url);
+              widget.imageFiles.add(url);
+            }
+          }
+          
           // Notify parent widget about new URLs
-          widget.onImagesUploaded(urls);
+          widget.onImagesUploaded(widget.imageFiles.toList());
+          
+          setState(() {}); // Refresh UI
         } catch (e) {
-          print("Error uploading images: $e");
-          // Handle error (show snackbar, etc.)
+          debugPrint("Error uploading images: $e");
+          Get.snackbar(
+            'Error',
+            'Failed to upload images',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
         }
       }
     }
@@ -93,8 +107,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined, size: 60, color: Colors.orange),
-                      Text('Add image', style: TextStyle(color: Colors.orange)),
+                      Icon(Icons.add_photo_alternate_outlined, 
+                           size: 60, 
+                           color: Colors.orange),
+                      Text('Add image', 
+                           style: TextStyle(color: Colors.orange)),
                     ],
                   ),
                 )
@@ -125,17 +142,39 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                               ),
                             ),
                             Positioned(
-                              bottom: 10,
+                              top: 10,
                               right: 10,
                               child: GestureDetector(
-                                onTap: () => pickImage(widget.imageFiles),
+                                onTap: () {
+                                  setState(() {
+                                    _uploadedImageUrls.remove(imageUrl);
+                                    widget.imageFiles.remove(imageUrl);
+                                    widget.onImagesUploaded(widget.imageFiles);
+                                  });
+                                },
                                 child: const CircleAvatar(
                                   radius: 15,
-                                  backgroundColor: Colors.orange,
-                                  child: Icon(Icons.add, color: Colors.white),
+                                  backgroundColor: Colors.red,
+                                  child: Icon(Icons.close, 
+                                            color: Colors.white, 
+                                            size: 20),
                                 ),
                               ),
                             ),
+                            if (widget.imageFiles.length < 5)
+                              Positioned(
+                                bottom: 10,
+                                right: 10,
+                                child: GestureDetector(
+                                  onTap: () => pickImage(widget.imageFiles),
+                                  child: const CircleAvatar(
+                                    radius: 15,
+                                    backgroundColor: Colors.orange,
+                                    child: Icon(Icons.add, 
+                                              color: Colors.white),
+                                  ),
+                                ),
+                              ),
                           ],
                         );
                       },

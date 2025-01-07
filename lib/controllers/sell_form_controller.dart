@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/services/products/entities/product_attributes_entity.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
@@ -14,6 +15,7 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
 class FormController extends GetxController {
+  final UserController _userController = Get.find<UserController>();
   static ProductController get productController =>
       Get.find<ProductController>();
   // First Form Data
@@ -68,10 +70,12 @@ class FormController extends GetxController {
       email: formTwoData['email'] ?? '',
       images: List<String>.from(formOneData['images'] ?? []),
       mrp: formOneData['price'].toInt(),
-      offerIds: [formOneData['category'] ?? 1],
+      // offerIds: [formOneData['category'] ?? 1], 
+      // Empty for now since backend has restarted and is not accepting any value
+      offerIds: [],
       offerPrice: formTwoData['sellingPrice'].toInt(),
       phone: formTwoData['phone'] ?? '',
-      userId: 1, // This should come from auth controller
+      userId: _userController.user.value!.id,
       attributes: Attributes(
           accessories: formOneData['accessories'],
           author: formOneData['author'],
