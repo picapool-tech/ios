@@ -167,7 +167,7 @@ class OffersApi {
       debugPrint("Request body of nearest offer: ${body.toString()}");
 
       var response = await http.post(
-        Uri.parse("https://api.picapool.com/v2/offer/nearest"),
+        Uri.parse("https://api.picapool.com/v2/offer/search"),
         headers: {
           'Authorization': "Bearer $accessToken",
           'Content-Type': 'application/json'
@@ -177,7 +177,9 @@ class OffersApi {
             "lat": location.lat.toDouble(),
             "lng": location.long.toDouble(),
           },
-          "radius": 2000,
+          "radius": 1000,
+          "chats": true,
+          "products": true,
         }),
       );
 

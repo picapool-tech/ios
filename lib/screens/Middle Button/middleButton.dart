@@ -203,11 +203,12 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
           ],
         ),
       ),
-      bottomSheet: BottomSheet(
-          onClosing: () {},
-          showDragHandle: false,
-          constraints: const BoxConstraints(maxHeight: 320),
-          builder: (context) {
+      bottomSheet: DraggableScrollableSheet(
+          initialChildSize: 0.4,
+          minChildSize: 0.2,
+          maxChildSize: 0.8,
+          expand: false,
+          builder: (context, scrollController) {
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -226,7 +227,6 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
               ),
               padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Gray container with divider and prefix icon
@@ -290,9 +290,10 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                           }
 
                           return ListView.builder(
+                            controller: scrollController,
                             itemCount: controller.nearestOffers.length,
                             itemBuilder: (context, index) {
-                              var offer = controller.allOffers[index];
+                              var offer = controller.nearestOffers[index];
 
                               return OfferContainer(
                                 title: offer.name,
@@ -307,32 +308,6 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                             },
                           );
                         }),
-
-                    // ListView(
-                    //   children: const [
-                    //     OfferContainer(
-                    //       title: 'LEVI sale',
-                    //       subtitle: 'Clothes and fabric',
-                    //       timeAgo: '5 mins ago',
-                    //       countdown: '59:59',
-                    //       icon: Icons.checkroom,
-                    //     ),
-                    //     OfferContainer(
-                    //       title: 'KFC offer',
-                    //       subtitle: 'Food and beverage',
-                    //       timeAgo: '5 mins ago',
-                    //       countdown: '59:59',
-                    //       icon: Icons.fastfood,
-                    //     ),
-                    //     OfferContainer(
-                    //       title: 'St. Joseph turf',
-                    //       subtitle: 'Sport and fitness',
-                    //       timeAgo: '10 mins ago',
-                    //       countdown: '30:15',
-                    //       icon: Icons.sports_soccer,
-                    //     ),
-                    //   ],
-                    // ),
                   ),
                 ],
               ),

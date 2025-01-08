@@ -257,7 +257,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
           () => ChatPage(
             chat: receivedOffer.chats!.first,
             offer: receivedOffer,
-            chatTitle: receivedOffer.name ?? "String" ,
+            chatTitle: receivedOffer.name ?? "String",
           ),
         );
       }

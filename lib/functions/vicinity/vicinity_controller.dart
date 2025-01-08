@@ -32,6 +32,8 @@ class VicinityController extends GetxController {
 
       if (uploadedImage == null) {
         Get.snackbar("Error", "Not able to upload image");
+        isLoading.value = false;
+        update();
         return null;
       }
     }
