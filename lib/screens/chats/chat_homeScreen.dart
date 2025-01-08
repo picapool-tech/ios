@@ -431,7 +431,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
               Get.to(() => ChatPage(
                     chat: chat.chat,
                     offer: chat.offer,
-                    chatTitle: " To:  ${chat.liveOffer?.to}" ?? "String" ,
+                    chatTitle: chat.liveOffer?.to ?? chat.offer?.name ?? "Chat",
                   ))?.then(
                 (onValue) {
                   chatController.getAllChats();
@@ -475,22 +475,22 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   Expanded(
                     child: Hero(
                       tag: chat.chat.id,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(" To:  ${chat.liveOffer?.to}" ??
-                                "No Title",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontFamily: "MontserratM",
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
-                          ),
+                      child: Text(
+                        chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
+                            chat.liveOffer?.from ??
+                            "No Title",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: "MontserratM",
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(
-                    height: 4,
+                    width: 4,
                   ),
                   Text(
                     DateTimeHelper.timeAgoSince(
@@ -500,10 +500,6 @@ class _MyChatsPageState extends State<MyChatsPage> {
                       fontFamily: "MontserratM",
                       fontSize: 12,
                       color: Colors.black,
-                    ),
-                  ),
-                        ],
-                      ),
                     ),
                   ),
                 ],

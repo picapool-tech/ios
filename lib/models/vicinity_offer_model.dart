@@ -32,6 +32,7 @@ class VicinityOffer {
   final List<String> productIds;
   final List<String> tagIds;
   final VicinityLocation location;
+  final double distance;
 
   VicinityOffer({
     required this.name,
@@ -43,6 +44,7 @@ class VicinityOffer {
     this.partnerID,
     this.productIds = const [],
     this.tagIds = const [],
+    required this.distance,
   });
 
   factory VicinityOffer.fromJson(Map<String, dynamic> json) {
@@ -58,6 +60,7 @@ class VicinityOffer {
       partnerID: json['partnerId'],
       tagIds: (json['tagIds']) ? List<String>.from(json['tags']) : [],
       location: VicinityLocation.fromJson(json['loc']),
+      distance: json['dist'] ?? 0,
     );
   }
 
@@ -71,6 +74,7 @@ class VicinityOffer {
       'productIds': productIds,
       'tagIds': tagIds,
       'loc': location.toJson(),
+      'dist' : distance,
     };
   }
 }

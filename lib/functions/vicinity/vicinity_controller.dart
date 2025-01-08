@@ -44,6 +44,7 @@ class VicinityController extends GetxController {
       userId: _userController.user.value!.id,
       tagIds: [],
       location: offer.location,
+      distance: offer.distance,
     );
 
     var accessToken = await _authController.getAccessToken();

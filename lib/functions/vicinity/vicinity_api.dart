@@ -20,7 +20,6 @@ class VicinityApi {
         'Creating offer with access token $accessToken with offer : ${offer.toJson()}');
     var endpoint = "https://api.picapool.com/v2/offer";
     try {
-      
       final response = await http.post(
         Uri.parse(endpoint),
         body: jsonEncode(offer.toJson()),

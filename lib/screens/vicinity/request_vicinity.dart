@@ -240,6 +240,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
         lat: _currentPosition!.latitude,
         long: _currentPosition!.longitude,
       ),
+      distance: _radius,
     );
 
     var receivedOffer = await _vicinityController.createVicinity(
