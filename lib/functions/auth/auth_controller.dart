@@ -98,17 +98,23 @@ class AuthController extends GetxController {
 
   Future<void> handleFCMToken() async {
     debugPrint("handle fcm token");
+    var fcm = await NotificationService().retrieveToken();
+    if (_userController.user.value == null || fcm == null) {
+      return;
+    }
     if (_userController.user.value!.fcmToken == null) {
-      var fcm = await NotificationService().retrieveToken();
-
-      if (fcm != null) {
-        debugPrint("FCM TOKEN : $fcm");
+      debugPrint("UPDATED FCM TOKEN");
+      await _userController.updateUser({
+        "fcmToken": fcm,
+      });
+    } else {
+      if (_userController.user.value!.fcmToken != fcm) {
+        debugPrint(
+            "UPDATED FROM PREV FCM TOKEN : ${_userController.user.value!.fcmToken} to $fcm");
         await _userController.updateUser({
           "fcmToken": fcm,
         });
       }
-    } else {
-      debugPrint("FCM TOKEN : ${_userController.user.value?.fcmToken}");
     }
   }
 

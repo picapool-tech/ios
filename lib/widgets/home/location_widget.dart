@@ -53,8 +53,8 @@ class _LocationWidgetState extends State<LocationWidget> {
   Widget build(BuildContext context) {
     return Obx(() {
       String mainLocation =
-          locationController.state.value.locationName?.name != null
-              ? locationController.state.value.locationName!.name ?? ""
+          locationController.state.value.locationName?.locality != null
+              ? locationController.state.value.locationName?.locality ?? ""
               : "Locating...";
 
       return Row(
@@ -95,8 +95,8 @@ class _LocationWidgetState extends State<LocationWidget> {
                         Text(
                           locationController.state.value.errorMessage != null
                               ? "No Location"
-                              : locationController
-                                      .state.value.locationName?.locality ??
+                              : locationController.state.value.locationName
+                                      ?.subAdministrativeArea ??
                                   "Locality unknown",
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.montserrat(

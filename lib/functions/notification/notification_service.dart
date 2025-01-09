@@ -31,9 +31,13 @@ class NotificationService {
     _fcm.onTokenRefresh.listen((token) async {
       var userController = Get.find<UserController>();
       debugPrint("Token updated from fcm");
-      await userController.updateUser(
-        {'fcmToken': token},
-      );
+      if (userController.user.value != null) {
+        if (userController.user.value!.fcmToken != token) {
+          await userController.updateUser(
+            {'fcmToken': token},
+          );
+        }
+      }
     });
   }
 

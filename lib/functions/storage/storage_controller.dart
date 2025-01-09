@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:picapool/core/type_defs.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
+import 'package:picapool/models/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:picapool/models/auth_model.dart';
@@ -12,6 +14,7 @@ class StorageController extends GetxController {
 
   var auth = Rx<Auth?>(null);
   var user = Rx<User?>(null);
+  var tags = Rx<List<Tag>>([]);
 
   @override
   void onInit() {
@@ -22,6 +25,7 @@ class StorageController extends GetxController {
   void initialize() async {
     await loadAuth();
     await loadUser();
+    await loadTags();
   }
 
   Future<void> saveAuth(Auth auth) async {
@@ -104,5 +108,37 @@ class StorageController extends GetxController {
       return storageAuth.accessToken;
     }
     return null;
+  }
+
+  Future<void> logout() async {
+    await clearAuth();
+    await clearUser();
+    Get.offAllNamed('/login');
+  }
+
+  Future<void> saveTags(List<Tag> tags) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tags',
+      tags.map((tag) => jsonEncode(tag.toJson())).toList(),
+    );
+    debugPrint("Tags saved");
+  }
+
+  Future<List<Tag>> loadTags() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? tagsData = prefs.getStringList('tags');
+    if (tagsData != null) {
+      try {
+        var tag = tagsData.map((tag) => Tag.fromJson(jsonDecode(tag))).toList();
+        tags.value = tag;
+        update();
+        return tag;
+      } catch (e) {
+        debugPrint("Error while loading tags: $e");
+        return [];
+      }
+    }
+    return [];
   }
 }

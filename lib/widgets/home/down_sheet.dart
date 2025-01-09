@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:picapool/functions/notification/notification_service.dart';
+import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/button_model.dart';
 import 'package:picapool/screens/Products/products_homePage.dart';
 import 'package:picapool/screens/cabs/share_cab.dart';
@@ -78,7 +80,9 @@ class _DownSheetState extends State<DownSheet> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
+    NotificationService().retrieveToken().then((toen) {
+      debugPrint("GET FCM OTKEN: $toen");
+    });
     return Container(
       alignment: Alignment.topCenter,
       padding: const EdgeInsets.fromLTRB(24, 2, 24, 0),

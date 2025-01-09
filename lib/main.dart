@@ -22,6 +22,7 @@ import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
+import 'package:picapool/utils/permission_util.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 
@@ -99,10 +100,35 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  subscribeToTopics() async {
+    await storageController.loadTags();
+    var tags = storageController.tags.value;
+    for (var tag in tags) {
+      if (tag.isActive) {
+        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
+      }
+    }
+  }
+
   listenNotification() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
       // You can show a dialog, toast, or in-app UI here.
+      if (message.notification == null) {
+        return;
+      }
+
+      Get.snackbar(
+        message.notification!.title ?? 'Notification',
+        message.notification!.body ?? 'Notification',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        borderRadius: 10,
+        margin: const EdgeInsets.all(10),
+        icon: const Icon(Icons.notification_important, color: Colors.white),
+        duration: const Duration(seconds: 5),
+      );
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {

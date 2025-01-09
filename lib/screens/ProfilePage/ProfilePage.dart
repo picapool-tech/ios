@@ -1,18 +1,20 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/user/user_controller.dart';
-import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/user_model.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage_m.dart';
+import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/pooling_history.dart';
+import 'package:picapool/utils/permission_util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -67,25 +69,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: () {
-                      // joinnig chat
-                      // if (kDebugMode) {
-                      // Get.to(
-                      //   ChatPage(
-                      //     chat: Chat(
-                      //       id: 15,
-                      //       updatedAt: DateTime.now(),
-                      //       isMain: true,
-                      //     ),
-                      //   ),
-                      // );
-                      // }
+                    onPressed: () async {
+                      var url = Uri.parse("https://wa.me/917224052216");
+                      if (!await launchUrl(url)) {
+                        debugPrint("Could not launch $url");
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
-                      backgroundColor: Colors.grey,
+                      backgroundColor: Colors.orange,
                     ),
                     child: const Text(
                       "Help",
@@ -213,6 +207,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               context,
                               imagePath: "assets/icons/Bell.png",
                               title: 'Notification Preferences',
+                              onTap: () =>
+                                  Get.to(() => const NotificationPreferences()),
                             ),
                             _buildOptionTile(context,
                                 imagePath: "assets/icons/History.png",
@@ -317,74 +313,132 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showPermissionsModal(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      isScrollControlled: true, // This makes modal full screen
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
+  void _showPermissionsModal(BuildContext context) async {
+    var permissionUtil = PermissionUtil();
+
+    if (context.mounted) {
+      showModalBottomSheet(
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true, // This makes modal full screen
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) {
+          var locationEnabled = permissionUtil.isLocationPermissionGranted();
+          var notificationEnabled =
+              permissionUtil.isNotificationPermissionGranted();
+          return StatefulBuilder(builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Edit your Preferences!",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "MontserratSB",
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Enable or Disable your settings",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontFamily: "MontserratR",
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFFF7F3),
+                      border: Border.all(color: Colors.orange, width: 1.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        FutureBuilder<bool>(
+                            future: locationEnabled,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return InkWell(
+                                  onTap: () async {
+                                    if (snapshot.data ?? false) {
+                                      return;
+                                    } else {
+                                      await permissionUtil
+                                          .requestLocationPermission();
+                                      locationEnabled = permissionUtil
+                                          .isLocationPermissionGranted();
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: _buildPermissionOption(
+                                    Icons.location_on,
+                                    "Location Access",
+                                    isEnabled: snapshot.data!,
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            }),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                            future: notificationEnabled,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return InkWell(
+                                  onTap: () async {
+                                    if (snapshot.data ?? false) {
+                                      return;
+                                    } else {
+                                      await permissionUtil
+                                          .requestNotificationPermission();
+                                      locationEnabled = permissionUtil
+                                          .isNotificationPermissionGranted();
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: _buildPermissionOption(
+                                    Icons.notifications,
+                                    "Notifications",
+                                    isEnabled: snapshot.data!,
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            })
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Edit your Preferences!",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "MontserratSB",
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Enable or Disable your settings",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  fontFamily: "MontserratR",
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xffFFF7F3),
-                  border: Border.all(color: Colors.orange, width: 1.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    _buildPermissionOption(
-                        Icons.location_on, "Location Access"),
-                    const Divider(thickness: 1.5),
-                    _buildPermissionOption(
-                        Icons.notifications, "Notifications"),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
+            );
+          });
+        },
+      );
+    }
   }
 
-  Widget _buildPermissionOption(IconData icon, String title) {
+  Widget _buildPermissionOption(IconData icon, String title,
+      {bool isEnabled = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -401,7 +455,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-        const Icon(Icons.check_circle, color: Colors.green, size: 28),
+        Icon(
+          Icons.check_circle,
+          color: (isEnabled) ? Colors.green : Colors.grey,
+          size: 28,
+        ),
       ],
     );
   }

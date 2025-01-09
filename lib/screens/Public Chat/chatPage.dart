@@ -52,7 +52,7 @@ class _ChatPageState extends State<ChatPage>
         widget.chat.id,
       );
 
-      chatController.getAllUsersInChat(widget.chat.id);
+      await chatController.getAllUsersInChat(widget.chat.id);
 
       _messageController.addListener(isActive);
 
@@ -165,7 +165,7 @@ class _ChatPageState extends State<ChatPage>
         title: Hero(
           tag: widget.chat.id,
           child: Text(
-            widget.chatTitle ?? "Chat",
+            widget.chatTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(

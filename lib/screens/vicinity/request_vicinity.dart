@@ -257,7 +257,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
           () => ChatPage(
             chat: receivedOffer.chats!.first,
             offer: receivedOffer,
-            chatTitle: receivedOffer.name ?? "String",
+            chatTitle: receivedOffer.name,
           ),
         );
       }
@@ -886,7 +886,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
               : BitmapDescriptor.hueGreen,
         ),
         infoWindow: InfoWindow(
-          title: user.name,
+          title: user.username,
           snippet: 'Nearby User',
         ),
       );

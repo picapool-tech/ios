@@ -155,7 +155,7 @@ class OffersController extends GetxController {
         );
       },
       (nearestOffersResponse) {
-        nearestOffers.value = nearestOffersResponse;
+        nearestOffers.value = nearestOffersResponse.reversed.toList();
       },
     );
     isLoading.value = false;

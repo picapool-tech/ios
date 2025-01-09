@@ -608,27 +608,27 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                                         //             .circular(
                                                         //                 12),
                                                         //   ),
-                                                          // child: Row(
-                                                          //   children:
-                                                          //       List.generate(
-                                                          //     offer.seats ?? 0,
-                                                          //     (index) =>
-                                                          //         const Padding(
-                                                          //       padding:
-                                                          //           EdgeInsets
-                                                          //               .only(
-                                                          //         right: 2,
-                                                          //       ),
-                                                          //       child: Icon(
-                                                          //         Icons.person,
-                                                          //         size: 16,
-                                                          //         color: Color(
-                                                          //           0xffFF8D41,
-                                                          //         ),
-                                                          //       ),
-                                                          //     ),
-                                                          //   ),
-                                                          // ),
+                                                        // child: Row(
+                                                        //   children:
+                                                        //       List.generate(
+                                                        //     offer.seats ?? 0,
+                                                        //     (index) =>
+                                                        //         const Padding(
+                                                        //       padding:
+                                                        //           EdgeInsets
+                                                        //               .only(
+                                                        //         right: 2,
+                                                        //       ),
+                                                        //       child: Icon(
+                                                        //         Icons.person,
+                                                        //         size: 16,
+                                                        //         color: Color(
+                                                        //           0xffFF8D41,
+                                                        //         ),
+                                                        //       ),
+                                                        //     ),
+                                                        //   ),
+                                                        // ),
                                                         // ),
                                                       ],
                                                     ),
@@ -800,23 +800,32 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => CreateLiveOffer()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateLiveOffer(),
+            ),
+          );
         },
         shape: const CircleBorder(),
         backgroundColor: Colors.orange,
         elevation: 7,
         child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(36)),
-                border: Border.all(
-                    color: Colors.white, width: 2, style: BorderStyle.solid)),
-            child: const Icon(
-              Icons.local_taxi,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(36)),
+            border: Border.all(
               color: Colors.white,
-              size: 24,
-            )),
+              width: 2,
+              style: BorderStyle.solid,
+            ),
+          ),
+          child: const Icon(
+            Icons.local_taxi_rounded,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
       ),
     );
   }
@@ -843,7 +852,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     if (chat != null) {
       Get.to(() => ChatPage(
             chat: chat,
-            chatTitle: chat.offer?.name ?? "String" ,
+            chatTitle: chat.offer?.name ?? "String",
             // liveOffer: liveOfferController.liveOffersList[index]?,
           ));
     } else {

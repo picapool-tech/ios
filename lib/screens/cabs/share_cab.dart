@@ -11,8 +11,8 @@ class CabShareScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF0F0F0),
+    return const Scaffold(
+      backgroundColor: Color(0xffF0F0F0),
       body:CreateLiveOffer(),
     );
   }
