@@ -118,6 +118,9 @@ class StorageController extends GetxController {
 
   Future<void> saveTags(List<Tag> tags) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (tags.isEmpty) {
+      return;
+    }
     await prefs.setStringList(
       'tags',
       tags.map((tag) => jsonEncode(tag.toJson())).toList(),

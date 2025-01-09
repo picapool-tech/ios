@@ -78,8 +78,9 @@ class _OtpScreenState extends State<OtpScreen> {
           if (widget.returnValue) {
             Get.back(result: true);
             return;
+          } else {
+            await authController.loginWithOtp(widget.phoneNumber, otp);
           }
-          await authController.loginWithOtp(widget.phoneNumber, otp);
         } else {
           setState(() {
             _isOtpIncorrect = true;

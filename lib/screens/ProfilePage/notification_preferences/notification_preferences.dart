@@ -31,6 +31,13 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
   dispose() {
     super.dispose();
     _storageController.saveTags(_tagController.tags);
+    for (var tag in _tagController.tags) {
+      if (tag.isActive) {
+        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
+      } else {
+        FirebaseMessaging.instance.unsubscribeFromTopic(tag.tag);
+      }
+    }
   }
 
   @override
@@ -68,14 +75,6 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
               separatorBuilder: (context, index) => const Divider(),
               itemCount: controller.tags.length,
               itemBuilder: (context, index) {
-                var tag = controller.tags[index];
-                if (tag.isActive) {
-                  FirebaseMessaging.instance
-                      .subscribeToTopic(tag.tag)
-                      .then((d) {
-                    debugPrint("Subscriped to ${tag.tag}");
-                  });
-                }
                 return notificationListItem(
                   controller.tags[index],
                   index: index,

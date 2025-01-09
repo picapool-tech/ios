@@ -35,7 +35,10 @@ class TagController extends GetxController {
     update();
 
     var accessToken = await _authController.getAccessToken();
-    final result = await _tagApi.getAllTags(accessToken: accessToken!);
+    if (accessToken == null) {
+      return;
+    }
+    final result = await _tagApi.getAllTags(accessToken: accessToken);
 
     result.fold(
       (failure) {
