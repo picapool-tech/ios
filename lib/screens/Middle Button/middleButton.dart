@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
 class PoolOffersScreen extends StatefulWidget {
@@ -295,15 +296,33 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                             itemBuilder: (context, index) {
                               var offer = controller.nearestOffers[index];
 
-                              return OfferContainer(
-                                title: offer.name,
-                                subtitle: offer.desc,
-                                timeAgo: DateTimeHelper.timeAgoSince(
-                                    offer.createdAt.toIso8601String()),
-                                countdown: DateTimeHelper.formatDateTimeExpiry(
-                                  offer.expiryAt,
+                              return InkWell(
+                                onTap: () {
+                                  // Navigate to offer details
+                                  if (offer.chats?.first == null) {
+                                    Get.snackbar("No chat found",
+                                        "Not chat found for offer ${offer.name}");
+                                    return;
+                                  }
+                                  Get.to(
+                                    () => ChatPage(
+                                      chat: offer.chats!.first,
+                                      chatTitle: offer.name,
+                                      offer: offer,
+                                    ),
+                                  );
+                                },
+                                child: OfferContainer(
+                                  title: offer.name,
+                                  subtitle: offer.desc,
+                                  timeAgo: DateTimeHelper.timeAgoSince(
+                                      offer.createdAt.toIso8601String()),
+                                  countdown:
+                                      DateTimeHelper.formatDateTimeExpiry(
+                                    offer.expiryAt,
+                                  ),
+                                  icon: Icons.checkroom,
                                 ),
-                                icon: Icons.checkroom,
                               );
                             },
                           );
