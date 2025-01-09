@@ -300,8 +300,10 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                                 onTap: () {
                                   // Navigate to offer details
                                   if (offer.chats?.first == null) {
-                                    Get.snackbar("No chat found",
-                                        "Not chat found for offer ${offer.name}");
+                                    Get.snackbar(
+                                      "No chat found",
+                                      "Not chat found for offer ${offer.name}",
+                                    );
                                     return;
                                   }
                                   Get.to(
