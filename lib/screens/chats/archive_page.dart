@@ -1,14 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:picapool/screens/chats/chat_homeScreen.dart';
 import 'package:picapool/utils/svg_icon.dart';
 
 class ArchivedPage extends StatefulWidget {
   final List<Map<String, dynamic>> archivedChats;
 
-  ArchivedPage({required this.archivedChats});
+  const ArchivedPage({super.key, required this.archivedChats});
 
   @override
   _ArchivedPageState createState() => _ArchivedPageState();
@@ -23,7 +21,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Archived',
           style: TextStyle(
             fontFamily: "MontserratM",
@@ -33,7 +31,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
         ),
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -44,11 +42,11 @@ class _ArchivedPageState extends State<ArchivedPage> {
           // Search Bar UI
           Container(
               height: 63,
-              color: Color(0xffFFFFFF),
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              color: const Color(0xffFFFFFF),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xff797979), width: 2),
+                  border: Border.all(color: const Color(0xff797979), width: 2),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: ClipRRect(
@@ -93,7 +91,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
           // Conditionally show either action bar or category buttons
           selectedIndexes.isNotEmpty
               ? Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
                   color: Colors.white, // Set background to white
                   child: Row(
                     children: [
@@ -101,7 +99,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                         onTap: () => setState(() {
                           selectedIndexes.clear(); // Clear selection
                         }),
-                        child: ImageIcon(
+                        child: const ImageIcon(
                           AssetImage('assets/icons/back_arrow.png'),
                           color: Color(0xffFF8D41),
                         ),
@@ -110,14 +108,14 @@ class _ArchivedPageState extends State<ArchivedPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           '${selectedIndexes.length}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: "MontserratM",
                             fontSize: 20,
                             color: Color(0xff000000), // Change text color
                           ),
                         ),
                       ),
-                      Spacer(), // Align actions to the right
+                      const Spacer(), // Align actions to the right
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -127,7 +125,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                               onTap: () {
                                 // Handle delete action
                               },
-                              child: SvgIcon(
+                              child: const SvgIcon(
                                 "assets/icons/trash.svg",
                                 size: 24,
                               ),
@@ -151,7 +149,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                                 // Pass the unarchived chats back to the MyChatsPage
                                 Navigator.pop(context, unarchivedChats);
                               },
-                              child: ImageIcon(
+                              child: const ImageIcon(
                                 AssetImage('assets/icons/unarchive.png'),
                                 color: Color(0xff000000),
                               ),
@@ -171,7 +169,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                                   selectedIndexes.clear();
                                 });
                               },
-                              child: ImageIcon(
+                              child: const ImageIcon(
                                 AssetImage('assets/icons/Group 511.png'),
                                 color: Color(0xff000000),
                               ),
@@ -183,8 +181,8 @@ class _ArchivedPageState extends State<ArchivedPage> {
                   ),
                 )
               : Container(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  color: Color(0xffFFFFFF),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  color: const Color(0xffFFFFFF),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -237,7 +235,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
           // Archived chat list
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
               ),
               child: ListView.builder(
@@ -266,7 +264,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                     },
                     child: Container(
                       color:
-                          isSelected ? Color(0xffFFEBDF) : Colors.transparent,
+                          isSelected ? const Color(0xffFFEBDF) : Colors.transparent,
                       child: ListTile(
                         leading: Stack(
                           alignment: Alignment.center,
@@ -284,7 +282,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                               ),
                             ),
                             if (isSelected)
-                              Icon(Icons.check_circle,
+                              const Icon(Icons.check_circle,
                                   color: Color(0xffFF8D41)),
                           ],
                         ),
@@ -293,7 +291,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                           children: [
                             Text(
                               widget.archivedChats[index]['title']!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontFamily: "MontserratM",
                                 fontSize: 16,
                                 color: Colors.black,
@@ -301,7 +299,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                             ),
                             Text(
                               widget.archivedChats[index]['time']!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontFamily: "MontserratM",
                                 fontSize: 12,
                                 color: Colors.black,
@@ -314,7 +312,7 @@ class _ArchivedPageState extends State<ArchivedPage> {
                             Expanded(
                               child: Text(
                                 widget.archivedChats[index]['subtitle']!,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontFamily: "MontserratM",
                                   fontSize: 14,
                                   color: Color(0xff434343),
@@ -324,8 +322,8 @@ class _ArchivedPageState extends State<ArchivedPage> {
                               ),
                             ),
                             if (isMuted)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
+                              const Padding(
+                                padding: EdgeInsets.only(left: 8.0),
                                 child: ImageIcon(
                                   AssetImage('assets/icons/Group 511.png'),
                                   size: 15,
@@ -353,7 +351,7 @@ class CategoryButton extends StatelessWidget {
   final String image;
   final VoidCallback onTap;
 
-  CategoryButton({
+  const CategoryButton({super.key, 
     required this.label,
     required this.image,
     required this.onTap,
@@ -367,7 +365,7 @@ class CategoryButton extends StatelessWidget {
       child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
           foregroundColor: selected ? Colors.white : Colors.black,
-          backgroundColor: selected ? Color(0xffFF8D41) : Colors.white,
+          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),

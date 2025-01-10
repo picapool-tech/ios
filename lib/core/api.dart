@@ -65,5 +65,6 @@ class PicapoolApi {
     } catch (e) {
       // todo all the errors here
     }
+    return null;
   }
 }

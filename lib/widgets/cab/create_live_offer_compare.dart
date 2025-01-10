@@ -1,23 +1,16 @@
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
-import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/cabs/location_pick_fields.dart';
 
-import '../../models/live_offer/live_offer_entity.dart';
 
 class CreateLiveOffer extends StatefulWidget {
-  CreateLiveOffer({super.key});
+  const CreateLiveOffer({super.key});
 
   @override
   State<CreateLiveOffer> createState() => _CreateLiveOfferState();
@@ -37,7 +30,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   DateTime updateDefaultExpiryDate() {
   if (_selectedDateTime != null) {
     setState(() {
-    _defaultExpiryDate = _selectedDateTime!.add(Duration(days: 3));
+    _defaultExpiryDate = _selectedDateTime!.add(const Duration(days: 3));
     });
   } else {
     _defaultExpiryDate = null; // Handle case where _selectedDate is null

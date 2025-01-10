@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:fpdart/fpdart.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/date_symbols.dart';
 import 'package:picapool/core/core.dart';
 import 'package:path/path.dart' as path;
 import 'package:picapool/models/offer_model.dart';

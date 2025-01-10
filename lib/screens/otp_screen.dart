@@ -6,12 +6,17 @@ import 'package:picapool/functions/auth/auth_controller.dart';
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:picapool/models/response_model.dart';
+
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
   final bool returnValue;
 
-  const OtpScreen(
-      {super.key, required this.phoneNumber, this.returnValue = false});
+  const OtpScreen({
+    super.key,
+    required this.phoneNumber,
+    this.returnValue = false,
+  });
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -27,7 +32,6 @@ class _OtpScreenState extends State<OtpScreen> {
   int _resendCountdown = 59;
   Timer? _timer;
   String? otpCode;
-
   final authController = Get.find<AuthController>();
 
   @override
@@ -72,11 +76,12 @@ class _OtpScreenState extends State<OtpScreen> {
 
       debugPrint('Response: ${response.body}');
       if (response.statusCode == 200) {
-        final responseBody = response.body;
-        if (responseBody.contains('"type":"success"') ||
-            responseBody.contains('already verified')) {
+        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+        if (responseModel.success) {
           if (widget.returnValue) {
-            Get.back(result: true);
+            debugPrint("INSIDE RETURN VALUE");
+            Navigator.pop(context, true);
+            Navigator.pop(context, true);
             return;
           } else {
             await authController.loginWithOtp(widget.phoneNumber, otp);

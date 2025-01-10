@@ -20,8 +20,17 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   String? _selectedGender;
-  final AuthController authController = Get.find<AuthController>();
+  final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = _userController.user.value?.name ?? '';
+    _ageController.text = _userController.user.value?.age.toString() ?? '';
+    _selectedGender = _userController.user.value?.gender;
+    _phoneController.text = _authController.auth.value?.mobile ?? "";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +92,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                       await storage.clearAuth();
                       await storage.clearUser();
 
-                      authController.logout();
+                      _authController.logout();
                     },
                     child: const Icon(Icons.visibility_off,
                         color: Colors.grey, size: 16),
@@ -197,9 +206,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               : TextInputType.text, // Numeric keyboard for age field
           decoration: InputDecoration(
             filled: true,
-            hintText: (isAge)
-                ? _userController.user.value?.age.toString() ?? "0"
-                : _userController.user.value?.name ?? 'No user name',
+            hintText: (isAge) ? "Your age" : "Your full name",
             hintStyle: const TextStyle(
                 color: Colors.grey, fontFamily: 'MontserratR', fontSize: 12),
             fillColor: Colors.transparent,
@@ -272,21 +279,33 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         var auth = Get.find<AuthController>();
                         var phone = "91${_phoneController.text}";
                         await auth.sendOtp(phone);
-                        var value = await Get.to(
-                          () => OtpScreen(
+                        var value = await Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return OtpScreen(
                             phoneNumber: phone,
                             returnValue: true,
-                          ),
-                        ) as bool?;
+                          );
+                        }));
 
                         if (value != null && value) {
                           // Verify successful
                           debugPrint("$value is from OTP");
+                          _authController.auth.value!.update({
+                            "mobile": phone,
+                          });
+                          await _userController.updateUser({
+                            "mobile": phone,
+                          });
+                          setState(() {});
+                        } else {
+                          // Verify failed
+                          debugPrint("Failed");
                         }
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _phoneController.text.length == 10
+                  backgroundColor: _phoneController.text.length == 10 &&
+                          _authController.auth.value?.mobile == null
                       ? const Color(0xFFFF8D41)
                       : const Color(0xFFC2C2C2),
                   foregroundColor: Colors.white,

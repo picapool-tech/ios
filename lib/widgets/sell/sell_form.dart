@@ -8,14 +8,12 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
 // import 'package:picapool/screens/sell/config/category_config.dart';
 // import 'package:picapool/widgets/sell/dimensions_fields.dart';
 // import 'package:picapool/widgets/location_bar.dart';
 // import 'package:picapool/widgets/sell/build_field.dart';
 import 'package:picapool/utils/routes.dart';
-import 'package:picapool/widgets/location_app_bar.dart';
 import 'package:picapool/widgets/primary_button.dart';
 import 'package:picapool/widgets/sell/build_field.dart';
 import 'package:picapool/widgets/sell/condition_chips.dart';
@@ -80,7 +78,7 @@ class _SellFormState extends State<SellForm> {
         initAspectRatio: CropAspectRatioPreset.square,
         lockAspectRatio: true,
       ),
-      iosUiSettings: IOSUiSettings(
+      iosUiSettings: const IOSUiSettings(
         minimumAspectRatio: 1.0,
       ),
     );

@@ -1,8 +1,5 @@
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 
 class TrekkingPage extends StatefulWidget {
   const TrekkingPage({super.key});
@@ -31,14 +28,14 @@ class _TrekkingPageState extends State<TrekkingPage> {
         minChildSize: 0.3,
         builder: (BuildContext context, ScrollController scrollController) {
           return Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -83,25 +80,25 @@ class _TrekkingPageState extends State<TrekkingPage> {
                               backgroundColor: avatarColors[index],
                               child: Text(
                                 names[index][0],
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
-                            title: Text(names[index], style: TextStyle(fontFamily: "MontserratM", fontSize: 16),),
-                            subtitle: Text(
+                            title: Text(names[index], style: const TextStyle(fontFamily: "MontserratM", fontSize: 16),),
+                            subtitle: const Text(
                               'View profile',
                               style: TextStyle(color: Colors.orange, fontFamily: "MontserratM", fontSize: 12),
                             ),
-                            trailing: Container(
+                            trailing: SizedBox(
                               height: 30,
                               child: OutlinedButton(
                                 onPressed: () {},
                                 style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: Colors.orange),
+                                  side: const BorderSide(color: Colors.orange),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
-                                child: Text(
+                                child: const Text(
                                   'Message 10 ₹',
                                   style: TextStyle(fontFamily: "MontserratM", fontSize: 12, color: Colors.black),
                                 ),
@@ -172,9 +169,9 @@ class _TrekkingPageState extends State<TrekkingPage> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Color(0xffa3a3a3)),
+                      border: Border.all(color: const Color(0xffa3a3a3)),
                     ),
-                    child: Icon(Icons.arrow_back, color: Colors.orange),
+                    child: const Icon(Icons.arrow_back, color: Colors.orange),
                   ),
                 )),
             // Floating Dropdown
@@ -187,7 +184,7 @@ class _TrekkingPageState extends State<TrekkingPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Color(0xffa3a3a3)),
+                  border: Border.all(color: const Color(0xffa3a3a3)),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: DropdownButton<double>(
@@ -201,7 +198,7 @@ class _TrekkingPageState extends State<TrekkingPage> {
                       child: Text(
                         '${value.toInt()}m',
                         style:
-                            TextStyle(fontFamily: "MontserratR", fontSize: 12),
+                            const TextStyle(fontFamily: "MontserratR", fontSize: 12),
                       ),
                     );
                   }).toList(),
@@ -225,7 +222,7 @@ class _TrekkingPageState extends State<TrekkingPage> {
                   decoration: BoxDecoration(
                     color: _isListButtonActive ? Colors.orange : Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Color(0xffa3a3a3)),
+                    border: Border.all(color: const Color(0xffa3a3a3)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -254,9 +251,9 @@ class _TrekkingPageState extends State<TrekkingPage> {
               right: 0,
               child: Container(
                 height: 60,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
@@ -319,12 +316,12 @@ class _TrekkingPageState extends State<TrekkingPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.hotel, color: Colors.orange, size: 24),
+                        Icon(Icons.hotel, color: Colors.orange, size: 24),
                         SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Hotels',
                           style: TextStyle(
                             fontSize: 14,
@@ -348,11 +345,11 @@ class _TrekkingPageState extends State<TrekkingPage> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Expanded(
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Sheraton Grande Hotel',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -360,7 +357,7 @@ class _TrekkingPageState extends State<TrekkingPage> {
                                   
                                 ),
                               ),
-                              const Text(
+                              Text(
                                 'Dehradun',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -368,9 +365,9 @@ class _TrekkingPageState extends State<TrekkingPage> {
                                   
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Row(
-                                children: const [
+                                children: [
                                   Icon(Icons.star,
                                       color: Colors.orange, size: 16),
                                   SizedBox(width: 4),
@@ -387,7 +384,7 @@ class _TrekkingPageState extends State<TrekkingPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Row(
                                 children: [
                                   Icon(Icons.car_crash_outlined,
@@ -424,12 +421,12 @@ class _TrekkingPageState extends State<TrekkingPage> {
                       thickness: 1,
                     ),
                     const SizedBox(height: 16),
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.hotel, color: Colors.orange, size: 24),
+                        Icon(Icons.hotel, color: Colors.orange, size: 24),
                         SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Cars',
                           style: TextStyle(
                             fontSize: 14,
@@ -453,11 +450,11 @@ class _TrekkingPageState extends State<TrekkingPage> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Expanded(
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Royal Agency',
                                 style: TextStyle(
                                   fontFamily: "MontserratM",
@@ -465,16 +462,16 @@ class _TrekkingPageState extends State<TrekkingPage> {
                                   
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Row(
-                                children: const [
+                                children: [
                                   Icon(Icons.star,
                                       color: Colors.orange, size: 16),
                                   SizedBox(width: 4),
                                   Text('4.7 (1.8k)', style: TextStyle(fontFamily: "MontserratM",),),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Row(
                                 children: [
                                   Icon(Icons.check_box,
@@ -522,16 +519,16 @@ void _showTrekkerDetails(BuildContext context, String name) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    shape: RoundedRectangleBorder(
+    shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (BuildContext context) {
       return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -540,13 +537,13 @@ void _showTrekkerDetails(BuildContext context, String name) {
             Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
                   onPressed: () {
                     Navigator.pop(context);
                   },
                 ),
-                SizedBox(width: 8),
-                Text(
+                const SizedBox(width: 8),
+                const Text(
                   "Rohan Kumar",  // This can be dynamic based on the selected user
                   style: TextStyle(
                     fontSize: 18,
@@ -554,8 +551,8 @@ void _showTrekkerDetails(BuildContext context, String name) {
                     fontFamily: 'MontserratM',
                   ),
                 ),
-                Spacer(),
-                Text(
+                const Spacer(),
+                const Text(
                   "12 KM away from you",
                   style: TextStyle(
                     color: Colors.orange,
@@ -565,21 +562,21 @@ void _showTrekkerDetails(BuildContext context, String name) {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Profile Picture and Bio
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 36,
                   backgroundImage: AssetImage('assets/images/profile_image.png'),  // Replace with your image path
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Bio",
                         style: TextStyle(
                           fontSize: 14,
@@ -587,7 +584,7 @@ void _showTrekkerDetails(BuildContext context, String name) {
                           fontFamily: 'MontserratM',
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         "Passionate adventurer and outdoor enthusiast. Whether it's hiking up rugged mountains or trekking through serene forests. Let's explore the world, one trail at a time.",
                         style: TextStyle(
@@ -602,11 +599,18 @@ void _showTrekkerDetails(BuildContext context, String name) {
                 ),
               ],
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             // Message Button
             ElevatedButton(
               onPressed: () {},
-              child: Row(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -627,13 +631,6 @@ void _showTrekkerDetails(BuildContext context, String name) {
                     ),
                   ),
                 ],
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
               ),
             ),
           ],

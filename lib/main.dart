@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/brand_controller.dart';
@@ -22,7 +23,6 @@ import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
-import 'package:picapool/utils/permission_util.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 
@@ -80,6 +80,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     listenNotification();
+    subscribeToTopics();
   }
 
   @override
@@ -100,9 +101,14 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  subscribeToTopics() async {
+  void subscribeToTopics() async {
     await storageController.loadTags();
     var tags = storageController.tags.value;
+    if (tags.isEmpty) {
+      var tagController = Get.find<TagController>();
+      await tagController.getAllTags();
+      tags = storageController.tags.value;
+    }
     for (var tag in tags) {
       if (tag.isActive) {
         FirebaseMessaging.instance.subscribeToTopic(tag.tag);
@@ -128,6 +134,11 @@ class _MyAppState extends State<MyApp> {
         margin: const EdgeInsets.all(10),
         icon: const Icon(Icons.notification_important, color: Colors.white),
         duration: const Duration(seconds: 5),
+        onTap: (snack) {
+          if (kDebugMode) {
+            print('Notification clicked while in foreground: ${message.data}');
+          }
+        },
       );
     });
 

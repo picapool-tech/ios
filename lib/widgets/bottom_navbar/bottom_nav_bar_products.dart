@@ -17,8 +17,8 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
   double height = Platform.isAndroid ? 70 : 100;
 
   final List<Widget> _screens = [
-    HomeScreen(),
-    ProductsHomepage(currentIndex: 1),
+    const HomeScreen(),
+    const ProductsHomepage(currentIndex: 1),
     // Add more screens as needed
   ];
 
@@ -64,7 +64,7 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
           Text(
             _titles[index],
             style: TextStyle(
-              color: isActive ? Color(0xffFF8D41) : Colors.black,
+              color: isActive ? const Color(0xffFF8D41) : Colors.black,
               fontSize: 12,
               fontFamily: 'MontserratR',
               fontWeight: FontWeight.w500,
@@ -83,7 +83,8 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
         clipBehavior: Clip.none,
         children: [
           BottomAppBar(
-            child: Container(
+            color: Colors.white,
+            child: SizedBox(
               height: height,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -94,7 +95,7 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
                   Expanded(
                     child: _buildNavItem(1),
                   ),
-                  SizedBox(width: 40), // The space for the center icon
+                  const SizedBox(width: 40), // The space for the center icon
                   Expanded(
                     child: _buildNavItem(2),
                   ),
@@ -104,7 +105,6 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
                 ],
               ),
             ),
-            color: Colors.white,
           ),
           Positioned(
             top: -30, // Adjust this value to move the icon up or down
@@ -113,7 +113,7 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
               onTap: () {
                 // Define action for this icon
               },
-              child: SvgIcon(
+              child: const SvgIcon(
                 "assets/bottombar/sell.svg", 
                 size: 70, // Size of the center icon
               ),

@@ -3,13 +3,15 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:picapool/screens/turf/turf_second_page.dart';
 
 class TurfPage1 extends StatefulWidget {
+  const TurfPage1({super.key});
+
   @override
   _TurfPage1State createState() => _TurfPage1State();
 }
 
 class _TurfPage1State extends State<TurfPage1> {
   Set<String> selectedSports = {};
-  TextEditingController _destinationController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
   int _selectedPeople = 7; // Default value as shown in the image
   var hour = 5;
   var minute = 45;
@@ -42,11 +44,11 @@ class _TurfPage1State extends State<TurfPage1> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
                     Expanded(child: Divider(color: Color(0xffFF8D41))),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
                       child: Text('Turf',
                           style: TextStyle(
                               fontSize: 16,
@@ -56,15 +58,15 @@ class _TurfPage1State extends State<TurfPage1> {
                     Expanded(child: Divider(color: Color(0xffFF8D41))),
                   ],
                 ),
-                SizedBox(height: 20),
-                Text(
+                const SizedBox(height: 20),
+                const Text(
                   'Which sport do you want\nto play?',
                   style: TextStyle(
                       fontSize: 24,
                       fontFamily: "MontserratM",
                       fontWeight: FontWeight.normal),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // First row of chips
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -97,14 +99,14 @@ class _TurfPage1State extends State<TurfPage1> {
                       .map((sport) => _buildOptionChip(sport))
                       .toList(),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildDestinationAndPeople(),
-                SizedBox(height: 40),
-                Row(
+                const SizedBox(height: 40),
+                const Row(
                   children: [
                     Expanded(child: Divider(color: Color(0xffFF8D41))),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
                       child: Text('Select Turf Timing',
                           style: TextStyle(
                               fontSize: 16,
@@ -114,9 +116,9 @@ class _TurfPage1State extends State<TurfPage1> {
                     Expanded(child: Divider(color: Color(0xffFF8D41))),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildDateTimePicker(),
-                SizedBox(height: 40), // Add some spacing before the button
+                const SizedBox(height: 40), // Add some spacing before the button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -128,16 +130,16 @@ class _TurfPage1State extends State<TurfPage1> {
                             builder: (context) => const TurfRoomsScreen()),
                       );
                     },
-                    child: Text('Confirm',
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffFF8D41),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25)),
+                    ),
+                    child: const Text('Confirm',
                         style: TextStyle(
                             fontSize: 18,
                             fontFamily: "MontserratM",
                             color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffFF8D41),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25)),
-                    ),
                   ),
                 ),
               ],
@@ -158,14 +160,14 @@ class _TurfPage1State extends State<TurfPage1> {
           children: [
             Icon(sport['icon'],
                 size: 15,
-                color: isSelected ? Color(0xFFFF8D41) : Color(0xff8C8C8C)),
-            SizedBox(width: 3),
+                color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
+            const SizedBox(width: 3),
             Text(
               sport['name'],
               style: TextStyle(
                   fontFamily: "MontserratM",
                   fontSize: 12,
-                  color: isSelected ? Color(0xFFFF8D41) : Color(0xff8C8C8C)),
+                  color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
             ),
           ],
         ),
@@ -182,11 +184,11 @@ class _TurfPage1State extends State<TurfPage1> {
         backgroundColor: Colors.white,
         selectedColor: Colors.orange.withOpacity(0.1),
         labelStyle:
-            TextStyle(color: isSelected ? Color(0xFFFF8D41) : Colors.black),
+            TextStyle(color: isSelected ? const Color(0xFFFF8D41) : Colors.black),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-              color: isSelected ? Color(0xFFFF8D41) : Color(0xff8C8C8C)),
+              color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
         ),
         showCheckmark: false,
       ),
@@ -196,7 +198,7 @@ class _TurfPage1State extends State<TurfPage1> {
   Widget _buildDestinationAndPeople() {
     return Column(
       children: [
-        Text(
+        const Text(
           'Add destination and how many people do you want to invite?',
           style: TextStyle(
               fontSize: 16,
@@ -204,7 +206,7 @@ class _TurfPage1State extends State<TurfPage1> {
               color: Color(0xff000000)),
           textAlign: TextAlign.left,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -212,7 +214,7 @@ class _TurfPage1State extends State<TurfPage1> {
             Container(
               width: 230,
               height: 53,
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(color: Colors.grey[400]!),
@@ -220,12 +222,12 @@ class _TurfPage1State extends State<TurfPage1> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.location_on, color: Color(0xffFF8D41)),
-                  SizedBox(width: 8),
+                  const Icon(Icons.location_on, color: Color(0xffFF8D41)),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _destinationController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: 'Search Destination',
                         hintStyle: TextStyle(
                             fontSize: 16,
@@ -238,7 +240,7 @@ class _TurfPage1State extends State<TurfPage1> {
                 ],
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             // Number Dropdown
             Container(
               width: 73,
@@ -256,7 +258,7 @@ class _TurfPage1State extends State<TurfPage1> {
                           value: index,
                           child: Center(
                             child: Text('$index',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontFamily: "MontserratM", fontSize: 16)),
                           ),
                         )),
@@ -265,11 +267,11 @@ class _TurfPage1State extends State<TurfPage1> {
                     _selectedPeople = value!;
                   });
                 },
-                underline: SizedBox(),
+                underline: const SizedBox(),
                 isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down, color: Color(0xff8C8C8C)),
+                icon: const Icon(Icons.arrow_drop_down, color: Color(0xff8C8C8C)),
                 iconSize: 24,
-                style: TextStyle(color: Color(0xff8C8C8C)),
+                style: const TextStyle(color: Color(0xff8C8C8C)),
               ),
             ),
           ],
@@ -289,14 +291,14 @@ class _TurfPage1State extends State<TurfPage1> {
             clipBehavior: Clip.none,
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xffFF8D41)),
+                  border: Border.all(color: const Color(0xffFF8D41)),
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: Text(
-                  "${_formatDate(selectedDate)}",
-                  style: TextStyle(
+                  _formatDate(selectedDate),
+                  style: const TextStyle(
                     fontFamily: "MontserratM",
                     fontSize: 14,
                     color: Color(0xffFF8D41),
@@ -307,12 +309,12 @@ class _TurfPage1State extends State<TurfPage1> {
                 right: 10, // Adjust these values to position the icon correctly
                 top: -5, // Adjust these values to position the icon correctly
                 child: Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
                     color: Color(0xffFF8D41),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.edit,
                     color: Colors.white,
                     size: 12, // Adjust the size as needed
@@ -331,8 +333,8 @@ class _TurfPage1State extends State<TurfPage1> {
                 hour = value;
               });
             }),
-            SizedBox(width: 10),
-            Text(
+            const SizedBox(width: 10),
+            const Text(
               ":",
               style: TextStyle(
                 fontFamily: "MontserratM",
@@ -340,13 +342,13 @@ class _TurfPage1State extends State<TurfPage1> {
                 color: Colors.grey,
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             _buildNumberPicker(minute, 0, 59, (value) {
               setState(() {
                 minute = value;
               });
             }),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             _buildAmPmPicker(),
           ],
         ),
@@ -365,9 +367,9 @@ class _TurfPage1State extends State<TurfPage1> {
       itemWidth: 65,
       itemHeight: 60,
       onChanged: onChanged,
-      textStyle: TextStyle(color: Colors.grey, fontSize: 14),
-      selectedTextStyle: TextStyle(color: Colors.black, fontSize: 14),
-      decoration: BoxDecoration(
+      textStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+      selectedTextStyle: const TextStyle(color: Colors.black, fontSize: 14),
+      decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(
             color: Colors.grey,
@@ -382,8 +384,14 @@ class _TurfPage1State extends State<TurfPage1> {
     return Container(
       height: 60,
       width: 65,
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey),
+          bottom: BorderSide(color: Colors.grey),
+        ),
+      ),
       child: ListWheelScrollView.useDelegate(
-        physics: FixedExtentScrollPhysics(),
+        physics: const FixedExtentScrollPhysics(),
         itemExtent: 60,
         diameterRatio: 1.5,
         onSelectedItemChanged: (index) {
@@ -404,12 +412,6 @@ class _TurfPage1State extends State<TurfPage1> {
               ),
             );
           }).toList(),
-        ),
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey),
-          bottom: BorderSide(color: Colors.grey),
         ),
       ),
     );

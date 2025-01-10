@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/date_symbols.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Products/selected_brand_page.dart';
@@ -195,7 +194,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
         if (brand['name'] == 'PlayStation') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PlayStationPage()),
+            MaterialPageRoute(builder: (context) => const PlayStationPage()),
           );
         }
         // You can add more conditions for other brands to navigate to different pages.

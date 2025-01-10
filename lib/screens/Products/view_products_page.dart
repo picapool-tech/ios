@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:picapool/screens/Products/selected_product_page.dart';
 
 class ViewProductsPage extends StatelessWidget {
+  const ViewProductsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,12 +13,12 @@ class ViewProductsPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-        title: Text(
+        title: const Text(
           'Products',
           style: TextStyle(
             color: Colors.black,
@@ -25,9 +27,9 @@ class ViewProductsPage extends StatelessWidget {
           ),
         ),
         centerTitle: false,
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
               backgroundImage: AssetImage('assets/avatar.jpg'), // Replace with your image asset path
             ),
@@ -46,7 +48,7 @@ class ViewProductsPage extends StatelessWidget {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: TextField(
+              child: const TextField(
                 decoration: InputDecoration(
                   hintText: 'Find "playstation" products',
                   hintStyle: TextStyle(
@@ -60,11 +62,11 @@ class ViewProductsPage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Products Grid
             Expanded(
               child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.75,
                   crossAxisSpacing: 16,
@@ -141,7 +143,7 @@ class ViewProductsPage extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SelectedProductPage()), // Navigate to SelectedProductPage
+          MaterialPageRoute(builder: (context) => const SelectedProductPage()), // Navigate to SelectedProductPage
         );
       },
       child: Stack(
@@ -162,7 +164,7 @@ class ViewProductsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
                   child: Image.asset(
                     product['image']!,
                     height: 120,
@@ -175,7 +177,7 @@ class ViewProductsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Game console',
                         style: TextStyle(
                           fontSize: 12,
@@ -183,21 +185,21 @@ class ViewProductsPage extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         product['title']!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'MontserratM',
                           color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         product['price']!,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'MontserratM',
                           color: Colors.black,
@@ -220,7 +222,7 @@ class ViewProductsPage extends StatelessWidget {
                   color: Colors.black.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     'SOLD OUT',
                     style: TextStyle(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/screens/cabs/CreateCab.dart';
-import 'package:picapool/screens/create_pool.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:intl/intl.dart';
@@ -39,10 +38,10 @@ class _ShowAllCabDetailsState extends State<ShowAllCabDetails> {
           ),
         ],
       ),
-      child: Column(
+      child: const Column(
         children: [
           LocationSelector(),
-          const SizedBox(height: 30),
+          SizedBox(height: 30),
           // DatePickerContainer(
           //   selectedDate: _selectedDate,
           //   onDateSelected: _onDateSelected,
@@ -58,7 +57,7 @@ class _ShowAllCabDetailsState extends State<ShowAllCabDetails> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -76,13 +75,13 @@ class _ShowAllCabDetailsState extends State<ShowAllCabDetails> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => CreateCabPoolScreen()));
+              MaterialPageRoute(builder: (context) => const CreateCabPoolScreen()));
         },
-        child: Icon(
+        backgroundColor: const Color(0xffFF8D41),
+        child: const Icon(
           Icons.add,
           color: Color(0xffffffff),
         ),
-        backgroundColor: Color(0xffFF8D41),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -92,7 +91,7 @@ class _ShowAllCabDetailsState extends State<ShowAllCabDetails> {
             children: [
               buildWhiteContainer(),
               const SizedBox(height: 16),
-              AvailableRidesTitle(),
+              const AvailableRidesTitle(),
               const SizedBox(height: 16),
               SizedBox(
                 height: 250, // Adjust height as needed
@@ -316,13 +315,15 @@ class HorizontalCabCard extends StatelessWidget {
 }
 
 class LocationSelector extends StatelessWidget {
+  const LocationSelector({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         buildLocationRow(
             Colors.orange[100]!, "6th street, Connaught place, New deli..."),
-        SizedBox(height: 25),
+        const SizedBox(height: 25),
         buildLocationRow(
             Colors.orange, "6th street, Connaught place, New deli..."),
       ],
@@ -333,7 +334,7 @@ class LocationSelector extends StatelessWidget {
     return Row(
       children: [
         Icon(Icons.circle, color: color, size: 12),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
@@ -347,10 +348,12 @@ class LocationSelector extends StatelessWidget {
 }
 
 class DateSelector extends StatelessWidget {
+  const DateSelector({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.orange),
         borderRadius: BorderRadius.circular(10),
@@ -358,15 +361,15 @@ class DateSelector extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.arrow_back_ios, size: 16, color: Colors.orange),
-          SizedBox(width: 8),
+          const Icon(Icons.arrow_back_ios, size: 16, color: Colors.orange),
+          const SizedBox(width: 8),
           Text(
             "24 June , 2024",
             style: GoogleFonts.montserrat(
                 fontSize: 14, fontWeight: FontWeight.w500),
           ),
-          SizedBox(width: 8),
-          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.orange),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.orange),
         ],
       ),
     );
@@ -374,6 +377,8 @@ class DateSelector extends StatelessWidget {
 }
 
 class AvailableRidesTitle extends StatelessWidget {
+  const AvailableRidesTitle({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Row(

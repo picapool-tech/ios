@@ -270,7 +270,7 @@ class AuthController extends GetxController {
     await _storageController.clearAuth();
     auth.value = null;
     _userController.user.value = null;
-    // checkForExistingUser();
+    checkForExistingUser();
   }
 
   Future<String?> getAccessToken() async {
@@ -291,7 +291,7 @@ class AuthController extends GetxController {
       return newAccessToken.fold(
         (error) {
           logout();
-          return accessToken;
+          return null;
         },
         (newAccessToken) async {
           auth.value!.copyWith(accessToken: newAccessToken);

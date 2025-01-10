@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/brand_controller.dart';
-import 'package:picapool/screens/location_fetch_screen.dart';
-import 'package:picapool/utils/svg_icon.dart';
-import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/widgets/brands/brand_grid.dart';
 
 class BrandListsPage extends StatefulWidget {
@@ -68,7 +64,7 @@ class BrandListsPageState extends State<BrandListsPage> {
                       )),
                     ]),
                     const SizedBox(height: 20),
-                    Expanded(child: BrandGrid())
+                    const Expanded(child: BrandGrid())
                   ],
                 ),
               ],

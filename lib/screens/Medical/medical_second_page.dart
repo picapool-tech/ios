@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -25,31 +23,31 @@ class _MedicalPage2State extends State<MedicalPage2> {
   }
 
   void _addMarkers() {
-    final MarkerId markerId1 = MarkerId("doctor1");
-final MarkerId markerId2 = MarkerId("doctor2");
-final MarkerId markerId3 = MarkerId("doctor3");
+    const MarkerId markerId1 = MarkerId("doctor1");
+const MarkerId markerId2 = MarkerId("doctor2");
+const MarkerId markerId3 = MarkerId("doctor3");
 
 final Marker marker1 = Marker(
   markerId: markerId1,
-  position: LatLng(30.3165, 78.0300), // Adjusted latitude and longitude
+  position: const LatLng(30.3165, 78.0300), // Adjusted latitude and longitude
   onTap: () {
-    _onMarkerTapped("Dr. Judith Joseph", LatLng(30.3165, 78.0300));
+    _onMarkerTapped("Dr. Judith Joseph", const LatLng(30.3165, 78.0300));
   },
 );
 
 final Marker marker2 = Marker(
   markerId: markerId2,
-  position: LatLng(30.3200, 78.0350), // Adjusted latitude and longitude
+  position: const LatLng(30.3200, 78.0350), // Adjusted latitude and longitude
   onTap: () {
-    _onMarkerTapped("Dr. Robert Smith", LatLng(30.3200, 78.0350));
+    _onMarkerTapped("Dr. Robert Smith", const LatLng(30.3200, 78.0350));
   },
 );
 
 final Marker marker3 = Marker(
   markerId: markerId3,
-  position: LatLng(30.3250, 78.0400), // Adjusted latitude and longitude
+  position: const LatLng(30.3250, 78.0400), // Adjusted latitude and longitude
   onTap: () {
-    _onMarkerTapped("Dr. Emily Clark", LatLng(30.3250, 78.0400));
+    _onMarkerTapped("Dr. Emily Clark", const LatLng(30.3250, 78.0400));
   },
 );
 
@@ -83,14 +81,14 @@ final Marker marker3 = Marker(
           minChildSize: 0.3,
           builder: (BuildContext context, ScrollController scrollController) {
             return Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -121,20 +119,20 @@ final Marker marker3 = Marker(
                           children: [
                             ListTile(
                               onTap: () {}, // Implement navigation to detailed hospital info
-                              leading: CircleAvatar(
+                              leading: const CircleAvatar(
                                 backgroundColor: Colors.teal,
                                 child: Icon(Icons.local_hospital, color: Colors.white),
                               ),
-                              title: Text(
+                              title: const Text(
                                 'Sen Hospital',
                                 style: TextStyle(fontFamily: "MontserratM", fontSize: 16),
                               ),
-                              subtitle: Text(
+                              subtitle: const Text(
                                 'Oncologist, Psychiatrist',
                                 style: TextStyle(color: Colors.orange, fontFamily: "MontserratM", fontSize: 12),
                               ),
                               trailing: IconButton(
-                                icon: Icon(Icons.phone, color: Colors.orange),
+                                icon: const Icon(Icons.phone, color: Colors.orange),
                                 onPressed: () {
                                   // Implement call functionality
                                 },
@@ -199,9 +197,9 @@ final Marker marker3 = Marker(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Color(0xffa3a3a3)),
+                      border: Border.all(color: const Color(0xffa3a3a3)),
                     ),
-                    child: Icon(Icons.arrow_back, color: Colors.orange),
+                    child: const Icon(Icons.arrow_back, color: Colors.orange),
                   ),
                 )),
             // Floating Dropdown
@@ -214,7 +212,7 @@ final Marker marker3 = Marker(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Color(0xffa3a3a3)),
+                  border: Border.all(color: const Color(0xffa3a3a3)),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: DropdownButton<double>(
@@ -228,7 +226,7 @@ final Marker marker3 = Marker(
                       child: Text(
                         '${value.toInt()}m',
                         style:
-                            TextStyle(fontFamily: "MontserratR", fontSize: 12),
+                            const TextStyle(fontFamily: "MontserratR", fontSize: 12),
                       ),
                     );
                   }).toList(),
@@ -252,7 +250,7 @@ final Marker marker3 = Marker(
                   decoration: BoxDecoration(
                     color: _isListButtonActive ? Colors.orange : Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Color(0xffa3a3a3)),
+                    border: Border.all(color: const Color(0xffa3a3a3)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -283,16 +281,16 @@ final Marker marker3 = Marker(
                   height: 40,
                   width: 100,
                   decoration: BoxDecoration(
-                    color: _isListButtonActive ? Color(0xffFF8D41) : Colors.white,
+                    color: _isListButtonActive ? const Color(0xffFF8D41) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Color(0xffFF8D41)),
+                    border: Border.all(color: const Color(0xffFF8D41)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.add_alert_sharp,
-                        color: _isListButtonActive ? Colors.white : Color(0xffFF8D41),
+                        color: _isListButtonActive ? Colors.white : const Color(0xffFF8D41),
                         size: 18,
                       ),
                       Text("Urgent",
@@ -314,9 +312,9 @@ final Marker marker3 = Marker(
               right: 0,
               child: Container(
                 height: 60,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
@@ -381,12 +379,12 @@ final Marker marker3 = Marker(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.local_hospital, color: Colors.orange, size: 24),
+                          Icon(Icons.local_hospital, color: Colors.orange, size: 24),
                           SizedBox(width: 8),
-                          const Text(
+                          Text(
                             'Hospitals Near you',
                             style: TextStyle(
                               fontSize: 14,
@@ -409,11 +407,11 @@ final Marker marker3 = Marker(
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
+                          const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Sen Hospital',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -422,7 +420,7 @@ final Marker marker3 = Marker(
                                   ),
                                 ),
                                 Row(
-                                  children: const [
+                                  children: [
                                     Icon(Icons.star,
                                         color: Colors.orange, size: 16),
                                     SizedBox(width: 4),
@@ -430,7 +428,7 @@ final Marker marker3 = Marker(
                                     
                                   ],
                                 ),
-                                const Text(
+                                Text(
                                   'Oncologist, Psychiatrist',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -438,7 +436,7 @@ final Marker marker3 = Marker(
                                     
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                Text(
                                       'Open 24 hours',
                                       style: TextStyle(
@@ -465,7 +463,7 @@ final Marker marker3 = Marker(
                           ),
                         ],
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                       Row(
                         children: [
                           ClipRRect(
@@ -478,11 +476,11 @@ final Marker marker3 = Marker(
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
+                          const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Sen Hospital',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -491,7 +489,7 @@ final Marker marker3 = Marker(
                                   ),
                                 ),
                                 Row(
-                                  children: const [
+                                  children: [
                                     Icon(Icons.star,
                                         color: Colors.orange, size: 16),
                                     SizedBox(width: 4),
@@ -499,7 +497,7 @@ final Marker marker3 = Marker(
                                     
                                   ],
                                 ),
-                                const Text(
+                                Text(
                                   'Oncologist, Psychiatrist',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -507,7 +505,7 @@ final Marker marker3 = Marker(
                                     
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                Text(
                                       'Open 24 hours',
                                       style: TextStyle(
@@ -534,12 +532,12 @@ final Marker marker3 = Marker(
                           ),
                         ],
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                       Divider(
                         color: Colors.grey.withOpacity(0.6),
                         thickness: 1,
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                       Row(
                         children: [
                           ClipRRect(
@@ -552,11 +550,11 @@ final Marker marker3 = Marker(
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
+                          const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Sen Hospital',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -565,7 +563,7 @@ final Marker marker3 = Marker(
                                   ),
                                 ),
                                 Row(
-                                  children: const [
+                                  children: [
                                     Icon(Icons.star,
                                         color: Colors.orange, size: 16),
                                     SizedBox(width: 4),
@@ -573,7 +571,7 @@ final Marker marker3 = Marker(
                                     
                                   ],
                                 ),
-                                const Text(
+                                Text(
                                   'Oncologist, Psychiatrist',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -581,7 +579,7 @@ final Marker marker3 = Marker(
                                     
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                Text(
                                       'Open 24 hours',
                                       style: TextStyle(
@@ -618,7 +616,7 @@ final Marker marker3 = Marker(
               bottom: 340,
               right: 16,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -627,11 +625,11 @@ final Marker marker3 = Marker(
                       color: Colors.black.withOpacity(0.1),
                       spreadRadius: 2,
                       blurRadius: 4,
-                      offset: Offset(0, 2), // changes position of shadow
+                      offset: const Offset(0, 2), // changes position of shadow
                     ),
                   ],
                 ),
-                child: Text(
+                child: const Text(
                   "17 medically help nearby",
                   style: TextStyle(
                     color: Colors.orange,
@@ -647,7 +645,7 @@ final Marker marker3 = Marker(
                 left: 16,
                 right: 16,
                 child: Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -656,7 +654,7 @@ final Marker marker3 = Marker(
                         color: Colors.black.withOpacity(0.1),
                         spreadRadius: 2,
                         blurRadius: 4,
-                        offset: Offset(0, 2), // changes position of shadow
+                        offset: const Offset(0, 2), // changes position of shadow
                       ),
                     ],
                   ),
@@ -665,14 +663,14 @@ final Marker marker3 = Marker(
                     children: [
                       Text(
                         selectedDoctor!,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontFamily: "MontserratM",
                           color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
+                      const SizedBox(height: 4),
+                      const Text(
                         "Otolaryngologist",
                         style: TextStyle(
                           fontSize: 14,
@@ -680,21 +678,21 @@ final Marker marker3 = Marker(
                           color: Colors.orange,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.location_pin, color: Colors.orange),
-                          SizedBox(width: 8),
+                          const Icon(Icons.location_pin, color: Colors.orange),
+                          const SizedBox(width: 8),
                           Text(
                             "Location: ${selectedLocation!.latitude}, ${selectedLocation!.longitude}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
                               fontFamily: "MontserratR",
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           ElevatedButton(
@@ -707,7 +705,7 @@ final Marker marker3 = Marker(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
                                 Icon(Icons.phone, color: Colors.white),
                                 SizedBox(width: 8),
@@ -721,7 +719,7 @@ final Marker marker3 = Marker(
                               ],
                             ),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           ElevatedButton(
                             onPressed: () {
                               // Handle add note button press
@@ -732,7 +730,7 @@ final Marker marker3 = Marker(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
                                 Icon(Icons.note_add, color: Colors.orange),
                                 SizedBox(width: 8),

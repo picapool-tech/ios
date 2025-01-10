@@ -1,19 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 
 class PermissionUtil {
   Future<bool> requestLocationPermission() async {
-    PermissionStatus status = await Permission.location.status;
-    if (status.isDenied) {
-      // Show custom dialog to request permission
-      bool request = await _showPermissionDialog(
-        title: 'Location Permission',
-        content: 'This app requires access to your location.',
-        permission: Permission.locationWhenInUse,
+    bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Show dialog directing to enable location services
+      await Get.dialog(
+        AlertDialog(
+          title: const Text("Location Services Disabled"),
+          content: const Text(
+            "Location services are disabled. Please enable them in settings.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                openAppSettings();
+                Get.back();
+              },
+              child: const Text("Go to Settings"),
+            ),
+          ],
+        ),
       );
-      return request;
-    } else if (status.isPermanentlyDenied) {
+      return false;
+    }
+
+    // Check and request location permissions
+    var permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+      if (permission == geo.LocationPermission.denied) {
+        // Show custom dialog to request permission
+        bool request = await _showPermissionDialog(
+          title: 'Location Permission',
+          content: 'This app requires access to your location.',
+          permission: Permission.locationWhenInUse,
+        );
+        return request;
+      }
+    }
+
+    if (permission == geo.LocationPermission.deniedForever) {
       // Show dialog directing to app settings
       await _showPermanentlyDeniedDialog(
         title: 'Location Permission',
@@ -23,7 +57,7 @@ class PermissionUtil {
       return false;
     }
 
-    return status.isGranted;
+    return true; // Assuming permission is granted if none of the conditions above are met
   }
 
   Future<bool> requestNotificationPermission() async {

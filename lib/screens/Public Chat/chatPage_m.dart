@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
-import 'package:picapool/models/message_model.dart';
 import 'package:picapool/utils/routes.dart';
 
 class ChatPage extends StatefulWidget {
@@ -59,7 +57,7 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
       ),
       body: Container(
         color: Colors.white, // Set chat background to white
-        child: PublicChatView(messages: [],),
+        child: const PublicChatView(messages: [],),
           
       ),
       bottomNavigationBar: ChatInputField(
@@ -73,7 +71,7 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
 class PublicChatView extends StatelessWidget {
   final List<dynamic> messages;
 
-  PublicChatView({required this.messages});
+  const PublicChatView({super.key, required this.messages});
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +106,7 @@ class ChatBubble extends StatelessWidget {
   final String? replyToMessage;
   final String? replySender;
 
-  const ChatBubble({
+  const ChatBubble({super.key, 
     required this.sender,
     required this.message,
     required this.time,
@@ -231,7 +229,7 @@ class ChatInputField extends StatelessWidget {
   final TextEditingController controller;
   final bool isMessageEmpty;
 
-  const ChatInputField({
+  const ChatInputField({super.key, 
     required this.controller,
     required this.isMessageEmpty,
   });
@@ -295,6 +293,8 @@ class ChatInputField extends StatelessWidget {
 }
 
 class PrivateChatView extends StatelessWidget {
+  const PrivateChatView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -302,15 +302,15 @@ class PrivateChatView extends StatelessWidget {
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(16.0),
-            children: [
-              const RoomTile(roomName: "Yash’s room", occupancy: "4 occupied", isJoined: false),
-              const RoomTile(roomName: "Akshay’s room", occupancy: "3 occupied", isJoined: true),
-              const RoomTile(roomName: "Diya’s room", occupancy: "4 occupied", isJoined: false),
-              const RoomTile(roomName: "Rohan’s room", occupancy: "2 occupied", isJoined: true),
-              const RoomTile(roomName: "Yash’s room", occupancy: "4 occupied", isJoined: false),
-              const RoomTile(roomName: "Dhiraj’s room", occupancy: "3 occupied", isJoined: false),
-              const RoomTile(roomName: "Diya’s room", occupancy: "4 occupied", isJoined: false),
-              const RoomTile(roomName: "Rohan’s room", occupancy: "2 occupied", isJoined: false),
+            children: const [
+              RoomTile(roomName: "Yash’s room", occupancy: "4 occupied", isJoined: false),
+              RoomTile(roomName: "Akshay’s room", occupancy: "3 occupied", isJoined: true),
+              RoomTile(roomName: "Diya’s room", occupancy: "4 occupied", isJoined: false),
+              RoomTile(roomName: "Rohan’s room", occupancy: "2 occupied", isJoined: true),
+              RoomTile(roomName: "Yash’s room", occupancy: "4 occupied", isJoined: false),
+              RoomTile(roomName: "Dhiraj’s room", occupancy: "3 occupied", isJoined: false),
+              RoomTile(roomName: "Diya’s room", occupancy: "4 occupied", isJoined: false),
+              RoomTile(roomName: "Rohan’s room", occupancy: "2 occupied", isJoined: false),
             ],
           ),
         ),
@@ -344,7 +344,7 @@ class RoomTile extends StatelessWidget {
   final String occupancy;
   final bool isJoined;
 
-  const RoomTile({
+  const RoomTile({super.key, 
     required this.roomName,
     required this.occupancy,
     required this.isJoined,

@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:picapool/core/type_defs.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/utils/date_time_helper.dart';

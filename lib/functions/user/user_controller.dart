@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_api.dart';
 import 'package:picapool/models/user_model.dart';

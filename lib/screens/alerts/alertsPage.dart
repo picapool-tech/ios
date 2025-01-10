@@ -1,15 +1,12 @@
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/Public%20Chat/publicChatScreen.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
 class AlertsPage extends StatefulWidget {

@@ -94,7 +94,7 @@ class _DestinationLocationFieldState extends State<DestinationLocationField> {
           textEditingController: widget.toController,
           googleAPIKey: "AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk",
           inputDecoration: InputDecoration(
-            prefix: Icon(Icons.location_on, size: 20, color:  Colors.orange,) ,
+            prefix: const Icon(Icons.location_on, size: 20, color:  Colors.orange,) ,
             hintText: " To ",
             hintStyle: GoogleFonts.montserrat(
                 color: const Color(0xff333333).withOpacity(0.5),

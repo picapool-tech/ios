@@ -28,7 +28,7 @@ class TagController extends GetxController {
     }
   }
 
-  void getAllTags({
+  Future<void> getAllTags({
     bool forceRefresh = false,
   }) async {
     isLoading.value = true;

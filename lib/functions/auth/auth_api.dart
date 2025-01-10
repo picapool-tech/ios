@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/core/core.dart';
-import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/login_model.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';

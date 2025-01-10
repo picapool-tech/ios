@@ -1,14 +1,12 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
-import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
@@ -188,84 +186,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Color(0xffF0F0F0),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.orange, width: 1.5),
-                          borderRadius: BorderRadius.circular(20),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border:
+                                Border.all(color: Colors.orange, width: 1.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Bell.png",
+                                title: 'Notification Preferences',
+                                onTap: () => Get.to(
+                                    () => const NotificationPreferences()),
+                              ),
+                              _buildOptionTile(context,
+                                  imagePath: "assets/icons/History.png",
+                                  title: 'Pooling History', onTap: () {
+                                Get.to(() => const PoolingHistory());
+                              }),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Letter Opened.png",
+                                title: 'Feedback Form',
+                                onTap: () {
+                                  _showFeedbackModal(context);
+                                },
+                              ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Frame 157.png",
+                                title: 'Permissions',
+                                onTap: () {
+                                  _showPermissionsModal(
+                                      context); // Open permissions modal
+                                },
+                              ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/File Text.png",
+                                title: 'Privacy Policy',
+                                onTap: () async {
+                                  // Open privacy policy page
+                                  final Uri url = Uri.parse(
+                                    'https://www.picapool.com/privacy-policy',
+                                  );
+                                  debugPrint(url.toString());
+                                  if (!await launchUrl(url)) {
+                                    debugPrint("Could not launch $url");
+                                  }
+                                },
+                              ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Group 59.png",
+                                title: 'App Guide',
+                                isDisabled: true,
+                              ),
+                              if (kDebugMode)
+                                _buildOptionTile(
+                                  context,
+                                  imagePath: "assets/icons/Group 59.png",
+                                  title: 'Delete Account',
+                                  onTap: () {},
+                                ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Frame 59.png",
+                                title: 'Logout',
+                                onTap: () {
+                                  _showLogoutModal(context);
+                                  // setState(() {});
+                                },
+                                isLast: true,
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Bell.png",
-                              title: 'Notification Preferences',
-                              onTap: () =>
-                                  Get.to(() => const NotificationPreferences()),
-                            ),
-                            _buildOptionTile(context,
-                                imagePath: "assets/icons/History.png",
-                                title: 'Pooling History', onTap: () {
-                              Get.to(() => const PoolingHistory());
-                            }),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Letter Opened.png",
-                              title: 'Feedback Form',
-                              onTap: () {
-                                _showFeedbackModal(context);
-                              },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Frame 157.png",
-                              title: 'Permissions',
-                              onTap: () {
-                                _showPermissionsModal(
-                                    context); // Open permissions modal
-                              },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/File Text.png",
-                              title: 'Privacy Policy',
-                              onTap: () async {
-                                // Open privacy policy page
-                                final Uri url = Uri.parse(
-                                  'https://www.picapool.com/privacy-policy',
-                                );
-                                debugPrint(url.toString());
-                                if (!await launchUrl(url)) {
-                                  debugPrint("Could not launch $url");
-                                }
-                              },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Group 59.png",
-                              title: 'App Guide',
-                              isDisabled: true,
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Frame 59.png",
-                              title: 'Logout',
-                              onTap: () {
-                                _showLogoutModal(context);
-                                // setState(() {});
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -282,6 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     void Function()? onTap,
     bool isDisabled = false,
+    bool isLast = false,
   }) {
     return Column(
       children: [
@@ -304,11 +315,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           onTap: (!isDisabled) ? onTap : null,
         ),
-        const Divider(
-          color: Colors.grey, // Grey color divider
-          thickness: 0.5,
-          height: 2,
-        ),
+        if (!isLast)
+          const Divider(
+            color: Colors.grey, // Grey color divider
+            thickness: 0.5,
+            height: 2,
+          ),
       ],
     );
   }
@@ -636,7 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               setState(() {});
                             }
                           } else {
-                            debugPrint("Update user value : ${updatedValues}");
+                            debugPrint("Update user value : $updatedValues");
                           }
                         },
                         style: ElevatedButton.styleFrom(

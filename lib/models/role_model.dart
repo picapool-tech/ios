@@ -1,4 +1,3 @@
-import 'package:picapool/models/auth_model.dart';
 
 class Role {
   final int id;

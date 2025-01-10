@@ -124,7 +124,7 @@ class ChatApi {
         ]
       };
 
-      debugPrint("${body}");
+      debugPrint("$body");
       var response = await http.post(
         Uri.parse("https://api.picapool.com/v2/chat"),
         headers: {

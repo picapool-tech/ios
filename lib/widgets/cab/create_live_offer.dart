@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,14 +6,10 @@ import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
-import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/cabs/location_pick_fields.dart';
 
-import '../../models/live_offer/live_offer_entity.dart';
 
 class CreateLiveOffer extends StatefulWidget {
   const CreateLiveOffer({super.key});
@@ -38,12 +33,10 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   DateTime _selectedDateTime = DateTime.now();
   DateTime _defaultExpiryDate = DateTime.now();
   DateTime updateDefaultExpiryDate() {
-    if (_selectedDateTime != null) {
-      setState(() {
-        _defaultExpiryDate = _selectedDateTime!.add(Duration(days: 3));
-      });
-    }
-    return _defaultExpiryDate ?? DateTime.now();
+    setState(() {
+      _defaultExpiryDate = _selectedDateTime.add(const Duration(days: 3));
+    });
+      return _defaultExpiryDate ?? DateTime.now();
   }
 
   bool isLoading = false;
@@ -58,8 +51,8 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   String? _toAddress;
   Circle? _currentLocationCircle;
   String _locationMessage = "Loading...";
-  double _radius = 500; // Default radius
-  bool _isMapInitialized = false;
+  final double _radius = 500; // Default radius
+  final bool _isMapInitialized = false;
   final places =
       GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
 
@@ -200,7 +193,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     setState(() {
       _currentPosition = LatLng(location.latitude, location.longitude);
       Placemark firstPlacemark =
-          locationController.state.value.locationName ?? Placemark();
+          locationController.state.value.locationName ?? const Placemark();
 
       _fromController.text =
           '${firstPlacemark.name}, ${firstPlacemark.locality}, ${firstPlacemark.thoroughfare}, ${firstPlacemark.administrativeArea}' ??
@@ -273,13 +266,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       );
       return false;
     }
-    if (_selectedDateTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a date and time')),
-      );
-      return false;
-    }
-    if (_selectedDateTime!.isBefore(DateTime.now())) {
+    if (_selectedDateTime.isBefore(DateTime.now())) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a future date and time')),
       );

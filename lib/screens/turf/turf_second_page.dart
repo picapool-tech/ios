@@ -18,7 +18,7 @@ class TurfRoomsScreen extends StatelessWidget {
               child: Container(
                 height: 600,
                 
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(40),
@@ -59,7 +59,7 @@ class TurfRoomsScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Color(0xffFF8D41), width: 1),
+          border: Border.all(color: const Color(0xffFF8D41), width: 1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -77,7 +77,7 @@ class TurfRoomsScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Icon(Icons.sports_basketball, color: Color(0xffFF8D41), size: 14),
+                      const Icon(Icons.sports_basketball, color: Color(0xffFF8D41), size: 14),
                       const SizedBox(width: 4),
                       Text(
                         gameType,
@@ -96,7 +96,7 @@ class TurfRoomsScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Color(0xffFF8D41), size: 16),
+                      const Icon(Icons.location_on, color: Color(0xffFF8D41), size: 16),
                       const SizedBox(width: 4),
                       Text(
                         distance,
@@ -106,19 +106,19 @@ class TurfRoomsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.run_circle, color: Color(0xffFF8D41), size: 16),
+                      const Icon(Icons.run_circle, color: Color(0xffFF8D41), size: 16),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.person, color: Color(0xffFF8D41), size: 16),
+                      const Icon(Icons.person, color: Color(0xffFF8D41), size: 16),
                       const SizedBox(width: 4),
                       Text(
                         roomInfo,
                         style: GoogleFonts.montserrat(
                           fontSize: 16,
-                          color: Color(0xffFF8D41),
+                          color: const Color(0xffFF8D41),
                         ),
                       ),
                     ],
@@ -130,28 +130,28 @@ class TurfRoomsScreen extends StatelessWidget {
                         "See Address",
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
-                          color: Color(0xff000000),
+                          color: const Color(0xff000000),
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.arrow_drop_down_circle, color: Color(0xffFF8D41), size: 16),
+                      const Icon(Icons.arrow_drop_down_circle, color: Color(0xffFF8D41), size: 16),
                     ],
                   ),
                 ],
               ),
-              SizedBox(width: 20),
+              const SizedBox(width: 20),
               Container(
                 height: 100,
                 width: 90,
                 decoration: BoxDecoration(
-                  color: Color(0xffFF8D41),
+                  color: const Color(0xffFF8D41),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.chat, color: Colors.white, size: 50),
-                    SizedBox(height: 4),
+                    const Icon(Icons.chat, color: Colors.white, size: 50),
+                    const SizedBox(height: 4),
                     Text(
                       "Go to chat",
                       style: GoogleFonts.montserrat(
@@ -181,7 +181,7 @@ class CustomAppBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const SizedBox(width: 8),
@@ -212,7 +212,7 @@ class LocationAndDateSelector extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.circle, color: Color(0xffFF8D41)),
+              const Icon(Icons.circle, color: Color(0xffFF8D41)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -230,7 +230,7 @@ class LocationAndDateSelector extends StatelessWidget {
               Text(
                 "<",
                 style: GoogleFonts.montserrat(
-                    fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xffFF8D41)),
+                    fontSize: 18, fontWeight: FontWeight.w500, color: const Color(0xffFF8D41)),
               ),
               const SizedBox(width: 16),
               Text(
@@ -242,7 +242,7 @@ class LocationAndDateSelector extends StatelessWidget {
               Text(
                 ">",
                 style: GoogleFonts.montserrat(
-                    fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xffFF8D41)),
+                    fontSize: 18, fontWeight: FontWeight.w500, color: const Color(0xffFF8D41)),
               ),
             ],
           ),
@@ -259,7 +259,7 @@ class AvailableGamesTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -269,7 +269,7 @@ class AvailableGamesTitle extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
+          const Expanded(
               child: Divider(indent: 40, color: Color(0xffFF8D41))),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -279,7 +279,7 @@ class AvailableGamesTitle extends StatelessWidget {
                   fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ),
-          Expanded(
+          const Expanded(
               child: Divider(endIndent: 40, color: Color(0xffFF8D41))),
         ],
       ),

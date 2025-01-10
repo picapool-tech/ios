@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:picapool/screens/Products/view_products_page.dart';
 
 class PlayStationPage extends StatelessWidget {
+  const PlayStationPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +15,7 @@ class PlayStationPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -25,8 +27,8 @@ class PlayStationPage extends StatelessWidget {
               width: 30,
               height: 30,
             ),
-            SizedBox(width: 8),
-            Text(
+            const SizedBox(width: 8),
+            const Text(
               'Playstation',
               style: TextStyle(
                 color: Colors.black,
@@ -50,14 +52,14 @@ class PlayStationPage extends StatelessWidget {
                     // Define what happens when the button is tapped
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xffFF8D41),
+                    backgroundColor: const Color(0xffFF8D41),
                     // side: BorderSide(color: Color(0xffFF6600)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
-                  child: Padding(
+                  child: const Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.0,
                     ),
@@ -83,21 +85,21 @@ class PlayStationPage extends StatelessWidget {
                   ),
                 ),
                 ),
-                SizedBox(width: 8), // Space between buttons
+                const SizedBox(width: 8), // Space between buttons
                 Expanded(
                   child: ElevatedButton(
                   onPressed: () {
-                    Get.to(() => ViewProductsPage());
+                    Get.to(() => const ViewProductsPage());
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xffFFE9DA),
-                    side: BorderSide(color: Color(0xffFF6600)),
+                    backgroundColor: const Color(0xffFFE9DA),
+                    side: const BorderSide(color: Color(0xffFF6600)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
-                  child: Padding(
+                  child: const Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.0,
                     ),
@@ -121,7 +123,7 @@ class PlayStationPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 20), // Space between buttons and search bar
+            const SizedBox(height: 20), // Space between buttons and search bar
             // Search Bar
             Container(
               height: 40,
@@ -129,7 +131,7 @@ class PlayStationPage extends StatelessWidget {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: TextField(
+              child: const TextField(
                 decoration: InputDecoration(
                   hintText: 'Find Offers and Brands',
                   hintStyle: TextStyle(
@@ -143,7 +145,7 @@ class PlayStationPage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Offer Banner
             Stack(
               children: [
@@ -159,12 +161,12 @@ class PlayStationPage extends StatelessWidget {
                   right: 10,
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(
+                    child: const Text(
                       'See Details',
                       style: TextStyle(
                         color: Colors.black,
@@ -177,18 +179,18 @@ class PlayStationPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Limited Offers
-            Row(
+            const Row(
                   children: [
                     Expanded(
                       child: Divider(
                         indent: 40,
                         thickness: 1,
-                        color: const Color(0xffFF8D41),
+                        color: Color(0xffFF8D41),
                       ),
                     ),
-                    const Text(
+                    Text(
                       "  Limited Offers  ",
                       style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
                     ),
@@ -196,12 +198,12 @@ class PlayStationPage extends StatelessWidget {
                       child: Divider(
                         endIndent: 40,
                         thickness: 1,
-                        color: const Color(0xffFF8D41),
+                        color: Color(0xffFF8D41),
                       ),
                     ),
                   ],
                 ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Stack(
               children: [
                 ClipRRect(
@@ -216,12 +218,12 @@ class PlayStationPage extends StatelessWidget {
                   right: 10,
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(
+                    child: const Text(
                       'See Details',
                       style: TextStyle(
                         color: Colors.black,

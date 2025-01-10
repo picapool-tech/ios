@@ -6,7 +6,6 @@ import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/cabs/showallcabs.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
 import 'package:get/get.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
@@ -28,10 +27,10 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
           'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
   GoogleMapController? mapController;
   Position? currentPosition;
-  Set<Marker> _markers = {};
+  final Set<Marker> _markers = {};
 
-  TextEditingController _fromController = TextEditingController();
-  TextEditingController _toController = TextEditingController();
+  final TextEditingController _fromController = TextEditingController();
+  final TextEditingController _toController = TextEditingController();
   List<Prediction> _fromPredictions = [];
   List<Prediction> _toPredictions = [];
   String formattedDate = '';
@@ -213,12 +212,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   }
 
   List<LiveOffer> _filterOffersByDate(List<LiveOffer> offers) {
-    if (_selectedDate == null) {
-      return offers; // Return all offers if no date is selected
-    }
-
     final selectedDateStart =
-        DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
+        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
     final selectedDateEnd = selectedDateStart.add(const Duration(days: 1));
 
     return offers.where((offer) {
@@ -771,7 +766,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                     ),
                                     TextSpan(
                                       text: _selectedDate != null
-                                          ? 'available for ${DateFormat('MMM dd, yyyy').format(_selectedDate!)}'
+                                          ? 'available for ${DateFormat('MMM dd, yyyy').format(_selectedDate)}'
                                           : 'available nearby.',
                                       style: const TextStyle(
                                           color: Colors.black,

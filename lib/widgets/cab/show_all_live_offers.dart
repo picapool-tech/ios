@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
-import 'package:picapool/screens/cabs/CreateCab.dart';
-import 'package:picapool/screens/create_pool.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
 
 class ShowAllLiveOffers extends StatefulWidget {
@@ -62,7 +60,7 @@ class _ShowAllLiveOffersState extends State<ShowAllLiveOffers> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => CreateLiveOffer()));
+              MaterialPageRoute(builder: (context) => const CreateLiveOffer()));
         },
         shape: const CircleBorder(),
         backgroundColor: Colors.orange,
@@ -87,7 +85,7 @@ class _ShowAllLiveOffersState extends State<ShowAllLiveOffers> {
             children: [
               buildWhiteContainer(),
               const SizedBox(height: 16),
-              AvailableRidesHeader(),
+              const AvailableRidesHeader(),
               const SizedBox(height: 16),
               GetBuilder<LiveOfferController>(
                 builder: (liveOfferInstance) {
@@ -159,7 +157,7 @@ class _ShowAllLiveOffersState extends State<ShowAllLiveOffers> {
       ),
       child: Column(
         children: [
-          LocationSelector(),
+          const LocationSelector(),
           const SizedBox(height: 30),
           DatePickerContainer(
             selectedDate: _selectedDate,
@@ -337,6 +335,8 @@ class AvailableCabCardState extends State<AvailableCabCard> {
 }
 
 class LocationSelector extends StatelessWidget {
+  const LocationSelector({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -424,6 +424,8 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
   }
 }
 class AvailableRidesHeader extends StatelessWidget {
+  const AvailableRidesHeader({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Row(

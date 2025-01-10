@@ -1,10 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  final NetworkController _networkController = Get.find<NetworkController>();
 
   Future<void> requestPermission() async {
     NotificationSettings settings = await _fcm.requestPermission(
@@ -42,6 +44,9 @@ class NotificationService {
   }
 
   Future<String?> retrieveToken() async {
-    return _fcm.getToken();
+    if (_networkController.isConnected()) {
+      return _fcm.getToken();
+    }
+    return null;
   }
 }

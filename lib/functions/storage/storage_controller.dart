@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decode/jwt_decode.dart';
-import 'package:picapool/core/type_defs.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,6 +91,8 @@ class StorageController extends GetxController {
         );
         return result.fold(
           (fail) {
+            debugPrint(
+                "Error while updating access token: $fail in storage controller.");
             clearAuth();
             clearUser();
             Get.offAllNamed('/login');

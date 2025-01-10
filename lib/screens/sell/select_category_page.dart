@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 // Import flutter_svg package
@@ -7,7 +6,6 @@ import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
-import 'package:picapool/widgets/others/OtherPage1.dart';
 
 class CategorySelectionPage extends StatefulWidget {
   const CategorySelectionPage({super.key});
@@ -38,8 +36,8 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
               color: Colors.black,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
+          const Padding(
+            padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
             child: StepIndicator(currentStep: 1),
           ),
           const Padding(
@@ -169,7 +167,7 @@ class CategoryCard extends StatelessWidget {
 class StepIndicator extends StatelessWidget {
   final int currentStep;
 
-  StepIndicator({super.key, required this.currentStep});
+  const StepIndicator({super.key, required this.currentStep});
 
   @override
   Widget build(BuildContext context) {

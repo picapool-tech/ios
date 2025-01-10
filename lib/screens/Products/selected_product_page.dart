@@ -26,12 +26,12 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-        title: Text(
+        title: const Text(
           'Products',
           style: TextStyle(
             color: Colors.black,
@@ -40,9 +40,9 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
           ),
         ),
         centerTitle: false,
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
               backgroundImage: AssetImage('assets/avatar.jpg'), // Replace with your image asset path
             ),
@@ -61,7 +61,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: TextField(
+              child: const TextField(
                 decoration: InputDecoration(
                   hintText: 'Find "playstation" products',
                   hintStyle: TextStyle(
@@ -75,8 +75,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Apple iPad (10th Generation): with A14 Bionic chip, 27.69 cm (10.9")',
               style: TextStyle(
                 fontSize: 20,
@@ -84,7 +84,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 fontFamily: "MontserratM",
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: Column(
                 children: [
@@ -124,12 +124,12 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                       return Container(
                         width: 8.0,
                         height: 8.0,
-                        margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _current == index
-                              ? Color.fromRGBO(0, 0, 0, 0.9)
-                              : Color.fromRGBO(0, 0, 0, 0.4),
+                              ? const Color.fromRGBO(0, 0, 0, 0.9)
+                              : const Color.fromRGBO(0, 0, 0, 0.4),
                         ),
                       );
                     }).toList(),
@@ -137,8 +137,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'MRP : Rs. 55,000',
               style: TextStyle(
                 fontFamily: "MontserratM",
@@ -147,8 +147,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.orange,
               ),
             ),
-            SizedBox(height: 10),
-            Text(
+            const SizedBox(height: 10),
+            const Text(
               'Description',
               style: TextStyle(
                 fontFamily: "MontserratM",
@@ -157,8 +157,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 5),
-            Text(
+            const SizedBox(height: 5),
+            const Text(
               'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina ...',
               style: TextStyle(
                 fontSize: 14,
@@ -166,7 +166,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.black,
               ),
             ),
-            Text(
+            const Text(
               'Read more',
               style: TextStyle(
                 fontSize: 14,
@@ -174,8 +174,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.orange,
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Details',
               style: TextStyle(
                 fontSize: 16,
@@ -184,8 +184,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 10),
-            Row(
+            const SizedBox(height: 10),
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
@@ -244,13 +244,13 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             // Handle See Offers action
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xffFF8D41),
+            backgroundColor: const Color(0xffFF8D41),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
             ),
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          child: Text(
+          child: const Text(
             'See Offers',
             style: TextStyle(
               fontSize: 20,

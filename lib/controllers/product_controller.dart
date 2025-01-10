@@ -7,7 +7,6 @@ import 'package:picapool/services/products/payloads/update_product_payload.dart'
 import 'package:picapool/services/products/responses/create_product_response.dart';
 import 'package:picapool/services/products/entities/product_entity.dart';
 import 'package:picapool/services/products/products_service.dart';
-import 'package:picapool/services/products/responses/get_all_products_response.dart';
 import 'package:picapool/services/products/responses/get_single_product_response.dart';
 import 'package:picapool/services/products/responses/update_product_response.dart';
 

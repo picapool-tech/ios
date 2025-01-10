@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage_m.dart';
 
 class PublicChatPage extends StatefulWidget {
   const PublicChatPage({super.key});

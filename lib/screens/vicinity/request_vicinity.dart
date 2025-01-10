@@ -16,7 +16,6 @@ import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:picapool/utils/image_utils.dart';
 
 class NearUserModel {
