@@ -19,35 +19,18 @@ import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/image_utils.dart';
 
 class NearUserModel {
-  final int id;
-  final String name;
-  final String? gender;
-  final int age;
-  final String? username;
-  final String? pic;
-  final String? bio;
+  final String username;
+
   final Location location;
 
   NearUserModel({
-    required this.id,
-    required this.name,
-    required this.age,
-    this.gender,
-    this.username,
-    this.pic,
-    this.bio,
+    required this.username,
     required this.location,
   });
 
   factory NearUserModel.fromJson(Map<String, dynamic> json) {
     return NearUserModel(
-      id: json['id'],
-      name: json['name'],
-      age: json['age'],
-      gender: json['gender'],
       username: json['username'],
-      pic: json['pic'],
-      bio: json['bio'],
       location: Location(
         latitude: json['lat'],
         longitude: json['lng'],
@@ -877,10 +860,10 @@ class _RequestVicinityState extends State<RequestVicinity> {
     _userMarkers.clear();
     for (var user in _nearestUsers) {
       final Marker userMarker = Marker(
-        markerId: MarkerId(user.id.toString()),
+        markerId: MarkerId(user.username),
         position: LatLng(user.location.latitude, user.location.longitude),
         icon: BitmapDescriptor.defaultMarkerWithHue(
-          (user.id == _userController.user.value?.id)
+          (user.username == _userController.user.value?.username)
               ? BitmapDescriptor.hueRed
               : BitmapDescriptor.hueGreen,
         ),
@@ -897,50 +880,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
       debugPrint("TOTAL MARKERS IN LOCATION : ${_userMarkers.length}");
     }
-  }
-
-  void _showUserDetailsDialog(NearUserModel user) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(user.name),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (user.pic != null && user.pic!.isNotEmpty)
-                CachedNetworkImage(
-                  imageUrl: user.pic!,
-                  placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                )
-              else
-                const Icon(
-                  Icons.account_circle,
-                  size: 100,
-                ),
-              const SizedBox(height: 10),
-              Text(
-                  'Location: (${user.location.latitude}, ${user.location.longitude})'),
-              // Add more user details as needed
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            // You can add more actions like "Message" or "View Profile"
-          ],
-        );
-      },
-    );
   }
 
   Future<void> getNearestUsers(int? id, double radius) async {
