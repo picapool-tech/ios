@@ -41,6 +41,7 @@ class _ComingSoonState extends State<ComingSoon>
         centerTitle: false,
       ),
       body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
