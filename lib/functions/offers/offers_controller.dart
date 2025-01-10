@@ -10,6 +10,8 @@ import 'package:picapool/models/vicinity_offer_model.dart';
 class OffersController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
+
+  // showing offers for user in alerts
   var offers = <Offer>[].obs;
 
 // for showing pooling history // used in middle button

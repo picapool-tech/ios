@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
+import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:picapool/models/response_model.dart';
@@ -48,7 +49,7 @@ class OffersApi {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('https://api.picapool.com/v2/user/$userId/offers'),
+        Uri.parse('https://api.picapool.com/v2/user/$userId/alerts'),
         headers: {
           'Authorization': "Bearer $accessToken",
         },
@@ -62,22 +63,26 @@ class OffersApi {
         ));
       }
 
-      var offers = jsonDecode(response.body) as List;
-      List<Offer> offersList =
-          offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
-      return right(offersList);
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      if (responseModel.success) {
+        var offers = responseModel.data['Offers'];
+        List<Offer> offersList =
+            offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
 
-      // var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      // if (responseModel.success) {
-      //   return right(
-      //     responseModel.data
-      //         .map<Offer>((offer) => Offer.fromJson(offer))
-      //         .toList(),
-      //   );
-      // } else {
-      //   return left(Failure(
-      //       message: responseModel.message, stackTrace: StackTrace.current));
-      // }
+        var liveOffers = responseModel.data['LiveOffers'];
+        List<LiveOffer> liveOffersList = liveOffers
+            .map<LiveOffer>((liveOffer) => LiveOffer.fromJson(liveOffer))
+            .toList();
+
+        return right(offersList);
+      } else {
+        return left(
+          Failure(
+            message: responseModel.message,
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
     } catch (e) {
       return left(
         Failure(
