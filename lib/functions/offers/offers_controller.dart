@@ -110,12 +110,13 @@ class OffersController extends GetxController {
     });
   }
 
-  Future<void> getAllUsersOffer() async {
+  // pooling offers request
+  Future<void> getAllUserCreatedOffer() async {
     isLoading.value = true;
     update();
 
     var accessToken = await _authController.getAccessToken();
-    var result = await _offersApi.getAllUsersOffer(
+    var result = await _offersApi.getAllUserCreatedOffer(
       userId: _userController.user.value!.id,
       accessToken: accessToken!,
     );

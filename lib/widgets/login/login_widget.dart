@@ -133,7 +133,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                 ],
               ),
               const SizedBox(height: 24),
-              const GoogleButton(),
+              // const GoogleButton(),
               const SizedBox(height: 16),
               const AsGuest()
             ],

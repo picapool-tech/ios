@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/widgets/home/down_sheet.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String searchQuery = "";
   final ScrollController _scrollController = ScrollController();
-  final NetworkController _networkController = NetworkController();
+  final NetworkController _networkController = Get.find<NetworkController>();
 
   @override
   void initState() {

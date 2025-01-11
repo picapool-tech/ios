@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
@@ -6,6 +8,9 @@ import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/public_profile.dart';
+import 'package:picapool/widgets/login/google_button.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -73,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 150),
+                const SizedBox(height: 120),
                 const Row(
                   children: [
                     Text(
@@ -267,47 +272,81 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
-                Row(
+                const SizedBox(height: 20),
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    GestureDetector(
-                      onTap: _signInWithGoogle,
-                      child: Container(
-                        height: 42,
-                        width: 42,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xffFFFFFF),
-                          border: Border.all(
-                            color: const Color(0xff000000),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Image.asset("assets/icons/google.png"),
-                      ),
+                    VendorLoginButton(
+                      title: "Continue with Google",
+                      onPressed: _signInWithGoogle,
+                      assetName: "assets/icons/google.png",
                     ),
-                    if (Platform.isIOS) ...[
-                      const SizedBox(width: 20),
-                      GestureDetector(
-                        onTap: _signInWithApple,
-                        child: Container(
-                          height: 42,
-                          width: 42,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: const Color(0xffFFFFFF),
-                            border: Border.all(
-                              color: const Color(0xff000000),
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Image.asset("assets/icons/apple_logo.png"),
-                        ),
+                    const SizedBox(height: 20),
+                    if (Platform.isIOS)
+                      VendorLoginButton(
+                        title: "Continue with Apple ID",
+                        onPressed: _signInWithApple,
+                        assetName: "assets/icons/apple_logos.png",
                       ),
-                    ],
+
+                    // MaterialButton(
+                    //   onPressed: _signInWithGoogle,
+                    //   shape: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(8),
+                    //   ),
+                    //   padding: const EdgeInsets.symmetric(
+                    //       horizontal: 15, vertical: 10),
+                    //   child: Row(
+                    //     children: [
+                    //       Image.asset(
+                    //         "assets/icons/google.png",
+                    //         height: 20,
+                    //       ),
+                    //       const SizedBox(width: 10),
+                    //       const Text(
+                    //         "Sign in with Google",
+                    //         style: TextStyle(
+                    //           fontFamily: "MontserratR",
+                    //           color: Color(0xff757171),
+                    //           fontSize: 12,
+                    //           fontWeight: FontWeight.bold,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // if (!Platform.isIOS) ...[
+                    // const SizedBox(width: 20),
+                    //   MaterialButton(
+                    //     onPressed: _signInWithGoogle,
+                    //     shape: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(8),
+                    //     ),
+                    //     padding: const EdgeInsets.symmetric(
+                    //         horizontal: 15, vertical: 10),
+                    //     child: Row(
+                    //       children: [
+                    //         Image.asset(
+                    //           "assets/icons/apple_logo.png",
+                    //           height: 20,
+                    //         ),
+                    //         const SizedBox(width: 10),
+                    //         const Text(
+                    //           "Sign in with Google",
+                    //           style: TextStyle(
+                    //             fontFamily: "MontserratR",
+                    //             color: Color(0xff757171),
+                    //             fontSize: 12,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+
+                    // ],
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -320,40 +359,31 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.normal,
                       )),
                 ),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    _termText(
                       "Terms of Service",
-                      style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        fontFamily: "MontserratR",
-                        color: Color(0xff757171),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      onTap: () {
+                        _launchUrl(
+                            "https://picapool.com/terms-and-conditions.html");
+                      },
                     ),
-                    SizedBox(width: 10),
-                    Text(
+                    const SizedBox(width: 10),
+                    _termText(
                       "Privacy Policy",
-                      style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        fontFamily: "MontserratR",
-                        color: Color(0xff757171),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      onTap: () {
+                        _launchUrl(
+                            "https://www.picapool.com/privacy-policy.html");
+                      },
                     ),
-                    SizedBox(width: 10),
-                    Text(
+                    const SizedBox(width: 10),
+                    _termText(
                       "Content policy",
-                      style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        fontFamily: "MontserratR",
-                        color: Color(0xff757171),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      onTap: () {
+                        _launchUrl(
+                            "https://www.picapool.com/refund-policy.html");
+                      },
                     ),
                   ],
                 ),
@@ -380,6 +410,28 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _launchUrl(String url) async {
+    if (!await launchUrl(Uri.parse(url))) {
+      debugPrint("Could not launch $url");
+    }
+  }
+
+  Widget _termText(String text, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: const TextStyle(
+          decoration: TextDecoration.underline,
+          fontFamily: "MontserratR",
+          color: Color(0xff757171),
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

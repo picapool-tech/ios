@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:picapool/core/api.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
@@ -11,6 +12,8 @@ import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class OffersApi {
+  final PicapoolApi _api = PicapoolApi();
+
   FutureEither<List<Offer>> getAllOffers({
     required String accessToken,
   }) async {
@@ -123,31 +126,48 @@ class OffersApi {
     }
   }
 
-  FutureEither<List<Offer>> getAllUsersOffer({
+  FutureEither<List<Offer>> getAllUserCreatedOffer({
     required int userId,
     required String accessToken,
   }) async {
     try {
-      var response = await http.get(
-          Uri.parse("https://api.picapool.com/v2/user/$userId/offers"),
-          headers: {"Authorization": "Bearer $accessToken"});
+      var response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllUserCreatedOffer(userId),
+        method: RequestMethod.getRequest,
+      );
 
-      debugPrint("POOLING HISTORY RESPONSEMMODEL : ${response.body}");
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          var offers = responseModel.data as List;
+          List<Offer> offersList =
+              offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
+          return right(offersList);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+
+      // debugPrint("POOLING HISTORY RESPONSEMMODEL : ${response.body}");
       // var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      if (response.statusCode == 200) {
-        var offers = jsonDecode(response.body) as List;
-        List<Offer> offersList =
-            offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
-        debugPrint(response.body);
-        return right(offersList);
-      } else {
-        return left(
-          Failure(
-            message: "Not able to get pooling history",
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      // if (response.statusCode == 200) {
+      //   var offers = jsonDecode(response.body) as List;
+      //   List<Offer> offersList =
+      //       offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
+      //   debugPrint(response.body);
+      //   return right(offersList);
+      // } else {
+      //   return left(
+      //     Failure(
+      //       message: "Not able to get pooling history",
+      //       stackTrace: StackTrace.current,
+      //     ),
+      //   );
+      // }
     } catch (e) {
       debugPrint("Errro getting pooling history : $e");
       return left(
@@ -158,6 +178,71 @@ class OffersApi {
       );
     }
   }
+
+  // FutureEither<List<Offer>> getAllUsersOffer({
+  //   required int userId,
+  //   required String accessToken,
+  // }) async {
+  //   try {
+  //     var response = await _api.makeRequest(
+  //       enpoint: "/v2/user/$userId/offers",
+  //       method: RequestMethod.getRequest,
+  //       requireAccessToken: true,
+  //     );
+
+  //     return response.fold((error) {
+  //       return left(
+  //         Failure(
+  //           message: error.message,
+  //           stackTrace: StackTrace.current,
+  //         ),
+  //       );
+  //     }, (responseModel) {
+  //       if (responseModel.success) {
+  //         var offers = responseModel.data as List;
+  //         List<Offer> offersList =
+  //             offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
+  //         return right(offersList);
+  //       } else {
+  //         return left(
+  //           Failure(
+  //             message: responseModel.message,
+  //             stackTrace: StackTrace.current,
+  //           ),
+  //         );
+  //       }
+  //     });
+
+  //     // var response = await http.get(
+  //     //     Uri.parse("https://api.picapool.com/v2/user/$userId/offers"),
+  //     //     headers: {"Authorization": "Bearer $accessToken"});
+
+  //     // debugPrint("POOLING HISTORY RESPONSEMMODEL : ${response.body}");
+  //     // // var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+  //     // if (response.statusCode == 200) {
+  //     //   var offers = jsonDecode(response.body) as List;
+  //     //   List<Offer> offersList =
+  //     //       offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
+  //     //   debugPrint(response.body);
+  //     //   return right(offersList);
+  //     // } else {
+  //     //   return left(
+  //     //     Failure(
+  //     //       message: "Not able to get pooling history",
+  //     //       stackTrace: StackTrace.current,
+  //     //     ),
+  //     //   );
+  //     // }
+  //   } catch (e) {
+  //     debugPrint("Errro getting pooling history : $e");
+  //     return left(
+  //       Failure(
+  //         message: "Not able to fetch pooling history at this time.",
+  //         stackTrace: StackTrace.current,
+  //       ),
+  //     );
+  //   }
+  // }
 
   FutureEither<List<Offer>> getOffersInVicinity({
     required String accessToken,

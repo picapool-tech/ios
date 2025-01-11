@@ -58,7 +58,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   bool _isCollapsed = false;
   List<XFile>? _imageFiles = [];
   final ImagePicker _picker = ImagePicker();
-  bool _is3DView = false;
+  bool _is3DView = true;
   GoogleMapController? _controller;
   LatLng? _currentPosition;
   Marker? _pinMarker;
@@ -83,7 +83,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
     debugPrint("$model");
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       loadMarker();
-      _fetchLocation();
 
       if (model != null) {
         var brand = BrandOfferModel.fromJson(model['brands']);
@@ -98,6 +97,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
           fromBrands = true;
         });
       }
+      await _fetchLocation();
     });
   }
 
@@ -131,14 +131,16 @@ class _RequestVicinityState extends State<RequestVicinity> {
       _currentPosition = LatLng(location.latitude, location.longitude);
 
       _updateMarkersAndCircles();
-      getNearestUsers(_userController.user.value?.id, _radius);
+      getNearestUsers(_radius);
 
       if (_controller != null && !_isMapInitialized) {
         _controller!.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: _currentPosition!,
-              zoom: 14.0,
+              zoom: 16.0,
+              tilt: _is3DView ? 0 : 45.0,
+              bearing: _is3DView ? 0 : 45.0,
             ),
           ),
         );
@@ -186,6 +188,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
       setState(() {
         _is3DView = !_is3DView;
       });
+    } else {
+      debugPrint("SOMETHING IS WRONG IN 3D VIEW");
     }
   }
 
@@ -767,7 +771,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
                               });
 
                               getNearestUsers(
-                                _userController.user.value?.id,
                                 value.toDouble(),
                               );
                             },
@@ -900,64 +903,23 @@ class _RequestVicinityState extends State<RequestVicinity> {
     }
   }
 
-  Future<void> getNearestUsers(int? id, double radius) async {
-    String endpoint = "https://api.picapool.com/v2/user/nearest";
-    String? at = await _authController.getAccessToken();
-
-    if (at == null || id == null) {
+  void getNearestUsers(double radius) async {
+    if (_currentPosition == null) {
       return;
     }
 
-    debugPrint(
-        'Fetching nearest users with coordinates : ${_currentPosition?.latitude}, ${_currentPosition?.longitude} with id: $id');
-    try {
-      final response = await http.post(Uri.parse(endpoint),
-          body: jsonEncode({
-            'dist': radius,
-            'id': id,
-          }),
-          headers: {
-            'content-type': 'application/json',
-            'Authorization': 'Bearer $at'
-          });
+    var nearestUsers = await _userController.getNearestUsers(
+      currentPosition: _currentPosition!,
+      radius: radius,
+    );
 
-      debugPrint("NEAREST USERS: ${response.body}");
-      if (response.statusCode < 300) {
-        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
-        if (!responseModel.success) {
-          Get.snackbar(
-            "No nearest user",
-            "Not able to find any user near to your vicinity.",
-          );
-          return;
-        }
-
-        var users = responseModel.data as List<dynamic>? ?? [];
-        List<NearUserModel> usersLocation = [];
-
-        for (var user in users) {
-          debugPrint("$user");
-          var nearUser = NearUserModel.fromJson(user);
-          usersLocation.add(nearUser);
-        }
-
-        _nearestUsers = usersLocation;
-
-        setState(() {
-          poolingUsers = users.length;
-        });
-
-        _addNearestUserMarkers();
-      } else if (response.statusCode == 401) {
-        debugPrint('Failed to load getNearestUsers - status code 401');
-      } else {
-        debugPrint('Failed to load getNearestUsers - status code not 200');
-        return;
-      }
-    } catch (err) {
-      debugPrint('Failed to fetch getNearestUsers - $err');
-      return;
+    if (nearestUsers != null) {
+      _nearestUsers = nearestUsers;
     }
+
+    _addNearestUserMarkers();
+    setState(() {
+      poolingUsers = _nearestUsers.length;
+    });
   }
 }

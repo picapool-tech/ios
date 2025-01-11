@@ -9,18 +9,21 @@ import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
+import 'package:picapool/core/env.dart';
 import 'package:picapool/firebase_options_new.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/network/connection_status_listener.dart';
 import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
+import 'package:picapool/screens/alerts/alertsPage.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
 import 'package:picapool/utils/routes.dart';
@@ -33,6 +36,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  Get.put(NetworkController.getInstance());
   Get.put(StorageController());
   Get.put(UserController());
   Get.put(AuthController());
@@ -46,9 +50,10 @@ void main() async {
   Get.put(ProductController());
   Get.put(BrandController());
   Get.put(FormController());
-  Get.put(NetworkController());
   Get.put(TagController());
   Get.put(CategoryController());
+
+  await Env.load();
 
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
@@ -79,7 +84,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    listenNotification();
+    ConnectionStatusListener.getInstance().initialize();
+    
     subscribeToTopics();
   }
 
@@ -116,37 +122,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  listenNotification() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Message received in foreground: ${message.notification?.title}');
-      // You can show a dialog, toast, or in-app UI here.
-      if (message.notification == null) {
-        return;
-      }
-
-      Get.snackbar(
-        message.notification!.title ?? 'Notification',
-        message.notification!.body ?? 'Notification',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        borderRadius: 10,
-        margin: const EdgeInsets.all(10),
-        icon: const Icon(Icons.notification_important, color: Colors.white),
-        duration: const Duration(seconds: 5),
-        onTap: (snack) {
-          if (kDebugMode) {
-            print('Notification clicked while in foreground: ${message.data}');
-          }
-        },
-      );
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification clicked while in background: ${message.data}');
-      // Handle navigation or other actions.
-    });
-  }
+  
 
   Widget _handleAuthState() {
     debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");

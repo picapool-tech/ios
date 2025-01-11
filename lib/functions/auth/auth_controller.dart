@@ -174,6 +174,7 @@ class AuthController extends GetxController {
       mobile: mobile,
     );
     await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
+    await _storageController.saveAccessToken(loginModel.accessToken);
     debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
 
     errorMessage.value = "";
@@ -304,6 +305,7 @@ class AuthController extends GetxController {
           auth.value!.copyWith(accessToken: newAccessToken);
           await loadAndSaveAuth(auth.value!);
           accessToken = newAccessToken;
+          await _storageController.saveAccessToken(accessToken);
           return newAccessToken;
         },
       );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_api.dart';
 import 'package:picapool/models/user_model.dart';
+import 'package:picapool/screens/vicinity/request_vicinity.dart';
 
 class UserController extends GetxController {
   final UserApi _userApi = UserApi();
@@ -112,6 +114,33 @@ class UserController extends GetxController {
           ),
         ],
       ),
+    );
+  }
+
+  Future<List<NearUserModel>?> getNearestUsers({
+    required LatLng currentPosition,
+    required double radius,
+  }) async {
+    isLoading.value = true;
+    update();
+
+    final result = await _userApi.getNearestUsers(
+      userId: user.value!.id,
+      currentPosition: currentPosition,
+      radius: radius,
+    );
+
+    isLoading.value = false;
+    update();
+
+    return await result.fold(
+      (error) {
+        showErrorDialog(error.message);
+        return null;
+      },
+      (users) {
+        return users;
+      },
     );
   }
 }

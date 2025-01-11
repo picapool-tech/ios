@@ -27,7 +27,7 @@ class _PoolingHistoryState extends State<PoolingHistory> {
   @override
   void initState() {
     super.initState();
-    _offersController.getAllUsersOffer();
+    _offersController.getAllUserCreatedOffer();
     _searchController.addListener(searchStarted);
   }
 

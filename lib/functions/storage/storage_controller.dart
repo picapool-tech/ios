@@ -32,6 +32,7 @@ class StorageController extends GetxController {
     debugPrint("Saving auth : ${auth.toJson()}");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String authData = jsonEncode(auth.toJson());
+    await loadAuth();
     await prefs.setString('auth', authData);
   }
 
@@ -58,6 +59,7 @@ class StorageController extends GetxController {
     debugPrint("Saving user: ${user.toJson()}");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userData = jsonEncode(user.toJson());
+    await loadUser();
     await prefs.setString('user', userData);
   }
 
@@ -80,13 +82,23 @@ class StorageController extends GetxController {
     await prefs.remove('user');
   }
 
+  Future<void> saveAccessToken(String accessToken) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('accessToken', accessToken);
+  }
+
   Future<String?> getAccessToken() async {
-    var storageAuth = await loadAuth();
-    if (storageAuth != null && storageAuth.accessToken != null) {
-      if (Jwt.isExpired(storageAuth.accessToken!)) {
+    await loadAuth();
+    debugPrint("Storage Auth: ${auth.toJson()}");
+    if (auth.value != null && auth.value!.accessToken != null) {
+      if (Jwt.isExpired(auth.value!.accessToken!)) {
+        if (user.value == null) {
+          debugPrint("User is null");
+          return null;
+        }
         final result = await _authApi.updateAccessToken(
-          accessToken: storageAuth.accessToken!,
-          refreshToken: storageAuth.refreshToken!,
+          accessToken: auth.value!.accessToken!,
+          refreshToken: auth.value!.refreshToken!,
           userId: user.value!.id,
         );
         return result.fold(
@@ -99,14 +111,17 @@ class StorageController extends GetxController {
             return null;
           },
           (newAccessToken) async {
-            var newAuth = storageAuth.copyWith(accessToken: newAccessToken);
+            var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
             await saveAuth(newAuth);
-            auth.value = storageAuth;
+            await saveAccessToken(newAccessToken);
+            auth.value = newAuth;
+            auth.refresh();
+            update();
             return newAccessToken;
           },
         );
       }
-      return storageAuth.accessToken;
+      return auth.value!.accessToken!;
     }
     return null;
   }

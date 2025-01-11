@@ -1,40 +1,85 @@
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:fpdart/fpdart.dart';
+import 'package:get/get.dart';
+import 'package:picapool/controllers/network_controller.dart';
+import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env_constants.dart';
+import 'package:picapool/functions/network/connection_status_listener.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:http/http.dart' as http;
 
 enum RequestMethod {
   post,
-  get,
+  getRequest,
   patch,
   delete,
 }
 
 class PicapoolApi {
   static String baseUrl = APIConstants.apiUrl;
+  final StorageController _storageController = Get.find<StorageController>();
+  final NetworkController _networkController = Get.find<NetworkController>();
 
-  Future<ResponseModel?> makeRequest({
+  FutureEither<ResponseModel> makeRequest({
     required String enpoint,
     required RequestMethod method,
     bool requireAccessToken = true,
     Object? body,
+    Map<String, String>? additionalHeaders,
   }) async {
-    try {      var accessToken = "";
+    try {
+      if (!await ConnectionStatusListener.getInstance().checkConnection()) {
+        return left(
+          Failure(
+            message: "No Internet Connection",
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
+
+      String? accessToken;
+      if (requireAccessToken) {
+        log("Getting Access Token from Storage", name: "Network Request");
+        accessToken = await _storageController.getAccessToken();
+      }
+
+      log("ACCESS TOKEN : $accessToken", name: 'Network Request');
+
+      if (requireAccessToken && accessToken == null) {
+        return left(
+          Failure(
+            message: "No Access Token",
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
+
+      log("Making request to $baseUrl$enpoint", name: "Network Request");
 
       late http.Response response;
-      var headers = (requireAccessToken)
-          ? {'Authorization': 'Bearer $accessToken'}
+      Map<String, String>? headers = (requireAccessToken)
+          ? {
+              'Authorization': 'Bearer ${accessToken!}',
+              ...additionalHeaders ?? {},
+            }
           : null;
 
       var requestBody = (body != null) ? jsonEncode(body) : null;
 
+      log("Request Body: ${requestBody ?? "Empty"}", name: "Network Request");
+
       switch (method) {
         case RequestMethod.post:
-          response = await http.post(Uri.parse("$baseUrl$enpoint"),
-              headers: headers, body: requestBody);
+          response = await http.post(
+            Uri.parse("$baseUrl$enpoint"),
+            headers: headers,
+            body: requestBody,
+          );
           break;
-        case RequestMethod.get:
+        case RequestMethod.getRequest:
           response = await http.get(
             Uri.parse("$baseUrl$enpoint"),
             headers: headers,
@@ -56,15 +101,29 @@ class PicapoolApi {
           break;
       }
 
+      log("Response: ${response.body}", name: "Network Request");
+
       if (response.statusCode > 500) {
-        return null;
+        return left(
+          Failure(message: "Server Error", stackTrace: StackTrace.current),
+        );
+      }
+
+      if (response.statusCode < 200 && response.statusCode > 300) {
+        return left(
+          Failure(message: "Server Error", stackTrace: StackTrace.current),
+        );
       }
 
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      return responseModel;
+      return right(responseModel);
     } catch (e) {
       // todo all the errors here
+      log("ERROR ON NETWORK REQUEST: $e with Stacktrace : ${StackTrace.current}",
+          name: "Network Request");
+      return left(
+        Failure(message: "$e", stackTrace: StackTrace.current),
+      );
     }
-    return null;
   }
 }

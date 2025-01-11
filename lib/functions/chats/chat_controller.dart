@@ -71,6 +71,18 @@ class ChatController extends GetxController {
       },
       (messagesList) {
         messages.value = messagesList;
+        Future.delayed(
+          const Duration(milliseconds: 500),
+          () {
+            if (scrollController.hasClients) {
+              scrollController.animateTo(
+                scrollController.position.maxScrollExtent + 100,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          },
+        );
       },
     );
 

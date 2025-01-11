@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:picapool/core/api.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:http/http.dart' as http;
@@ -25,43 +26,83 @@ class ChatAndOfferModel {
 }
 
 class ChatApi {
+  final PicapoolApi _api = PicapoolApi();
+
   FutureEither<List<ChatAndOfferModel>> getChats({
     required String accessToken,
   }) async {
     try {
-      final response = await http
-          .get(Uri.parse('https://api.picapool.com/v2/user/chats'), headers: {
-        'Authorization': 'Bearer $accessToken',
-      });
-      debugPrint('getChats response: ${response.body}');
-      log('getChats response: ${response.body}');
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      if (responseModel.success) {
-        List<ChatAndOfferModel> chats = [];
-        var data = responseModel.data['Chats'];
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getUserChats,
+        method: RequestMethod.getRequest,
+        requireAccessToken: true,
+      );
 
-        for (var chat in data) {
-          debugPrint("chat: $chat");
-          var chatModel = Chat.fromJson(chat);
-          debugPrint("adding chatModel");
-          chats.add(
-            ChatAndOfferModel(
-              chat: chatModel,
-              offer: chatModel.offer,
-              liveOffer: chatModel.liveOffer,
+      return response.fold((error) {
+        debugPrint("Error on getChats: $error");
+        return left(error);
+      }, (responseModel) {
+        if (responseModel.success) {
+          List<ChatAndOfferModel> chats = [];
+          var data = responseModel.data['Chats'];
+
+          for (var chat in data) {
+            debugPrint("chat: $chat");
+            var chatModel = Chat.fromJson(chat);
+            debugPrint("adding chatModel");
+            chats.add(
+              ChatAndOfferModel(
+                chat: chatModel,
+                offer: chatModel.offer,
+                liveOffer: chatModel.liveOffer,
+              ),
+            );
+            debugPrint("Chat added...");
+          }
+          return right(chats);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
             ),
           );
-          debugPrint("Chat added...");
         }
-        return right(chats);
-      } else {
-        return left(
-          Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      });
+
+      // final response = await http
+      //     .get(Uri.parse('https://api.picapool.com/v2/user/chats'), headers: {
+      //   'Authorization': 'Bearer $accessToken',
+      // });
+      // debugPrint('getChats response: ${response.body}');
+      // log('getChats response: ${response.body}');
+      // var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      // if (responseModel.success) {
+      //   List<ChatAndOfferModel> chats = [];
+      //   var data = responseModel.data['Chats'];
+
+      //   for (var chat in data) {
+      //     debugPrint("chat: $chat");
+      //     var chatModel = Chat.fromJson(chat);
+      //     debugPrint("adding chatModel");
+      //     chats.add(
+      //       ChatAndOfferModel(
+      //         chat: chatModel,
+      //         offer: chatModel.offer,
+      //         liveOffer: chatModel.liveOffer,
+      //       ),
+      //     );
+      //     debugPrint("Chat added...");
+      //   }
+      //   return right(chats);
+      // } else {
+      //   return left(
+      //     Failure(
+      //       message: responseModel.message,
+      //       stackTrace: StackTrace.current,
+      //     ),
+      //   );
+      // }
     } catch (e) {
       debugPrint(
           "Error on getChats: $e with errorStack : \n ${StackTrace.current}");

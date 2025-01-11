@@ -70,6 +70,9 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+      ),
       body: SafeArea(
         child: Stack(
           children: [
