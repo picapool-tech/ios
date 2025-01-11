@@ -6,11 +6,14 @@ import 'package:picapool/models/live_offer/create_live_offer_response.dart';
 import 'package:picapool/models/live_offer/get_all_live_offers.dart';
 import 'package:picapool/models/live_offer/get_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
+import 'package:picapool/models/live_offer/search_cabs_payload.dart';
+import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/services/live_offers/live_offers_service.dart';
 
 enum GetLiveOfferState { liveofferLoading, liveofferLoaded, liveofferCantLoad }
 enum GetAllLiveOfferState { allLiveOffersLoading, allLiveOffersLoaded, allLiveOffersCantLoad }
 enum CreateLiveOfferState { initial, creating, created, error }
+enum SearchLiveOfferState { initial, creating, created, error }
 // enum IndividualLiveOfferState { liveofferLoading, liveofferLoaded, liveofferCantLoad }
 
 class LiveOfferController extends GetxController {
@@ -24,7 +27,9 @@ class LiveOfferController extends GetxController {
   GetLiveOfferState liveofferState = GetLiveOfferState.liveofferLoading;
   GetAllLiveOfferState allLiveofferState = GetAllLiveOfferState.allLiveOffersLoaded;
   CreateLiveOfferState createLiveOfferState = CreateLiveOfferState.initial;
+  SearchLiveOfferState searchLiveOfferState = SearchLiveOfferState.initial;
   CreateLiveOfferResponse? createLiveOfferResponse;
+  List<SearchCabsResponse>? searchCabsList;
   // IndividualLiveOfferState individualLiveOfferState = IndividualLiveOfferState.liveofferLoading;
 
   /// Get liveoffer by ID
@@ -79,6 +84,21 @@ class LiveOfferController extends GetxController {
       update();
     } catch (e) {
       createLiveOfferState = CreateLiveOfferState.error;
+      update();
+    }
+  }
+  
+  // / Search among all live offer
+  Future<void> searchLiveOffer(SearchCabsPayload searchLiveOfferPayload) async {
+    try {
+      searchLiveOfferState = SearchLiveOfferState.creating;
+      update();
+      final response = await LiveOffersService.searchLiveOffer(searchLiveOfferPayload, accessToken ?? "");
+      searchCabsList = response;
+      searchLiveOfferState = SearchLiveOfferState.created;
+      update();
+    } catch (e) {
+      searchLiveOfferState = SearchLiveOfferState.error;
       update();
     }
   }
