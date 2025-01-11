@@ -6,7 +6,6 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
 class PublicProfile extends StatefulWidget {
@@ -28,6 +27,7 @@ class _PublicProfileState extends State<PublicProfile> {
   Future<void> createUser() async {
     final user = _userController.user.value;
     if (user == null) {
+      debugPrint('User is null');
       return;
     }
     user.username = _usernameController.text;
@@ -54,6 +54,8 @@ class _PublicProfileState extends State<PublicProfile> {
   void initState() {
     super.initState();
     _usernameController.addListener(_onUsernameChanged);
+    _usernameController.text = _userController.user.value?.username ?? '';
+    _bioController.text = _userController.user.value?.bio ?? '';
   }
 
   @override
@@ -187,14 +189,14 @@ class _PublicProfileState extends State<PublicProfile> {
                 onPressed: _isFinishButtonActive
                     ? () async {
                         await createUser();
-                        if (context.mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const NewBottomBar(),
-                            ),
-                          );
-                        }
+                        // if (context.mounted) {
+                        //   Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder: (context) => const NewBottomBar(),
+                        //     ),
+                        //   );
+                        // }
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
@@ -324,7 +326,10 @@ class _PublicProfileState extends State<PublicProfile> {
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
+    final pickedFile = await picker.pickImage(
+      source: source,
+      imageQuality: 10,
+    );
     if (pickedFile != null) {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,

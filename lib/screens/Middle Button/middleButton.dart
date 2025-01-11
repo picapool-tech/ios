@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
 class PoolOffersScreen extends StatefulWidget {
@@ -203,11 +204,12 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
           ],
         ),
       ),
-      bottomSheet: BottomSheet(
-          onClosing: () {},
-          showDragHandle: false,
-          constraints: const BoxConstraints(maxHeight: 320),
-          builder: (context) {
+      bottomSheet: DraggableScrollableSheet(
+          initialChildSize: 0.4,
+          minChildSize: 0.2,
+          maxChildSize: 0.8,
+          expand: false,
+          builder: (context, scrollController) {
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -226,7 +228,6 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
               ),
               padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Gray container with divider and prefix icon
@@ -290,49 +291,44 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                           }
 
                           return ListView.builder(
+                            controller: scrollController,
                             itemCount: controller.nearestOffers.length,
                             itemBuilder: (context, index) {
-                              var offer = controller.allOffers[index];
+                              var offer = controller.nearestOffers[index];
 
-                              return OfferContainer(
-                                title: offer.name,
-                                subtitle: offer.desc,
-                                timeAgo: DateTimeHelper.timeAgoSince(
-                                    offer.createdAt.toIso8601String()),
-                                countdown: DateTimeHelper.formatDateTimeExpiry(
-                                  offer.expiryAt,
+                              return InkWell(
+                                onTap: () {
+                                  // Navigate to offer details
+                                  if (offer.chats?.first == null) {
+                                    Get.snackbar(
+                                      "No chat found",
+                                      "Not chat found for offer ${offer.name}",
+                                    );
+                                    return;
+                                  }
+                                  Get.to(
+                                    () => ChatPage(
+                                      chat: offer.chats!.first,
+                                      chatTitle: offer.name,
+                                      offer: offer,
+                                    ),
+                                  );
+                                },
+                                child: OfferContainer(
+                                  title: offer.name,
+                                  subtitle: offer.desc,
+                                  timeAgo: DateTimeHelper.timeAgoSince(
+                                      offer.createdAt.toIso8601String()),
+                                  countdown:
+                                      DateTimeHelper.formatDateTimeExpiry(
+                                    offer.expiryAt,
+                                  ),
+                                  icon: Icons.checkroom,
                                 ),
-                                icon: Icons.checkroom,
                               );
                             },
                           );
                         }),
-
-                    // ListView(
-                    //   children: const [
-                    //     OfferContainer(
-                    //       title: 'LEVI sale',
-                    //       subtitle: 'Clothes and fabric',
-                    //       timeAgo: '5 mins ago',
-                    //       countdown: '59:59',
-                    //       icon: Icons.checkroom,
-                    //     ),
-                    //     OfferContainer(
-                    //       title: 'KFC offer',
-                    //       subtitle: 'Food and beverage',
-                    //       timeAgo: '5 mins ago',
-                    //       countdown: '59:59',
-                    //       icon: Icons.fastfood,
-                    //     ),
-                    //     OfferContainer(
-                    //       title: 'St. Joseph turf',
-                    //       subtitle: 'Sport and fitness',
-                    //       timeAgo: '10 mins ago',
-                    //       countdown: '30:15',
-                    //       icon: Icons.sports_soccer,
-                    //     ),
-                    //   ],
-                    // ),
                   ),
                 ],
               ),

@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/models/product_grid_model.dart';
-import 'package:picapool/screens/location_fetch_screen.dart';
-import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
-import 'package:picapool/widgets/bottom_navbar/bottom_nav_bar_products.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
 
 class ProductListsPage extends StatefulWidget {
@@ -59,7 +55,7 @@ class ProductListsPageState extends State<ProductListsPage> {
     });
   }
 
-  TextEditingController _productSearchController = TextEditingController();
+  final TextEditingController _productSearchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

@@ -4,7 +4,6 @@ import 'dart:convert';
 
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/create_live_offer_response.dart';
-import 'package:picapool/models/live_offer/get_all_live_offers.dart';
 import 'package:picapool/models/live_offer/get_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';

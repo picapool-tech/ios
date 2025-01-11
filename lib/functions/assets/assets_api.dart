@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
@@ -6,6 +7,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:picapool/models/response_model.dart';
+import 'package:picapool/utils/image_utils.dart';
 import '../../core/core.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,8 +21,16 @@ class AssetsApi {
       return left(Failure(
           message: "No image selected", stackTrace: StackTrace.current));
     }
+
     try {
-      debugPrint("Uploading image to server at : $accessToken");
+      var tempFile = File(pickedFile.path);
+      if (tempFile.lengthSync() > 1000000) {
+        tempFile = ImageUtils.compressAndResizeImage(tempFile);
+        pickedFile = XFile(tempFile.path);
+      }
+
+      debugPrint(
+          "Uploading image to server at : $accessToken and file size: ${tempFile.lengthSync()}");
       Uri endpoint = Uri.parse('https://api.picapool.com/v2/s3/upload');
 
       MediaType? contentType;
@@ -51,7 +61,7 @@ class AssetsApi {
       });
 
       var response = await request.send();
-
+      // log("Uploading image to server response : ${await response.stream.bytesToString()}");
       var responseModel = ResponseModel.fromJson(
           jsonDecode(await response.stream.bytesToString()));
 

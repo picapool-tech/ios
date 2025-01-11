@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/models/button_model.dart';
 import 'package:picapool/screens/Products/products_homePage.dart';
-import 'package:picapool/screens/cabs/share_cab.dart';
 import 'package:picapool/screens/cabs/share_cab_page.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/widgets/home/bottom_modal_sheet.dart';
 import 'package:picapool/widgets/home/carousel.dart';
+import 'package:picapool/widgets/home/coming_soon.dart';
 import 'package:picapool/widgets/home/divider.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 
@@ -78,7 +79,9 @@ class _DownSheetState extends State<DownSheet> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
+    NotificationService().retrieveToken().then((toen) {
+      debugPrint("GET FCM OTKEN: $toen");
+    });
     return Container(
       alignment: Alignment.topCenter,
       padding: const EdgeInsets.fromLTRB(24, 2, 24, 0),
@@ -188,7 +191,9 @@ class _DownSheetState extends State<DownSheet> {
                         .toLowerCase()
                         .trim()
                         .contains(widget.searchQuery.toLowerCase().trim()))
-                    .map((brand) => _buildBrandItem(brand))
+                    .map(
+                      (brand) => _buildBrandItem(brand),
+                    )
                     .toList(),
               ),
             ),
@@ -261,8 +266,16 @@ class _DownSheetState extends State<DownSheet> {
 Widget _buildBrandItem(Map<String, String> brand) {
   return GestureDetector(
     onTap: () {
-      if (brand['name'] == "Electronics") {
-        Get.to(() => const ProductsHomepage(currentIndex: 0));
+      if (brand['name'] == "Food") {
+        Get.to(
+          () => const ProductsHomepage(currentIndex: 0),
+        );
+      } else {
+        Get.to(
+          () => ComingSoon(
+            title: brand['name']!,
+          ),
+        );
       }
     },
     child: Container(

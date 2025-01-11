@@ -8,11 +8,11 @@ import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
-import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/user_model.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage_m.dart';
+import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/pooling_history.dart';
+import 'package:picapool/utils/permission_util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -67,25 +67,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: () {
-                      // joinnig chat
-                      // if (kDebugMode) {
-                        // Get.to(
-                        //   ChatPage(
-                        //     chat: Chat(
-                        //       id: 15,
-                        //       updatedAt: DateTime.now(),
-                        //       isMain: true,
-                        //     ),
-                        //   ),
-                        // );
-                      // }
+                    onPressed: () async {
+                      var url = Uri.parse("https://wa.me/917224052216");
+                      if (!await launchUrl(url)) {
+                        debugPrint("Could not launch $url");
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
-                      backgroundColor: Colors.grey,
+                      backgroundColor: Colors.orange,
                     ),
                     child: const Text(
                       "Help",
@@ -142,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         Text(
-                          user.auth?.mobile ?? "",
+                          _authController.auth.value?.mobile ?? "",
                           style: const TextStyle(
                             fontFamily: "MontserratR",
                             fontSize: 14,
@@ -194,82 +186,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Color(0xffF0F0F0),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.orange, width: 1.5),
-                          borderRadius: BorderRadius.circular(20),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border:
+                                Border.all(color: Colors.orange, width: 1.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Bell.png",
+                                title: 'Notification Preferences',
+                                onTap: () => Get.to(
+                                    () => const NotificationPreferences()),
+                              ),
+                              _buildOptionTile(context,
+                                  imagePath: "assets/icons/History.png",
+                                  title: 'Pooling History', onTap: () {
+                                Get.to(() => const PoolingHistory());
+                              }),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Letter Opened.png",
+                                title: 'Feedback Form',
+                                onTap: () {
+                                  _showFeedbackModal(context);
+                                },
+                              ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Frame 157.png",
+                                title: 'Permissions',
+                                onTap: () {
+                                  _showPermissionsModal(
+                                      context); // Open permissions modal
+                                },
+                              ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/File Text.png",
+                                title: 'Privacy Policy',
+                                onTap: () async {
+                                  // Open privacy policy page
+                                  final Uri url = Uri.parse(
+                                    'https://www.picapool.com/privacy-policy',
+                                  );
+                                  debugPrint(url.toString());
+                                  if (!await launchUrl(url)) {
+                                    debugPrint("Could not launch $url");
+                                  }
+                                },
+                              ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Group 59.png",
+                                title: 'App Guide',
+                                isDisabled: true,
+                              ),
+                              if (kDebugMode)
+                                _buildOptionTile(
+                                  context,
+                                  imagePath: "assets/icons/Group 59.png",
+                                  title: 'Delete Account',
+                                  onTap: () {},
+                                ),
+                              _buildOptionTile(
+                                context,
+                                imagePath: "assets/icons/Frame 59.png",
+                                title: 'Logout',
+                                onTap: () {
+                                  _showLogoutModal(context);
+                                  // setState(() {});
+                                },
+                                isLast: true,
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Bell.png",
-                              title: 'Notification Preferences',
-                            ),
-                            _buildOptionTile(context,
-                                imagePath: "assets/icons/History.png",
-                                title: 'Pooling History', onTap: () {
-                              Get.to(() => const PoolingHistory());
-                            }),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Letter Opened.png",
-                              title: 'Feedback Form',
-                              onTap: () {
-                                _showFeedbackModal(context);
-                              },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Frame 157.png",
-                              title: 'Permissions',
-                              onTap: () {
-                                _showPermissionsModal(
-                                    context); // Open permissions modal
-                              },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/File Text.png",
-                              title: 'Privacy Policy',
-                              onTap: () async {
-                                // Open privacy policy page
-                                final Uri url = Uri.parse(
-                                  'https://www.picapool.com/privacy-policy',
-                                );
-                                debugPrint(url.toString());
-                                if (!await launchUrl(url)) {
-                                  debugPrint("Could not launch $url");
-                                }
-                              },
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Group 59.png",
-                              title: 'App Guide',
-                              isDisabled: true,
-                            ),
-                            _buildOptionTile(
-                              context,
-                              imagePath: "assets/icons/Frame 59.png",
-                              title: 'Logout',
-                              onTap: () {
-                                _showLogoutModal(context);
-                                // setState(() {});
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -286,6 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     void Function()? onTap,
     bool isDisabled = false,
+    bool isLast = false,
   }) {
     return Column(
       children: [
@@ -308,83 +315,142 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           onTap: (!isDisabled) ? onTap : null,
         ),
-        const Divider(
-          color: Colors.grey, // Grey color divider
-          thickness: 0.5,
-          height: 2,
-        ),
+        if (!isLast)
+          const Divider(
+            color: Colors.grey, // Grey color divider
+            thickness: 0.5,
+            height: 2,
+          ),
       ],
     );
   }
 
-  void _showPermissionsModal(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      isScrollControlled: true, // This makes modal full screen
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
+  void _showPermissionsModal(BuildContext context) async {
+    var permissionUtil = PermissionUtil();
+
+    if (context.mounted) {
+      showModalBottomSheet(
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true, // This makes modal full screen
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) {
+          var locationEnabled = permissionUtil.isLocationPermissionGranted();
+          var notificationEnabled =
+              permissionUtil.isNotificationPermissionGranted();
+          return StatefulBuilder(builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Edit your Preferences!",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "MontserratSB",
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Enable or Disable your settings",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontFamily: "MontserratR",
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFFF7F3),
+                      border: Border.all(color: Colors.orange, width: 1.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        FutureBuilder<bool>(
+                            future: locationEnabled,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return InkWell(
+                                  onTap: () async {
+                                    if (snapshot.data ?? false) {
+                                      return;
+                                    } else {
+                                      await permissionUtil
+                                          .requestLocationPermission();
+                                      locationEnabled = permissionUtil
+                                          .isLocationPermissionGranted();
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: _buildPermissionOption(
+                                    Icons.location_on,
+                                    "Location Access",
+                                    isEnabled: snapshot.data!,
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            }),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                            future: notificationEnabled,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return InkWell(
+                                  onTap: () async {
+                                    if (snapshot.data ?? false) {
+                                      return;
+                                    } else {
+                                      await permissionUtil
+                                          .requestNotificationPermission();
+                                      locationEnabled = permissionUtil
+                                          .isNotificationPermissionGranted();
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: _buildPermissionOption(
+                                    Icons.notifications,
+                                    "Notifications",
+                                    isEnabled: snapshot.data!,
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            })
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Edit your Preferences!",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "MontserratSB",
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Enable or Disable your settings",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  fontFamily: "MontserratR",
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xffFFF7F3),
-                  border: Border.all(color: Colors.orange, width: 1.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    _buildPermissionOption(
-                        Icons.location_on, "Location Access"),
-                    const Divider(thickness: 1.5),
-                    _buildPermissionOption(
-                        Icons.notifications, "Notifications"),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
+            );
+          });
+        },
+      );
+    }
   }
 
-  Widget _buildPermissionOption(IconData icon, String title) {
+  Widget _buildPermissionOption(IconData icon, String title,
+      {bool isEnabled = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -401,7 +467,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-        const Icon(Icons.check_circle, color: Colors.green, size: 28),
+        Icon(
+          Icons.check_circle,
+          color: (isEnabled) ? Colors.green : Colors.grey,
+          size: 28,
+        ),
       ],
     );
   }
@@ -411,7 +481,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
       requestFullMetadata: false,
-      imageQuality: 70,
+      imageQuality: 10,
     );
     debugPrint("Image has been picked : ${image?.name}");
     return image;
@@ -421,7 +491,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     debugPrint(user.toJson().toString());
     _usernameController.text = user.username ?? "";
     _nameController.text = user.name ?? "";
-    _phoneController.text = user.auth?.mobile ?? "";
+    _phoneController.text = _authController.auth.value?.mobile ?? "";
     XFile? pickedImage;
 
     await showModalBottomSheet(
@@ -522,7 +592,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Icons.info, "Username", _usernameController),
                             const Divider(thickness: 1.5),
                             _buildTextField(
-                                Icons.phone, "Phone", _phoneController),
+                              Icons.phone,
+                              "Phone",
+                              _phoneController,
+                              disabled:
+                                  _authController.auth.value?.mobile != null,
+                            ),
                             // const Divider(thickness: 1.5),
                             // _buildTextField(
                             //     Icons.email, "Email", "noemail@gmail.com"),
@@ -578,7 +653,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               setState(() {});
                             }
                           } else {
-                            debugPrint("Update user value : ${updatedValues}");
+                            debugPrint("Update user value : $updatedValues");
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -639,7 +714,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildTextField(
-      IconData icon, String label, TextEditingController controller) {
+      IconData icon, String label, TextEditingController controller,
+      {bool disabled = false}) {
     return TextField(
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.grey),
@@ -647,6 +723,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: InputBorder.none, // No border since the container has a border
       ),
       controller: controller,
+      enabled: !disabled,
     );
   }
 

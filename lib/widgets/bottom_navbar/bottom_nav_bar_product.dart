@@ -66,8 +66,8 @@ class _BottomBarState extends State<BottomBarProduct> {
               child: Container(
                 width: width,
                 height: 65,
-                decoration: BoxDecoration(
-                    color: const Color(0xffffffff),
+                decoration: const BoxDecoration(
+                    color: Color(0xffffffff),
                     ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -80,7 +80,7 @@ class _BottomBarState extends State<BottomBarProduct> {
             offset: const Offset(0, -32),
             child: InkWell(
               onTap: () {
-                Get.to(() => CategorySelectionPage());
+                Get.to(() => const CategorySelectionPage());
               },
               highlightColor: Colors.transparent,
               splashColor: Colors.transparent,

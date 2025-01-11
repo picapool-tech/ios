@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -23,52 +22,50 @@ class ImagePickerWidget extends StatefulWidget {
 
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   final FormController formController = Get.find<FormController>();
-  List<File> _imageFiles = []; // Store cropped images
-  Set<String> _uploadedImageUrls = {}; // Use Set to prevent duplicates
+  final List<File> _imageFiles = []; // Store cropped images
+  final Set<String> _uploadedImageUrls = {}; // Use Set to prevent duplicates
 
   Future<void> pickImage(List<String> imageURLs) async {
     final ImagePicker picker = ImagePicker();
-    final List<XFile>? images = await picker.pickMultiImage();
+    final List<XFile> images = await picker.pickMultiImage();
     
-    if (images != null) {
-      List<File> newCroppedImages = [];
-      
-      for (var image in images) {
-        File? croppedImage = await _cropImage(File(image.path));
-        if (croppedImage != null) {
-          newCroppedImages.add(croppedImage);
-        }
-      }
-      
-      // Upload images and get URLs
-      if (newCroppedImages.isNotEmpty) {
-        try {
-          List<String> urls = await formController.uploadProductImages(newCroppedImages);
-          
-          // Add only unique URLs
-          for (String url in urls) {
-            if (!_uploadedImageUrls.contains(url)) {
-              _uploadedImageUrls.add(url);
-              widget.imageFiles.add(url);
-            }
-          }
-          
-          // Notify parent widget about new URLs
-          widget.onImagesUploaded(widget.imageFiles.toList());
-          
-          setState(() {}); // Refresh UI
-        } catch (e) {
-          debugPrint("Error uploading images: $e");
-          Get.snackbar(
-            'Error',
-            'Failed to upload images',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        }
+    List<File> newCroppedImages = [];
+    
+    for (var image in images) {
+      File? croppedImage = await _cropImage(File(image.path));
+      if (croppedImage != null) {
+        newCroppedImages.add(croppedImage);
       }
     }
-  }
+    
+    // Upload images and get URLs
+    if (newCroppedImages.isNotEmpty) {
+      try {
+        List<String> urls = await formController.uploadProductImages(newCroppedImages);
+        
+        // Add only unique URLs
+        for (String url in urls) {
+          if (!_uploadedImageUrls.contains(url)) {
+            _uploadedImageUrls.add(url);
+            widget.imageFiles.add(url);
+          }
+        }
+        
+        // Notify parent widget about new URLs
+        widget.onImagesUploaded(widget.imageFiles.toList());
+        
+        setState(() {}); // Refresh UI
+      } catch (e) {
+        debugPrint("Error uploading images: $e");
+        Get.snackbar(
+          'Error',
+          'Failed to upload images',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
+    }
 
   Future<File?> _cropImage(File imageFile) async {
     return await ImageCropper().cropImage(

@@ -1,45 +1,7 @@
-// import 'dart:io';
-// import 'package:flutter/material.dart';
-// import 'package:image_cropper/image_cropper.dart';
-// import 'package:image_picker/image_picker.dart';
-
-// int selectedConditionIndex = -1; // To keep track of selected condition
-
-// Future<void> pickImage(List<File> imageFiles) async {
-//   final ImagePicker picker = ImagePicker();
-//   final List<XFile>? images = await picker.pickMultiImage();
-//   if (images != null) {
-//     for (var image in images) {
-//       File? croppedImage = await _cropImage(File(image.path));
-//       if (croppedImage != null) {
-//           imageFiles.add(croppedImage);
-//       }
-//     }
-//   }
-// }
-
-// Future<File?> _cropImage(File imageFile) async {
-//   return await ImageCropper().cropImage(
-//     sourcePath: imageFile.path,
-//     aspectRatioPresets: [
-//       CropAspectRatioPreset.square,
-//     ],
-//     androidUiSettings: const AndroidUiSettings(
-//       toolbarTitle: 'Crop Image',
-//       toolbarColor: Colors.orange,
-//       toolbarWidgetColor: Colors.white,
-//       initAspectRatio: CropAspectRatioPreset.square,
-//       lockAspectRatio: true,
-//     ),
-//     iosUiSettings: const IOSUiSettings(
-//       minimumAspectRatio: 1.0,
-//     ),
-//   );
-// }
-
 import 'dart:io';
-
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
+
 import 'package:path_provider/path_provider.dart';
 
 class ImageUtils {
@@ -52,5 +14,39 @@ class ImageUtils {
     await file.writeAsBytes(
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
     return file;
+  }
+
+  static File compressAndResizeImage(File file) {
+    img.Image? image = img.decodeImage(file.readAsBytesSync());
+
+    // Resize the image to have the longer side be 800 pixels
+    int width;
+    int height;
+
+    if (image == null) {
+      throw Exception('Invalid image');
+    }
+
+    if (image.width > image.height) {
+      width = 800;
+      height = (image.height / image.width * 800).round();
+    } else {
+      height = 800;
+      width = (image.width / image.height * 800).round();
+    }
+
+    img.Image resizedImage =
+        img.copyResize(image, width: width, height: height);
+
+    // Compress the image with JPEG format
+    List<int> compressedBytes =
+        img.encodeJpg(resizedImage, quality: 85); // Adjust quality as needed
+
+    // Save the compressed image to a file
+    File compressedFile =
+        File(file.path.replaceFirst('.jpg', '_compressed.jpg'));
+    compressedFile.writeAsBytesSync(compressedBytes);
+
+    return compressedFile;
   }
 }

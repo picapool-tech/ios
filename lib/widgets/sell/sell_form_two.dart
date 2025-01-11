@@ -109,7 +109,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StepIndicator(currentStep: 3),
+                    const StepIndicator(currentStep: 3),
                     const SizedBox(height: 20),
                     const Text(
                       "Time Held",
@@ -124,7 +124,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
                       visible: !isLessThanMonth,
                       child: Row(
                         children: [
-                          Container(
+                          SizedBox(
                             width: 80,
                             child: buildSmallTextField(
                               controller: yearsController,
@@ -142,7 +142,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
                             ),
                           ),
                           const SizedBox(width: 20),
-                          Container(
+                          SizedBox(
                             width: 80,
                             child: buildSmallTextField(
                               controller: monthsController,

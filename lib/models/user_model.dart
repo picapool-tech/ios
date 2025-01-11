@@ -1,7 +1,6 @@
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/feedback_model.dart';
-import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/reaction_model.dart';

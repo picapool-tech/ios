@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class SelectedProductPage extends StatefulWidget {
-  const SelectedProductPage({super.key});
+  final Map<String, String> product;
+
+  const SelectedProductPage({
+    super.key,
+    required this.product,
+  });
 
   @override
   _SelectedProductPageState createState() => _SelectedProductPageState();
@@ -26,13 +31,13 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-        title: Text(
-          'Products',
+        title: const Text(
+          'Offer',
           style: TextStyle(
             color: Colors.black,
             fontFamily: 'MontserratM',
@@ -40,11 +45,13 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
           ),
         ),
         centerTitle: false,
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
-              backgroundImage: AssetImage('assets/avatar.jpg'), // Replace with your image asset path
+              backgroundImage: AssetImage(
+                'assets/avatar.jpg',
+              ), // Replace with your image asset path
             ),
           ),
         ],
@@ -61,9 +68,9 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: TextField(
+              child: const TextField(
                 decoration: InputDecoration(
-                  hintText: 'Find "playstation" products',
+                  hintText: 'Find "dominos" offer',
                   hintStyle: TextStyle(
                     color: Color(0xff000000),
                     fontFamily: "MontserratR",
@@ -75,23 +82,24 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              'Apple iPad (10th Generation): with A14 Bionic chip, 27.69 cm (10.9")',
-              style: TextStyle(
+              widget.product['title'] ?? "Product Title",
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 fontFamily: "MontserratM",
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: Column(
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1),
+                      border: Border.all(
+                          color: Colors.grey.withOpacity(0.5), width: 1),
                     ),
                     child: CarouselSlider(
                       options: CarouselOptions(
@@ -105,16 +113,19 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                           });
                         },
                       ),
-                      items: imgList
-                          .map((item) => ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.asset(
-                                  item,
-                                  fit: BoxFit.contain,
-                                  width: 1000,
-                                ),
-                              ))
-                          .toList(),
+                      items: [
+                        Image.asset(
+                          width: double.infinity,
+                          widget.product['image'] ??
+                              'assets/images/Controller.png',
+                          fit: BoxFit.cover,
+                        )
+                      ],
+                      // .map((item) => ClipRRect(
+                      //       borderRadius: BorderRadius.circular(10),
+                      //       child: ,
+                      //     ))
+                      // .toList(),
                     ),
                   ),
                   Row(
@@ -124,12 +135,13 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                       return Container(
                         width: 8.0,
                         height: 8.0,
-                        margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 2.0),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _current == index
-                              ? Color.fromRGBO(0, 0, 0, 0.9)
-                              : Color.fromRGBO(0, 0, 0, 0.4),
+                              ? const Color.fromRGBO(0, 0, 0, 0.9)
+                              : const Color.fromRGBO(0, 0, 0, 0.4),
                         ),
                       );
                     }).toList(),
@@ -137,18 +149,18 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              'MRP : Rs. 55,000',
-              style: TextStyle(
+              'MRP : ${widget.product['price'] ?? "0"}',
+              style: const TextStyle(
                 fontFamily: "MontserratM",
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Colors.orange,
               ),
             ),
-            SizedBox(height: 10),
-            Text(
+            const SizedBox(height: 10),
+            const Text(
               'Description',
               style: TextStyle(
                 fontFamily: "MontserratM",
@@ -157,25 +169,25 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             Text(
-              'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina ...',
-              style: TextStyle(
+              widget.product['description'] ?? "Product Description",
+              style: const TextStyle(
                 fontSize: 14,
                 fontFamily: "MontserratR",
                 color: Colors.black,
               ),
             ),
-            Text(
-              'Read more',
-              style: TextStyle(
-                fontSize: 14,
-                fontFamily: "MontserratM",
-                color: Colors.orange,
-              ),
-            ),
-            SizedBox(height: 20),
-            Text(
+            // const Text(
+            //   'Read more',
+            //   style: TextStyle(
+            //     fontSize: 14,
+            //     fontFamily: "MontserratM",
+            //     color: Colors.orange,
+            //   ),
+            // ),
+            const SizedBox(height: 20),
+            const Text(
               'Details',
               style: TextStyle(
                 fontSize: 16,
@@ -184,56 +196,64 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Features',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratM",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'Built-In Microphone',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratR",
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratM",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'Headset Jack',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratR",
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            const SizedBox(height: 10),
+            Text(
+              widget.product['details'] ?? "Product Details",
+              style: const TextStyle(
+                fontSize: 14,
+                fontFamily: "MontserratM",
+                color: Colors.black,
+              ),
             ),
+            // const Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           'Features',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratM",
+            //             fontWeight: FontWeight.bold,
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //         Text(
+            //           'Built-In Microphone',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratR",
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           '',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratM",
+            //             fontWeight: FontWeight.bold,
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //         Text(
+            //           'Headset Jack',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratR",
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
@@ -244,13 +264,13 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             // Handle See Offers action
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xffFF8D41),
+            backgroundColor: const Color(0xffFF8D41),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
             ),
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          child: Text(
+          child: const Text(
             'See Offers',
             style: TextStyle(
               fontSize: 20,

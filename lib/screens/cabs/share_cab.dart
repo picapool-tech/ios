@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/utils/svg_icon.dart';
-import 'package:picapool/widgets/cab/cab_bottom_sheet.dart';
-import 'package:picapool/widgets/cab/cab_top_widget.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
 
 class CabShareScreen extends StatelessWidget {
@@ -11,8 +8,8 @@ class CabShareScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF0F0F0),
+    return const Scaffold(
+      backgroundColor: Color(0xffF0F0F0),
       body:CreateLiveOffer(),
     );
   }

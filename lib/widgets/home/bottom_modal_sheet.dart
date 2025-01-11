@@ -51,13 +51,13 @@ void showCustomModalBottomSheet(BuildContext context) {
     Item(
       imagePath: "assets/images/medical_help.png",
       text: "Medical help",
-      destinationPage: MedicalAttentionPage(),
+      destinationPage: const MedicalAttentionPage(),
       isDisabled: true,
     ),
     Item(
       imagePath: "assets/images/share_turf.png",
       text: "Share a turf",
-      destinationPage: TurfPage1(),
+      destinationPage: const TurfPage1(),
       isDisabled: true,
     ),
 

@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "760251999490",
     "project_id": "picapool-2ead6",
-    "storage_bucket": "picapool-2ead6.appspot.com"
+    "storage_bucket": "picapool-2ead6.firebasestorage.app"
   },
   "client": [
     {
@@ -22,11 +22,27 @@
           }
         },
         {
+          "client_id": "760251999490-dh08jgebv4hsaou7p1u8hl6vhcd81reg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.picapool",
+            "certificate_hash": "fc7249cc2ba3f2c67787ab8bab758aec21968f8a"
+          }
+        },
+        {
           "client_id": "760251999490-djulavgq26k7losrua7470jlfpps6b2b.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.picapool",
             "certificate_hash": "cd3fc8a74923b69ace2afbbc32b374d861f454e5"
+          }
+        },
+        {
+          "client_id": "760251999490-h18mvrj9l6f249iq69u56hf4kt106akg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.picapool",
+            "certificate_hash": "9575bceabcc91d238532d2af0f7f1cbcc85b1103"
           }
         },
         {
@@ -43,6 +59,14 @@
           "android_info": {
             "package_name": "com.picapool",
             "certificate_hash": "f77290c9b3753a2504e5591d7f6bfdb7aeabe519"
+          }
+        },
+        {
+          "client_id": "760251999490-oql33am3cr7n4q2sogv9tb5c9evprk60.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.picapool",
+            "certificate_hash": "7a90ee66ccc7e7ace16a49ef406b77e501e6930d"
           }
         },
         {
@@ -63,10 +87,10 @@
               "client_type": 3
             },
             {
-              "client_id": "760251999490-fek95rnb0a0i5ljnb9hkthlb7ubbpdg2.apps.googleusercontent.com",
+              "client_id": "760251999490-d9tdpimki92q54206q10daco3fahn4vi.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.picapool.RunnerTests"
+                "bundle_id": "com.frontend"
               }
             }
           ]

@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
@@ -52,7 +51,7 @@ class _ChatPageState extends State<ChatPage>
         widget.chat.id,
       );
 
-      chatController.getAllUsersInChat(widget.chat.id);
+      await chatController.getAllUsersInChat(widget.chat.id);
 
       _messageController.addListener(isActive);
 
@@ -165,7 +164,7 @@ class _ChatPageState extends State<ChatPage>
         title: Hero(
           tag: widget.chat.id,
           child: Text(
-            widget.chatTitle ?? "Chat",
+            widget.chatTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -335,7 +334,7 @@ class ChatInputField extends StatelessWidget {
                       child: TextField(
                         controller: controller,
                         decoration: const InputDecoration(
-                          hintText: '  Drag up to confirm',
+                          hintText: '  Your message...',
                           hintStyle: TextStyle(fontFamily: "MontserratM"),
                           border: InputBorder.none,
                         ),

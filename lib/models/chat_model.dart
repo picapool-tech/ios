@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:picapool/models/admin_model.dart';
 import 'package:picapool/models/live_offer_model.dart';
-import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/user_model.dart';
 

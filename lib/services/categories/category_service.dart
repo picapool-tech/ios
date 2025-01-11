@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:picapool/services/categories/entities/category_entity.dart';
-import 'package:picapool/services/products/entities/product_entity.dart';
 import 'package:picapool/utils/auth_utils.dart';
 import 'package:picapool/utils/constants.dart';
 import 'package:picapool/utils/http_helper.dart';

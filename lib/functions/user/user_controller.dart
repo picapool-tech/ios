@@ -68,10 +68,16 @@ class UserController extends GetxController {
     int id, {
     String? accessToken,
   }) async {
+    isLoading.value = true;
+    update();
+
     final at = await _storageController.getAccessToken();
 
     final result =
         await _userApi.getUser(userId: id, accessToken: accessToken ?? at!);
+
+    isLoading.value = false;
+    update();
 
     return await result.fold(
       (fail) async {

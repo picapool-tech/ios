@@ -98,17 +98,23 @@ class AuthController extends GetxController {
 
   Future<void> handleFCMToken() async {
     debugPrint("handle fcm token");
+    var fcm = await NotificationService().retrieveToken();
+    if (_userController.user.value == null || fcm == null) {
+      return;
+    }
     if (_userController.user.value!.fcmToken == null) {
-      var fcm = await NotificationService().retrieveToken();
-
-      if (fcm != null) {
-        debugPrint("FCM TOKEN : $fcm");
+      debugPrint("UPDATED FCM TOKEN");
+      await _userController.updateUser({
+        "fcmToken": fcm,
+      });
+    } else {
+      if (_userController.user.value!.fcmToken != fcm) {
+        debugPrint(
+            "UPDATED FROM PREV FCM TOKEN : ${_userController.user.value!.fcmToken} to $fcm");
         await _userController.updateUser({
           "fcmToken": fcm,
         });
       }
-    } else {
-      debugPrint("FCM TOKEN : ${_userController.user.value?.fcmToken}");
     }
   }
 
@@ -148,7 +154,7 @@ class AuthController extends GetxController {
         showErrorDialog(fail.message);
       },
       (loginModel) async {
-        await postLoginAction(loginModel);
+        await postLoginAction(loginModel, mobile: mobile);
         debugPrint('User from otp: ${_userController.user.value?.toJson()}');
       },
     );
@@ -157,7 +163,7 @@ class AuthController extends GetxController {
     update();
   }
 
-  Future<bool> postLoginAction(LoginModel loginModel) async {
+  Future<bool> postLoginAction(LoginModel loginModel, {String? mobile}) async {
     var accessToken =
         AccessTokenModel.fromJson(JwtDecoder.decode(loginModel.accessToken));
     debugPrint("After ACESSTOKEN MODEL : ${accessToken.toJson()}");
@@ -165,6 +171,7 @@ class AuthController extends GetxController {
       id: accessToken.authId,
       accessToken: loginModel.accessToken,
       refreshToken: loginModel.refreshToken,
+      mobile: mobile,
     );
     await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
     debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
@@ -174,8 +181,9 @@ class AuthController extends GetxController {
     return false;
   }
 
-  Future<void> sendOtp(String phoneNumber) async {
+  Future<bool> sendOtp(String phoneNumber) async {
     isLoading.value = true;
+    update();
 
     final String url = 'https://api.picapool.com/v2/otp?mobile=$phoneNumber';
 
@@ -190,19 +198,24 @@ class AuthController extends GetxController {
       debugPrint('Response: ${response.body}');
 
       if (response.statusCode == 201) {
-        Get.to(() => OtpScreen(phoneNumber: phoneNumber));
+        isLoading.value = false;
+        update();
+        return true;
       } else {
         Get.snackbar(
           'Error',
           'Failed to send OTP. Please try again.',
           snackPosition: SnackPosition.TOP,
         );
+        return false;
       }
     } catch (e) {
       debugPrint('Error: $e');
       showErrorDialog("An error occurred. Please try again later.");
+      return false;
     } finally {
       isLoading.value = false;
+      update();
     }
   }
 
@@ -264,7 +277,7 @@ class AuthController extends GetxController {
     await _storageController.clearAuth();
     auth.value = null;
     _userController.user.value = null;
-    // checkForExistingUser();
+    checkForExistingUser();
   }
 
   Future<String?> getAccessToken() async {
@@ -285,7 +298,7 @@ class AuthController extends GetxController {
       return newAccessToken.fold(
         (error) {
           logout();
-          return accessToken;
+          return null;
         },
         (newAccessToken) async {
           auth.value!.copyWith(accessToken: newAccessToken);

@@ -1,15 +1,12 @@
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/Public%20Chat/publicChatScreen.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
 class AlertsPage extends StatefulWidget {
@@ -33,7 +30,7 @@ class _AlertsPageState extends State<AlertsPage> {
     super.initState();
 
     if (_userController.user.value != null) {
-      _offers.fetchAllOffers();
+      _offers.getOffersForUser();
     }
   }
 
@@ -166,22 +163,22 @@ class _AlertsPageState extends State<AlertsPage> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: (_userController.user.value != null)
                       ? GetBuilder<OffersController>(builder: (controller) {
-                          if (controller.allOffers.isEmpty &&
+                          if (controller.offers.isEmpty &&
                               controller.isLoading.value) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          if (controller.allOffers.isEmpty) {
+                          if (controller.offers.isEmpty) {
                             return const Center(
                               child: Text("No offers"),
                             );
                           } else {
                             if (expandedStates.length !=
-                                controller.allOffers.length) {
+                                controller.offers.length) {
                               expandedStates = List<bool>.filled(
-                                controller.allOffers.length,
+                                controller.offers.length,
                                 false,
                               );
                             }
@@ -450,7 +447,7 @@ class _AlertsPageState extends State<AlertsPage> {
                           ),
                         )
                       : Image.asset(
-                          "assets/images/harrypotter.jpg",
+                          "assets/images/request_vicinity.png",
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -463,11 +460,11 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
   ListView showOfferList() {
-    debugPrint("${_offers.allOffers.firstOrNull?.toJson()}");
+    debugPrint("${_offers.offers.firstOrNull?.toJson()}");
     return ListView.builder(
-      itemCount: _offers.allOffers.length,
+      itemCount: _offers.offers.length,
       itemBuilder: (context, index) {
-        var offer = _offers.allOffers[index];
+        var offer = _offers.offers[index];
         return listItem(
           offer: offer,
           onTap: () {

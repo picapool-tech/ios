@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/brand_controller.dart';
@@ -79,6 +80,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     listenNotification();
+    subscribeToTopics();
   }
 
   @override
@@ -90,8 +92,6 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
-        textSelectionTheme:
-            const TextSelectionThemeData(cursorColor: Color(0xffffffff)),
       ),
       home: GetBuilder(
           init: storageController,
@@ -101,10 +101,45 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  void subscribeToTopics() async {
+    await storageController.loadTags();
+    var tags = storageController.tags.value;
+    if (tags.isEmpty) {
+      var tagController = Get.find<TagController>();
+      await tagController.getAllTags();
+      tags = storageController.tags.value;
+    }
+    for (var tag in tags) {
+      if (tag.isActive) {
+        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
+      }
+    }
+  }
+
   listenNotification() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
       // You can show a dialog, toast, or in-app UI here.
+      if (message.notification == null) {
+        return;
+      }
+
+      Get.snackbar(
+        message.notification!.title ?? 'Notification',
+        message.notification!.body ?? 'Notification',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        borderRadius: 10,
+        margin: const EdgeInsets.all(10),
+        icon: const Icon(Icons.notification_important, color: Colors.white),
+        duration: const Duration(seconds: 5),
+        onTap: (snack) {
+          if (kDebugMode) {
+            print('Notification clicked while in foreground: ${message.data}');
+          }
+        },
+      );
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -115,14 +150,20 @@ class _MyAppState extends State<MyApp> {
 
   Widget _handleAuthState() {
     debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
-    if (storageController.auth.value == null ||
+
+    if (storageController.auth.value != null &&
         storageController.auth.value!.accessToken == null) {
       return const LoginScreen();
-    } else if (storageController.user.value == null ||
+    } else if (storageController.user.value != null &&
         storageController.user.value!.name == null) {
       return const PersonalDetails();
-    } else {
+    } else if (storageController.auth.value != null &&
+        storageController.auth.value!.accessToken != null &&
+        storageController.user.value != null &&
+        storageController.user.value!.name != null) {
       return const NewBottomBar();
+    } else {
+      return const LoginScreen();
     }
   }
 }

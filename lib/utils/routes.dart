@@ -93,7 +93,7 @@ class GetRoutes {
     ),
     _buildRoute(
       name: sellProductsSecondFormPage,
-      page: SellFormTwo(),
+      page: const SellFormTwo(),
       binding: CategoryBindings(),
     ),
     _buildRoute(
@@ -108,7 +108,7 @@ class GetRoutes {
     ),
     _buildRoute(
       name: createLiveOffer,
-      page: CreateLiveOffer(),
+      page: const CreateLiveOffer(),
       binding: LiveOfferBindings(),
     ),
   ];

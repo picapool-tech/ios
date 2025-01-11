@@ -35,7 +35,7 @@ class _LocationBarState extends State<LocationBar> {
                     },
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on,
                           size: 35,
                           color: Colors.black,
@@ -43,7 +43,7 @@ class _LocationBarState extends State<LocationBar> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            const Row(
                               children: [
                                 Text(
                                   'Location',
@@ -64,7 +64,7 @@ class _LocationBarState extends State<LocationBar> {
                               currentLocation.length > 30
                                   ? '${currentLocation.substring(0, 30)}...'
                                   : currentLocation,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 15,
                                 color: Colors.black,
                               ),

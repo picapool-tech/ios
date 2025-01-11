@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
-import 'package:picapool/models/user_model.dart';
+import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/public_profile.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
@@ -20,8 +20,17 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   String? _selectedGender;
-  final AuthController authController = Get.find<AuthController>();
+  final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = _userController.user.value?.name ?? '';
+    _ageController.text = _userController.user.value?.age?.toString() ?? '';
+    _selectedGender = _userController.user.value?.gender;
+    _phoneController.text = _authController.auth.value?.mobile ?? "";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +92,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                       await storage.clearAuth();
                       await storage.clearUser();
 
-                      authController.logout();
+                      _authController.logout();
                     },
                     child: const Icon(Icons.visibility_off,
                         color: Colors.grey, size: 16),
@@ -197,9 +206,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               : TextInputType.text, // Numeric keyboard for age field
           decoration: InputDecoration(
             filled: true,
-            hintText: (isAge)
-                ? _userController.user.value?.age.toString() ?? "0"
-                : _userController.user.value?.name ?? 'No user name',
+            hintText: (isAge) ? "Your age" : "Your full name",
             hintStyle: const TextStyle(
                 color: Colors.grey, fontFamily: 'MontserratR', fontSize: 12),
             fillColor: Colors.transparent,
@@ -267,12 +274,45 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               padding: const EdgeInsets.only(right: 8.0, top: 4.0, bottom: 4.0),
               child: ElevatedButton(
                 onPressed: _phoneController.text.length == 10
-                    ? () {
+                    ? () async {
                         // Handle verify button press
+                        var auth = Get.find<AuthController>();
+                        var phone = "91${_phoneController.text}";
+                        var isSent = await auth.sendOtp(phone);
+                        if (!isSent) {
+                          Get.snackbar(
+                              "Error", "Not able to get the OTP at this time.");
+                          return;
+                        }
+
+                        var value = await Get.to(
+                          () => OtpScreen(
+                            phoneNumber: phone,
+                            returnValue: true,
+                          ),
+                        ) as bool?;
+
+                        if (value != null && value) {
+                          // Verify successful
+                          debugPrint("$value is from OTP");
+                          var auth = _authController.auth.value!.update({
+                            "mobile": phone,
+                          });
+                          await _authController.loadAndSaveAuth(auth);
+                          _authController.auth.refresh();
+                          await _userController.updateUser({
+                            "mobile": phone,
+                          });
+                          setState(() {});
+                        } else {
+                          // Verify failed
+                          debugPrint("Failed");
+                        }
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _phoneController.text.length == 10
+                  backgroundColor: _phoneController.text.length == 10 &&
+                          _authController.auth.value?.mobile == null
                       ? const Color(0xFFFF8D41)
                       : const Color(0xFFC2C2C2),
                   foregroundColor: Colors.white,
@@ -283,7 +323,32 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   minimumSize: const Size(80, 30),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: const Text('Verify', style: TextStyle(fontSize: 12)),
+                child: Obx(
+                  () {
+                    if (_authController.isLoading.value) {
+                      return const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2,
+                      );
+                    }
+
+                    if (_authController.auth.value?.mobile != null) {
+                      return const Text(
+                        'Verified',
+                        style: TextStyle(
+                          fontSize: 12,
+                        ),
+                      );
+                    }
+
+                    return const Text(
+                      'Verify',
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),

@@ -1,14 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +24,7 @@ class _LocationScreenState extends State<LocationScreen>
   LatLng? _currentPosition;
   LatLng? _selectedPosition;
   String _locationMessage = "Fetching location...";
-  bool _locationEnabled = true;
+  final bool _locationEnabled = true;
   Marker? _pinMarker;
   Circle? _currentLocationCircle;
   Circle? _centerDotCircle;

@@ -13,7 +13,7 @@ class TagApi {
   }) async {
     try {
       var response = await http.get(
-        Uri.parse("https://api.picapool.com/v2/tag"),
+        Uri.parse("https://api.picapool.com/v2/tag/all"),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 

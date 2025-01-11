@@ -397,6 +397,21 @@ class _MyChatsPageState extends State<MyChatsPage> {
     );
   }
 
+  bool hasImage(ChatAndOfferModel chat) {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (chat.liveOffer != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   ImageProvider _handleImage(ChatAndOfferModel chat) {
     if (chat.offer != null) {
       var offer = chat.offer;
@@ -410,6 +425,12 @@ class _MyChatsPageState extends State<MyChatsPage> {
     } else {
       return const AssetImage("assets/icons/Frame 64.png");
     }
+  }
+
+  String getChatTitle(ChatAndOfferModel chat) {
+    return chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
+        chat.liveOffer?.from ??
+        "No Title";
   }
 
   ListView chatList(List<ChatAndOfferModel> chats) {
@@ -431,7 +452,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
               Get.to(() => ChatPage(
                     chat: chat.chat,
                     offer: chat.offer,
-                    chatTitle: " To:  ${chat.liveOffer?.to}" ?? "String" ,
+                    chatTitle: chat.liveOffer?.to ?? chat.offer?.name ?? "Chat",
                   ))?.then(
                 (onValue) {
                   chatController.getAllChats();
@@ -458,11 +479,26 @@ class _MyChatsPageState extends State<MyChatsPage> {
                     height: 50,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      image: DecorationImage(
-                        image: _handleImage(chat),
-                        fit: BoxFit.cover,
-                      ),
+                      image: (hasImage(chat))
+                          ? DecorationImage(
+                              image: _handleImage(chat),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                      color: hasImage(chat) ? null : const Color(0xffFFEBDF),
                     ),
+                    child: hasImage(chat)
+                        ? null
+                        : Center(
+                            child: Text(
+                              getChatTitle(chat).characters.first.toUpperCase(),
+                              style: const TextStyle(
+                                fontFamily: "MontserratM",
+                                fontSize: 20,
+                                color: Color(0xffFF8D41),
+                              ),
+                            ),
+                          ),
                   ),
                   if (isSelected)
                     const Icon(Icons.check_circle, color: Color(0xffFF8D41)),
@@ -475,22 +511,20 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   Expanded(
                     child: Hero(
                       tag: chat.chat.id,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(" To:  ${chat.liveOffer?.to}" ??
-                                "No Title",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontFamily: "MontserratM",
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
-                          ),
+                      child: Text(
+                        getChatTitle(chat),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: "MontserratM",
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(
-                    height: 4,
+                    width: 4,
                   ),
                   Text(
                     DateTimeHelper.timeAgoSince(
@@ -500,10 +534,6 @@ class _MyChatsPageState extends State<MyChatsPage> {
                       fontFamily: "MontserratM",
                       fontSize: 12,
                       color: Colors.black,
-                    ),
-                  ),
-                        ],
-                      ),
                     ),
                   ),
                 ],

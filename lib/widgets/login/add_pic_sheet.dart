@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picapool/screen_router.dart';
 import 'package:picapool/utils/center_custom_text.dart';
 import 'package:picapool/utils/large_button.dart';
 import 'package:picapool/utils/svg_icon.dart';

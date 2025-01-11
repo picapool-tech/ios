@@ -1,10 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  final NetworkController _networkController = Get.find<NetworkController>();
 
   Future<void> requestPermission() async {
     NotificationSettings settings = await _fcm.requestPermission(
@@ -31,13 +33,20 @@ class NotificationService {
     _fcm.onTokenRefresh.listen((token) async {
       var userController = Get.find<UserController>();
       debugPrint("Token updated from fcm");
-      await userController.updateUser(
-        {'fcmToken': token},
-      );
+      if (userController.user.value != null) {
+        if (userController.user.value!.fcmToken != token) {
+          await userController.updateUser(
+            {'fcmToken': token},
+          );
+        }
+      }
     });
   }
 
   Future<String?> retrieveToken() async {
-    return _fcm.getToken();
+    if (_networkController.isConnected()) {
+      return _fcm.getToken();
+    }
+    return null;
   }
 }
