@@ -54,6 +54,8 @@ class _PublicProfileState extends State<PublicProfile> {
   void initState() {
     super.initState();
     _usernameController.addListener(_onUsernameChanged);
+    _usernameController.text = _userController.user.value?.username ?? '';
+    _bioController.text = _userController.user.value?.bio ?? '';
   }
 
   @override

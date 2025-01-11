@@ -66,6 +66,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   bool _isMapInitialized = false; // New flag to check if the map is initialized
   List<NearUserModel> _nearestUsers = [];
   bool fromBrands = false;
+  BitmapDescriptor? _locationMarker;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -81,7 +82,9 @@ class _RequestVicinityState extends State<RequestVicinity> {
     var model = Get.arguments;
     debugPrint("$model");
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      loadMarker();
       _fetchLocation();
+
       if (model != null) {
         var brand = BrandOfferModel.fromJson(model['brands']);
         _titleController.text = brand.title;
@@ -95,6 +98,17 @@ class _RequestVicinityState extends State<RequestVicinity> {
           fromBrands = true;
         });
       }
+    });
+  }
+
+  void loadMarker() async {
+    _locationMarker = await BitmapDescriptor.asset(
+        const ImageConfiguration(
+          size: Size.square(40),
+        ),
+        "assets/icons/location_marker.png");
+    setState(() {
+      _locationMarker;
     });
   }
 
@@ -856,17 +870,21 @@ class _RequestVicinityState extends State<RequestVicinity> {
     );
   }
 
-  void _addNearestUserMarkers() {
+  void _addNearestUserMarkers() async {
     _userMarkers.clear();
     for (var user in _nearestUsers) {
       final Marker userMarker = Marker(
         markerId: MarkerId(user.username),
         position: LatLng(user.location.latitude, user.location.longitude),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          (user.username == _userController.user.value?.username)
-              ? BitmapDescriptor.hueRed
-              : BitmapDescriptor.hueGreen,
-        ),
+        icon: _locationMarker ??
+            BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueGreen,
+            ),
+        // .defaultMarkerWithHue(
+        //   (user.username == _userController.user.value?.username)
+        //       ? BitmapDescriptor.hueRed
+        //       : BitmapDescriptor.hueGreen,
+        // ),
         infoWindow: InfoWindow(
           title: user.username,
           snippet: 'Nearby User',

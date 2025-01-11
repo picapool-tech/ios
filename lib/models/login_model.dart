@@ -29,5 +29,4 @@ class LoginModel {
       'isNew': isNew,
     };
   }
-
 }

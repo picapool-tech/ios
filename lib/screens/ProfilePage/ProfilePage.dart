@@ -134,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         Text(
-                          user.auth?.mobile ?? "",
+                          _authController.auth.value?.mobile ?? "",
                           style: const TextStyle(
                             fontFamily: "MontserratR",
                             fontSize: 14,
@@ -491,7 +491,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     debugPrint(user.toJson().toString());
     _usernameController.text = user.username ?? "";
     _nameController.text = user.name ?? "";
-    _phoneController.text = user.auth?.mobile ?? "";
+    _phoneController.text = _authController.auth.value?.mobile ?? "";
     XFile? pickedImage;
 
     await showModalBottomSheet(
@@ -592,7 +592,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Icons.info, "Username", _usernameController),
                             const Divider(thickness: 1.5),
                             _buildTextField(
-                                Icons.phone, "Phone", _phoneController),
+                              Icons.phone,
+                              "Phone",
+                              _phoneController,
+                              disabled:
+                                  _authController.auth.value?.mobile != null,
+                            ),
                             // const Divider(thickness: 1.5),
                             // _buildTextField(
                             //     Icons.email, "Email", "noemail@gmail.com"),
@@ -709,7 +714,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildTextField(
-      IconData icon, String label, TextEditingController controller) {
+      IconData icon, String label, TextEditingController controller,
+      {bool disabled = false}) {
     return TextField(
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.grey),
@@ -717,6 +723,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: InputBorder.none, // No border since the container has a border
       ),
       controller: controller,
+      enabled: !disabled,
     );
   }
 

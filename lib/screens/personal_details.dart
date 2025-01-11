@@ -27,7 +27,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   void initState() {
     super.initState();
     _nameController.text = _userController.user.value?.name ?? '';
-    _ageController.text = _userController.user.value?.age.toString() ?? '';
+    _ageController.text = _userController.user.value?.age?.toString() ?? '';
     _selectedGender = _userController.user.value?.gender;
     _phoneController.text = _authController.auth.value?.mobile ?? "";
   }
@@ -278,21 +278,28 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         // Handle verify button press
                         var auth = Get.find<AuthController>();
                         var phone = "91${_phoneController.text}";
-                        await auth.sendOtp(phone);
-                        var value = await Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (context) {
-                          return OtpScreen(
+                        var isSent = await auth.sendOtp(phone);
+                        if (!isSent) {
+                          Get.snackbar(
+                              "Error", "Not able to get the OTP at this time.");
+                          return;
+                        }
+
+                        var value = await Get.to(
+                          () => OtpScreen(
                             phoneNumber: phone,
                             returnValue: true,
-                          );
-                        }));
+                          ),
+                        ) as bool?;
 
                         if (value != null && value) {
                           // Verify successful
                           debugPrint("$value is from OTP");
-                          _authController.auth.value!.update({
+                          var auth = _authController.auth.value!.update({
                             "mobile": phone,
                           });
+                          await _authController.loadAndSaveAuth(auth);
+                          _authController.auth.refresh();
                           await _userController.updateUser({
                             "mobile": phone,
                           });
@@ -316,7 +323,32 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   minimumSize: const Size(80, 30),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: const Text('Verify', style: TextStyle(fontSize: 12)),
+                child: Obx(
+                  () {
+                    if (_authController.isLoading.value) {
+                      return const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2,
+                      );
+                    }
+
+                    if (_authController.auth.value?.mobile != null) {
+                      return const Text(
+                        'Verified',
+                        style: TextStyle(
+                          fontSize: 12,
+                        ),
+                      );
+                    }
+
+                    return const Text(
+                      'Verify',
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),

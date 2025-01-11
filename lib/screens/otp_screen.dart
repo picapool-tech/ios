@@ -37,7 +37,9 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   void initState() {
     super.initState();
-
+    debugPrint(
+      "OTP Screen: ${widget.phoneNumber} with return Value : ${widget.returnValue}",
+    );
     for (var controller in _controllers) {
       controller.addListener(_checkOtpComplete);
     }
@@ -80,8 +82,7 @@ class _OtpScreenState extends State<OtpScreen> {
         if (responseModel.success) {
           if (widget.returnValue) {
             debugPrint("INSIDE RETURN VALUE");
-            Navigator.pop(context, true);
-            Navigator.pop(context, true);
+            Get.back(result: true);
             return;
           } else {
             await authController.loginWithOtp(widget.phoneNumber, otp);

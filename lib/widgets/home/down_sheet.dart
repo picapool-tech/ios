@@ -266,8 +266,10 @@ class _DownSheetState extends State<DownSheet> {
 Widget _buildBrandItem(Map<String, String> brand) {
   return GestureDetector(
     onTap: () {
-      if (brand['name'] == "Electronics") {
-        Get.to(() => const ProductsHomepage(currentIndex: 0));
+      if (brand['name'] == "Food") {
+        Get.to(
+          () => const ProductsHomepage(currentIndex: 0),
+        );
       } else {
         Get.to(
           () => ComingSoon(

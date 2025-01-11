@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class SelectedProductPage extends StatefulWidget {
-  const SelectedProductPage({super.key});
+  final Map<String, String> product;
+
+  const SelectedProductPage({
+    super.key,
+    required this.product,
+  });
 
   @override
   _SelectedProductPageState createState() => _SelectedProductPageState();
@@ -32,7 +37,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
           },
         ),
         title: const Text(
-          'Products',
+          'Offer',
           style: TextStyle(
             color: Colors.black,
             fontFamily: 'MontserratM',
@@ -44,7 +49,9 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
           Padding(
             padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
-              backgroundImage: AssetImage('assets/avatar.jpg'), // Replace with your image asset path
+              backgroundImage: AssetImage(
+                'assets/avatar.jpg',
+              ), // Replace with your image asset path
             ),
           ),
         ],
@@ -63,7 +70,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
               ),
               child: const TextField(
                 decoration: InputDecoration(
-                  hintText: 'Find "playstation" products',
+                  hintText: 'Find "dominos" offer',
                   hintStyle: TextStyle(
                     color: Color(0xff000000),
                     fontFamily: "MontserratR",
@@ -76,9 +83,9 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Apple iPad (10th Generation): with A14 Bionic chip, 27.69 cm (10.9")',
-              style: TextStyle(
+            Text(
+              widget.product['title'] ?? "Product Title",
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 fontFamily: "MontserratM",
@@ -91,7 +98,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1),
+                      border: Border.all(
+                          color: Colors.grey.withOpacity(0.5), width: 1),
                     ),
                     child: CarouselSlider(
                       options: CarouselOptions(
@@ -105,16 +113,19 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                           });
                         },
                       ),
-                      items: imgList
-                          .map((item) => ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.asset(
-                                  item,
-                                  fit: BoxFit.contain,
-                                  width: 1000,
-                                ),
-                              ))
-                          .toList(),
+                      items: [
+                        Image.asset(
+                          width: double.infinity,
+                          widget.product['image'] ??
+                              'assets/images/Controller.png',
+                          fit: BoxFit.cover,
+                        )
+                      ],
+                      // .map((item) => ClipRRect(
+                      //       borderRadius: BorderRadius.circular(10),
+                      //       child: ,
+                      //     ))
+                      // .toList(),
                     ),
                   ),
                   Row(
@@ -124,7 +135,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                       return Container(
                         width: 8.0,
                         height: 8.0,
-                        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 2.0),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _current == index
@@ -138,9 +150,9 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'MRP : Rs. 55,000',
-              style: TextStyle(
+            Text(
+              'MRP : ${widget.product['price'] ?? "0"}',
+              style: const TextStyle(
                 fontFamily: "MontserratM",
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -158,22 +170,22 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
               ),
             ),
             const SizedBox(height: 5),
-            const Text(
-              'Colourfully reimagined and more versatile than ever, iPad is great for the things you do every day. With an all-screen design, 27.69 cm (10.9") Liquid Retina ...',
-              style: TextStyle(
+            Text(
+              widget.product['description'] ?? "Product Description",
+              style: const TextStyle(
                 fontSize: 14,
                 fontFamily: "MontserratR",
                 color: Colors.black,
               ),
             ),
-            const Text(
-              'Read more',
-              style: TextStyle(
-                fontSize: 14,
-                fontFamily: "MontserratM",
-                color: Colors.orange,
-              ),
-            ),
+            // const Text(
+            //   'Read more',
+            //   style: TextStyle(
+            //     fontSize: 14,
+            //     fontFamily: "MontserratM",
+            //     color: Colors.orange,
+            //   ),
+            // ),
             const SizedBox(height: 20),
             const Text(
               'Details',
@@ -185,55 +197,63 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
               ),
             ),
             const SizedBox(height: 10),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Features',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratM",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'Built-In Microphone',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratR",
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratM",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'Headset Jack',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: "MontserratR",
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            Text(
+              widget.product['details'] ?? "Product Details",
+              style: const TextStyle(
+                fontSize: 14,
+                fontFamily: "MontserratM",
+                color: Colors.black,
+              ),
             ),
+            // const Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           'Features',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratM",
+            //             fontWeight: FontWeight.bold,
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //         Text(
+            //           'Built-In Microphone',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratR",
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           '',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratM",
+            //             fontWeight: FontWeight.bold,
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //         Text(
+            //           'Headset Jack',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             fontFamily: "MontserratR",
+            //             color: Colors.black,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),

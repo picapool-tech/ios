@@ -16,14 +16,14 @@ class ProductsHomepage extends StatefulWidget {
 
 class _ProductsHomepageState extends State<ProductsHomepage> {
   final List<Map<String, String>> brands = [
-    {'name': 'Apple', 'asset': 'assets/icons/Vector.png'},
-    {'name': 'PlayStation', 'asset': 'assets/icons/Vector (1).png'},
-    {'name': 'Bose', 'asset': 'assets/icons/Vector (2).png'},
-    {'name': 'Huawei', 'asset': 'assets/icons/Vector (3).png'},
-    {'name': 'Apple', 'asset': 'assets/icons/Vector.png'},
-    {'name': 'PlayStation', 'asset': 'assets/icons/Vector (1).png'},
-    {'name': 'Bose', 'asset': 'assets/icons/Vector (2).png'},
-    {'name': 'Huawei', 'asset': 'assets/icons/Vector (3).png'},
+    {'name': 'Dominos', 'asset': 'assets/dominos/logo.jpg'},
+    // {'name': 'PlayStation', 'asset': 'assets/icons/Vector (1).png'},
+    // {'name': 'Bose', 'asset': 'assets/icons/Vector (2).png'},
+    // {'name': 'Huawei', 'asset': 'assets/icons/Vector (3).png'},
+    // {'name': 'Apple', 'asset': 'assets/icons/Vector.png'},
+    // {'name': 'PlayStation', 'asset': 'assets/icons/Vector (1).png'},
+    // {'name': 'Bose', 'asset': 'assets/icons/Vector (2).png'},
+    // {'name': 'Huawei', 'asset': 'assets/icons/Vector (3).png'},
     // Add more brands as needed
   ];
 
@@ -150,36 +150,36 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                 const SizedBox(height: 20),
                 _buildCommunitySaleCard(),
                 const SizedBox(height: 20),
-                const Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        indent: 40,
-                        thickness: 1,
-                        color: Color(0xffFF8D41),
-                      ),
-                    ),
-                    Text(
-                      "  Best Offers  ",
-                      style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        endIndent: 40,
-                        thickness: 1,
-                        color: Color(0xffFF8D41),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                _buildCommunitySaleCard(),
-                const SizedBox(height: 20),
-                _buildCommunitySaleCard(),
-                const SizedBox(height: 20),
-                _buildCommunitySaleCard(),
-                const SizedBox(height: 20),
-                _buildCommunitySaleCard(),
+                // const Row(
+                //   children: [
+                //     Expanded(
+                //       child: Divider(
+                //         indent: 40,
+                //         thickness: 1,
+                //         color: Color(0xffFF8D41),
+                //       ),
+                //     ),
+                // Text(
+                //   "  Best Offers  ",
+                //   style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
+                // ),
+                // Expanded(
+                //   child: Divider(
+                //     endIndent: 40,
+                //     thickness: 1,
+                //     color: Color(0xffFF8D41),
+                //   ),
+                // ),
+                //   ],
+                // ),
+                // const SizedBox(height: 20),
+                // _buildCommunitySaleCard(),
+                // const SizedBox(height: 20),
+                // _buildCommunitySaleCard(),
+                // const SizedBox(height: 20),
+                // _buildCommunitySaleCard(),
+                // const SizedBox(height: 20),
+                // _buildCommunitySaleCard(),
               ],
             ),
           ),
@@ -191,11 +191,12 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
   Widget _buildBrandItem(Map<String, String> brand) {
     return GestureDetector(
       onTap: () {
-        if (brand['name'] == 'PlayStation') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PlayStationPage()),
-          );
+        if (brand['name'] == 'Dominos') {
+          Get.to(() => const PlayStationPage());
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const PlayStationPage()),
+          // );
         }
         // You can add more conditions for other brands to navigate to different pages.
       },
@@ -251,7 +252,8 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(15),
             child: Image.asset(
-              'assets/images/oneplus.png',
+              width: double.infinity,
+              'assets/dominos/OfferImag1.png',
               fit: BoxFit.cover,
             ),
           ),

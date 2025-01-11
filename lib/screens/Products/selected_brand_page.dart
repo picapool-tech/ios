@@ -23,13 +23,13 @@ class PlayStationPage extends StatelessWidget {
         title: Row(
           children: [
             Image.asset(
-              'assets/icons/Vector (1).png', // Replace with your PlayStation logo asset
+              'assets/dominos/logo.jpg', // Replace with your PlayStation logo asset
               width: 30,
               height: 30,
             ),
             const SizedBox(width: 8),
             const Text(
-              'Playstation',
+              'Dominos',
               style: TextStyle(
                 color: Colors.black,
                 fontFamily: 'MontserratM',
@@ -48,78 +48,78 @@ class PlayStationPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                  onPressed: () {
-                    // Define what happens when the button is tapped
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xffFF8D41),
-                    // side: BorderSide(color: Color(0xffFF6600)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    onPressed: () {
+                      // Define what happens when the button is tapped
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffFF8D41),
+                      // side: BorderSide(color: Color(0xffFF6600)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.0,
+                      ),
+                      child: Row(
+                        mainAxisSize:
+                            MainAxisSize.min, // To minimize the button width
+                        children: [
+                          Text(
+                            'Go to store',
+                            style: TextStyle(
+                                fontFamily: "MontserratR",
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xffffffff)),
+                          ),
+                          SizedBox(width: 5), // Space between text and icon
+                          Icon(Icons.arrow_circle_right_outlined,
+                              size: 20,
+                              color: Color(
+                                0xffFFFFFF,
+                              )), // Icon with size
+                        ],
+                      ),
+                    ),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                    ),
-                    child: Row(
-                      mainAxisSize:
-                          MainAxisSize.min, // To minimize the button width
-                      children: [
-                        Text(
-                          'Go to store',
-                          style: TextStyle(
-                              fontFamily: "MontserratR",
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xffffffff)),
-                        ),
-                        SizedBox(width: 5), // Space between text and icon
-                        Icon(Icons.arrow_circle_right_outlined,
-                            size: 20,
-                            color: Color(
-                              0xffFFFFFF,
-                            )), // Icon with size
-                      ],
-                    ),
-                  ),
-                ),
                 ),
                 const SizedBox(width: 8), // Space between buttons
                 Expanded(
                   child: ElevatedButton(
-                  onPressed: () {
-                    Get.to(() => const ViewProductsPage());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xffFFE9DA),
-                    side: const BorderSide(color: Color(0xffFF6600)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    onPressed: () {
+                      Get.to(() => const ViewProductsPage());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffFFE9DA),
+                      side: const BorderSide(color: Color(0xffFF6600)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.0,
+                      ),
+                      child: Row(
+                        mainAxisSize:
+                            MainAxisSize.min, // To minimize the button width
+                        children: [
+                          Text(
+                            'View products',
+                            style: TextStyle(
+                                fontFamily: "MontserratR",
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xffFF8D41)),
+                          ),
+                          // Space between text and icon
+                          // Icon with size
+                        ],
+                      ),
+                    ),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                    ),
-                    child: Row(
-                      mainAxisSize:
-                          MainAxisSize.min, // To minimize the button width
-                      children: [
-                        Text(
-                          'View products',
-                          style: TextStyle(
-                              fontFamily: "MontserratR",
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xffFF8D41)),
-                        ),
-                         // Space between text and icon
-                        // Icon with size
-                      ],
-                    ),
-                  ),
-                ),
                 ),
               ],
             ),
@@ -152,7 +152,8 @@ class PlayStationPage extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: Image.asset(
-                    'assets/images/Group 401.png', // Replace with your offer image asset
+                    width: double.infinity,
+                    'assets/dominos/OfferImag1.png', // Replace with your offer image asset
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -182,34 +183,35 @@ class PlayStationPage extends StatelessWidget {
             const SizedBox(height: 20),
             // Limited Offers
             const Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        indent: 40,
-                        thickness: 1,
-                        color: Color(0xffFF8D41),
-                      ),
-                    ),
-                    Text(
-                      "  Limited Offers  ",
-                      style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        endIndent: 40,
-                        thickness: 1,
-                        color: Color(0xffFF8D41),
-                      ),
-                    ),
-                  ],
+              children: [
+                Expanded(
+                  child: Divider(
+                    indent: 40,
+                    thickness: 1,
+                    color: Color(0xffFF8D41),
+                  ),
                 ),
+                Text(
+                  "  Limited Offers  ",
+                  style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
+                ),
+                Expanded(
+                  child: Divider(
+                    endIndent: 40,
+                    thickness: 1,
+                    color: Color(0xffFF8D41),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: Image.asset(
-                    'assets/images/image 79.png', // Replace with your offer image asset
+                    width: double.infinity,
+                    'assets/dominos/OfferImage2.png', // Replace with your offer image asset
                     fit: BoxFit.cover,
                   ),
                 ),

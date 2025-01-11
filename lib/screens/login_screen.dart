@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/public_profile.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -38,7 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (authController.isLoading.value) {
       return;
     }
-    await authController.sendOtp(phoneNumber);
+    var isSent = await authController.sendOtp(phoneNumber);
+    if (isSent) {
+      Get.to(
+        () => OtpScreen(phoneNumber: phoneNumber),
+      );
+    }
   }
 
   void _signInWithGoogle() async {

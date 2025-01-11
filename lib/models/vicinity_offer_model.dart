@@ -60,7 +60,7 @@ class VicinityOffer {
       partnerID: json['partnerId'],
       tagIds: (json['tagIds']) ? List<String>.from(json['tags']) : [],
       location: VicinityLocation.fromJson(json['loc']),
-      distance: json['dist'] ?? 0,
+      distance: json['dist'] ?? 500,
     );
   }
 
@@ -74,7 +74,7 @@ class VicinityOffer {
       'productIds': productIds,
       'tagIds': tagIds,
       'loc': location.toJson(),
-      'dist' : distance,
+      'dist': distance,
     };
   }
 }

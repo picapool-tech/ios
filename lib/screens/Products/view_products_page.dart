@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:picapool/screens/Products/selected_product_page.dart';
 
 class ViewProductsPage extends StatelessWidget {
@@ -19,7 +20,7 @@ class ViewProductsPage extends StatelessWidget {
           },
         ),
         title: const Text(
-          'Products',
+          'Deals',
           style: TextStyle(
             color: Colors.black,
             fontFamily: 'MontserratM',
@@ -31,7 +32,8 @@ class ViewProductsPage extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
-              backgroundImage: AssetImage('assets/avatar.jpg'), // Replace with your image asset path
+              backgroundImage: AssetImage(
+                  'assets/avatar.jpg'), // Replace with your image asset path
             ),
           ),
         ],
@@ -50,7 +52,7 @@ class ViewProductsPage extends StatelessWidget {
               ),
               child: const TextField(
                 decoration: InputDecoration(
-                  hintText: 'Find "playstation" products',
+                  hintText: 'Find "dominos" deals',
                   hintStyle: TextStyle(
                     color: Color(0xff000000),
                     fontFamily: "MontserratR",
@@ -72,7 +74,7 @@ class ViewProductsPage extends StatelessWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
-                itemCount: 8, // Number of items
+                itemCount: 3, // Number of items
                 itemBuilder: (context, index) {
                   return _buildProductCard(context, index);
                 },
@@ -87,53 +89,77 @@ class ViewProductsPage extends StatelessWidget {
   Widget _buildProductCard(BuildContext context, int index) {
     final List<Map<String, String>> products = [
       {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'available'
+        'image':
+            'assets/dominos/Margherita Pizza.png', // Replace with your image asset path
+        'title': 'Margherita Pizza',
+        'price': '₹ 109',
+        'status': 'available',
+        'description':
+            'Margherita Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh basil leaves. It is a simple and classic pizza that is perfect for any occasion.',
+        'details': """Step 1: Login the Dominos app
+Step 2: Choose the option for delivery (No takeaway)
+Step 3: Add 1 Margherita Pizza (Regular Size)
+Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
+step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
       },
       {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'available'
+        'image':
+            'assets/dominos/Onion Pizza.png', // Replace with your image asset path
+        'title': 'Onion Pizza',
+        'price': '₹ 53',
+        'status': 'available',
+        'description':
+            'Onion Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh onions. It is a simple and classic pizza that is perfect for any occasion.',
+        'details': """Step 1: Login the Dominos app
+Step 2: Choose the option for delivery (No takeaway)
+Step 3: Add 1 Margherita Pizza (Regular Size)
+Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
+step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
       },
       {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'available'
+        'image':
+            'assets/dominos/Tomato Pizza.png', // Replace with your image asset path
+        'title': 'Tomato Pizza',
+        'price': '₹ 53',
+        'status': 'available',
+        'description':
+            'Tomato Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh basil leaves. It is a simple and classic pizza that is perfect for any occasion.',
+        'details': """Step 1: Login the Dominos app
+Step 2: Choose the option for delivery (No takeaway)
+Step 3: Add 1 Margherita Pizza (Regular Size)
+Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
+step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
       },
-      {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'sold_out'
-      },
-      {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'available'
-      },
-      {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'available'
-      },
-      {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'available'
-      },
-      {
-        'image': 'assets/images/ps 5.png', // Replace with your image asset path
-        'title': 'Game console Apple iPad play',
-        'price': '₹ 400',
-        'status': 'sold_out'
-      },
+      // {
+      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
+      //   'title': 'Game console Apple iPad play',
+      //   'price': '₹ 400',
+      //   'status': 'sold_out'
+      // },
+      // {
+      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
+      //   'title': 'Game console Apple iPad play',
+      //   'price': '₹ 400',
+      //   'status': 'available'
+      // },
+      // {
+      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
+      //   'title': 'Game console Apple iPad play',
+      //   'price': '₹ 400',
+      //   'status': 'available'
+      // },
+      // {
+      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
+      //   'title': 'Game console Apple iPad play',
+      //   'price': '₹ 400',
+      //   'status': 'available'
+      // },
+      // {
+      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
+      //   'title': 'Game console Apple iPad play',
+      //   'price': '₹ 400',
+      //   'status': 'sold_out'
+      // },
     ];
 
     final product = products[index];
@@ -141,10 +167,15 @@ class ViewProductsPage extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SelectedProductPage()), // Navigate to SelectedProductPage
-        );
+        Get.to(() => SelectedProductPage(
+              product: products[index],
+            ));
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => const SelectedProductPage(),
+        //   ), // Navigate to SelectedProductPage
+        // );
       },
       child: Stack(
         children: [
@@ -164,7 +195,8 @@ class ViewProductsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(10)),
                   child: Image.asset(
                     product['image']!,
                     height: 120,
@@ -178,7 +210,7 @@ class ViewProductsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Game console',
+                        'Domions Offer',
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: 'MontserratR',
@@ -239,4 +271,3 @@ class ViewProductsPage extends StatelessWidget {
     );
   }
 }
-

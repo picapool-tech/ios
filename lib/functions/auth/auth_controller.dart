@@ -154,7 +154,7 @@ class AuthController extends GetxController {
         showErrorDialog(fail.message);
       },
       (loginModel) async {
-        await postLoginAction(loginModel);
+        await postLoginAction(loginModel, mobile: mobile);
         debugPrint('User from otp: ${_userController.user.value?.toJson()}');
       },
     );
@@ -163,7 +163,7 @@ class AuthController extends GetxController {
     update();
   }
 
-  Future<bool> postLoginAction(LoginModel loginModel) async {
+  Future<bool> postLoginAction(LoginModel loginModel, {String? mobile}) async {
     var accessToken =
         AccessTokenModel.fromJson(JwtDecoder.decode(loginModel.accessToken));
     debugPrint("After ACESSTOKEN MODEL : ${accessToken.toJson()}");
@@ -171,6 +171,7 @@ class AuthController extends GetxController {
       id: accessToken.authId,
       accessToken: loginModel.accessToken,
       refreshToken: loginModel.refreshToken,
+      mobile: mobile,
     );
     await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
     debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
@@ -180,8 +181,9 @@ class AuthController extends GetxController {
     return false;
   }
 
-  Future<void> sendOtp(String phoneNumber) async {
+  Future<bool> sendOtp(String phoneNumber) async {
     isLoading.value = true;
+    update();
 
     final String url = 'https://api.picapool.com/v2/otp?mobile=$phoneNumber';
 
@@ -196,19 +198,24 @@ class AuthController extends GetxController {
       debugPrint('Response: ${response.body}');
 
       if (response.statusCode == 201) {
-        Get.to(() => OtpScreen(phoneNumber: phoneNumber));
+        isLoading.value = false;
+        update();
+        return true;
       } else {
         Get.snackbar(
           'Error',
           'Failed to send OTP. Please try again.',
           snackPosition: SnackPosition.TOP,
         );
+        return false;
       }
     } catch (e) {
       debugPrint('Error: $e');
       showErrorDialog("An error occurred. Please try again later.");
+      return false;
     } finally {
       isLoading.value = false;
+      update();
     }
   }
 
