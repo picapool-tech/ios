@@ -68,28 +68,29 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   Future<void> _searchOffers() async {
     if (selectedFromLocation == null) return;
 
-    // Format date to ISO 8601 with timezone
+    // Format the selected date with time to ISO string
     final startTimeISO = DateTime(
       _selectedDate.year,
       _selectedDate.month,
       _selectedDate.day,
-      _selectedDate.hour,
-      _selectedDate.minute,
-      _selectedDate.second,
+      DateTime.now().hour,
+      DateTime.now().minute,
+      DateTime.now().second,
     ).toUtc().toIso8601String();
+
+    debugPrint('Searching offers with date: $startTimeISO'); // Debug log
 
     final SearchCabsPayload payload = SearchCabsPayload(
       from: From(
         lat: selectedFromLocation!.latitude,
         lng: selectedFromLocation!.longitude,
       ),
-      radius: 5000,
-      startTime: startTimeISO, // Send formatted date string
+      radius: defaultRadius,
+      startTime: startTimeISO, // Send the formatted date string
     );
 
     await liveOfferController.searchLiveOffer(payload);
-    if (liveOfferController.searchLiveOfferState ==
-        SearchLiveOfferState.created) {
+    if (liveOfferController.searchLiveOfferState == SearchLiveOfferState.created) {
       _updateMarkersFromSearch();
     }
   }
@@ -219,6 +220,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       _selectedDate = DateTime.now();
       formattedDate = DateFormat('E, d MMM').format(_selectedDate);
     });
+    debugPrint('Date set to today: $_selectedDate'); // Debug log
+    _searchOffers(); // This will now use the updated _selectedDate
   }
 
   // Function to set the date to tomorrow
@@ -227,6 +230,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       _selectedDate = DateTime.now().add(const Duration(days: 1));
       formattedDate = DateFormat('E, d MMM').format(_selectedDate);
     });
+    debugPrint('Date set to tomorrow: $_selectedDate'); // Debug log
+    _searchOffers(); // This will now use the updated _selectedDate
   }
 
   // Function to search location and show suggestions
