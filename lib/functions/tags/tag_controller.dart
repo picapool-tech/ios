@@ -30,31 +30,78 @@ class TagController extends GetxController {
   }
 
   Future<void> subscribeToTopics() async {
-    await _storageController.loadTags();
-    var tags = _storageController.tags.value;
-    if (tags.isEmpty) {
-      await getAllTags();
-      tags = _storageController.tags.value;
-    }
-    for (var tag in tags) {
-      if (tag.isActive) {
-        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
+    try {
+      await _storageController.loadTags();
+
+      var tags = _storageController.tags.value;
+      if (tags.isEmpty) {
+        await getAllTags();
+        tags = _storageController.tags.value;
       }
+      var firebaseInstance = FirebaseMessaging.instance;
+      for (var tag in tags) {
+        var topic = tag.tag;
+        if (tag.isActive) {
+          if (!_isValid(tag.tag.trim())) {
+            topic = toValidTopic(tag.tag.trim());
+          }
+          firebaseInstance.subscribeToTopic(topic).then((val) {
+            debugPrint("Subscribed to $topic");
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("SUBSCRIBING TO TOPIC Error: $e");
     }
   }
 
   Future<void> unSubscribeToTopics() async {
-    await _storageController.loadTags();
-    var tags = _storageController.tags.value;
-    if (tags.isEmpty) {
-      await getAllTags();
-      tags = _storageController.tags.value;
-    }
-    for (var tag in tags) {
-      if (tag.isActive) {
-        FirebaseMessaging.instance.unsubscribeFromTopic(tag.tag);
+    try {
+      await _storageController.loadTags();
+
+      var tags = _storageController.tags.value;
+      if (tags.isEmpty) {
+        await getAllTags();
+        tags = _storageController.tags.value;
       }
+      var firebaseInstance = FirebaseMessaging.instance;
+      for (var tag in tags) {
+        var topic = tag.tag;
+        if (tag.isActive) {
+          if (!_isValid(topic)) {
+            topic = toValidTopic(topic);
+          }
+          firebaseInstance.unsubscribeFromTopic(topic).then((val) {
+            debugPrint("UNSubscribed to $topic");
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("UNSUBSCRIBING TO TOPIC Error: $e");
     }
+  }
+
+  bool _isValid(String topic) {
+    bool isValidTopic = RegExp(r'^[a-zA-Z0-9-_.~%]{1,900}$').hasMatch(topic);
+    return isValidTopic;
+  }
+
+  String toValidTopic(String input) {
+    // Define the regex for valid characters
+    final validCharRegExp = RegExp(r'[a-zA-Z0-9-_.~%]');
+
+    // Filter only valid characters
+    String filtered = input
+        .split('')
+        .where((char) => validCharRegExp.hasMatch(char))
+        .join('');
+
+    // Truncate to 900 characters if necessary
+    if (filtered.length > 900) {
+      filtered = filtered.substring(0, 900);
+    }
+
+    return filtered;
   }
 
   Future<void> getAllTags({

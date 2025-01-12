@@ -24,7 +24,7 @@ class NewBottomBar extends StatefulWidget {
 
 class _NewBottomBarState extends State<NewBottomBar> {
   int _selectedIndex = 0;
-  double height = Platform.isAndroid ? 70 : 100;
+  // double height = Platform.isAndroid ? 70 : 100;
   final TagController _tagController = Get.find<TagController>();
 
   final List<Widget> _screens = [
@@ -182,51 +182,94 @@ class _NewBottomBarState extends State<NewBottomBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      bottomNavigationBar: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          BottomAppBar(
-            color: Colors.white,
-            child: SizedBox(
-              height: height,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(
-                    child: _buildNavItem(0),
-                  ),
-                  Expanded(
-                    child: _buildNavItem(1),
-                  ),
-                  const SizedBox(width: 40), // The space for the center icon
-                  Expanded(
-                    child: _buildNavItem(2),
-                  ),
-                  Expanded(
-                    child: _buildNavItem(3),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            top: -30, // Adjust this value to move the icon up or down
-            left: MediaQuery.of(context).size.width / 2 -
-                35, // Center the icon horizontally
-            child: InkWell(
-              onTap: () {
-                Get.to(
-                  () => const PoolOffersScreen(),
-                );
-              },
+      floatingActionButton: SizedBox(
+        width: 75,
+        height: 75,
+        child: FittedBox(
+          child: FloatingActionButton(
+            onPressed: () {
+              Get.to(() => const PoolOffersScreen());
+            },
+            backgroundColor: const Color(0xffFF8D41),
+            shape: const CircleBorder(),
+            child: Transform(
+              transform: Matrix4.translationValues(0, 2, 0),
               child: const SvgIcon(
                 "assets/bottombar/live.svg",
-                size: 70, // Size of the center icon
+                // Size of the center icon
               ),
             ),
           ),
-        ],
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        notchMargin: 10,
+        color: Colors.white,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Expanded(
+              child: _buildNavItem(0),
+            ),
+            Expanded(
+              child: _buildNavItem(1),
+            ),
+            const SizedBox(width: 40), // The space for the center icon
+            Expanded(
+              child: _buildNavItem(2),
+            ),
+            Expanded(
+              child: _buildNavItem(3),
+            ),
+          ],
+        ),
+      ),
+      // Stack(
+      //   clipBehavior: Clip.none,
+      //   children: [
+      // BottomAppBar(
+      //   color: Colors.white,
+      //   child: SizedBox(
+      //     height: height,
+      //     child: Row(
+      //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //       children: [
+      //         Expanded(
+      //           child: _buildNavItem(0),
+      //         ),
+      //         Expanded(
+      //           child: _buildNavItem(1),
+      //         ),
+      //         const SizedBox(width: 40), // The space for the center icon
+      //         Expanded(
+      //           child: _buildNavItem(2),
+      //         ),
+      //         Expanded(
+      //           child: _buildNavItem(3),
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // ),
+      //     Positioned(
+      //       top: -30, // Adjust this value to move the icon up or down
+      //       left: MediaQuery.of(context).size.width / 2 -
+      //           35, // Center the icon horizontally
+      //       child: InkWell(
+      //         onTap: () {
+      //           Get.to(
+      //             () => const PoolOffersScreen(),
+      //           );
+      //         },
+      // child: const SvgIcon(
+      //   "assets/bottombar/live.svg",
+      //   size: 70, // Size of the center icon
+      // ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

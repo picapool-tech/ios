@@ -538,6 +538,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<XFile?> _pickImage() async {
+    if (!await PermissionUtil().isPhotoPermissionGranted()) {
+      await PermissionUtil().requestPhotoPermission();
+      return null;
+    }
+
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
