@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
@@ -25,6 +26,34 @@ class TagController extends GetxController {
     tags.value = _storageController.tags.value;
     if (tags.isEmpty) {
       getAllTags();
+    }
+  }
+
+  Future<void> subscribeToTopics() async {
+    await _storageController.loadTags();
+    var tags = _storageController.tags.value;
+    if (tags.isEmpty) {
+      await getAllTags();
+      tags = _storageController.tags.value;
+    }
+    for (var tag in tags) {
+      if (tag.isActive) {
+        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
+      }
+    }
+  }
+
+  Future<void> unSubscribeToTopics() async {
+    await _storageController.loadTags();
+    var tags = _storageController.tags.value;
+    if (tags.isEmpty) {
+      await getAllTags();
+      tags = _storageController.tags.value;
+    }
+    for (var tag in tags) {
+      if (tag.isActive) {
+        FirebaseMessaging.instance.unsubscribeFromTopic(tag.tag);
+      }
     }
   }
 

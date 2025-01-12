@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/screens/Middle%20Button/middleButton.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/screens/alerts/alertsPage.dart';
@@ -23,6 +25,7 @@ class NewBottomBar extends StatefulWidget {
 class _NewBottomBarState extends State<NewBottomBar> {
   int _selectedIndex = 0;
   double height = Platform.isAndroid ? 70 : 100;
+  final TagController _tagController = Get.find<TagController>();
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -172,6 +175,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
   initState() {
     super.initState();
     listenNotification();
+    _tagController.subscribeToTopics();
   }
 
   @override

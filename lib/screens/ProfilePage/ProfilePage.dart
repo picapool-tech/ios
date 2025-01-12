@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
@@ -962,9 +963,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ElevatedButton(
                 onPressed: () async {
                   await _authController.logout();
+                  await Get.find<TagController>().unSubscribeToTopics();
                   if (context.mounted) {
                     Navigator.pop(context); // Close the modal
-                    Get.offAll(() => const LoginScreen());
+                    Get.offAll(
+                      () => const LoginScreen(),
+                    );
                   } // Add your logout functionality here
                 },
                 style: ElevatedButton.styleFrom(

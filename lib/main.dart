@@ -48,9 +48,9 @@ void main() async {
   Get.put(AssetsController());
   Get.put(LiveOfferController());
   Get.put(ProductController());
+  Get.put(TagController());
   Get.put(BrandController());
   Get.put(FormController());
-  Get.put(TagController());
   Get.put(CategoryController());
 
   await Env.load();
@@ -85,8 +85,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     ConnectionStatusListener.getInstance().initialize();
-    
-    subscribeToTopics();
   }
 
   @override
@@ -106,23 +104,6 @@ class _MyAppState extends State<MyApp> {
           }),
     );
   }
-
-  void subscribeToTopics() async {
-    await storageController.loadTags();
-    var tags = storageController.tags.value;
-    if (tags.isEmpty) {
-      var tagController = Get.find<TagController>();
-      await tagController.getAllTags();
-      tags = storageController.tags.value;
-    }
-    for (var tag in tags) {
-      if (tag.isActive) {
-        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
-      }
-    }
-  }
-
-  
 
   Widget _handleAuthState() {
     debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");

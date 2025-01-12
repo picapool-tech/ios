@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decode/jwt_decode.dart';
@@ -5,6 +6,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/access_token_model.dart';
 import 'package:picapool/models/auth_model.dart';
@@ -223,46 +225,6 @@ class AuthController extends GetxController {
 
   Future<void> verifyOtp(String phoneNumber) async {}
 
-  // Future<void> createUser() async {
-  //   isLoading.value = true;
-  //   update();
-
-  //   try {
-  //     var accessToken = await getAccessToken();
-  //     final result = await _authApi.createUser(
-  //       user.value!,
-  //       accessToken!,
-  //     );
-
-  //     await result.fold(
-  //       (fail) async {
-  //         errorMessage.value = fail.message;
-  //         var userData = await getUser(user.value!.id);
-  //         auth.value!.user!.update(userData!.toJson());
-  //         user.value!.update(userData.toJson());
-
-  //         await _storageController.saveUser(user.value!);
-  //         await _storageController.saveAuth(auth.value!);
-
-  //         showErrorDialog(fail.message);
-  //       },
-  //       (createdUser) async {
-  //         errorMessage.value = "";
-  //         auth.value!.user!.update(createdUser.toJson());
-  //         user.value!.update(createdUser.toJson());
-  //         await _storageController.saveUser(user.value!);
-  //         await _storageController.saveAuth(auth.value!);
-  //       },
-  //     );
-  //   } catch (e) {
-  //     debugPrint('Create User Error: $e');
-  //     showErrorDialog('Failed to create user. Please try again.');
-  //   }
-
-  //   isLoading.value = false;
-  //   update();
-  // }
-
   Future<void> updateUserData(User user) async {
     if (auth.value == null) {
       return;
@@ -277,6 +239,7 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     await _storageController.clearUser();
     await _storageController.clearAuth();
+    
     auth.value = null;
     _userController.user.value = null;
     checkForExistingUser();
