@@ -1,16 +1,10 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:picapool/core/api.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
-import 'package:http/http.dart' as http;
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
-import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';
 
 class ChatAndOfferModel {
@@ -282,7 +276,6 @@ class ChatApi {
       // );
 
       // debugPrint("GET CHAT FROM LVIE OFFER ID RESPONSE: ${response.body}");
-      
     } catch (e) {
       debugPrint("GET CAHT FROM LIVE OFFER ID ERROR: $e");
       return left(

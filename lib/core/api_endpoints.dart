@@ -8,8 +8,8 @@ class APIEndpoints {
 
   static const String getUserChats = "/user/chats";
   static const String getNearestUsers = "/user/nearest";
-
   static const String createOffer = "/offer";
-
   static const String createChat = "/chat";
+
+  static const String sendFeedback = "/feedback";
 }
