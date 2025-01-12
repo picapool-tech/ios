@@ -120,29 +120,35 @@ class ChatApi {
     required int chatId,
   }) async {
     try {
-      var response = await http.get(
-        Uri.parse('https://api.picapool.com/v2/chat/$chatId/messages'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllMessagesOfChat(chatId),
+        method: RequestMethod.getRequest,
       );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      if (responseModel.success) {
-        List<Message> messages = [];
-        var data = responseModel.data['Messages'];
-        for (var chat in data) {
-          messages.add(Message.fromJson(chat));
+      // var response = await http.get(
+      //   Uri.parse('https://api.picapool.com/v2/chat/$chatId/messages'),
+      //   headers: {
+      //     'Authorization': 'Bearer $accessToken',
+      //   },
+      // );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          List<Message> messages = [];
+          var data = responseModel.data['Messages'];
+          for (var chat in data) {
+            messages.add(Message.fromJson(chat));
+          }
+          return right(messages);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
         }
-        return right(messages);
-      } else {
-        return left(
-          Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      });
     } catch (e) {
       debugPrint("Error on getAllMessages: $e");
       return left(
@@ -166,28 +172,35 @@ class ChatApi {
       };
 
       debugPrint("$body");
-      var response = await http.post(
-        Uri.parse("https://api.picapool.com/v2/chat"),
-        headers: {
-          "Authorization": "Bearer $accessToken",
-        },
-        body: jsonEncode(body),
+
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.createChat,
+        method: RequestMethod.post,
+        body: body,
       );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      debugPrint("CREATE CHAT WITH OFFER ID: ${response.body}");
-      if (responseModel.success) {
-        var chat = Chat.fromJson(responseModel.data['chat']);
-        var offer = Offer.fromJson(responseModel.data['offer']);
-        return right(ChatAndOfferModel(chat: chat, offer: offer));
-      } else {
-        return left(
-          Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      // var response = await http.post(
+      //   Uri.parse("https://api.picapool.com/v2/chat"),
+      //   headers: {
+      //     "Authorization": "Bearer $accessToken",
+      //   },
+      //   body: jsonEncode(body),
+      // );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          var chat = Chat.fromJson(responseModel.data['chat']);
+          var offer = Offer.fromJson(responseModel.data['offer']);
+          return right(ChatAndOfferModel(chat: chat, offer: offer));
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
     } catch (e) {
       debugPrint("Error creating chat with offer id : $e");
       return left(
@@ -204,30 +217,28 @@ class ChatApi {
     required int chatId,
   }) async {
     try {
-      var response = await http.get(
-        Uri.parse('https://api.picapool.com/v2/chat/$chatId/users'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllUsersInChat(chatId),
+        method: RequestMethod.getRequest,
       );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
-      if (responseModel.success) {
-        List<User> users = [];
-        var data = responseModel.data;
-        for (var user in data) {
-          users.add(User.fromJson(user));
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          List<User> users = [];
+          var data = responseModel.data;
+          for (var user in data) {
+            users.add(User.fromJson(user));
+          }
+          return right(users);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
         }
-        return right(users);
-      } else {
-        return left(
-          Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      });
     } catch (e) {
       debugPrint("Error on getAllUsersInChat: $e");
       return left(
@@ -244,16 +255,12 @@ class ChatApi {
     required int liveOfferId,
   }) async {
     try {
-      var response = await http.get(
-        Uri.parse("https://api.picapool.com/v2/chat/liveOffer/$liveOfferId"),
-        headers: {
-          "Authorization": "Bearer $accessToken",
-        },
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getChatFromLiveOfferId(liveOfferId),
+        method: RequestMethod.getRequest,
       );
 
-      debugPrint("GET CHAT FROM LVIE OFFER ID RESPONSE: ${response.body}");
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+      return response.fold((error) => left(error), (responseModel) {
         if (responseModel.success) {
           var chat = Chat.fromJson(responseModel.data);
           return right(chat);
@@ -265,14 +272,17 @@ class ChatApi {
             ),
           );
         }
-      } else {
-        return left(
-          Failure(
-            message: "Something went wrong",
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      });
+
+      // var response = await http.get(
+      //   Uri.parse("https://api.picapool.com/v2/chat/liveOffer/$liveOfferId"),
+      //   headers: {
+      //     "Authorization": "Bearer $accessToken",
+      //   },
+      // );
+
+      // debugPrint("GET CHAT FROM LVIE OFFER ID RESPONSE: ${response.body}");
+      
     } catch (e) {
       debugPrint("GET CAHT FROM LIVE OFFER ID ERROR: $e");
       return left(
