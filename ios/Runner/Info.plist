@@ -38,7 +38,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to allow you to take photos and record videos directly, enriching your content creation and sharing capabilities.</string>
+	<string>We need this permission so that you can use camera to click a profile picture instead of choosing one from the gallery.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We need your location to show nearby offers and locations when you are not active in the app.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -46,7 +46,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to show nearby offers when you are using your app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Access your Photo Library to select photos and videos for uploading and customizing your profile within the app.</string>
+	<string>Description of why you are wanting this permission</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

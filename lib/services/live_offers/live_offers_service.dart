@@ -1,8 +1,13 @@
+// ignore_for_file: avoid_print
+
+import 'dart:convert';
 
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/create_live_offer_response.dart';
 import 'package:picapool/models/live_offer/get_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
+import 'package:picapool/models/live_offer/search_cabs_payload.dart';
+import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/utils/auth_utils.dart';
 import 'package:picapool/utils/constants.dart';
 import 'package:picapool/utils/http_helper.dart';
@@ -74,6 +79,48 @@ class LiveOffersService {
         // We were incorrectly parsing the response before
         // The response.data already contains the full response
         return CreateLiveOfferResponse.fromJson(responseData);
+      } else {
+        print("=== ERROR: Non-200 status code ===");
+        print(response.statusCode);
+        print(response.data);
+        throw Exception("Failed to create live offer: ${response.statusCode}");
+      }
+    } on DioException catch (e) {
+      print("=== DIO ERROR ===");
+      print(e.response?.data);
+      throw Exception("Network error: ${e.message}");
+    } catch (e) {
+      print("=== UNEXPECTED ERROR ===");
+      print(e);
+      throw Exception("Unexpected error: $e");
+    }
+  }
+  
+  static Future<List<SearchCabsResponse>> searchLiveOffer(SearchCabsPayload searchCabPayload, String accessToken) async {
+    try {
+      await getAccessToken();
+      final Dio dio = await getDio();
+      print("=== SENDING OFFER PAYLOAD ===");
+      print(searchCabPayload.toJson());
+      
+      final Response<dynamic> response = await dio.post(
+        "${Constants.apiUrl}${Constants.searcLiveOfferEndpoint}",
+        data: searchCabPayload.toJson(),
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken'
+          },
+        )
+      );
+
+      print("=== API RESPONSE ===");
+      print(response.data);
+
+      if (response.statusCode! < 300 && response.statusCode! >= 200) {
+        final responseData = response.data;
+        final cabsList = responseData as List<dynamic>;
+        return cabsList.map((cabs) => SearchCabsResponse.fromJson(cabs)).toList();
       } else {
         print("=== ERROR: Non-200 status code ===");
         print(response.statusCode);
