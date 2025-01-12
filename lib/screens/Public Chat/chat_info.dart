@@ -31,31 +31,45 @@ class _ChatInfoState extends State<ChatInfo> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder(
-        init: _chatController,
-        builder: (controller) {
-          if (_chatController.isLoading.value &&
-              _chatController.usersInChat.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Chat Info'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        centerTitle: false,
+      ),
+      body: GetBuilder(
+          init: _chatController,
+          builder: (controller) {
+            if (_chatController.isLoading.value &&
+                _chatController.usersInChat.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          if (_chatController.usersInChat.isEmpty &&
-              !_chatController.isLoading.value) {
-            return const Center(
-              child: Text('No users in chat'),
-            );
-          }
+            if (_chatController.usersInChat.isEmpty &&
+                !_chatController.isLoading.value) {
+              return const Center(
+                child: Text('No users in chat'),
+              );
+            }
 
-          return ListView.builder(
-            itemCount: _chatController.usersInChat.length,
-            itemBuilder: (context, index) {
-              final user = _chatController.usersInChat[index];
-              return userListItem(user);
-            },
-          );
-        });
+            return ListView.builder(
+              itemCount: _chatController.usersInChat.length,
+              itemBuilder: (context, index) {
+                final user = _chatController.usersInChat[index];
+                return userListItem(user);
+              },
+            );
+          }),
+    );
   }
 
   Widget userListItem(User user) {

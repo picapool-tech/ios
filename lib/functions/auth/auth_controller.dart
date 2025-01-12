@@ -173,6 +173,7 @@ class AuthController extends GetxController {
       refreshToken: loginModel.refreshToken,
       mobile: mobile,
     );
+    await _storageController.saveAuth(authData);
     await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
     await _storageController.saveAccessToken(loginModel.accessToken);
     debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
@@ -285,10 +286,23 @@ class AuthController extends GetxController {
     if (auth.value == null) {
       return null;
     }
+
     var accessToken = auth.value!.accessToken!;
     debugPrint("GETITNG ACCESS TOKEN : $accessToken");
     debugPrint("AUTH VALUE : ${auth.value?.toJson()}");
     if (Jwt.isExpired(accessToken)) {
+      await _storageController.loadAuth();
+      var tempAuth = _storageController.auth.value;
+      if (tempAuth == null) {
+        return null;
+      }
+
+      if (!Jwt.isExpired(tempAuth.accessToken!)) {
+        auth.value = tempAuth;
+        update();
+        return tempAuth.accessToken;
+      }
+
       debugPrint("JWT is expired");
       var newAccessToken = await _authApi.updateAccessToken(
         accessToken: accessToken,
@@ -302,8 +316,8 @@ class AuthController extends GetxController {
           return null;
         },
         (newAccessToken) async {
-          auth.value!.copyWith(accessToken: newAccessToken);
-          await loadAndSaveAuth(auth.value!);
+          var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
+          await loadAndSaveAuth(newAuth);
           accessToken = newAccessToken;
           await _storageController.saveAccessToken(accessToken);
           return newAccessToken;

@@ -47,3 +47,5 @@ android/app/keystore.properties
 android/app/myapp.keystore
 
 .env
+
+*.lock

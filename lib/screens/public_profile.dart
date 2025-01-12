@@ -6,6 +6,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/utils/permission_util.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
 class PublicProfile extends StatefulWidget {
@@ -325,6 +326,19 @@ class _PublicProfileState extends State<PublicProfile> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    var permission = PermissionUtil();
+    if (source == ImageSource.gallery &&
+        !await permission.isPhotoPermissionGranted()) {
+      await permission.requestPhotoPermission();
+      return;
+    }
+
+    if (source == ImageSource.camera &&
+        !await permission.isCameraPermissionGranted()) {
+      await permission.requestCameraPermission();
+      return;
+    }
+
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: source,

@@ -115,13 +115,16 @@ class StorageController extends GetxController {
             await saveAuth(newAuth);
             await saveAccessToken(newAccessToken);
             auth.value = newAuth;
-            auth.refresh();
             update();
+            debugPrint(
+              "Getting access Token : $newAccessToken : ${auth.value!.accessToken}",
+            );
             return newAccessToken;
           },
         );
+      } else {
+        return auth.value!.accessToken;
       }
-      return auth.value!.accessToken!;
     }
     return null;
   }

@@ -161,123 +161,112 @@ class _ChatPageState extends State<ChatPage>
             ),
         ],
         centerTitle: false,
-        title: Hero(
-          tag: widget.chat.id,
-          child: Text(
-            widget.chatTitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              fontFamily: "MontserratSB",
+        title: InkWell(
+          onTap: () => Get.to(
+            () => ChatInfo(
+              chatId: widget.chat.id,
+              creatorId: widget.offer?.userId ?? widget.liveOffer?.userId ?? -1,
+            ),
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            height: AppBarTheme.of(context).toolbarHeight,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                widget.chatTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontFamily: "MontserratSB",
+                ),
+              ),
             ),
           ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.orange,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.orange,
-          labelStyle: const TextStyle(
-            fontFamily: "MontserratR", // Tab bar font style
-          ),
-          tabs: const [
-            Tab(text: "Public Chat"),
-            Tab(text: "Chat Info"),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
+      body:
           // Public Chat Tab
           Column(
-            children: [
-              Expanded(
-                child: GetBuilder<ChatController>(
-                  builder: (controller) {
-                    if (controller.isLoading.value &&
-                        controller.messages.isEmpty) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+        children: [
+          Expanded(
+            child: GetBuilder<ChatController>(
+              builder: (controller) {
+                if (controller.isLoading.value && controller.messages.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                    if (controller.errorMessage.isNotEmpty &&
-                        controller.messages.isEmpty) {
-                      return Center(
-                        child: Text(controller.errorMessage.value),
-                      );
-                    }
+                if (controller.errorMessage.isNotEmpty &&
+                    controller.messages.isEmpty) {
+                  return Center(
+                    child: Text(controller.errorMessage.value),
+                  );
+                }
 
-                    if (controller.messages.isEmpty) {
-                      return const Center(
-                        child: Text("No messages found"),
-                      );
-                    }
+                if (controller.messages.isEmpty) {
+                  return const Center(
+                    child: Text("No messages found"),
+                  );
+                }
 
-                    debugPrint("${controller.messages.length}");
+                debugPrint("${controller.messages.length}");
 
-                    return ListView.builder(
-                      controller: chatController.scrollController,
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: controller.messages.length,
-                      itemBuilder: (context, index) {
-                        final message = controller.messages[index];
+                return ListView.builder(
+                  controller: chatController.scrollController,
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: controller.messages.length,
+                  itemBuilder: (context, index) {
+                    final message = controller.messages[index];
 
-                        return ChatBubble(
-                          sender: (message.userId != null)
-                              ? chatController.getUserNameFromIdInChat(
-                                      message.userId!) ??
-                                  ""
-                              : "",
-                          message: message.content,
-                          time: DateTimeHelper.timeAgoSince(
-                              message.createdAt.toIso8601String()),
-                          isMe:
-                              message.userId == _userController.user.value!.id,
-                          imageUrl: '',
-                          showSenderDetails: false,
-                          // replyToMessage: message.replyToMessage,
-                          // replySender: message.replySender,
-                        );
-                      },
+                    return ChatBubble(
+                      sender: (message.userId != null)
+                          ? chatController
+                                  .getUserNameFromIdInChat(message.userId!) ??
+                              ""
+                          : "",
+                      message: message.content,
+                      time: DateTimeHelper.timeAgoSince(
+                          message.createdAt.toIso8601String()),
+                      isMe: message.userId == _userController.user.value!.id,
+                      imageUrl: '',
+                      showSenderDetails: false,
+                      // replyToMessage: message.replyToMessage,
+                      // replySender: message.replySender,
                     );
                   },
-                ),
-              ),
-              ChatInputField(
-                controller: _messageController,
-                isMessageEmpty: _isMessageEmpty,
-                onSend: (!_isMessageEmpty)
-                    ? (message) {
-                        debugPrint("Sending..chat");
-                        if (!chatController.isSocketConnected()) {
-                          Get.snackbar(
-                            "No Action",
-                            "No connection to send message",
-                          );
-                        }
-                        chatController.sendMessage(message);
-                        if (_scrollController.hasClients) {
-                          debugPrint("Scrolling to bottom");
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOut,
-                          );
-                        }
-                      }
-                    : (message) {},
-              ),
-            ],
+                );
+              },
+            ),
           ),
-          // Private Chat Tab
-          ChatInfo(
-            chatId: widget.chat.id,
-            creatorId: widget.offer?.userId! ?? -1,
+          ChatInputField(
+            controller: _messageController,
+            isMessageEmpty: _isMessageEmpty,
+            onSend: (!_isMessageEmpty)
+                ? (message) {
+                    debugPrint("Sending..chat");
+                    if (!chatController.isSocketConnected()) {
+                      Get.snackbar(
+                        "No Action",
+                        "No connection to send message",
+                      );
+                    }
+                    chatController.sendMessage(message);
+                    if (_scrollController.hasClients) {
+                      debugPrint("Scrolling to bottom");
+                      _scrollController.animateTo(
+                        _scrollController.position.maxScrollExtent,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  }
+                : (message) {},
           ),
         ],
       ),
+      // Private Chat Tab
     );
   }
 

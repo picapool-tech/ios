@@ -84,8 +84,64 @@ class PermissionUtil {
     return status.isGranted;
   }
 
+  Future<bool> requestPhotoPermission() async {
+    PermissionStatus status = await Permission.photos.status;
+
+    if (status.isDenied) {
+      // Show custom dialog to request permission
+      bool request = await _showPermissionDialog(
+        title: 'Photo Permission',
+        content: 'This app requires access to your photos.',
+        permission: Permission.photos,
+      );
+      return request;
+    } else if (status.isPermanentlyDenied) {
+      // Show dialog directing to app settings
+      await _showPermanentlyDeniedDialog(
+        title: 'Photo Permission',
+        content:
+            'Photo permissions are permanently denied. Please enable them in settings.',
+      );
+      return false;
+    }
+
+    return status.isGranted;
+  }
+
+  Future<bool> requestCameraPermission() async {
+    PermissionStatus status = await Permission.camera.status;
+
+    if (status.isDenied) {
+      // Show custom dialog to request permission
+      bool request = await _showPermissionDialog(
+        title: 'Camera Permission',
+        content: 'This app requires access to your camera.',
+        permission: Permission.camera,
+      );
+      return request;
+    } else if (status.isPermanentlyDenied) {
+      // Show dialog directing to app settings
+      await _showPermanentlyDeniedDialog(
+        title: 'Camera Permission',
+        content:
+            'Camera permissions are permanently denied. Please enable them in settings.',
+      );
+      return false;
+    }
+
+    return status.isGranted;
+  }
+
   Future<bool> isLocationPermissionGranted() async {
     return await Permission.location.isGranted;
+  }
+
+  Future<bool> isPhotoPermissionGranted() async {
+    return await Permission.photos.isGranted;
+  }
+
+  Future<bool> isCameraPermissionGranted() async {
+    return await Permission.camera.isGranted;
   }
 
   /// Checks if notification permission is granted

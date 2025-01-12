@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/user/user_controller.dart';
@@ -14,6 +15,7 @@ import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/image_utils.dart';
+import 'package:picapool/utils/permission_util.dart';
 
 class NearUserModel {
   final String username;
@@ -191,6 +193,12 @@ class _RequestVicinityState extends State<RequestVicinity> {
   }
 
   Future<void> _pickImages() async {
+    var isPhotoPermissionGranted =
+        await PermissionUtil().isPhotoPermissionGranted();
+    if (!isPhotoPermissionGranted) {
+      await PermissionUtil().requestPhotoPermission();
+      return;
+    }
     final pickedFiles = await _picker.pickMultiImage(
       imageQuality: 10,
     );

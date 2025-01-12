@@ -24,7 +24,7 @@ class _LocationScreenState extends State<LocationScreen>
   LatLng? _currentPosition;
   LatLng? _selectedPosition;
   String _locationMessage = "Fetching location...";
-  final bool _locationEnabled = true;
+  bool _locationEnabled = false;
   Marker? _pinMarker;
   Circle? _currentLocationCircle;
   Circle? _centerDotCircle;
@@ -66,6 +66,7 @@ class _LocationScreenState extends State<LocationScreen>
       ));
 
       _checkKeyboardVisibility();
+      _locationEnabled = _locationController.state.value.location != null;
     });
   }
 
@@ -321,8 +322,7 @@ class _LocationScreenState extends State<LocationScreen>
               left: 20,
               right: 20,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(25),
@@ -336,8 +336,12 @@ class _LocationScreenState extends State<LocationScreen>
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Icon(Icons.location_off, color: Colors.orange),
+                    const Icon(
+                      Icons.location_off,
+                      color: Colors.orange,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Column(
@@ -419,7 +423,7 @@ class _LocationScreenState extends State<LocationScreen>
                 Expanded(
                   child: Container(
                       height: 50,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
@@ -561,7 +565,7 @@ class _LocationScreenState extends State<LocationScreen>
               child: Center(
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -573,12 +577,20 @@ class _LocationScreenState extends State<LocationScreen>
                       ),
                     ],
                   ),
-                  child: Text(
-                    "Drag Pin to confirm your location",
-                    style: GoogleFonts.montserrat(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.orange),
+                      const SizedBox(width: 4),
+                      Text(
+                        "Drag Pin to confirm your location",
+                        style: GoogleFonts.montserrat(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

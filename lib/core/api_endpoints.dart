@@ -1,4 +1,6 @@
 class APIEndpoints {
+
+  // user endpoints
   static String getAllUserCreatedOffer(int id) => "/user/$id/offers";
   static String getOffersForUser(int userId) => "/user/$userId/alerts";
   static String getChatFromOfferId(int offerId) => "/chat/offer/$offerId";

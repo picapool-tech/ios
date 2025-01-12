@@ -329,6 +329,7 @@ class AuthApi {
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
       if (responseModel.success) {
         String newAccessToken = responseModel.data['newAccessToken'] as String;
+        debugPrint("New access TOken from server: $newAccessToken");
         return right(newAccessToken);
       }
       return left(

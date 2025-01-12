@@ -340,6 +340,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           var locationEnabled = permissionUtil.isLocationPermissionGranted();
           var notificationEnabled =
               permissionUtil.isNotificationPermissionGranted();
+
+          var galleryEnabled = permissionUtil.isPhotoPermissionGranted();
+          var cameraEnabled = permissionUtil.isCameraPermissionGranted();
+
           return StatefulBuilder(builder: (context, setState) {
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -435,7 +439,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               }
 
                               return const SizedBox.shrink();
-                            })
+                            }),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                          future: galleryEnabled,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return InkWell(
+                                onTap: () async {
+                                  if (snapshot.data ?? false) {
+                                    return;
+                                  } else {
+                                    await permissionUtil
+                                        .requestPhotoPermission();
+                                    galleryEnabled = permissionUtil
+                                        .isPhotoPermissionGranted();
+                                    setState(() {});
+                                  }
+                                },
+                                child: _buildPermissionOption(
+                                  Icons.photo,
+                                  "Photos Library",
+                                  isEnabled: snapshot.data!,
+                                ),
+                              );
+                            }
+
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                          future: cameraEnabled,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return InkWell(
+                                onTap: () async {
+                                  if (snapshot.data ?? false) {
+                                    return;
+                                  } else {
+                                    await permissionUtil
+                                        .requestCameraPermission();
+                                    cameraEnabled = permissionUtil
+                                        .isCameraPermissionGranted();
+                                    setState(() {});
+                                  }
+                                },
+                                child: _buildPermissionOption(
+                                  Icons.camera,
+                                  "Camera",
+                                  isEnabled: snapshot.data!,
+                                ),
+                              );
+                            }
+
+                            return const SizedBox.shrink();
+                          },
+                        )
                       ],
                     ),
                   ),
