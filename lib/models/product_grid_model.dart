@@ -15,7 +15,7 @@ class ProductGrid extends StatelessWidget {
     return GetBuilder<ProductController>(
         builder: (ProductController productInstance) {
       return productInstance.productsState == ProductsState.productsLoaded
-          ? productInstance.productsList.isEmpty
+          ? productInstance.searchedProductsList == null || productInstance.searchedProductsList!.isEmpty
               ? const Center(
                   child: Text('No Products'),
                 )
@@ -28,21 +28,21 @@ class ProductGrid extends StatelessWidget {
                     childAspectRatio: 3 / 4,
                   ),
                   // itemCount: products.length,
-                  itemCount: productInstance.productsList.length,
+                  itemCount: productInstance.searchedProductsList?.length,
                   itemBuilder: (context, index) {
                     return ProductItem(
                       productId:
-                          productInstance.productsList[index].id.toString(),
-                      image: productInstance.productsList[index].images!.isEmpty
+                          productInstance.searchedProductsList?[index].id.toString() ?? "00",
+                      image: productInstance.searchedProductsList?[index].images == null || productInstance.searchedProductsList![index].images!.isEmpty
                           ? "string"
-                          : productInstance.productsList[index].images?.first ??
+                          : productInstance.searchedProductsList?[index].images?.first ??
                               "string",
                       title:
-                          productInstance.productsList[index].name ?? "No Name",
-                      price: productInstance.productsList[index].mrp.toString(),
-                      offerPrice: productInstance.productsList[index].offerPrice
-                          .toString(),
-                      time: productInstance.productsList[index].updatedAt
+                          productInstance.searchedProductsList?[index].name ?? "No Name",
+                      price: productInstance.searchedProductsList?[index].mrp.toString() ?? "N/A",
+                      offerPrice: productInstance.searchedProductsList?[index].offerPrice
+                          .toString() ?? "N/A",
+                      time: productInstance.searchedProductsList?[index].updatedAt
                               ?.toIso8601String() ??
                           " ",
                     );
