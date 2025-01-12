@@ -18,25 +18,25 @@ class OffersApi {
     required String accessToken,
   }) async {
     try {
-      var response = await http.get(
-        Uri.parse("https://api.picapool.com/v2/offer/all"),
-        headers: {'Authorization': 'Bearer $accessToken'},
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllOffers,
+        method: RequestMethod.getRequest,
       );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      debugPrint("FROM ALL OFFERS API : ${response.body}");
-      if (responseModel.success) {
-        return right(
-          responseModel.data
-              .map<Offer>((offer) => Offer.fromJson(offer))
-              .toList(),
-        );
-      } else {
-        return left(Failure(
-          message: responseModel.message,
-          stackTrace: StackTrace.current,
-        ));
-      }
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(
+            responseModel.data
+                .map<Offer>((offer) => Offer.fromJson(offer))
+                .toList(),
+          );
+        } else {
+          return left(Failure(
+            message: responseModel.message,
+            stackTrace: StackTrace.current,
+          ));
+        }
+      });
     } catch (e) {
       debugPrint("Error while fetching all offers: $e");
       return left(Failure(
@@ -51,41 +51,32 @@ class OffersApi {
     required String accessToken,
   }) async {
     try {
-      final response = await http.get(
-        Uri.parse('https://api.picapool.com/v2/user/$userId/alerts'),
-        headers: {
-          'Authorization': "Bearer $accessToken",
-        },
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getOffersForUser(userId),
+        method: RequestMethod.getRequest,
       );
 
-      debugPrint("FROM OFEER FOR USER API : ${response.body}");
-      if (response.statusCode < 200 || response.statusCode > 300) {
-        return left(Failure(
-          message: "Not able to get offers for user",
-          stackTrace: StackTrace.current,
-        ));
-      }
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          var offers = responseModel.data['Offers'];
+          List<Offer> offersList =
+              offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      if (responseModel.success) {
-        var offers = responseModel.data['Offers'];
-        List<Offer> offersList =
-            offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
+          var liveOffers = responseModel.data['LiveOffers'];
+          List<LiveOffer> liveOffersList = liveOffers
+              .map<LiveOffer>((liveOffer) => LiveOffer.fromJson(liveOffer))
+              .toList();
 
-        var liveOffers = responseModel.data['LiveOffers'];
-        List<LiveOffer> liveOffersList = liveOffers
-            .map<LiveOffer>((liveOffer) => LiveOffer.fromJson(liveOffer))
-            .toList();
-
-        return right(offersList);
-      } else {
-        return left(
-          Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+          return right(offersList);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
     } catch (e) {
       return left(
         Failure(
@@ -101,22 +92,23 @@ class OffersApi {
     required int offerId,
   }) async {
     try {
-      var response = await http.get(
-          Uri.parse("https://api.picapool.com/v2/chat/offer/$offerId"),
-          headers: {
-            'Authorization': 'Bearer $accessToken',
-          });
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getChatFromOfferId(offerId),
+        method: RequestMethod.getRequest,
+      );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      debugPrint("GET CHAT FROM OFFER ID : ${response.body}");
-      if (responseModel.success) {
-        return right(Chat.fromJson(responseModel.data));
-      } else {
-        return left(Failure(
-          message: responseModel.message,
-          stackTrace: StackTrace.current,
-        ));
-      }
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(Chat.fromJson(responseModel.data));
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
     } catch (e) {
       debugPrint("Error while getting chat from offer: $e");
       return left(Failure(
@@ -250,34 +242,27 @@ class OffersApi {
   }) async {
     try {
       var body = {
-        "loc": location.toJson(),
+        "loc": {
+          "lat": location.lat.toDouble(),
+          "lng": location.long.toDouble(),
+        },
         "radius": 1000,
+        "chats": true,
+        "products": true,
       };
 
       debugPrint("Request body of nearest offer: ${body.toString()}");
 
-      var response = await http.post(
-        Uri.parse("https://api.picapool.com/v2/offer/search"),
-        headers: {
-          'Authorization': "Bearer $accessToken",
-          'Content-Type': 'application/json'
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getOffersInVicinity,
+        method: RequestMethod.post,
+        body: body,
+        additionalHeaders: {
+          'Content-Type': 'application/json',
         },
-        body: json.encode({
-          "loc": {
-            "lat": location.lat.toDouble(),
-            "lng": location.long.toDouble(),
-          },
-          "radius": 1000,
-          "chats": true,
-          "products": true,
-        }),
       );
 
-      debugPrint("GET OFFERS IN VICINITY : ${response.body}");
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
+      return response.fold((error) => left(error), (responseModel) {
         if (responseModel.success) {
           return right(
             responseModel.data
@@ -292,14 +277,7 @@ class OffersApi {
             ),
           );
         }
-      } else {
-        return left(
-          Failure(
-            message: "Something went wrong",
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      });
     } catch (e) {
       debugPrint("Error in getOffersInVicinity : $e");
       return left(
