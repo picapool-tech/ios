@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/product_controller.dart';
+import 'package:picapool/models/offers/search_offer_payload.dart';
 import 'package:picapool/models/product_grid_model.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
@@ -19,7 +20,17 @@ class ProductListsPageState extends State<ProductListsPage> {
   @override
   void initState() {
     super.initState();
-    productController.getAllProducts();
+    productController.searchOffers(
+      SearchOfferPayload(
+        chats: true,
+        loc: Loc(
+          lat: 12.92,
+          lng: 77.64,
+        ),
+        products: true,
+        radius: 500,
+      )
+    );
     // Add listener for search
     _productSearchController.addListener(_onSearchChanged);
   }

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/models/offers/search_offer_payload.dart';
+import 'package:picapool/models/offers/search_offer_response.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
 import 'package:picapool/services/products/payloads/update_product_payload.dart';
 import 'package:picapool/services/products/responses/create_product_response.dart';
@@ -13,6 +15,7 @@ import 'package:picapool/services/products/responses/update_product_response.dar
 enum ProductsState { productsLoading, productsLoaded, productsCantLoad }
 enum CreateProductState { creating, created, error }
 enum IndividualProductsState { productsLoading, productsLoaded, productsCantLoad }
+enum SearchOffersState { initial, searching, searched, error }
 
 class ProductController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
@@ -21,6 +24,9 @@ class ProductController extends GetxController {
   ProductsState productsState = ProductsState.productsLoaded;
   CreateProductState createProductState = CreateProductState.created;
   IndividualProductsState individualProductsState = IndividualProductsState.productsLoading;
+  SearchOffersState searchOffersState = SearchOffersState.initial;
+  SearchOffersResponse? searchOffersResponse;
+  List<SearchedProduct>? searchedProductsList;
   
   List<ProductData> _allProducts = []; // Store original list
   List<ProductData> productsList = [];
@@ -143,5 +149,47 @@ class ProductController extends GetxController {
       print('Error getting product details: $e');
     }
     update();
+  }
+
+  /// Search offers
+  Future<void> searchOffers(SearchOfferPayload searchOfferPayload) async {
+    try {
+      searchOffersState = SearchOffersState.searching;
+      update();
+
+      final response = await ProductsServices.searchOffers(
+        searchOfferPayload, 
+        accessToken ?? ""
+      );
+
+      if (response.success == true) {
+        searchOffersResponse = response;
+        if(response.data != null){
+          searchedProductsList = response.data!.first.products ;
+        }
+        searchOffersState = SearchOffersState.searched;
+      } else {
+        searchOffersState = SearchOffersState.error;
+        Get.snackbar(
+          'Error',
+          response.message ?? 'Failed to search offers',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      searchOffersState = SearchOffersState.error;
+      debugPrint('Error searching offers: $e');
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred while searching offers',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      update();
+    }
   }
 }

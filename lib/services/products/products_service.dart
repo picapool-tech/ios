@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:picapool/models/offers/search_offer_payload.dart';
+import 'package:picapool/models/offers/search_offer_response.dart';
 import 'package:picapool/services/products/entities/product_entity.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
 import 'package:picapool/services/products/payloads/update_product_payload.dart';
@@ -232,6 +234,52 @@ class ProductsServices {
         //   message: errMessage,
         //   data: [],
         // );
+      }
+    }
+  }
+
+  static Future<SearchOffersResponse> searchOffers(
+    SearchOfferPayload searchOfferPayload, 
+    String accessToken
+  ) async {
+    try {
+      final Dio dio = await getDio();
+      final Response<dynamic> response = await dio.post(
+        Constants.apiUrl + Constants.searchOfferProductEndpoint,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken'
+          },
+        ),
+        data: jsonEncode(searchOfferPayload),
+      );
+
+      if (response.statusCode! < 300 && response.statusCode! >= 200) {
+        return SearchOffersResponse.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+        final String errMessage = data['message'] as String? ?? 'Connection error';
+        return SearchOffersResponse(
+          success: false,
+          message: errMessage,
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return SearchOffersResponse(
+          success: false,
+          message: 'Connection Error',
+        );
+      } else {
+        final Map<String, dynamic> data = e.response?.data as Map<String, dynamic>;
+        final String errMessage = data['message'] as String? ?? 'Connection error';
+        return SearchOffersResponse(
+          success: false,
+          message: errMessage,
+        );
       }
     }
   }

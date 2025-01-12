@@ -8,6 +8,7 @@ class Constants {
   static const getLiveOfferEndpoint = "/liveOffer";
   static const createLiveOfferEndpoint = "/liveOffer";
   static const searcLiveOfferEndpoint = "/liveOffer/search";
+  static const searchOfferProductEndpoint = "/offer/search";
 
   // endpoints that need an ID
   static const getProductEndoint = "/product/";
