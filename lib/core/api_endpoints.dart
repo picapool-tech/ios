@@ -6,11 +6,12 @@ class APIEndpoints {
   static String getAllUsersInChat(int chatId) => "/chat/$chatId/users";
   static String getChatFromLiveOfferId(int liveOfferId) =>
       "/chat/liveOffer/$liveOfferId";
-
   static String getTagById(int tagId) => "/tag/$tagId";
+  static String getUser(int userId) => "/user/$userId";
 
   static const String getUserChats = "/user/chats";
   static const String getNearestUsers = "/user/nearest";
+  static const String updateUser = "/user/update";
   static const String createOffer = "/offer";
   static const String createChat = "/chat";
   static const String getOffersInVicinity = "/offer/search";

@@ -1,13 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fpdart/fpdart.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:picapool/core/core.dart';
 import 'package:path/path.dart' as path;
+import 'package:picapool/functions/network/connection_status_listener.dart';
 import 'package:picapool/models/offer_model.dart';
-import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class VicinityApi {
@@ -19,7 +16,7 @@ class VicinityApi {
   }) async {
     debugPrint(
         'Creating offer with access token $accessToken with offer : ${offer.toJson()}');
-    var endpoint = "https://api.picapool.com/v2/offer";
+
     try {
       final response = await _api.makeRequest(
           enpoint: APIEndpoints.createOffer,
@@ -74,6 +71,14 @@ class VicinityApi {
     required String accessToken,
   }) async {
     try {
+      if (!await ConnectionStatusListener.getInstance().checkConnection()) {
+        return left(
+          Failure(
+            message: "No Internet Connection",
+            stackTrace: StackTrace.current,
+          ),
+        );
+      }
       var image = getFileName(fileName).split(".").first;
       debugPrint(image);
       var response = await http.delete(

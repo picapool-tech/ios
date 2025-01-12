@@ -1,11 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:picapool/core/core.dart';
-import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 
@@ -28,29 +24,26 @@ class UserApi {
 
       debugPrint(updateValues.toString());
 
-      http.Response response = await http.patch(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-        body: jsonEncode(updateValues),
-      );
+      final response = await _api.makeRequest(
+          enpoint: APIEndpoints.updateUser,
+          method: RequestMethod.patch,
+          additionalHeaders: {'Content-Type': 'application/json'},
+          body: updateValues);
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      debugPrint('User Updated: ${response.body}');
-      if (responseModel.success) {
-        return right(true);
-      } else {
-        debugPrint(
-            'Update User Error: ${response.statusCode} with response ${response.body}');
-        return left(
-          Failure(
-            message: responseModel.message,
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(true);
+        } else {
+          debugPrint(
+              'Update User Error: ${responseModel.message} with response ${responseModel.toString()}');
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
     } catch (e) {
       debugPrint('Update User Error: $e');
       return left(
@@ -67,17 +60,14 @@ class UserApi {
   FutureEither<User> getUser(
       {required int userId, required String accessToken}) async {
     try {
-      var response = await http.get(
-        Uri.parse('https://api.picapool.com/v2/user/$userId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-      );
-      int statusCode = response.statusCode;
-      if (statusCode >= 200 && statusCode <= 300) {
-        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-        debugPrint("getUser Response: ${response.body}");
+      final response = await _api.makeRequest(
+          enpoint: APIEndpoints.getUser(userId),
+          method: RequestMethod.getRequest,
+          additionalHeaders: {
+            'Content-Type': 'application/json',
+          });
+
+      return response.fold((error) => left(error), (responseModel) {
         if (responseModel.success) {
           var user = User.fromJson(responseModel.data);
           return right(user);
@@ -89,19 +79,7 @@ class UserApi {
             ),
           );
         }
-      } else {
-        debugPrint(
-          'Not able to get the user : status code $statusCode',
-        );
-
-        return left(
-          Failure(
-            message:
-                "Not able to get the user : status code ${response.statusCode} with me",
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
+      });
     } catch (e) {
       debugPrint('Get User Error: $e');
       return left(
@@ -118,7 +96,6 @@ class UserApi {
     required LatLng currentPosition,
     required double radius,
   }) async {
-    String endpoint = "https://api.picapool.com/v2/user/nearest";
     try {
       var response = await _api.makeRequest(
           enpoint: APIEndpoints.getNearestUsers,
