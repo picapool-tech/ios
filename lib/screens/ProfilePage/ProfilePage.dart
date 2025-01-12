@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1D0E61), // Dark blue background
+      backgroundColor: const Color(0xff02005D), // Dark blue background
       body: SafeArea(
         child: Column(
           children: [

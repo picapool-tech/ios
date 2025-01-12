@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
@@ -17,13 +18,14 @@ class AlertsPage extends StatefulWidget {
 }
 
 class _AlertsPageState extends State<AlertsPage> {
-  String selectedCategory = 'All Offers';
+  int selectedCategory = 0;
   List<bool> expandedStates = [];
+  List<bool> expandedTagStates = [];
 
   final OffersController _offers = Get.find<OffersController>();
   final ChatController _chatController = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
-  List<Offer> offers = [];
+  final TagController _tagController = Get.find<TagController>();
 
   @override
   void initState() {
@@ -54,148 +56,128 @@ class _AlertsPageState extends State<AlertsPage> {
         elevation: 0,
         backgroundColor: const Color(0xff02005D),
       ),
-      body: Column(
-        children: [
-          // Category Buttons
-          // need to reimplement after offer list goes > 100.
-          // Container(
-          //   padding: const EdgeInsets.symmetric(vertical: 8.0),
-          //   color: const Color(0xff02005D),
-          //   child: SingleChildScrollView(
-          //     scrollDirection: Axis.horizontal,
-          //     child: Padding(
-          //       padding: const EdgeInsets.only(left: 8.0),
-          //       child: Row(
-          //         children: [
-          //           CategoryButton(
-          //             image: 'assets/icons/all.png',
-          //             label: 'All Offers',
-          //             selected: selectedCategory == 'All Offers',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'All Offers';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/food.png',
-          //             label: 'Food',
-          //             selected: selectedCategory == 'Food',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Food';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/tshirt.png',
-          //             label: 'Apparel',
-          //             selected: selectedCategory == 'Apparel',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Apparel';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/Bell.png',
-          //             label: 'Entertainment',
-          //             selected: selectedCategory == 'Entertainment',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Entertainment';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/ball.png',
-          //             label: 'Sports',
-          //             selected: selectedCategory == 'Sports',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Sports';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/ball.png',
-          //             label: 'Medicine',
-          //             selected: selectedCategory == 'Medicine',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Medicine';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/Frame 59.png',
-          //             label: 'Electronics',
-          //             selected: selectedCategory == 'Electronics',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Electronics';
-          //               });
-          //             },
-          //           ),
-          //           CategoryButton(
-          //             image: 'assets/icons/ball.png',
-          //             label: 'Music',
-          //             selected: selectedCategory == 'Music',
-          //             onTap: () {
-          //               setState(() {
-          //                 selectedCategory = 'Music';
-          //               });
-          //             },
-          //           ),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
-          // ),
+      body: RefreshIndicator.adaptive(
+        onRefresh: () async {
+          if (selectedCategory == 0) {
+            await _offers.getOffersForUser();
+          } else {
+            await _offers.getOffersByTagId(selectedCategory);
+          }
+        },
+        child: Column(
+          children: [
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [
+                CategoryButton(
+                  image: "",
+                  assetImage: 'assets/icons/all.png',
+                  label: 'All Offers',
+                  selected: selectedCategory == 0,
+                  onTap: () {
+                    setState(() {
+                      selectedCategory = 0;
+                      expandedTagStates = [];
+                    });
+                  },
+                ),
+                ...List.generate(_tagController.tags.length, (index) {
+                  var tag = _tagController.tags[index];
+                  return CategoryButton(
+                    image: tag.icon,
+                    label: tag.tag,
+                    selected: selectedCategory == index + 1,
+                    onTap: () {
+                      setState(() {
+                        selectedCategory = index + 1;
+                        expandedTagStates = [];
+                      });
+                    },
+                  );
+                }),
+              ]),
+            ),
 
-          // Alert List
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Container(
-                decoration: const BoxDecoration(color: Colors.white),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: (_userController.user.value != null)
-                      ? GetBuilder<OffersController>(builder: (controller) {
-                          if (controller.offers.isEmpty &&
-                              controller.isLoading.value) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
+            // Alert List
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Container(
+                  decoration: const BoxDecoration(color: Colors.white),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: (_userController.user.value != null)
+                        ? GetBuilder<OffersController>(
+                            builder: (controller) {
+                              switch (selectedCategory) {
+                                case 0:
+                                  if (controller.offers.isEmpty &&
+                                      controller.isLoading.value) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
 
-                          if (controller.offers.isEmpty) {
-                            return const Center(
-                              child: Text("No offers"),
-                            );
-                          } else {
-                            if (expandedStates.length !=
-                                controller.offers.length) {
-                              expandedStates = List<bool>.filled(
-                                controller.offers.length,
-                                false,
-                              );
-                            }
+                                  if (controller.offers.isEmpty) {
+                                    return const Center(
+                                      child: Text("No offers"),
+                                    );
+                                  } else {
+                                    if (expandedStates.length !=
+                                        controller.offers.length) {
+                                      expandedStates = List<bool>.filled(
+                                        controller.offers.length,
+                                        false,
+                                      );
+                                    }
 
-                            return showOfferList();
-                          }
-                        })
-                      : const Center(
-                          child: Text(
-                            "You don't have an account to show alerts",
+                                    return showOfferList(controller.offers);
+                                  }
+                                default:
+                                  controller.getOffersByTagId(selectedCategory);
+                                  var offerByTagId = controller
+                                      .offersByTagId[selectedCategory];
+                                  if (offerByTagId == null) {
+                                    return const Center(
+                                      child: Text("No offers"),
+                                    );
+                                  }
+                                  if (offerByTagId.isEmpty &&
+                                      controller.isLoading.value) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+
+                                  if (offerByTagId.isEmpty) {
+                                    return const Center(
+                                      child: Text("No offers"),
+                                    );
+                                  } else {
+                                    if (expandedTagStates.length !=
+                                        offerByTagId.length) {
+                                      expandedTagStates = List<bool>.filled(
+                                        offerByTagId.length,
+                                        false,
+                                      );
+                                    }
+
+                                    return showOfferList(offerByTagId);
+                                  }
+                              }
+                            },
+                          )
+                        : const Center(
+                            child: Text(
+                              "You don't have an account to show alerts",
+                            ),
                           ),
-                        ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -459,12 +441,12 @@ class _AlertsPageState extends State<AlertsPage> {
     );
   }
 
-  ListView showOfferList() {
+  ListView showOfferList(List<Offer> offers) {
     debugPrint("${_offers.offers.firstOrNull?.toJson()}");
     return ListView.builder(
-      itemCount: _offers.offers.length,
+      itemCount: offers.length,
       itemBuilder: (context, index) {
-        var offer = _offers.offers[index];
+        var offer = offers[index];
         return listItem(
           offer: offer,
           onTap: () {
@@ -513,6 +495,7 @@ class CategoryButton extends StatelessWidget {
   final String label;
   final bool selected;
   final String image;
+  final String assetImage;
   final VoidCallback onTap;
 
   const CategoryButton({
@@ -521,6 +504,7 @@ class CategoryButton extends StatelessWidget {
     required this.image,
     required this.onTap,
     this.selected = false,
+    this.assetImage = "",
   });
 
   @override
@@ -536,7 +520,9 @@ class CategoryButton extends StatelessWidget {
           ),
         ),
         onPressed: onTap,
-        icon: Image.asset(image, width: 20, height: 20),
+        icon: (assetImage.isNotEmpty)
+            ? Image.asset(assetImage, width: 20, height: 20)
+            : CachedNetworkImage(imageUrl: image, width: 20, height: 20),
         label: Text(
           label,
           style: GoogleFonts.montserrat(

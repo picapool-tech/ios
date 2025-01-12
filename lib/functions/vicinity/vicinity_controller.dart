@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_api.dart';
 import 'package:picapool/models/offer_model.dart';
@@ -13,6 +15,7 @@ class VicinityController extends GetxController {
   final UserController _userController = Get.find<UserController>();
   final VicinityApi _vicinityApi = VicinityApi();
   final AssetsController _assetsController = AssetsController();
+  final StorageController _storageController = Get.find<StorageController>();
 
   var isLoading = false.obs;
   var offers = <Offer>[].obs;
@@ -44,7 +47,7 @@ class VicinityController extends GetxController {
       desc: offer.desc,
       expiryAt: offer.expiryAt,
       userId: _userController.user.value!.id,
-      tagIds: [],
+      tagIds: [6],
       location: offer.location,
       distance: offer.distance,
     );

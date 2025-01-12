@@ -24,6 +24,8 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
     mapController = controller;
   }
 
+  final List<Marker> markers = [];
+
   void updateCenter() {
     if (_locationController.state.value.location != null) {
       debugPrint(
@@ -49,6 +51,32 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
     }
   }
 
+  void createMarkersWithOffer() {
+    // Create markers with offers
+    for (var offer in _offersController.nearestOffers) {
+      markers.add(
+        Marker(
+          markerId: MarkerId(offer.id.toString()),
+          position: LatLng(
+            offer.location!.lat,
+            offer.location!.long,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueOrange,
+          ),
+          infoWindow: InfoWindow(
+            title: offer.name,
+            snippet: offer.desc,
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      markers;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,12 +84,14 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
     WidgetsBinding.instance.addPostFrameCallback((duration) async {
       if (_locationController.state.value.location != null) {
         debugPrint("MAP IS UPDATED: WITH LOCATION : $_center");
-        _offersController.getOffersInVicinity(
+        await _offersController.getOffersInVicinity(
           location: VicinityLocation(
             lat: _center.latitude,
             long: _center.longitude,
           ),
         );
+
+        createMarkersWithOffer();
       }
     });
   }
@@ -94,6 +124,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                       snippet: 'You are here',
                     ),
                   ),
+                  ...markers,
                 },
                 circles: {
                   Circle(

@@ -22,6 +22,8 @@ class OffersController extends GetxController {
 
   var poolingOffers = <Offer>[].obs;
 
+  var offersByTagId = <int, List<Offer>>{}.obs;
+
   final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
   final OffersApi _offersApi = OffersApi();
@@ -163,5 +165,25 @@ class OffersController extends GetxController {
     );
     isLoading.value = false;
     update();
+  }
+
+  Future<List<Offer>> getOffersByTagId(int tagId) async {
+    isLoading.value = true;
+    update();
+
+    final result = await _offersApi.getOffersByTagId(tagId);
+
+    return result.fold(
+      (error) {
+        Get.snackbar("Error", error.message);
+        return [];
+      },
+      (offers) {
+        isLoading.value = false;
+        update();
+        offersByTagId[tagId] = offers;
+        return offers;
+      },
+    );
   }
 }

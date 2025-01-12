@@ -79,6 +79,16 @@ class _ChatPageState extends State<ChatPage>
     });
   }
 
+  void _goToChatInfo() {
+    Get.to(
+      () => ChatInfo(
+        chatId: widget.chat.id,
+        creatorId: widget.offer?.userId ?? widget.liveOffer?.userId ?? -1,
+        offer: widget.offer,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,50 +105,15 @@ class _ChatPageState extends State<ChatPage>
           },
         ),
         actions: [
+          IconButton(
+              onPressed: _goToChatInfo,
+              icon: const Icon(Icons.more_vert, color: Colors.orange)),
           if (widget.offer?.name.toLowerCase().contains("- from brands") ??
               false)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: MaterialButton(
                 onPressed: () async {
-                  // send?phone=917654389675&text=Hello%2C%20I%20want%20to%20have%20a%20convo%20with%20you
-                  // final TextEditingController textController =
-                  //     TextEditingController();
-                  // var dialog = showDialog(
-                  //   context: context,
-                  //   builder: (context) {
-                  //     return AlertDialog(
-                  //       title: const Text("Enter your custom message"),
-                  //       content: TextField(
-                  //         controller: textController,
-                  //         decoration: const InputDecoration(
-                  //           hintText: "Write your message here",
-                  //         ),
-                  //       ),
-                  //       actions: [
-                  //         TextButton(
-                  //           onPressed: () {
-                  //             Navigator.of(context).pop({});
-                  //           },
-                  //           child: const Text("Cancel"),
-                  //         ),
-                  //         TextButton(
-                  //           onPressed: () async {
-                  //             if (textController.text.isEmpty) {
-                  //               Get.snackbar(
-                  //                 "Field should not be empty",
-                  //                 "You need to write custom message in order to proceed.",
-                  //               );
-                  //               return;
-                  //             }
-
-                  //           },
-                  //           child: const Text("Send"),
-                  //         )
-                  //       ],
-                  //     );
-                  //   },
-                  // );
                   var formattedString =
                       "Hi,\nThis side ${_userController.user.value!.username} from chat: ${widget.chat.id} want to go ahead with buying the product";
                   var urlString =
@@ -162,12 +137,7 @@ class _ChatPageState extends State<ChatPage>
         ],
         centerTitle: false,
         title: InkWell(
-          onTap: () => Get.to(
-            () => ChatInfo(
-              chatId: widget.chat.id,
-              creatorId: widget.offer?.userId ?? widget.liveOffer?.userId ?? -1,
-            ),
-          ),
+          onTap: _goToChatInfo,
           child: SizedBox(
             width: double.infinity,
             height: AppBarTheme.of(context).toolbarHeight,

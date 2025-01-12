@@ -1,5 +1,4 @@
 class APIEndpoints {
-
   // user endpoints
   static String getAllUserCreatedOffer(int id) => "/user/$id/offers";
   static String getOffersForUser(int userId) => "/user/$userId/alerts";
@@ -10,6 +9,7 @@ class APIEndpoints {
       "/chat/liveOffer/$liveOfferId";
   static String getTagById(int tagId) => "/tag/$tagId";
   static String getUser(int userId) => "/user/$userId";
+  static String getOffersByTagId(int tagId) => "/offer/tag/$tagId";
 
   static const String getUserChats = "/user/chats";
   static const String getNearestUsers = "/user/nearest";

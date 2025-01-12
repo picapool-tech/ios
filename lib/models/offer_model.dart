@@ -4,6 +4,7 @@ import 'package:picapool/models/partner_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/user_model.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 
 class Offer {
   final int id;
@@ -16,7 +17,7 @@ class Offer {
   final bool isVerified;
   final int priority;
   final bool isOnline;
-  final String? location;
+  final VicinityLocation? location;
   final Partner? partner;
   final int? partnerId;
   final User? user;
@@ -59,7 +60,8 @@ class Offer {
       isVerified: json['isVerified'] ?? false,
       priority: json['priority'] ?? 1,
       isOnline: json['isOnline'] ?? false,
-      location: json['location'] ?? "",
+      location:
+          json['loc'] != null ? VicinityLocation.fromJson(json['loc']) : null,
       partner:
           json['partner'] != null ? Partner.fromJson(json['partner']) : null,
       partnerId: json['partnerId'],
@@ -89,7 +91,7 @@ class Offer {
       'isVerified': isVerified,
       'priority': priority,
       'isOnline': isOnline,
-      'location': location,
+      'loc': location,
       'partner': partner?.toJson(),
       'partnerId': partnerId,
       'user': user?.toJson(),

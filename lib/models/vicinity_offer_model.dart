@@ -30,7 +30,7 @@ class VicinityOffer {
   int? partnerID;
   final int userId;
   final List<String> productIds;
-  final List<String> tagIds;
+  final List<int> tagIds;
   final VicinityLocation location;
   final double distance;
 
@@ -58,7 +58,7 @@ class VicinityOffer {
           ? List<String>.from(json['productIds'])
           : [],
       partnerID: json['partnerId'],
-      tagIds: (json['tagIds']) ? List<String>.from(json['tags']) : [],
+      tagIds: (json['tagIds']) ? List<int>.from(json['tags']) : [],
       location: VicinityLocation.fromJson(json['loc']),
       distance: json['dist'] ?? 500,
     );

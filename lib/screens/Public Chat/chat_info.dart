@@ -2,13 +2,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/user_model.dart';
+import 'package:picapool/utils/date_time_helper.dart';
 
 class ChatInfo extends StatefulWidget {
+  final Offer? offer;
+
   const ChatInfo({
     super.key,
     required this.chatId,
     required this.creatorId,
+    this.offer,
   });
 
   final int chatId;
@@ -29,6 +34,137 @@ class _ChatInfoState extends State<ChatInfo> {
     });
   }
 
+  Widget offerCard({
+    required Offer offer,
+  }) {
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title and Time
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  offer.name,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  DateTimeHelper.timeAgoSince(
+                      offer.createdAt.toIso8601String()),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            // Subtitle
+            Text(
+              offer.desc,
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+
+            // Image Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Icon with Label
+                      // _buildIconLabel(Icons.fastfood, category),
+                      // const SizedBox(width: 16),
+                      _buildIconLabel(Icons.timer,
+                          DateTimeHelper.formatDateTimeExpiry(offer.expiryAt)),
+                      const SizedBox(height: 10),
+                      _buildIconLabel(Icons.location_on, "200m"),
+                      const SizedBox(height: 10),
+                      _buildIconLabel(Icons.group,
+                          "${_chatController.usersInChat.length.toString()} users"),
+                    ],
+                  ),
+                ),
+                // Offer Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: (offer.images.isEmpty)
+                      ? Image.asset(
+                          "assets/images/request_vicinity.png",
+                          height: 120,
+                          fit: BoxFit.cover,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: offer.images.first,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+              ],
+            ),
+            // Column(
+            //   children: [
+            //     ElevatedButton.icon(
+            //       onPressed: () {},
+            //       style: ElevatedButton.styleFrom(
+            //         foregroundColor: Colors.white,
+            //         backgroundColor: Colors.orange,
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(8),
+            //         ),
+            //       ),
+            //       icon: const Icon(Icons.open_in_new, size: 16),
+            //       label: const Text("STORE"),
+            //     ),
+            //     const SizedBox(height: 8),
+            //     TextButton(
+            //       onPressed: () {},
+            //       child: const Text(
+            //         "Terms & cond.",
+            //         style: TextStyle(color: Colors.grey),
+            //       ),
+            //     ),
+            //   ],
+            // ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Helper to build icon-label widgets
+  Widget _buildIconLabel(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.orange),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,38 +180,54 @@ class _ChatInfoState extends State<ChatInfo> {
         ),
         centerTitle: false,
       ),
-      body: GetBuilder(
-          init: _chatController,
-          builder: (controller) {
-            if (_chatController.isLoading.value &&
-                _chatController.usersInChat.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            if (widget.offer != null)
+              SliverToBoxAdapter(
+                child: offerCard(
+                  offer: widget.offer!,
+                ),
+              ),
+          ];
+        },
+        body: Column(
+          children: [
+            Expanded(
+              child: GetBuilder(
+                  init: _chatController,
+                  builder: (controller) {
+                    if (_chatController.isLoading.value &&
+                        _chatController.usersInChat.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
 
-            if (_chatController.usersInChat.isEmpty &&
-                !_chatController.isLoading.value) {
-              return const Center(
-                child: Text('No users in chat'),
-              );
-            }
+                    if (_chatController.usersInChat.isEmpty &&
+                        !_chatController.isLoading.value) {
+                      return const Center(
+                        child: Text('No users in chat'),
+                      );
+                    }
 
-            return ListView.builder(
-              itemCount: _chatController.usersInChat.length,
-              itemBuilder: (context, index) {
-                final user = _chatController.usersInChat[index];
-                return userListItem(user);
-              },
-            );
-          }),
+                    return ListView.builder(
+                      itemCount: _chatController.usersInChat.length,
+                      itemBuilder: (context, index) {
+                        final user = _chatController.usersInChat[index];
+                        return userListItem(user);
+                      },
+                    );
+                  }),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget userListItem(User user) {
     return ListTile(
-      tileColor:
-          (widget.creatorId == user.id) ? Colors.orange.withAlpha(30) : null,
       leading: CircleAvatar(
         radius: 30,
         backgroundColor:

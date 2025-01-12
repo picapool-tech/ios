@@ -183,8 +183,8 @@ class _NewBottomBarState extends State<NewBottomBar> {
     return Scaffold(
       body: _screens[_selectedIndex],
       floatingActionButton: SizedBox(
-        width: 75,
-        height: 75,
+        width: 70,
+        height: 70,
         child: FittedBox(
           child: FloatingActionButton(
             onPressed: () {

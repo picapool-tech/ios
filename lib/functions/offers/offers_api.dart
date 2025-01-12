@@ -248,7 +248,7 @@ class OffersApi {
         },
         "radius": 1000,
         "chats": true,
-        "products": true,
+        "products": false,
       };
 
       debugPrint("Request body of nearest offer: ${body.toString()}");
@@ -283,6 +283,39 @@ class OffersApi {
       return left(
         Failure(
           message: "Not able to get offers in vicinity",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<List<Offer>> getOffersByTagId(int tagId) async {
+    try {
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getOffersByTagId(tagId),
+        method: RequestMethod.getRequest,
+      );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(
+            responseModel.data
+                .map<Offer>((offer) => Offer.fromJson(offer))
+                .toList(),
+          );
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      return left(
+        Failure(
+          message: "Not able to get offers by tag id",
           stackTrace: StackTrace.current,
         ),
       );

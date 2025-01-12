@@ -108,291 +108,299 @@ class _MyChatsPageState extends State<MyChatsPage> {
         elevation: 0,
         backgroundColor: const Color(0xff02005D),
       ),
-      body: Column(
-        children: [
-          // Search Bar remains unchanged
-          Container(
-              height: 63,
-              color: const Color(0xff02005D),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xff797979), width: 2),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
-                    child: SearchBar(
-                      elevation: WidgetStateProperty.resolveWith<double>(
-                          (Set<WidgetState> states) => 0.0),
-                      hintText: "Search",
-                      controller: _searchController,
-                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                        (Set<WidgetState> states) =>
-                            const Color(0xff9A9A9A).withOpacity(0.2),
-                      ),
-                      hintStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-                        (Set<WidgetState> states) {
-                          return GoogleFonts.montserrat(
-                              color: const Color(0xffFFFFFF),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w300);
-                        },
-                      ),
-                      textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-                        (Set<WidgetState> states) {
-                          return GoogleFonts.montserrat(
-                              color: const Color(0xffFFFFFF),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w300);
-                        },
-                      ),
-                      leading: const Padding(
-                        padding: EdgeInsets.fromLTRB(9, 0, 4, 0),
-                        child: SvgIcon(
-                          "assets/icons/search.svg",
-                          size: 24,
+      body: RefreshIndicator.adaptive(
+        onRefresh: () async {
+          await chatController.getAllChats();
+        },
+        child: Column(
+          children: [
+            // Search Bar remains unchanged
+            Container(
+                height: 63,
+                color: const Color(0xff02005D),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border:
+                        Border.all(color: const Color(0xff797979), width: 2),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
+                      child: SearchBar(
+                        elevation: WidgetStateProperty.resolveWith<double>(
+                            (Set<WidgetState> states) => 0.0),
+                        hintText: "Search",
+                        controller: _searchController,
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) =>
+                              const Color(0xff9A9A9A).withOpacity(0.2),
+                        ),
+                        hintStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+                          (Set<WidgetState> states) {
+                            return GoogleFonts.montserrat(
+                                color: const Color(0xffFFFFFF),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w300);
+                          },
+                        ),
+                        textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+                          (Set<WidgetState> states) {
+                            return GoogleFonts.montserrat(
+                                color: const Color(0xffFFFFFF),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w300);
+                          },
+                        ),
+                        leading: const Padding(
+                          padding: EdgeInsets.fromLTRB(9, 0, 4, 0),
+                          child: SvgIcon(
+                            "assets/icons/search.svg",
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
                   ),
+                )),
+            const SizedBox(height: 10),
+            // Conditionally show either action bar or category buttons
+            // selectedIndexes.isNotEmpty
+            //     ? Container(
+            //         padding: const EdgeInsets.symmetric(
+            //             horizontal: 16.0, vertical: 16),
+            //         color: Colors.white, // Set background to white
+            //         child: Row(
+            //           children: [
+            //             InkWell(
+            //               onTap: () => setState(() {
+            //                 selectedIndexes.clear(); // Clear selection
+            //               }),
+            //               child: const ImageIcon(
+            //                 AssetImage('assets/icons/back_arrow.png'),
+            //                 color: Color(0xffFF8D41),
+            //               ),
+            //             ),
+            //             Padding(
+            //               padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            //               child: Text(
+            //                 '${selectedIndexes.length}',
+            //                 style: const TextStyle(
+            //                   fontFamily: "MontserratM",
+            //                   fontSize: 20,
+            //                   color: Color(0xff000000), // Change text color
+            //                 ),
+            //               ),
+            //             ),
+            //             const Spacer(), // Align actions to the right
+            //             Row(
+            //               mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //               children: [
+            //                 Padding(
+            //                   padding: const EdgeInsets.only(right: 20),
+            //                   child: InkWell(
+            //                     onTap: () {
+            //                       // Handle delete action
+            //                     },
+            //                     child: const SvgIcon(
+            //                       "assets/icons/trash.svg",
+            //                       size: 24,
+            //                     ),
+            //                   ),
+            //                 ),
+            //                 Padding(
+            //                   padding: const EdgeInsets.only(right: 20),
+            //                   child: InkWell(
+            //                     onTap: () {
+            //                       // Archive selected chats
+            //                       setState(() {
+            //                         selectedIndexes.sort();
+            //                         for (var index in selectedIndexes.reversed) {
+            //                           archivedChats.add(chats[index]);
+            //                           chats.removeAt(index);
+            //                         }
+            //                         selectedIndexes.clear();
+            //                       });
+
+            //                       // Navigate to the Archived page
+            //                       Navigator.push(
+            //                         context,
+            //                         MaterialPageRoute(
+            //                           builder: (context) => ArchivedPage(
+            //                               archivedChats: archivedChats),
+            //                         ),
+            //                       );
+            //                     },
+            //                     child: const ImageIcon(
+            //                       AssetImage('assets/icons/receive-square.png'),
+            //                       color: Color(0xff000000),
+            //                     ),
+            //                   ),
+            //                 ),
+            //                 Padding(
+            //                   padding: const EdgeInsets.only(right: 20),
+            //                   child: InkWell(
+            //                     onTap: () {
+            //                       // Handle mute action - toggle mute state
+            //                       setState(() {
+            //                         for (var index in selectedIndexes) {
+            //                           chats[index]['muted'] =
+            //                               !(chats[index]['muted'] as bool);
+            //                         }
+            //                         selectedIndexes.clear();
+            //                       });
+            //                     },
+            //                     child: const ImageIcon(
+            //                       AssetImage('assets/icons/Group 511.png'),
+            //                       color: Color(0xff000000),
+            //                     ),
+            //                   ),
+            //                 ),
+            //               ],
+            //             ),
+            //           ],
+            //         ),
+            //       )
+            //     :
+
+            // TODO: NEED TO REIMPLEMENT IT AFTER BUY SELL OR OFFER LIST GOES > 100
+            // Container(
+            //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+            //   color: const Color(0xff02005D),
+            //   child: SingleChildScrollView(
+            //     scrollDirection: Axis.horizontal,
+            //     child: Row(
+            //       children: [
+            //         CategoryButton(
+            //           image: 'assets/icons/all.png',
+            //           label: 'All Offers',
+            //           selected: selectedCategory == 'All Offers',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'All Offers';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/food.png',
+            //           label: 'Food',
+            //           selected: selectedCategory == 'Food',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Food';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/tshirt.png',
+            //           label: 'Apparel',
+            //           selected: selectedCategory == 'Apparel',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Apparel';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/Bell.png',
+            //           label: 'Entertainment',
+            //           selected: selectedCategory == 'Entertainment',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Entertainment';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/ball.png',
+            //           label: 'Sports',
+            //           selected: selectedCategory == 'Sports',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Sports';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/ball.png',
+            //           label: 'Medicine',
+            //           selected: selectedCategory == 'Medicine',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Medicine';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/Frame 59.png',
+            //           label: 'Electronics',
+            //           selected: selectedCategory == 'Electronics',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Electronics';
+            //             });
+            //           },
+            //         ),
+            //         CategoryButton(
+            //           image: 'assets/icons/ball.png',
+            //           label: 'Music',
+            //           selected: selectedCategory == 'Music',
+            //           onTap: () {
+            //             setState(() {
+            //               selectedCategory = 'Music';
+            //             });
+            //           },
+            //         ),
+            //         // Add more categories if needed
+            //       ],
+            //     ),
+            //   ),
+            // ),
+
+            // Chat list
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                 ),
-              )),
-          const SizedBox(height: 10),
-          // Conditionally show either action bar or category buttons
-          // selectedIndexes.isNotEmpty
-          //     ? Container(
-          //         padding: const EdgeInsets.symmetric(
-          //             horizontal: 16.0, vertical: 16),
-          //         color: Colors.white, // Set background to white
-          //         child: Row(
-          //           children: [
-          //             InkWell(
-          //               onTap: () => setState(() {
-          //                 selectedIndexes.clear(); // Clear selection
-          //               }),
-          //               child: const ImageIcon(
-          //                 AssetImage('assets/icons/back_arrow.png'),
-          //                 color: Color(0xffFF8D41),
-          //               ),
-          //             ),
-          //             Padding(
-          //               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          //               child: Text(
-          //                 '${selectedIndexes.length}',
-          //                 style: const TextStyle(
-          //                   fontFamily: "MontserratM",
-          //                   fontSize: 20,
-          //                   color: Color(0xff000000), // Change text color
-          //                 ),
-          //               ),
-          //             ),
-          //             const Spacer(), // Align actions to the right
-          //             Row(
-          //               mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //               children: [
-          //                 Padding(
-          //                   padding: const EdgeInsets.only(right: 20),
-          //                   child: InkWell(
-          //                     onTap: () {
-          //                       // Handle delete action
-          //                     },
-          //                     child: const SvgIcon(
-          //                       "assets/icons/trash.svg",
-          //                       size: 24,
-          //                     ),
-          //                   ),
-          //                 ),
-          //                 Padding(
-          //                   padding: const EdgeInsets.only(right: 20),
-          //                   child: InkWell(
-          //                     onTap: () {
-          //                       // Archive selected chats
-          //                       setState(() {
-          //                         selectedIndexes.sort();
-          //                         for (var index in selectedIndexes.reversed) {
-          //                           archivedChats.add(chats[index]);
-          //                           chats.removeAt(index);
-          //                         }
-          //                         selectedIndexes.clear();
-          //                       });
-
-          //                       // Navigate to the Archived page
-          //                       Navigator.push(
-          //                         context,
-          //                         MaterialPageRoute(
-          //                           builder: (context) => ArchivedPage(
-          //                               archivedChats: archivedChats),
-          //                         ),
-          //                       );
-          //                     },
-          //                     child: const ImageIcon(
-          //                       AssetImage('assets/icons/receive-square.png'),
-          //                       color: Color(0xff000000),
-          //                     ),
-          //                   ),
-          //                 ),
-          //                 Padding(
-          //                   padding: const EdgeInsets.only(right: 20),
-          //                   child: InkWell(
-          //                     onTap: () {
-          //                       // Handle mute action - toggle mute state
-          //                       setState(() {
-          //                         for (var index in selectedIndexes) {
-          //                           chats[index]['muted'] =
-          //                               !(chats[index]['muted'] as bool);
-          //                         }
-          //                         selectedIndexes.clear();
-          //                       });
-          //                     },
-          //                     child: const ImageIcon(
-          //                       AssetImage('assets/icons/Group 511.png'),
-          //                       color: Color(0xff000000),
-          //                     ),
-          //                   ),
-          //                 ),
-          //               ],
-          //             ),
-          //           ],
-          //         ),
-          //       )
-          //     :
-
-          // TODO: NEED TO REIMPLEMENT IT AFTER BUY SELL OR OFFER LIST GOES > 100
-          // Container(
-          //   padding: const EdgeInsets.symmetric(vertical: 8.0),
-          //   color: const Color(0xff02005D),
-          //   child: SingleChildScrollView(
-          //     scrollDirection: Axis.horizontal,
-          //     child: Row(
-          //       children: [
-          //         CategoryButton(
-          //           image: 'assets/icons/all.png',
-          //           label: 'All Offers',
-          //           selected: selectedCategory == 'All Offers',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'All Offers';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/food.png',
-          //           label: 'Food',
-          //           selected: selectedCategory == 'Food',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Food';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/tshirt.png',
-          //           label: 'Apparel',
-          //           selected: selectedCategory == 'Apparel',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Apparel';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/Bell.png',
-          //           label: 'Entertainment',
-          //           selected: selectedCategory == 'Entertainment',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Entertainment';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/ball.png',
-          //           label: 'Sports',
-          //           selected: selectedCategory == 'Sports',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Sports';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/ball.png',
-          //           label: 'Medicine',
-          //           selected: selectedCategory == 'Medicine',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Medicine';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/Frame 59.png',
-          //           label: 'Electronics',
-          //           selected: selectedCategory == 'Electronics',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Electronics';
-          //             });
-          //           },
-          //         ),
-          //         CategoryButton(
-          //           image: 'assets/icons/ball.png',
-          //           label: 'Music',
-          //           selected: selectedCategory == 'Music',
-          //           onTap: () {
-          //             setState(() {
-          //               selectedCategory = 'Music';
-          //             });
-          //           },
-          //         ),
-          //         // Add more categories if needed
-          //       ],
-          //     ),
-          //   ),
-          // ),
-
-          // Chat list
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: (_userController.user.value != null)
-                  ? GetBuilder<ChatController>(builder: (controller) {
-                      if (chatController.chats.isEmpty &&
-                          chatController.isLoading.value) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (chatController.chats.isEmpty) {
-                        return const Center(child: Text('No chats found'));
-                      }
-
-                      var filteredChats = controller.chats.where((model) {
-                        var offername =
-                            model.offer?.name ?? model.liveOffer?.from ?? "";
-                        var searchList = _searchQuery.toLowerCase().split(" ");
-                        for (var element in searchList) {
-                          if (offername.toLowerCase().contains(element)) {
-                            return true;
-                          }
+                child: (_userController.user.value != null)
+                    ? GetBuilder<ChatController>(builder: (controller) {
+                        if (chatController.chats.isEmpty &&
+                            chatController.isLoading.value) {
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
-                        return false;
-                      }).toList();
-                      return chatList(filteredChats);
-                    })
-                  : const Center(
-                      child: Text(
-                        "You don't have an account to show chats",
+
+                        if (chatController.chats.isEmpty) {
+                          return const Center(child: Text('No chats found'));
+                        }
+
+                        var filteredChats = controller.chats.where((model) {
+                          var offername =
+                              model.offer?.name ?? model.liveOffer?.from ?? "";
+                          var searchList =
+                              _searchQuery.toLowerCase().split(" ");
+                          for (var element in searchList) {
+                            if (offername.toLowerCase().contains(element)) {
+                              return true;
+                            }
+                          }
+                          return false;
+                        }).toList();
+                        return chatList(filteredChats);
+                      })
+                    : const Center(
+                        child: Text(
+                          "You don't have an account to show chats",
+                        ),
                       ),
-                    ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
