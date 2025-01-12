@@ -8,27 +8,28 @@ import 'package:picapool/models/tag_model.dart';
 import 'package:http/http.dart' as http;
 
 class TagApi {
+  final PicapoolApi _api = PicapoolApi();
   FutureEither<List<Tag>> getAllTags({
     required String accessToken,
   }) async {
     try {
-      var response = await http.get(
-        Uri.parse("https://api.picapool.com/v2/tag/all"),
-        headers: {'Authorization': 'Bearer $accessToken'},
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllTags,
+        method: RequestMethod.getRequest,
       );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
-      if (responseModel.success) {
-        return right(
-          responseModel.data.map<Tag>((tag) => Tag.fromJson(tag)).toList(),
-        );
-      } else {
-        return left(Failure(
-          message: responseModel.message,
-          stackTrace: StackTrace.current,
-        ));
-      }
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(
+            responseModel.data.map<Tag>((tag) => Tag.fromJson(tag)).toList(),
+          );
+        } else {
+          return left(Failure(
+            message: responseModel.message,
+            stackTrace: StackTrace.current,
+          ));
+        }
+      });
     } catch (e) {
       debugPrint("Error while fetching all tags: $e");
       return left(Failure(
@@ -43,21 +44,21 @@ class TagApi {
     required int tagId,
   }) async {
     try {
-      var response = await http.get(
-        Uri.parse("https://api.picapool.com/v2/tag/$tagId"),
-        headers: {'Authorization': 'Bearer $accessToken'},
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getTagById(tagId),
+        method: RequestMethod.getRequest,
       );
 
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
-      if (responseModel.success) {
-        return right(Tag.fromJson(responseModel.data));
-      } else {
-        return left(Failure(
-          message: responseModel.message,
-          stackTrace: StackTrace.current,
-        ));
-      }
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(Tag.fromJson(responseModel.data));
+        } else {
+          return left(Failure(
+            message: responseModel.message,
+            stackTrace: StackTrace.current,
+          ));
+        }
+      });
     } catch (e) {
       debugPrint("Error while fetching tag: $e");
       return left(Failure(

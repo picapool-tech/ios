@@ -7,6 +7,8 @@ class APIEndpoints {
   static String getChatFromLiveOfferId(int liveOfferId) =>
       "/chat/liveOffer/$liveOfferId";
 
+  static String getTagById(int tagId) => "/tag/$tagId";
+
   static const String getUserChats = "/user/chats";
   static const String getNearestUsers = "/user/nearest";
   static const String createOffer = "/offer";
@@ -15,4 +17,5 @@ class APIEndpoints {
 
   static const String sendFeedback = "/feedback";
   static const String getAllOffers = "/offer/all";
+  static const String getAllTags = "/tag/all";
 }
