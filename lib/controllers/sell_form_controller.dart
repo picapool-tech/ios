@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/services/products/entities/product_attributes_entity.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
@@ -15,6 +17,7 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
 class FormController extends GetxController {
+  Position? currentPosition;
   final UserController _userController = Get.find<UserController>();
   static ProductController get productController =>
       Get.find<ProductController>();
@@ -36,7 +39,30 @@ class FormController extends GetxController {
     formTwoData.assignAll(data);
   }
 
-  Future<bool> instantiateCreateProduct(BuildContext context) async {
+  // Future<void> _getCurrentLocation() async {
+  //   try {
+  //     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //     if (!serviceEnabled) {
+  //       return Future.error('Location services are disabled.');
+  //     }
+
+  //     LocationPermission permission = await Geolocator.checkPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       permission = await Geolocator.requestPermission();
+  //       if (permission == LocationPermission.denied) {
+  //         return Future.error('Location permissions are denied');
+  //       }
+  //     }
+
+  //     currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  //     update();
+  //   } catch (e) {
+  //     debugPrint('Error getting location: $e');
+  //   }
+  // }
+
+  Future<bool> instantiateCreateProduct(BuildContext context, Loc currentLocation, int radius) async {
+    // _getCurrentLocation;
     try {
       // if (!validateForms()) {
       //   Get.snackbar(
@@ -49,7 +75,7 @@ class FormController extends GetxController {
       //   return false;
       // }
 
-      return await productController.createProduct(combinedFormData);
+      return await productController.createProductWithOffer(combinedFormData, currentLocation , radius );
     } catch (e) {
       Get.snackbar(
         'Error',

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
+import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/widgets/sell/build_field.dart';
@@ -13,6 +16,7 @@ class SellFormTwo extends StatefulWidget {
 }
 
 class _SellFormTwoState extends State<SellFormTwo> {
+  Position? currentPosition;
   bool isLessThanMonth = false; // To track the state of the checkbox
   TextEditingController yearsController = TextEditingController();
   TextEditingController monthsController = TextEditingController();
@@ -21,7 +25,31 @@ class _SellFormTwoState extends State<SellFormTwo> {
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController emailIdController = TextEditingController();
 
-  Future<void> handleProductCreation() async {
+  Future<void> _getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return Future.error('Location services are disabled.');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return Future.error('Location permissions are denied');
+        }
+      }
+
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        currentPosition = position;
+      });
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+    }
+  }
+
+  Future<void> handleProductCreation(Loc currentLocation, int radius) async {
     if (sellformTwoKey.currentState?.validate() ?? false) {
       try {
         formController.saveFormTwoData(saveFormTwoData());
@@ -41,7 +69,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
 
         // Attempt to create the product
         final bool success =
-            await formController.instantiateCreateProduct(context);
+            await formController.instantiateCreateProduct(context, currentLocation, radius);
 
         // Hide loading indicator
         Navigator.pop(context);
@@ -69,6 +97,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
   }
 
   final formController = Get.find<FormController>();
+  final productController = Get.find<ProductController>();
   final sellformTwoKey = GlobalKey<FormState>();
 
   @override
@@ -204,7 +233,13 @@ class _SellFormTwoState extends State<SellFormTwo> {
                     const SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
-                        onPressed: handleProductCreation,
+                        onPressed: (){
+                        _getCurrentLocation();
+                        handleProductCreation( Loc(
+                          lat: currentPosition?.latitude ?? 00.00 ,
+                          lng: currentPosition?.longitude ?? 00.00 ,
+                        ) ,500);
+                        }, 
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xffFF8D41),
                           shape: RoundedRectangleBorder(
