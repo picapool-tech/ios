@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:picapool/models/offers/create_offer_payload.dart';
+import 'package:picapool/models/offers/create_offer_response.dart';
+import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/offers/search_offer_payload.dart';
 import 'package:picapool/models/offers/search_offer_response.dart';
 import 'package:picapool/services/products/entities/product_entity.dart';
@@ -21,49 +24,40 @@ class ProductsServices {
       final Dio dio = await getDio();
       final Response<dynamic> response = await dio.post(
         Constants.apiUrl + Constants.createProductEndpoint,
-        // data: createProductPayload,
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'
-        },  
-        ),
+        }),
         data: jsonEncode(createProductPayload),
         queryParameters: <String, bool>{'withContent': true},
       );
+
+      // Debug log
+      print('Create Product Response: ${response.data}');
+
       if (response.statusCode! < 300 && response.statusCode! >= 200) {
-        final CreateProductResponse createResult = CreateProductResponse(
+        final Map<String, dynamic> responseData = response.data as Map<String, dynamic>;
+        // Check if the response has a data field
+        final productData = responseData['data'] as Map<String, dynamic>;
+        
+        return CreateProductResponse(
           success: true,
-          message: '${response.statusMessage}',
-          data: ProductData.fromJson(response.data as Map<String, dynamic>),
+          message: 'Product created successfully',
+          data: ProductData.fromJson(productData), // Use the data field
         );
-        return createResult;
       } else {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
-        final String errMessage =
-            data['message'] as String? ?? 'Connection error';
         return CreateProductResponse(
           success: false,
-          message: errMessage,
+          message: data['message'] as String? ?? 'Failed to create product',
         );
       }
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.unknown) {
-        return CreateProductResponse(
-          success: false,
-          message: 'Connection Error',
-        );
-      } else {
-        final Map<String, dynamic> data =
-            e.response?.data as Map<String, dynamic>;
-        final String errMessage =
-            data['message'] as String? ?? 'Connection error';
-        return CreateProductResponse(
-          success: false,
-          message: errMessage,
-        );
-      }
+      print('Dio Error in createProduct: ${e.response?.data}');
+      return CreateProductResponse(
+        success: false,
+        message: e.response?.data?['message'] ?? 'Connection error',
+      );
     }
   }
   
@@ -281,6 +275,99 @@ class ProductsServices {
           message: errMessage,
         );
       }
+    }
+  }
+
+  static Future<CreateOfferResponse> createOffer(
+    CreateOfferPayload createOfferPayload, 
+    String accessToken
+  ) async {
+    try {
+      final Dio dio = await getDio();
+      final Response<dynamic> response = await dio.post(
+        Constants.apiUrl + Constants.createOfferProductEndpoint,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken'
+          },
+        ),
+        data: jsonEncode(createOfferPayload),
+      );
+
+      if (response.statusCode! < 300 && response.statusCode! >= 200) {
+        return CreateOfferResponse.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+        final String errMessage = data['message'] as String? ?? 'Connection error';
+        return CreateOfferResponse(
+          success: false,
+          message: errMessage,
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return CreateOfferResponse(
+          success: false,
+          message: 'Connection Error',
+        );
+      } else {
+        final Map<String, dynamic> data = e.response?.data as Map<String, dynamic>;
+        final String errMessage = data['message'] as String? ?? 'Connection error';
+        return CreateOfferResponse(
+          success: false,
+          message: errMessage,
+        );
+      }
+    }
+  }
+
+  static Future<(CreateProductResponse, CreateOfferResponse?)> createProductWithOffer(
+    CreateProductPayload createProductPayload,
+    Loc location,
+    int radius,
+    String accessToken,
+  ) async {
+    try {
+      // First create the product
+      final CreateProductResponse productResponse = await createProduct(
+        createProductPayload, 
+        accessToken
+      );
+
+      // If product creation was successful, create the offer
+      if (productResponse.success == true && productResponse.data != null && productResponse.data?.id != null ) {
+        final CreateOfferPayload offerPayload = CreateOfferPayload(
+          name: productResponse.data!.name,
+          images: productResponse.data!.images,
+          desc: productResponse.data!.description,
+          expiryAt: DateTime.now().add(const Duration(days: 30)), // Set default expiry
+          productIds: [productResponse.data!.id!],
+          loc: location,
+          dist: radius,
+        );
+
+        final CreateOfferResponse offerResponse = await createOffer(
+          offerPayload, 
+          accessToken
+        );
+
+        return (productResponse, offerResponse);
+      }
+
+      // If product creation failed, return only product response
+      return (productResponse, null);
+    } catch (e) {
+      print('Error in createProductWithOffer: $e');
+      return (
+        CreateProductResponse(
+          success: false,
+          message: 'Failed to complete the operation: $e',
+        ),
+        null
+      );
     }
   }
 }

@@ -123,7 +123,7 @@ class _DownSheetState extends State<DownSheet> {
                   mainActionView(
                     title: "Buy and sell",
                     onTap: () {
-                      Get.to(() => const ProductListsPage());
+                      Get.to(() => ProductListsPage());
                     },
                     assetImage: "assets/images/buy_sell.png",
                   ),

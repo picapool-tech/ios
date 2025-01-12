@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/offers/search_offer_payload.dart';
 import 'package:picapool/models/offers/search_offer_response.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
@@ -11,13 +13,17 @@ import 'package:picapool/services/products/entities/product_entity.dart';
 import 'package:picapool/services/products/products_service.dart';
 import 'package:picapool/services/products/responses/get_single_product_response.dart';
 import 'package:picapool/services/products/responses/update_product_response.dart';
+import 'package:picapool/models/offers/create_offer_payload.dart';
+import 'package:picapool/models/offers/create_offer_response.dart';
 
 enum ProductsState { productsLoading, productsLoaded, productsCantLoad }
 enum CreateProductState { creating, created, error }
 enum IndividualProductsState { productsLoading, productsLoaded, productsCantLoad }
 enum SearchOffersState { initial, searching, searched, error }
+enum CreateOfferState { initial, creating, created, error }
 
 class ProductController extends GetxController {
+  final UserController _userController = Get.find<UserController>();
   final AuthController authController = Get.find<AuthController>();
   String? get accessToken => authController.auth.value?.accessToken;
 
@@ -33,6 +39,8 @@ class ProductController extends GetxController {
   late ProductData productDetails;
   List<String> imageURLs = <String>[];
   int currentIndex = 1;
+  CreateOfferState createOfferState = CreateOfferState.initial;
+  CreateOfferResponse? createOfferResponse;
 
   /// Get all products
   Future<void> getAllProducts() async {
@@ -188,6 +196,171 @@ class ProductController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      update();
+    }
+  }
+
+  /// Create a new offer
+  Future<bool> createOffer(CreateOfferPayload createOfferPayload) async {
+    try {
+      createOfferState = CreateOfferState.creating;
+      update();
+
+      final response = await ProductsServices.createOffer(
+        createOfferPayload, 
+        accessToken ?? ""
+      );
+
+      if (response.success == true) {
+        createOfferResponse = response;
+        createOfferState = CreateOfferState.created;
+        // Optionally refresh offers list if needed
+        await searchOffers(SearchOfferPayload(
+          chats: true,
+          loc: createOfferPayload.loc,
+          products: true,
+          radius: createOfferPayload.dist,
+        ));
+        return true;
+      } else {
+        createOfferState = CreateOfferState.error;
+        Get.snackbar(
+          'Error',
+          response.message ?? 'Failed to create offer',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+    } catch (e) {
+      createOfferState = CreateOfferState.error;
+      debugPrint('Error creating offer: $e');
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred while creating offer',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    } finally {
+      update();
+    }
+  }
+
+  /// Create a product and immediately create an offer for it
+  Future<bool> createProductWithOffer(
+    CreateProductPayload createProductPayload,
+    Loc location,
+    int radius,
+  ) async {
+    try {
+      // Set initial states
+      createProductState = CreateProductState.creating;
+      createOfferState = CreateOfferState.initial;
+      update();
+
+      // First create the product
+      final CreateProductResponse productResponse = await ProductsServices.createProduct(
+        createProductPayload,
+        accessToken ?? ""
+      );
+
+      // Debug log
+      debugPrint('Product Response: ${productResponse.toJson()}');
+
+      // Validate product creation response
+      if (!productResponse.success! || productResponse.data == null) {
+        createProductState = CreateProductState.error;
+        Get.snackbar(
+          'Error',
+          productResponse.message ?? 'Failed to create product',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+
+      // Product created successfully, now create offer
+      createProductState = CreateProductState.created;
+      createOfferState = CreateOfferState.creating;
+      update();
+
+      // Debug log
+      debugPrint('Creating offer with product ID: ${productResponse.data!.id}');
+
+      // Create offer payload
+      final CreateOfferPayload offerPayload = CreateOfferPayload(
+        name: productResponse.data!.name ?? createProductPayload.name,
+        images: productResponse.data!.images ?? createProductPayload.images,
+        desc: productResponse.data!.description ?? createProductPayload.description,
+        expiryAt: DateTime.now().add(const Duration(days: 30)).toUtc(),
+        productIds: [productResponse.data!.id!],
+        loc: location,
+        userId: _userController.user.value!.id,
+        dist: radius,
+        tagIds: [8]
+      );
+
+      // Create the offer
+      final CreateOfferResponse offerResponse = await ProductsServices.createOffer(
+        offerPayload,
+        accessToken ?? ""
+      );
+
+      // Debug log
+      debugPrint('Offer Response: ${offerResponse.toJson()}');
+
+      // Validate offer creation
+      if (!offerResponse.success!) {
+        createOfferState = CreateOfferState.error;
+        Get.snackbar(
+          'Error',
+          offerResponse.message ?? 'Failed to create offer',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+
+      // Both operations successful
+      createOfferState = CreateOfferState.created;
+      createOfferResponse = offerResponse;
+      
+      // Refresh data
+      await getAllProducts();
+      await searchOffers(SearchOfferPayload(
+        chats: true,
+        loc: location,
+        products: true,
+        radius: radius,
+      ));
+
+      Get.snackbar(
+        'Success',
+        'Product and offer created successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      return true;
+    } catch (e) {
+      debugPrint('Error in createProductWithOffer: $e');
+      createProductState = CreateProductState.error;
+      createOfferState = CreateOfferState.error;
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
     } finally {
       update();
     }

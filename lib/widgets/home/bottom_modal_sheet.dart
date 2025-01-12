@@ -39,7 +39,7 @@ void showCustomModalBottomSheet(BuildContext context) {
     Item(
       imagePath: "assets/images/buy_sell.png",
       text: "Buy and sell",
-      destinationPage: const ProductListsPage(),
+      destinationPage: ProductListsPage(),
     ),
     // Item(imagePath: "assets/images/medical_help.png", text: "Medical help", destinationPage: RequestVicinityPage()),
     Item(

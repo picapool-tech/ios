@@ -71,7 +71,7 @@ class GetRoutes {
     // Products
     _buildRoute(
       name: productsListPage,
-      page: const ProductListsPage(),
+      page: ProductListsPage(),
       binding: ProductBindings(),
     ),
     // Brands

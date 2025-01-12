@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:picapool/models/offers/location_entity.dart';
+
 SearchOfferPayload searchOfferPayloadFromJson(String str) => SearchOfferPayload.fromJson(json.decode(str));
 
 String searchOfferPayloadToJson(SearchOfferPayload data) => json.encode(data.toJson());
@@ -36,22 +38,3 @@ class SearchOfferPayload {
     };
 }
 
-class Loc {
-    double? lat;
-    double? lng;
-
-    Loc({
-        this.lat,
-        this.lng,
-    });
-
-    factory Loc.fromJson(Map<String, dynamic> json) => Loc(
-        lat: json["lat"]?.toDouble(),
-        lng: json["lng"]?.toDouble(),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "lat": lat,
-        "lng": lng,
-    };
-}
