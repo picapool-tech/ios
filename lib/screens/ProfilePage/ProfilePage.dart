@@ -33,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
   final FeedbackController _feedbackController = Get.find<FeedbackController>();
+  bool imageError = false;
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +102,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     radius: 50,
                     backgroundColor: Colors.grey.shade300,
                     foregroundImage: (user.pic != null)
-                        ? CachedNetworkImageProvider(
-                            user.pic!,
-                          )
+                        ? (imageError)
+                            ? const AssetImage(
+                                'assets/icons/Frame 64.png', // Replace with your image
+                                // width: 100,
+                                // height: 100,
+                              ) as ImageProvider
+                            : CachedNetworkImageProvider(user.pic!,
+                                errorListener: (p0) {
+                                debugPrint(
+                                    "Error loading image : ${p0.toString()} with Access Token : ${_authController.auth.value!.accessToken}");
+                                setState(() {
+                                  imageError = true;
+                                });
+                              }, headers: {
+                                'Authorization':
+                                    'Bearer ${_authController.auth.value!.accessToken}'
+                              })
                         : const AssetImage(
                             'assets/icons/Frame 64.png', // Replace with your image
                             // width: 100,

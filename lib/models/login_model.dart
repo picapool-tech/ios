@@ -7,11 +7,13 @@ class LoginModel {
   final String accessToken;
   final String refreshToken;
   final bool isNew;
+  String? name;
 
   LoginModel({
     required this.accessToken,
     required this.refreshToken,
     required this.isNew,
+    this.name,
   });
 
   factory LoginModel.fromJson(Map<String, dynamic> json) {

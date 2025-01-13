@@ -47,6 +47,7 @@ class AuthController extends GetxController {
   /// Handle Google login and store auth and user data.
   Future<void> loginWithGoogle() async {
     isLoading.value = true;
+    update();
     final result = await _authApi.signInWithGoogle();
 
     await result.fold(
@@ -65,10 +66,12 @@ class AuthController extends GetxController {
       },
     );
     isLoading.value = false;
+    update();
   }
 
 // TODO: need to rethink of this approach to limit the api call for getUser
-  Future<bool> loadAndSaveAuth(Auth authData, {int? userId}) async {
+  Future<bool> loadAndSaveAuth(Auth authData,
+      {int? userId, String? name}) async {
     try {
       var accessToken = await getAccessToken();
       var userData = await _userController.getUser(
@@ -78,7 +81,16 @@ class AuthController extends GetxController {
 
       if (userData != null) {
         debugPrint('User from laod and auth: ${userData.toJson()}');
-        _userController.user.value = userData;
+        if (name != null) {
+          debugPrint("Found username");
+          await _userController.updateUser({
+            "name": name,
+          });
+          userData.name = name;
+        }
+
+        _userController.setUser(userData);
+
         handleFCMToken();
         var userAuth = userData.auth;
         if (userAuth != null) {
@@ -141,6 +153,7 @@ class AuthController extends GetxController {
       },
     );
     isLoading.value = false;
+    update();
   }
 
   Future<void> loginWithOtp(String mobile, String otp) async {
@@ -176,11 +189,14 @@ class AuthController extends GetxController {
       mobile: mobile,
     );
     await _storageController.saveAuth(authData);
-    await loadAndSaveAuth(authData, userId: accessToken.tenant.id);
+    await loadAndSaveAuth(authData,
+        userId: accessToken.tenant.id, name: loginModel.name);
     await _storageController.saveAccessToken(loginModel.accessToken);
     debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
 
     errorMessage.value = "";
+    isLoading.value = false;
+    update();
     checkForExistingUser();
     return false;
   }
@@ -225,24 +241,17 @@ class AuthController extends GetxController {
 
   Future<void> verifyOtp(String phoneNumber) async {}
 
-  Future<void> updateUserData(User user) async {
-    if (auth.value == null) {
-      return;
-    }
-    auth.value!.copyWith(user: user);
-    await _storageController.saveUser(user);
-  }
-
   /// Updates the user data and stores it.
 
   /// Logs out the user and clears the stored auth and user data.
   Future<void> logout() async {
     await _storageController.clearUser();
     await _storageController.clearAuth();
-    
+
     auth.value = null;
-    _userController.user.value = null;
-    checkForExistingUser();
+    update();
+    _userController.clear();
+    Get.offAll(() => const LoginScreen());
   }
 
   Future<String?> getAccessToken() async {

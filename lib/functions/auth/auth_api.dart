@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:http/http.dart' as http;
@@ -62,11 +63,25 @@ class AuthApi {
           await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName
+          AppleIDAuthorizationScopes.fullName,
         ],
       );
 
       log('Apple Token: ${appleCredential.identityToken}');
+
+      final oAuthProvider = firebase.OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      var user = await firebase.FirebaseAuth.instance.signInWithCredential(
+        oAuthProvider,
+      );
+
+      user.user?.displayName;
+
+      var name = oAuthProvider.appleFullPersonName?.toString();
+      log("APPLE USER NAME: $name");
 
       final http.Response response =
           await _sendAppleTokenToServer(appleCredential.identityToken!);
@@ -78,7 +93,9 @@ class AuthApi {
       if (statusCode >= 200 && statusCode < 300) {
         var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
         if (responseModel.success) {
-          return right(LoginModel.fromJson(responseModel.data));
+          var loginModel = LoginModel.fromJson(responseModel.data);
+          loginModel.name = name;
+          return right(loginModel);
         } else {
           return left(
             Failure(

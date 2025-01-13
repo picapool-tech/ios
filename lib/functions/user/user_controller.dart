@@ -25,6 +25,16 @@ class UserController extends GetxController {
     update();
   }
 
+  void clear() {
+    user.value = null;
+    update();
+  }
+
+  void setUser(User user) {
+    this.user.value = user;
+    update();
+  }
+
   Future<bool> updateUser(Map<String, dynamic> updateValues) async {
     isLoading.value = true;
     update();

@@ -53,6 +53,7 @@ class StorageController extends GetxController {
   Future<void> clearAuth() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth');
+    auth.value = null;
   }
 
   Future<void> saveUser(User user) async {
@@ -80,6 +81,7 @@ class StorageController extends GetxController {
   Future<void> clearUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
+    user.value = null;
   }
 
   Future<void> saveAccessToken(String accessToken) async {
