@@ -210,7 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 imagePath: "assets/icons/Bell.png",
                                 title: 'Notification Preferences',
                                 onTap: () => Get.to(
-                                    () => const NotificationPreferences()),
+                                  () => const NotificationPreferences(),
+                                ),
                               ),
                               _buildOptionTile(context,
                                   imagePath: "assets/icons/History.png",

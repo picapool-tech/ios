@@ -29,14 +29,10 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
   @override
   dispose() {
     super.dispose();
-    _storageController.saveTags(_tagController.tags);
-    for (var tag in _tagController.tags) {
-      if (tag.isActive) {
-        FirebaseMessaging.instance.subscribeToTopic(tag.tag);
-      } else {
-        FirebaseMessaging.instance.unsubscribeFromTopic(tag.tag);
-      }
-    }
+    _storageController.saveTags(_tagController.tags).then((onCompelete) {
+      _tagController.subscribeToTopics();
+      _tagController.unSubscribeToTopics();
+    });
   }
 
   @override
@@ -92,10 +88,11 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
     return SwitchListTile.adaptive(
       value: tag.isActive,
       onChanged: (newValue) {
+        var topic = _tagController.toValidTopic(tag.tag);
         if (!newValue) {
-          FirebaseMessaging.instance.unsubscribeFromTopic(tag.tag);
+          FirebaseMessaging.instance.unsubscribeFromTopic(topic);
         } else {
-          FirebaseMessaging.instance.subscribeToTopic(tag.tag);
+          FirebaseMessaging.instance.subscribeToTopic(topic);
         }
         setState(() {
           _tagController.tags[index].isActive = newValue;

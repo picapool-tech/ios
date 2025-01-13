@@ -67,7 +67,7 @@ class TagController extends GetxController {
       var firebaseInstance = FirebaseMessaging.instance;
       for (var tag in tags) {
         var topic = tag.tag;
-        if (tag.isActive) {
+        if (!tag.isActive) {
           if (!_isValid(topic)) {
             topic = toValidTopic(topic);
           }

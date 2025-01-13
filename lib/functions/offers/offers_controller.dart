@@ -173,14 +173,14 @@ class OffersController extends GetxController {
 
     final result = await _offersApi.getOffersByTagId(tagId);
 
+    isLoading.value = false;
+    update();
     return result.fold(
       (error) {
         Get.snackbar("Error", error.message);
         return [];
       },
       (offers) {
-        isLoading.value = false;
-        update();
         offersByTagId[tagId] = offers;
         return offers;
       },

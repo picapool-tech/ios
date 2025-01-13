@@ -167,6 +167,14 @@ class _MyChatsPageState extends State<MyChatsPage> {
                   ),
                 )),
             const SizedBox(height: 10),
+            Obx(() {
+              if (chatController.chats.isNotEmpty &&
+                  chatController.isLoading.value) {
+                return const LinearProgressIndicator();
+              }
+
+              return const SizedBox.shrink();
+            }),
             // Conditionally show either action bar or category buttons
             // selectedIndexes.isNotEmpty
             //     ? Container(

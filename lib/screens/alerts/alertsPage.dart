@@ -78,6 +78,7 @@ class _AlertsPageState extends State<AlertsPage> {
                     setState(() {
                       selectedCategory = 0;
                       expandedTagStates = [];
+                      _offers.getOffersForUser();
                     });
                   },
                 ),
@@ -91,6 +92,7 @@ class _AlertsPageState extends State<AlertsPage> {
                       setState(() {
                         selectedCategory = index + 1;
                         expandedTagStates = [];
+                        _offers.getOffersByTagId(selectedCategory);
                       });
                     },
                   );
@@ -98,82 +100,96 @@ class _AlertsPageState extends State<AlertsPage> {
               ]),
             ),
 
+            const SizedBox(
+              height: 8,
+            ),
+
+            Obx(() {
+              if (selectedCategory == 0) {
+                if (_offers.offers.isNotEmpty && _offers.isLoading.value) {
+                  return const LinearProgressIndicator();
+                }
+              }
+
+              var isValid =
+                  _offers.offersByTagId[selectedCategory]?.isNotEmpty ?? false;
+              if (_offers.isLoading.value && isValid) {
+                return const LinearProgressIndicator();
+              }
+
+              return const SizedBox.shrink();
+            }),
+
             // Alert List
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Container(
-                  decoration: const BoxDecoration(color: Colors.white),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: (_userController.user.value != null)
-                        ? GetBuilder<OffersController>(
-                            builder: (controller) {
-                              switch (selectedCategory) {
-                                case 0:
-                                  if (controller.offers.isEmpty &&
-                                      controller.isLoading.value) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-
-                                  if (controller.offers.isEmpty) {
-                                    return const Center(
-                                      child: Text("No offers"),
-                                    );
-                                  } else {
-                                    if (expandedStates.length !=
-                                        controller.offers.length) {
-                                      expandedStates = List<bool>.filled(
-                                        controller.offers.length,
-                                        false,
-                                      );
-                                    }
-
-                                    return showOfferList(controller.offers);
-                                  }
-                                default:
-                                  controller.getOffersByTagId(selectedCategory);
-                                  var offerByTagId = controller
-                                      .offersByTagId[selectedCategory];
-                                  if (offerByTagId == null) {
-                                    return const Center(
-                                      child: Text("No offers"),
-                                    );
-                                  }
-                                  if (offerByTagId.isEmpty &&
-                                      controller.isLoading.value) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-
-                                  if (offerByTagId.isEmpty) {
-                                    return const Center(
-                                      child: Text("No offers"),
-                                    );
-                                  } else {
-                                    if (expandedTagStates.length !=
-                                        offerByTagId.length) {
-                                      expandedTagStates = List<bool>.filled(
-                                        offerByTagId.length,
-                                        false,
-                                      );
-                                    }
-
-                                    return showOfferList(offerByTagId);
-                                  }
+              child: Container(
+                decoration: const BoxDecoration(color: Colors.white),
+                padding: const EdgeInsets.only(top: 8),
+                child: (_userController.user.value != null)
+                    ? GetBuilder<OffersController>(
+                        builder: (controller) {
+                          switch (selectedCategory) {
+                            case 0:
+                              if (controller.offers.isEmpty &&
+                                  controller.isLoading.value) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
                               }
-                            },
-                          )
-                        : const Center(
-                            child: Text(
-                              "You don't have an account to show alerts",
-                            ),
-                          ),
-                  ),
-                ),
+
+                              if (controller.offers.isEmpty) {
+                                return const Center(
+                                  child: Text("No offers"),
+                                );
+                              } else {
+                                if (expandedStates.length !=
+                                    controller.offers.length) {
+                                  expandedStates = List<bool>.filled(
+                                    controller.offers.length,
+                                    false,
+                                  );
+                                }
+
+                                return showOfferList(controller.offers);
+                              }
+                            default:
+                              var offerByTagId =
+                                  controller.offersByTagId[selectedCategory];
+                              if (offerByTagId == null) {
+                                return const Center(
+                                  child: Text("No offers"),
+                                );
+                              }
+                              if (offerByTagId.isEmpty &&
+                                  controller.isLoading.value) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              if (offerByTagId.isEmpty) {
+                                return const Center(
+                                  child: Text("No offers"),
+                                );
+                              } else {
+                                if (expandedTagStates.length !=
+                                    offerByTagId.length) {
+                                  expandedTagStates = List<bool>.filled(
+                                    offerByTagId.length,
+                                    false,
+                                  );
+                                }
+
+                                return showOfferList(offerByTagId);
+                              }
+                          }
+                        },
+                      )
+                    : const Center(
+                        child: Text(
+                          "You don't have an account to show alerts",
+                        ),
+                      ),
               ),
             ),
           ],

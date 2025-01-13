@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/brand_controller.dart';
@@ -23,10 +22,10 @@ import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
-import 'package:picapool/screens/alerts/alertsPage.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
 import 'package:picapool/utils/routes.dart';
+import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 
 void main() async {
@@ -93,10 +92,7 @@ class _MyAppState extends State<MyApp> {
       getPages: GetRoutes.routes,
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-        useMaterial3: true,
-      ),
+      theme: appTheme,
       home: GetBuilder(
           init: storageController,
           builder: (controller) {
