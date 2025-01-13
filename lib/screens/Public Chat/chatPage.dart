@@ -210,30 +210,34 @@ class _ChatPageState extends State<ChatPage>
               },
             ),
           ),
-          ChatInputField(
-            controller: _messageController,
-            isMessageEmpty: _isMessageEmpty,
-            onSend: (!_isMessageEmpty)
-                ? (message) {
-                    debugPrint("Sending..chat");
-                    if (!chatController.isSocketConnected()) {
-                      Get.snackbar(
-                        "No Action",
-                        "No connection to send message",
-                      );
+          if (widget.offer != null &&
+              widget.offer!.expiryAt
+                  .add(const Duration(hours: 3))
+                  .isAfter(DateTime.now()))
+            ChatInputField(
+              controller: _messageController,
+              isMessageEmpty: _isMessageEmpty,
+              onSend: (!_isMessageEmpty)
+                  ? (message) {
+                      debugPrint("Sending..chat");
+                      if (!chatController.isSocketConnected()) {
+                        Get.snackbar(
+                          "No Action",
+                          "No connection to send message",
+                        );
+                      }
+                      chatController.sendMessage(message);
+                      if (_scrollController.hasClients) {
+                        debugPrint("Scrolling to bottom");
+                        _scrollController.animateTo(
+                          _scrollController.position.maxScrollExtent,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut,
+                        );
+                      }
                     }
-                    chatController.sendMessage(message);
-                    if (_scrollController.hasClients) {
-                      debugPrint("Scrolling to bottom");
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      );
-                    }
-                  }
-                : (message) {},
-          ),
+                  : (message) {},
+            ),
         ],
       ),
       // Private Chat Tab

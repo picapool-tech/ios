@@ -94,7 +94,11 @@ class _ChatInfoState extends State<ChatInfo> {
                       _buildIconLabel(Icons.timer,
                           DateTimeHelper.formatDateTimeExpiry(offer.expiryAt)),
                       const SizedBox(height: 10),
-                      _buildIconLabel(Icons.location_on, "200m"),
+                      _buildIconLabel(
+                          Icons.location_on,
+                          offer.radius != null
+                              ? "${offer.radius} m"
+                              : "Unknown"),
                       const SizedBox(height: 10),
                       _buildIconLabel(Icons.group,
                           "${_chatController.usersInChat.length.toString()} users"),
