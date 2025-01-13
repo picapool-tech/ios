@@ -76,8 +76,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // final AuthController authController = Get.find<AuthController>();
-  // final UserController userController = Get.find<UserController>();
   final StorageController storageController = Get.find<StorageController>();
 
   @override
@@ -92,7 +90,10 @@ class _MyAppState extends State<MyApp> {
       getPages: GetRoutes.routes,
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
-      theme: appTheme,
+      theme: ThemeData(
+        colorSchemeSeed: appTheme.primaryColor,
+        useMaterial3: true,
+      ),
       home: GetBuilder(
           init: storageController,
           builder: (controller) {
