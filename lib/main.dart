@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:picapool/controllers/brand_controller.dart';
 import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
@@ -82,6 +85,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     ConnectionStatusListener.getInstance().initialize();
+    if (Platform.isAndroid) {
+      checkForUpdate();
+    }
   }
 
   @override
@@ -118,6 +124,30 @@ class _MyAppState extends State<MyApp> {
       return const NewBottomBar();
     } else {
       return const LoginScreen();
+    }
+  }
+
+  void checkForUpdate() async {
+    try {
+      final updateInfo = await InAppUpdate.checkForUpdate();
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+        try {
+          await InAppUpdate.performImmediateUpdate();
+        } catch (e) {
+          debugPrint('Immediate update failed: $e');
+          await InAppUpdate.startFlexibleUpdate();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'An update is available. Please restart the app to complete the update.'),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking for updates: $e');
     }
   }
 }

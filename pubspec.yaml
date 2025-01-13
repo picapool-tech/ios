@@ -93,6 +93,7 @@ dependencies:
   dio: any
   path_provider: any
   path: any
+  in_app_update: ^4.2.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
