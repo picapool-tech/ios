@@ -137,7 +137,8 @@ class PermissionUtil {
   }
 
   Future<bool> isPhotoPermissionGranted() async {
-    return await Permission.photos.isGranted;
+    return await Permission.photos.isGranted ||
+        await Permission.photos.isLimited;
   }
 
   Future<bool> isCameraPermissionGranted() async {

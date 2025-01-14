@@ -108,17 +108,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 // width: 100,
                                 // height: 100,
                               ) as ImageProvider
-                            : CachedNetworkImageProvider(user.pic!,
+                            : CachedNetworkImageProvider(
+                                user.pic!,
                                 errorListener: (p0) {
-                                debugPrint(
-                                    "Error loading image : ${p0.toString()} with Access Token : ${_authController.auth.value!.accessToken}");
-                                setState(() {
-                                  imageError = true;
-                                });
-                              }, headers: {
-                                'Authorization':
-                                    'Bearer ${_authController.auth.value!.accessToken}'
-                              })
+                                  debugPrint(
+                                      "Error loading image : ${p0.toString()} with Access Token : ${_authController.auth.value!.accessToken}");
+                                  setState(() {
+                                    imageError = true;
+                                  });
+                                },
+                              )
                         : const AssetImage(
                             'assets/icons/Frame 64.png', // Replace with your image
                             // width: 100,
@@ -819,7 +818,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16.0,
+            right: 16.0,
+            top: 16.0,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
