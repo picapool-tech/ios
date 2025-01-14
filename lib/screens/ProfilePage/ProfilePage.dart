@@ -584,211 +584,208 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) => DraggableScrollableSheet(
-            initialChildSize: 0.9, // Initial height of modal
-            maxChildSize: 0.9, // Max height of modal
-            minChildSize: 0.6, // Min height of modal
-            expand: false,
-            builder: (_, scrollController) {
-              return SingleChildScrollView(
-                controller: scrollController,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Circular Profile Image with Edit Icon
-                      const SizedBox(
-                        height: 20,
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (context, setState) => SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 16.0,
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Circular Profile Image with Edit Icon
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const Text(
+                      "Edit Profile",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "MontserratSB",
                       ),
-                      const Text(
-                        "Edit Profile",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: "MontserratSB",
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Update Your Profile Information",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontFamily: "MontserratR",
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.grey.shade300,
+                            backgroundImage: (pickedImage == null)
+                                ? (user.pic == null)
+                                    ? const AssetImage(
+                                        'assets/icons/Frame 64.png', // Profile picture asset
+                                      ) as ImageProvider
+                                    : CachedNetworkImageProvider(user.pic!)
+                                : FileImage(
+                                    File(pickedImage!.path),
+                                  ) as ImageProvider),
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: const Color(0xffFF8D41),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.edit,
+                              size: 18,
+                            ),
+                            onPressed: () async {
+                              // Add your image picker logic here
+                              pickedImage = await _pickImage();
+                              debugPrint(
+                                "picked image from profile section: ${pickedImage?.name}",
+                              );
+                              setState(() {});
+                            },
+                            color: Colors.white,
+                          ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    // Profile Information Section with Orange Border
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.orange, width: 1.5),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Update Your Profile Information",
+                      child: Column(
+                        children: [
+                          _buildTextField(
+                              Icons.person, "Name", _nameController),
+                          const Divider(thickness: 1.5),
+                          _buildTextField(
+                              Icons.info, "Username", _usernameController),
+                          const Divider(thickness: 1.5),
+                          _buildTextField(
+                            Icons.phone,
+                            "Phone",
+                            _phoneController,
+                            disabled:
+                                _authController.auth.value?.mobile != null,
+                          ),
+                          // const Divider(thickness: 1.5),
+                          // _buildTextField(
+                          //     Icons.email, "Email", "noemail@gmail.com"),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    // Submit Button
+                    ElevatedButton(
+                      onPressed: () async {
+                        var updatedValues = <String, String>{};
+                        if (_nameController.text.isNotEmpty &&
+                            _nameController.text != user.name) {
+                          updatedValues["name"] = _nameController.text;
+                        }
+                        if (_usernameController.text.isNotEmpty &&
+                            _usernameController.text != user.username) {
+                          updatedValues["username"] = _usernameController.text;
+                        }
+                        if (_phoneController.text.isNotEmpty &&
+                            _phoneController.text != user.auth?.mobile) {
+                          updatedValues["phone"] = _phoneController.text;
+                        }
+
+                        var userPic = user.pic;
+
+                        if (pickedImage != null) {
+                          userPic = await Get.find<AssetsController>()
+                              .uploadImage(pickedImage,
+                                  "${DateTime.now()}${user.username}");
+                          if (userPic != null) {
+                            updatedValues['pic'] = userPic;
+                          }
+                        }
+
+                        if (updatedValues.isNotEmpty && context.mounted) {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          );
+                          await _userController.updateUser(updatedValues);
+                          if (context.mounted) {
+                            Navigator.pop(
+                              context,
+                            ); // Close the loading dialog
+                            Navigator.pop(context); // Close the modal
+                            setState(() {});
+                          }
+                        } else {
+                          debugPrint("Update user value : $updatedValues");
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color(0xffFF8D41), // Orange background color
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
+                        ),
+                        minimumSize: const Size(
+                            double.infinity, 50), // Full width button
+                      ),
+                      child: const Text(
+                        "Submit",
                         style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                          color: Colors.white, // White text color
+                          fontSize: 18,
                           fontFamily: "MontserratR",
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey.shade300,
-                              backgroundImage: (pickedImage == null)
-                                  ? (user.pic == null)
-                                      ? const AssetImage(
-                                          'assets/icons/Frame 64.png', // Profile picture asset
-                                        ) as ImageProvider
-                                      : CachedNetworkImageProvider(user.pic!)
-                                  : FileImage(
-                                      File(pickedImage!.path),
-                                    ) as ImageProvider),
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: const Color(0xffFF8D41),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                size: 18,
-                              ),
-                              onPressed: () async {
-                                // Add your image picker logic here
-                                pickedImage = await _pickImage();
-                                debugPrint(
-                                  "picked image from profile section: ${pickedImage?.name}",
-                                );
-                                setState(() {});
-                              },
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-                      // Profile Information Section with Orange Border
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.orange, width: 1.5),
-                          borderRadius: BorderRadius.circular(20),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Go Back Button
+                    OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close the modal
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                            color: Colors.grey), // Grey outline
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
                         ),
-                        child: Column(
-                          children: [
-                            _buildTextField(
-                                Icons.person, "Name", _nameController),
-                            const Divider(thickness: 1.5),
-                            _buildTextField(
-                                Icons.info, "Username", _usernameController),
-                            const Divider(thickness: 1.5),
-                            _buildTextField(
-                              Icons.phone,
-                              "Phone",
-                              _phoneController,
-                              disabled:
-                                  _authController.auth.value?.mobile != null,
-                            ),
-                            // const Divider(thickness: 1.5),
-                            // _buildTextField(
-                            //     Icons.email, "Email", "noemail@gmail.com"),
-                          ],
+                        minimumSize: const Size(
+                            double.infinity, 50), // Full width button
+                      ),
+                      child: const Text(
+                        "Go Back",
+                        style: TextStyle(
+                          color: Colors.grey, // Grey text color
+                          fontSize: 16,
+                          fontFamily: "MontserratR",
                         ),
                       ),
-                      const SizedBox(height: 30),
-                      // Submit Button
-                      ElevatedButton(
-                        onPressed: () async {
-                          var updatedValues = <String, String>{};
-                          if (_nameController.text.isNotEmpty &&
-                              _nameController.text != user.name) {
-                            updatedValues["name"] = _nameController.text;
-                          }
-                          if (_usernameController.text.isNotEmpty &&
-                              _usernameController.text != user.username) {
-                            updatedValues["username"] =
-                                _usernameController.text;
-                          }
-                          if (_phoneController.text.isNotEmpty &&
-                              _phoneController.text != user.auth?.mobile) {
-                            updatedValues["phone"] = _phoneController.text;
-                          }
-
-                          var userPic = user.pic;
-
-                          if (pickedImage != null) {
-                            userPic = await Get.find<AssetsController>()
-                                .uploadImage(pickedImage,
-                                    "${DateTime.now()}${user.username}");
-                            if (userPic != null) {
-                              updatedValues['pic'] = userPic;
-                            }
-                          }
-
-                          if (updatedValues.isNotEmpty && context.mounted) {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              },
-                            );
-                            await _userController.updateUser(updatedValues);
-                            if (context.mounted) {
-                              Navigator.pop(
-                                context,
-                              ); // Close the loading dialog
-                              Navigator.pop(context); // Close the modal
-                              setState(() {});
-                            }
-                          } else {
-                            debugPrint("Update user value : $updatedValues");
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(
-                              0xffFF8D41), // Orange background color
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded corners
-                          ),
-                          minimumSize: const Size(
-                              double.infinity, 50), // Full width button
-                        ),
-                        child: const Text(
-                          "Submit",
-                          style: TextStyle(
-                            color: Colors.white, // White text color
-                            fontSize: 18,
-                            fontFamily: "MontserratR",
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Go Back Button
-                      OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close the modal
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                              color: Colors.grey), // Grey outline
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded corners
-                          ),
-                          minimumSize: const Size(
-                              double.infinity, 50), // Full width button
-                        ),
-                        child: const Text(
-                          "Go Back",
-                          style: TextStyle(
-                            color: Colors.grey, // Grey text color
-                            fontSize: 16,
-                            fontFamily: "MontserratR",
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           ),
         );
       },
@@ -806,6 +803,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       controller: controller,
       enabled: !disabled,
+      onTapOutside: (event) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
     );
   }
 

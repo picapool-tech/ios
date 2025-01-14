@@ -49,3 +49,4 @@ android/app/myapp.keystore
 .env
 
 *.lock
+pubspec.lock

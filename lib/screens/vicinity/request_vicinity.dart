@@ -336,6 +336,9 @@ class _RequestVicinityState extends State<RequestVicinity> {
                           ),
                         ),
                         showCursor: true,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextField(
@@ -358,6 +361,9 @@ class _RequestVicinityState extends State<RequestVicinity> {
                           ),
                         ),
                         maxLines: 2,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
                       ),
                     ],
                   ),
@@ -409,7 +415,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffffffff),
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
@@ -425,199 +431,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
                 expansionPanel(),
               ],
             ),
-            // App bar and top section
-            // AnimatedContainer(
-            //   duration: const Duration(milliseconds: 300),
-            //   height: _isCollapsed ? 60 : 230,
-            //   decoration: const BoxDecoration(
-            //     color: Colors.white,
-            //     borderRadius: BorderRadius.only(
-            //       bottomLeft: Radius.circular(20),
-            //       bottomRight: Radius.circular(20),
-            //     ),
-            //     boxShadow: [
-            //       BoxShadow(
-            //         color: Colors.black26,
-            //         blurRadius: 10,
-            //         offset: Offset(0, 5),
-            //       ),
-            //     ],
-            //   ),
-            //   child: Stack(
-            //     children: [
-            //       // Column(
-            //       //   children: [
-            //       //     const Padding(
-            //       //       padding: EdgeInsets.all(16.0),
-            //       //       child: Row(
-            //       //         children: [
-            //       //           Expanded(
-            //       //             child: Divider(
-            //       //               indent: 25,
-            //       //               thickness: 1,
-            //       //               color: Color(0xffFF8D41),
-            //       //             ),
-            //       //           ),
-            //       //           Text(
-            //       //             "  Request Vicinity  ",
-            //       //             style: TextStyle(
-            //       //                 fontSize: 16, fontFamily: "MontserratM"),
-            //       //           ),
-            //       //           Expanded(
-            //       //             child: Divider(
-            //       //               endIndent: 25,
-            //       //               thickness: 1,
-            //       //               color: Color(0xffFF8D41),
-            //       //             ),
-            //       //           ),
-            //       //         ],
-            //       //       ),
-            //       //     ),
-            //       //     if (!_isCollapsed)
-            //       //       Padding(
-            //       //         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            //       //         child: Column(
-            //       //           children: [
-            //       //             Row(
-            //       //               crossAxisAlignment: CrossAxisAlignment.start,
-            //       //               children: [
-            //       //                 Expanded(
-            //       //                   child: Column(
-            //       //                     children: [
-            //       //                       TextField(
-            //       //                         controller: _titleController,
-            //       //                         decoration: InputDecoration(
-            //       //                           labelText: "Add Title",
-            //       //                           labelStyle: const TextStyle(
-            //       //                               fontFamily: "MontserratM",
-            //       //                               color: Colors.grey),
-            //       //                           enabledBorder: OutlineInputBorder(
-            //       //                             borderRadius:
-            //       //                                 BorderRadius.circular(8),
-            //       //                             borderSide: const BorderSide(
-            //       //                               color: Colors.grey,
-            //       //                             ),
-            //       //                           ),
-            //       //                           focusedBorder: OutlineInputBorder(
-            //       //                             borderRadius:
-            //       //                                 BorderRadius.circular(8),
-            //       //                             borderSide: const BorderSide(
-            //       //                               color: Color(0xffFF8D41),
-            //       //                             ),
-            //       //                           ),
-            //       //                         ),
-            //       //                       ),
-            //       //                       const SizedBox(height: 16),
-            //       //                       TextField(
-            //       //                         controller: _descController,
-            //       //                         decoration: InputDecoration(
-            //       //                           labelText: "Add Description",
-            //       //                           labelStyle: const TextStyle(
-            //       //                               fontFamily: "MontserratM",
-            //       //                               color: Colors.grey),
-            //       //                           enabledBorder: OutlineInputBorder(
-            //       //                             borderRadius:
-            //       //                                 BorderRadius.circular(8),
-            //       //                             borderSide: const BorderSide(
-            //       //                               color: Colors.grey,
-            //       //                             ),
-            //       //                           ),
-            //       //                           focusedBorder: OutlineInputBorder(
-            //       //                             borderRadius:
-            //       //                                 BorderRadius.circular(8),
-            //       //                             borderSide: const BorderSide(
-            //       //                               color: Color(0xffFF8D41),
-            //       //                             ),
-            //       //                           ),
-            //       //                         ),
-            //       //                         maxLines: 2,
-            //       //                       ),
-            //       //                     ],
-            //       //                   ),
-            //       //                 ),
-            //       //                 const SizedBox(width: 16),
-            //       //                 GestureDetector(
-            //       //                   onTap: _pickImages,
-            //       //                   child: Container(
-            //       //                     width: 104,
-            //       //                     height: 104,
-            //       //                     decoration: BoxDecoration(
-            //       //                       color: Colors.grey[200],
-            //       //                       border: Border.all(
-            //       //                           color: Colors.grey, width: 1),
-            //       //                       borderRadius: BorderRadius.circular(8),
-            //       //                     ),
-            //       //                     child: _imageFiles == null ||
-            //       //                             _imageFiles!.isEmpty
-            //       //                         ? const Center(
-            //       //                             child: Icon(
-            //       //                               Icons.add_photo_alternate,
-            //       //                               size: 40,
-            //       //                               color: Colors.grey,
-            //       //                             ),
-            //       //                           )
-            //       //                         : PageView.builder(
-            //       //                             itemCount: _imageFiles!.length,
-            //       //                             itemBuilder: (context, index) {
-            //       //                               return ClipRRect(
-            //       //                                 borderRadius:
-            //       //                                     BorderRadius.circular(8),
-            //       //                                 child: Image.file(
-            //       //                                   File(_imageFiles![index]
-            //       //                                       .path),
-            //       //                                   fit: BoxFit.cover,
-            //       //                                 ),
-            //       //                               );
-            //       //                             },
-            //       //                           ),
-            //       //                   ),
-            //       //                 ),
-            //       //               ],
-            //       //             ),
-            //       //             const SizedBox(height: 16),
-            //       //           ],
-            //       //         ),
-            //       //       ),
-            //       //   ],
-            //       // ),
-            //       Positioned(
-            //         bottom: 8,
-            //         right: 30,
-            //         child: GestureDetector(
-            //           onTap: () {
-            //             setState(() {
-            //               _isCollapsed = !_isCollapsed;
-            //             });
-            //           },
-            //           child: Container(
-            //             width: 40,
-            //             height: 40,
-            //             decoration: BoxDecoration(
-            //               color: const Color(0xffFFEEE2),
-            //               shape: BoxShape.circle,
-            //               border: Border.all(
-            //                 color: const Color(0xffFF8D41),
-            //                 width: 2,
-            //               ),
-            //               boxShadow: [
-            //                 BoxShadow(
-            //                   color: Colors.black.withOpacity(0.2),
-            //                   blurRadius: 8,
-            //                 ),
-            //               ],
-            //             ),
-            //             child: Icon(
-            //               _isCollapsed
-            //                   ? Icons.arrow_drop_down_outlined
-            //                   : Icons.arrow_drop_up_outlined,
-            //               color: const Color(0xffFF8D41),
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+
             // // Map section
             Expanded(
               child: Stack(

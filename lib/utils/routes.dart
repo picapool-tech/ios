@@ -47,6 +47,8 @@ class GetRoutes {
   static const String createCabShare = '/createCabShare';
   static const String createPool = '/createPool';
 
+  
+
   // Define the routes list using a more concise structure
   static final List<GetPage<dynamic>> routes = [
     _buildRoute(
