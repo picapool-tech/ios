@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -177,63 +179,73 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {bool isName = false, bool isAge = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RichText(
-          text: TextSpan(
-            text: label.split('*')[0],
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 16,
-              fontFamily: 'MontserratR',
-            ),
-            children: const [
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Colors.red),
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool isName = false,
+    bool isAge = false,
+  }) {
+    return (isName && Platform.isIOS)
+        ? const SizedBox.shrink()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  text: label.split('*')[0],
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                    fontFamily: 'MontserratR',
+                  ),
+                  children: const [
+                    TextSpan(
+                      text: '*',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller,
+                keyboardType: isAge
+                    ? TextInputType.number
+                    : TextInputType.text, // Numeric keyboard for age field
+                decoration: InputDecoration(
+                  filled: true,
+                  hintText: (isAge) ? "Your age" : "Your full name",
+                  hintStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontFamily: 'MontserratR',
+                      fontSize: 12),
+                  fillColor: Colors.transparent,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFA3A3A3), width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFFF8D41), width: 2),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                style: const TextStyle(fontSize: 14),
+                inputFormatters: [
+                  if (isName) ...[
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                  ],
+                  if (isAge) ...[
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                ],
               ),
             ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          keyboardType: isAge
-              ? TextInputType.number
-              : TextInputType.text, // Numeric keyboard for age field
-          decoration: InputDecoration(
-            filled: true,
-            hintText: (isAge) ? "Your age" : "Your full name",
-            hintStyle: const TextStyle(
-                color: Colors.grey, fontFamily: 'MontserratR', fontSize: 12),
-            fillColor: Colors.transparent,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFA3A3A3), width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFF8D41), width: 2),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-          style: const TextStyle(fontSize: 14),
-          inputFormatters: [
-            if (isName) ...[
-              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-            ],
-            if (isAge) ...[
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(2),
-            ],
-          ],
-        ),
-      ],
-    );
+          );
   }
 
   Widget _buildPhoneField() {

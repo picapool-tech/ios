@@ -13,6 +13,7 @@ import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
 import 'package:picapool/screens/login_screen.dart';
+import 'package:picapool/screens/personal_details.dart';
 import 'package:picapool/screens/pooling_history.dart';
 import 'package:picapool/utils/permission_util.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -71,6 +72,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Spacer(),
                   ElevatedButton(
                     onPressed: () async {
+                      if (kDebugMode) {
+                        Get.to(() => const PersonalDetails());
+                        return;
+                      }
+
                       var url = Uri.parse("https://wa.me/917224052216");
                       if (!await launchUrl(url)) {
                         debugPrint("Could not launch $url");
