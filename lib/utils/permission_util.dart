@@ -142,7 +142,8 @@ class PermissionUtil {
   }
 
   Future<bool> isCameraPermissionGranted() async {
-    return await Permission.camera.isGranted;
+    return await Permission.camera.isGranted ||
+        await Permission.camera.isLimited;
   }
 
   /// Checks if notification permission is granted

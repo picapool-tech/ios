@@ -454,22 +454,22 @@ class _LocationScreenState extends State<LocationScreen>
                               height: 16,
                             ),
                           ),
-                          suffixIcon: IconButton(
-                            icon: Padding(
-                              padding: const EdgeInsets.all(
-                                  1.0), // Adjust the padding if needed
-                              child: Image.asset(
-                                'assets/icons/heart.png', // Replace with your asset path
-                                width: 24,
-                                height: 24,
-                              ),
-                            ),
-                            onPressed: () {
-                              if (_searchController.text.isNotEmpty) {
-                                _saveLocation(_searchController.text);
-                              }
-                            },
-                          ),
+                          // suffixIcon: IconButton(
+                          //   icon: Padding(
+                          //     padding: const EdgeInsets.all(
+                          //         1.0), // Adjust the padding if needed
+                          //     child: Image.asset(
+                          //       'assets/icons/heart.png', // Replace with your asset path
+                          //       width: 24,
+                          //       height: 24,
+                          //     ),
+                          //   ),
+                          //   onPressed: () {
+                          //     if (_searchController.text.isNotEmpty) {
+                          //       _saveLocation(_searchController.text);
+                          //     }
+                          //   },
+                          // ),
                           contentPadding:
                               const EdgeInsets.symmetric(vertical: 12),
                         ),
