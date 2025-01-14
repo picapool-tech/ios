@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
@@ -817,102 +818,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16.0,
-            right: 16.0,
-            top: 16.0,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "Help us Improve!",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "MontserratSB",
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Your Feedback is incredibly valuable",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  fontFamily: "MontserratR",
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Feedback TextField
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.orange, width: 1.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    hintText: "Enter your Feedback...",
-                    hintStyle: TextStyle(
-                        color: Colors.grey, fontFamily: "MontserratR"),
-                    border: InputBorder
-                        .none, // No border since the container has a border
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  controller: _feedbackTextController,
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Submit Form Button
-              ElevatedButton(
-                onPressed: _feedbackTextController.text.isNotEmpty
-                    ? () {
-                        _sendFeedback(
-                          _feedbackTextController.text,
-                        ); // Add your feedback submission logic here
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color(0xffFF8D41), // Orange background color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded corners
+                const SizedBox(height: 20),
+                const Text(
+                  "Help us Improve!",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "MontserratSB",
                   ),
-                  minimumSize:
-                      const Size(double.infinity, 50), // Full width button
                 ),
-                child: (_feedbackController.isLoading.value)
-                    ? const CircularProgressIndicator()
-                    : const Text(
-                        "Submit Form",
-                        style: TextStyle(
-                          color: Colors.white, // White text color
-                          fontSize: 18,
-                          fontFamily: "MontserratR",
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 20),
-              // Rate Us on Play Store Button
-              if (Platform.isAndroid)
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // Handle Play Store rating action
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.grey), // Grey outline
+                const SizedBox(height: 8),
+                const Text(
+                  "Your Feedback is incredibly valuable",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    fontFamily: "MontserratR",
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Feedback TextField
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.orange, width: 1.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextField(
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      hintText: "Enter your Feedback...",
+                      hintStyle: TextStyle(
+                          color: Colors.grey, fontFamily: "MontserratR"),
+                      border: InputBorder
+                          .none, // No border since the container has a border
+                    ),
+                    controller: _feedbackTextController,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Submit Form Button
+                ElevatedButton(
+                  onPressed: _feedbackTextController.text.isNotEmpty
+                      ? () {
+                          _sendFeedback(
+                            _feedbackTextController.text,
+                          ); // Add your feedback submission logic here
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        const Color(0xffFF8D41), // Orange background color
                     shape: RoundedRectangleBorder(
                       borderRadius:
                           BorderRadius.circular(10), // Rounded corners
@@ -920,21 +896,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     minimumSize:
                         const Size(double.infinity, 50), // Full width button
                   ),
-                  icon: Image.asset(
-                    'assets/icons/playstore.png', // Play Store icon asset
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: const Text(
-                    "Rate Us on Play Store",
-                    style: TextStyle(
-                      color: Colors.grey, // Grey text color
-                      fontSize: 16,
-                      fontFamily: "MontserratR",
+                  child: (_feedbackController.isLoading.value)
+                      ? const CircularProgressIndicator()
+                      : const Text(
+                          "Submit Form",
+                          style: TextStyle(
+                            color: Colors.white, // White text color
+                            fontSize: 18,
+                            fontFamily: "MontserratR",
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 20),
+                // Rate Us on Play Store Button
+                if (Platform.isAndroid)
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      // Handle Play Store rating action
+                      final InAppReview inAppReview = InAppReview.instance;
+                      if (await inAppReview.isAvailable()) {
+                        inAppReview.requestReview();
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side:
+                          const BorderSide(color: Colors.grey), // Grey outline
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(10), // Rounded corners
+                      ),
+                      minimumSize:
+                          const Size(double.infinity, 50), // Full width button
+                    ),
+                    icon: Image.asset(
+                      'assets/icons/playstore.png', // Play Store icon asset
+                      width: 24,
+                      height: 24,
+                    ),
+                    label: const Text(
+                      "Rate Us on Play Store",
+                      style: TextStyle(
+                        color: Colors.grey, // Grey text color
+                        fontSize: 16,
+                        fontFamily: "MontserratR",
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
