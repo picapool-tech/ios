@@ -60,6 +60,7 @@ class UserController extends GetxController {
         (updatedUser) async {
           user.value!.update(updateValues);
           _storageController.saveUser(user.value!);
+          
           update();
           return true;
         },

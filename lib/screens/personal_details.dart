@@ -138,7 +138,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                           return;
                         }
 
-                        user.name = _nameController.text;
+                        if (Platform.isIOS) {
+                          user.name = "iOS User";
+                        } else {
+                          user.name = _nameController.text;
+                        }
+
                         user.age = int.parse(_ageController.text);
                         user.gender = _selectedGender;
                         debugPrint("updateUser: ${user.toJson()}");
@@ -445,8 +450,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   }
 
   bool _isFormValid() {
-    return _nameController.text.isNotEmpty &&
-        _ageController.text.isNotEmpty &&
-        _selectedGender != null;
+    return _nameController.text.isNotEmpty ||
+        Platform.isIOS &&
+            _ageController.text.isNotEmpty &&
+            _selectedGender != null;
   }
 }

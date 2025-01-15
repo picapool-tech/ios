@@ -8,11 +8,13 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/feedback/feedback_controller.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
 import 'package:picapool/screens/login_screen.dart';
+import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
 import 'package:picapool/screens/pooling_history.dart';
 import 'package:picapool/utils/permission_util.dart';
@@ -678,16 +680,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildTextField(
                               Icons.info, "Username", _usernameController),
                           const Divider(thickness: 1.5),
-                          _buildTextField(
-                            Icons.phone,
-                            "Phone",
-                            _phoneController,
-                            disabled:
-                                _authController.auth.value?.mobile != null,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildTextField(
+                                  Icons.phone,
+                                  "Phone",
+                                  _phoneController,
+                                  disabled:
+                                      _authController.auth.value?.mobile !=
+                                          null,
+                                ),
+                              ),
+                              if (_authController.auth.value?.mobile == null)
+                                TextButton(
+                                  onPressed: () async {
+                                    if (_phoneController.text.isEmpty) {
+                                      Get.snackbar(
+                                        "Error",
+                                        "Phone number cannot be empty",
+                                        snackPosition: SnackPosition.TOP,
+                                      );
+                                      return;
+                                    }
+
+                                    if (_phoneController.text.length != 10) {
+                                      Get.snackbar(
+                                        "Error",
+                                        "Phone number should be 10 digits",
+                                        snackPosition: SnackPosition.TOP,
+                                      );
+                                      return;
+                                    }
+
+                                    var sent = await _authController
+                                        .sendOtp("91${_phoneController.text}");
+                                    if (!sent) {
+                                      return;
+                                    }
+                                    var value = await Get.to(
+                                      () => OtpScreen(
+                                        phoneNumber:
+                                            "91${_phoneController.text}",
+                                        returnValue: true,
+                                      ),
+                                    ) as bool?;
+
+                                    if (value != null && value) {
+                                      var updateUser = await _userController
+                                          .updateUser({
+                                        "mobile": "91${_phoneController.text}"
+                                      });
+
+                                      if (updateUser) {
+                                        _authController.auth.value =
+                                            _authController.auth.value!
+                                                .copyWith(
+                                          mobile: "91${_phoneController.text}",
+                                        );
+                                        await Get.find<StorageController>()
+                                            .saveAuth(
+                                                _authController.auth.value!);
+                                        setState(() {});
+                                      } else {
+                                        Get.snackbar(
+                                          "Error",
+                                          "Could not update phone number",
+                                          snackPosition: SnackPosition.BOTTOM,
+                                        );
+                                      }
+                                    } else {
+                                      Get.snackbar(
+                                        "Error",
+                                        "Could not verify phone number",
+                                        snackPosition: SnackPosition.BOTTOM,
+                                      );
+                                    }
+                                  },
+                                  child: Obx(
+                                    () {
+                                      if (_authController.isLoading.value) {
+                                        return const CircularProgressIndicator();
+                                      }
+                                      return Text(
+                                        (_authController.auth.value!.mobile !=
+                                                null)
+                                            ? "Verified"
+                                            : "Verify",
+                                        style: const TextStyle(
+                                          color: Colors.orange,
+                                          fontFamily: "MontserratR",
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
                           ),
+
                           // const Divider(thickness: 1.5),
                           // _buildTextField(
-                          //     Icons.email, "Email", "noemail@gmail.com"),
+                          //     Icons.email, "Email", "noemail@gmail.com",),
                         ],
                       ),
                     ),
@@ -704,10 +797,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _usernameController.text != user.username) {
                           updatedValues["username"] = _usernameController.text;
                         }
-                        if (_phoneController.text.isNotEmpty &&
-                            _phoneController.text != user.auth?.mobile) {
-                          updatedValues["phone"] = _phoneController.text;
-                        }
+                        // if (_phoneController.text.isNotEmpty &&
+                        //     _phoneController.text != user.auth?.mobile) {
+                        //   updatedValues["phone"] = _phoneController.text;
+                        // }
 
                         var userPic = user.pic;
 
@@ -740,6 +833,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }
                         } else {
                           debugPrint("Update user value : $updatedValues");
+                          Get.back();
                         }
                       },
                       style: ElevatedButton.styleFrom(
