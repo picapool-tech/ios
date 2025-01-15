@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // To format the date
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
@@ -26,18 +27,18 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   static const LatLng _center = LatLng(25.276987, 55.296249);
   String? _selectedCab; // To track the selected cab marker
   DateTime _selectedDate = DateTime.now(); // Current selected date
-  final GoogleMapsPlaces _places = GoogleMapsPlaces(
-      apiKey:
-          'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
   GoogleMapController? mapController;
-  Position? currentPosition;
   Set<Marker> _markers = {};
 
   TextEditingController _fromController = TextEditingController();
   TextEditingController _toController = TextEditingController();
+  LocationController _locationController = Get.find<LocationController>();
   List<Prediction> _fromPredictions = [];
   List<Prediction> _toPredictions = [];
   String formattedDate = '';
+  LatLng? selectedLocationLatLng;
+  GoogleMapController? _controller;
 
   final LiveOfferController liveOfferController = Get.find();
 
@@ -45,6 +46,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   final int defaultRadius = 5000;
   LatLng? selectedFromLocation;
   bool isInitialLoad = true;
+  bool _isMapInitialized = false;
   String? _currentAddress;
 
   @override
@@ -54,15 +56,51 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   }
 
   Future<void> _initializeLocationAndSearch() async {
-    await _getCurrentLocation();
-    if (currentPosition != null) {
-      await _getAddressFromLatLng(currentPosition!);
-      selectedFromLocation = LatLng(
-        currentPosition!.latitude,
-        currentPosition!.longitude,
-      );
+    await _fetchLocation();
+    if (selectedLocationLatLng != null) {
+      await _getAddressFromLatLng(selectedLocationLatLng!);
+      selectedFromLocation = selectedLocationLatLng!;
       _searchOffers();
+      _updateMarkersFromSearch();
     }
+    print("===== TRIGGERD =============");
+  }
+
+  Future<void> _fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      await _locationController.getLocation();
+    }
+    var location = _locationController.state.value.location;
+    if (location == null) {
+      debugPrint("NULL LOCATION : VICINITY");
+      Get.snackbar(
+        'Error',
+        'Failed to get current location.',
+        snackStyle: SnackStyle.GROUNDED,
+      );
+      return;
+    }
+
+    // Position position = await Geolocator.(
+    //     desiredAccuracy: LocationAccuracy.high
+    //   );
+
+    setState(() {
+      selectedLocationLatLng = LatLng(location.latitude, location.longitude);
+      // currentPosition = position;
+
+      if (_controller != null && !_isMapInitialized) {
+        _controller!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: selectedLocationLatLng!,
+              zoom: 16.0,
+            ),
+          ),
+        );
+        _isMapInitialized = true;
+      }
+    });
   }
 
   Future<void> _searchOffers() async {
@@ -76,7 +114,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       DateTime.now().hour,
       DateTime.now().minute,
       DateTime.now().second,
-    ).toUtc().toIso8601String();
+    ).toLocal().toIso8601String();
 
     debugPrint('Searching offers with date: $startTimeISO'); // Debug log
 
@@ -114,7 +152,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
               _markers.add(
                 Marker(
                   markerId: MarkerId('offer_${offer.id}'),
-                  position: LatLng(location.lat, location.lng),
+                  position: selectedLocationLatLng!,
                   icon: BitmapDescriptor.defaultMarkerWithHue(
                       BitmapDescriptor.hueOrange),
                   infoWindow: InfoWindow(
@@ -137,42 +175,11 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      setState(() {
-        currentPosition = position;
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('currentLocation'),
-            position: LatLng(position.latitude, position.longitude),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueGreen),
-            infoWindow: const InfoWindow(title: 'Your Location'),
-          ),
-        );
-      });
-
-      // Move camera to current location
-      mapController?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: 14.0,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint("Error getting location: $e");
-    }
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
+  Future<void> _getAddressFromLatLng(LatLng coordinates) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
+        coordinates.latitude,
+        coordinates.longitude,
       );
 
       if (placemarks.isNotEmpty) {
@@ -486,13 +493,13 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                           child: GoogleMap(
                             onMapCreated: (GoogleMapController controller) {
                               mapController = controller;
-                              if (currentPosition != null) {
+                              if (selectedLocationLatLng != null) {
                                 controller.animateCamera(
                                   CameraUpdate.newCameraPosition(
                                     CameraPosition(
                                       target: LatLng(
-                                        currentPosition!.latitude,
-                                        currentPosition!.longitude,
+                                        selectedLocationLatLng!.latitude,
+                                        selectedLocationLatLng!.longitude,
                                       ),
                                       zoom: 14.0,
                                     ),
@@ -501,16 +508,17 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                               }
                             },
                             initialCameraPosition: CameraPosition(
-                              target: currentPosition != null
-                                  ? LatLng(currentPosition!.latitude,
-                                      currentPosition!.longitude)
+                              target: selectedLocationLatLng != null
+                                  ? LatLng(selectedLocationLatLng!.latitude,
+                                      selectedLocationLatLng!.longitude)
                                   : const LatLng(0,
                                       0), // Default position until we get location
                               zoom: 14.0,
                             ),
                             markers: _markers,
                             myLocationEnabled: true,
-                            myLocationButtonEnabled: true,
+                            
+                            myLocationButtonEnabled: false,
                           ),
                         ),
                         // Bottom fixed container
@@ -716,13 +724,9 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
           suffixIcon: IconButton(
             icon: const Icon(Icons.my_location, color: Colors.orange),
             onPressed: () async {
-              await _getCurrentLocation();
-              if (currentPosition != null) {
-                await _getAddressFromLatLng(currentPosition!);
-                selectedFromLocation = LatLng(
-                  currentPosition!.latitude,
-                  currentPosition!.longitude,
-                );
+              await _initializeLocationAndSearch();
+              if (selectedLocationLatLng != null) {
+                selectedFromLocation = selectedLocationLatLng;
                 _searchOffers();
               }
             },
@@ -798,7 +802,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       },
     );
   }
-}
+ }
 
 Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
   return Padding(

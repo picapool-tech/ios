@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/product_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/offers/search_offer_payload.dart';
 import 'package:picapool/models/product_grid_model.dart';
@@ -19,7 +21,12 @@ class ProductListsPage extends StatefulWidget {
 class ProductListsPageState extends State<ProductListsPage> {
   ProductController get productController => Get.find();
   Position? currentPosition;
+  LatLng? currentCoordinates;
   final TextEditingController _productSearchController = TextEditingController();
+  final LocationController _locationController = Get.find<LocationController>();
+
+  bool _isMapInitialized = false;
+  GoogleMapController? _controller;
   
   // Radius options
   final List<Map<String, int>> radiusOptions = [
@@ -45,6 +52,39 @@ class ProductListsPageState extends State<ProductListsPage> {
     if (currentPosition != null) {
       _searchWithCurrentLocation();
     }
+  }
+
+    Future<void> _fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      await _locationController.getLocation();
+    }
+    var location = _locationController.state.value.location;
+    if (location == null) {
+      debugPrint("NULL LOCATION : VICINITY");
+      Get.snackbar(
+        'Error',
+        'Failed to get current location.',
+        snackStyle: SnackStyle.GROUNDED,
+      );
+      return;
+    }
+
+    setState(() {
+      currentCoordinates = LatLng(location.latitude, location.longitude);
+
+
+      if (_controller != null && !_isMapInitialized) {
+        _controller!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: currentCoordinates!,
+              zoom: 16.0,
+            ),
+          ),
+        );
+        _isMapInitialized = true;
+      }
+    });
   }
 
   Future<void> _getCurrentLocation() async {

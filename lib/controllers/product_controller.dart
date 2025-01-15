@@ -297,7 +297,7 @@ class ProductController extends GetxController {
         name: productResponse.data!.name ?? createProductPayload.name,
         images: productResponse.data!.images ?? createProductPayload.images,
         desc: productResponse.data!.description ?? createProductPayload.description,
-        expiryAt: DateTime.now().add(const Duration(days: 30)).toUtc(),
+        expiryAt: DateTime.now().add(const Duration(days: 30)).toLocal(),
         productIds: [productResponse.data!.id!],
         loc: location,
         userId: _userController.user.value!.id,
