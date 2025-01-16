@@ -15,6 +15,7 @@ import 'package:picapool/services/products/responses/get_single_product_response
 import 'package:picapool/services/products/responses/update_product_response.dart';
 import 'package:picapool/models/offers/create_offer_payload.dart';
 import 'package:picapool/models/offers/create_offer_response.dart';
+import 'package:picapool/utils/date_time_utils.dart';
 
 enum ProductsState { productsLoading, productsLoaded, productsCantLoad }
 enum CreateProductState { creating, created, error }
@@ -297,7 +298,8 @@ class ProductController extends GetxController {
         name: productResponse.data!.name ?? createProductPayload.name,
         images: productResponse.data!.images ?? createProductPayload.images,
         desc: productResponse.data!.description ?? createProductPayload.description,
-        expiryAt: DateTime.now().add(const Duration(days: 30)).toLocal(),
+        
+        expiryAt: DateTimeUtils.formatDateWithZone(DateTime.now().add(const Duration(days: 30))),
         productIds: [productResponse.data!.id!],
         loc: location,
         userId: _userController.user.value!.id,
