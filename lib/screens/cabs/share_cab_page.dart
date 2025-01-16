@@ -1,19 +1,182 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // To format the date
-import 'package:flutter_google_maps_webservices/places.dart';
+import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
-import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/cabs/showallcabs.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
-import 'package:get/get.dart';
-import 'package:picapool/controllers/live_offer_controller.dart';
-import 'package:geolocator/geolocator.dart';
+
+Widget buildAddressRow(String label, String address) {
+  return Row(
+    children: [
+      Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: "MontserratM",
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+            Text(
+              address,
+              style: const TextStyle(fontFamily: "MontserratM"),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.only(right: 16.0),
+    child: GestureDetector(
+      onTap: () {
+        // setState(() {
+        //   _selectedCab = 'cab${index + 1}';
+        // });
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.7,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateFormat('hh:mm a').format(offer.expiryAt!),
+                    style: const TextStyle(
+                      fontFamily: "MontserratM",
+                      fontSize: 20,
+                    ),
+                  ),
+                  // TODO: Uncomment after seats is fixed from the backend
+                  // Container(
+                  //   padding:
+                  //       const EdgeInsets
+                  //           .symmetric(
+                  //     horizontal: 8,
+                  //     vertical: 4,
+                  //   ),
+                  //   decoration:
+                  //       BoxDecoration(
+                  //     border: Border.all(
+                  //       color: Colors
+                  //           .grey[300]!,
+                  //     ),
+                  //     borderRadius:
+                  //         BorderRadius
+                  //             .circular(
+                  //                 12),
+                  //   ),
+                  // child: Row(
+                  //   children:
+                  //       List.generate(
+                  //     offer.seats ?? 0,
+                  //     (index) =>
+                  //         const Padding(
+                  //       padding:
+                  //           EdgeInsets
+                  //               .only(
+                  //         right: 2,
+                  //       ),
+                  //       child: Icon(
+                  //         Icons.person,
+                  //         size: 16,
+                  //         color: Color(
+                  //           0xffFF8D41,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
+              const SizedBox(height: 8),
+              buildAddressRow(
+                "To",
+                offer.toAddress ?? "EMPTY",
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // _getToChat(index);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(
+                      0xffFF8D41,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ),
+                    ),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ImageIcon(
+                          AssetImage("assets/icons/bus.png"),
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          "Join Chat",
+                          style: TextStyle(
+                            fontFamily: "MontserratR",
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
 class ShareCabScreen extends StatefulWidget {
   const ShareCabScreen({super.key});
@@ -46,271 +209,6 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
   LatLng? selectedFromLocation;
   bool isInitialLoad = true;
   String? _currentAddress;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeLocationAndSearch();
-  }
-
-  Future<void> _initializeLocationAndSearch() async {
-    await _getCurrentLocation();
-    if (currentPosition != null) {
-      await _getAddressFromLatLng(currentPosition!);
-      selectedFromLocation = LatLng(
-        currentPosition!.latitude,
-        currentPosition!.longitude,
-      );
-      _searchOffers();
-    }
-  }
-
-  Future<void> _searchOffers() async {
-    if (selectedFromLocation == null) return;
-
-    // Format the selected date with time to ISO string
-    final startTimeISO = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      DateTime.now().hour,
-      DateTime.now().minute,
-      DateTime.now().second,
-    ).toUtc().toIso8601String();
-
-    debugPrint('Searching offers with date: $startTimeISO'); // Debug log
-
-    final SearchCabsPayload payload = SearchCabsPayload(
-      from: From(
-        lat: selectedFromLocation!.latitude,
-        lng: selectedFromLocation!.longitude,
-      ),
-      radius: defaultRadius,
-      startTime: startTimeISO, // Send the formatted date string
-    );
-
-    await liveOfferController.searchLiveOffer(payload);
-    if (liveOfferController.searchLiveOfferState == SearchLiveOfferState.created) {
-      _updateMarkersFromSearch();
-    }
-  }
-
-  void _updateMarkersFromSearch() async {
-    setState(() {
-      _markers.removeWhere(
-          (marker) => !marker.markerId.value.startsWith('current'));
-    });
-
-    if (liveOfferController.searchCabsList != null) {
-      for (var offer in liveOfferController.searchCabsList!) {
-        try {
-          // Get place details using placeId
-          final placeDetails =
-              await _places.getDetailsByPlaceId(offer.fromAddress ?? "");
-          if (placeDetails.result.geometry?.location != null) {
-            final location = placeDetails.result.geometry!.location;
-
-            setState(() {
-              _markers.add(
-                Marker(
-                  markerId: MarkerId('offer_${offer.id}'),
-                  position: LatLng(location.lat, location.lng),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueOrange),
-                  infoWindow: InfoWindow(
-                    title: DateFormat('hh:mm a').format(offer.expiryAt!),
-                    snippet: '${offer.seats} seats available',
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _selectedCab = 'offer_${offer.id}';
-                    });
-                  },
-                ),
-              );
-            });
-          }
-        } catch (e) {
-          debugPrint('Error fetching place details: $e');
-        }
-      }
-    }
-  }
-
-  Future<void> _getCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      setState(() {
-        currentPosition = position;
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('currentLocation'),
-            position: LatLng(position.latitude, position.longitude),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueGreen),
-            infoWindow: const InfoWindow(title: 'Your Location'),
-          ),
-        );
-      });
-
-      // Move camera to current location
-      mapController?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: 14.0,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint("Error getting location: $e");
-    }
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        setState(() {
-          _currentAddress =
-              "${place.street}, ${place.subLocality}, ${place.locality}";
-          _fromController.text = _currentAddress ?? '';
-        });
-      }
-    } catch (e) {
-      debugPrint('Error getting address: $e');
-    }
-  }
-
-  // Function to open a date picker and allow the user to select a date
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        // Preserve the time from the previous selection
-        _selectedDate = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          _selectedDate.hour,
-          _selectedDate.minute,
-          _selectedDate.second,
-        );
-        formattedDate = _formatDateForDisplay(_selectedDate);
-      });
-      _searchOffers(); // Search with new date
-    }
-  }
-
-  // Function to set the date to today
-  void _setToday() {
-    setState(() {
-      _selectedDate = DateTime.now();
-      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
-    });
-    debugPrint('Date set to today: $_selectedDate'); // Debug log
-    _searchOffers(); // This will now use the updated _selectedDate
-  }
-
-  // Function to set the date to tomorrow
-  void _setTomorrow() {
-    setState(() {
-      _selectedDate = DateTime.now().add(const Duration(days: 1));
-      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
-    });
-    debugPrint('Date set to tomorrow: $_selectedDate'); // Debug log
-    _searchOffers(); // This will now use the updated _selectedDate
-  }
-
-  // Function to search location and show suggestions
-  Future<void> _searchPlaces(String query, bool isFrom) async {
-    if (query.isEmpty) {
-      setState(() {
-        isFrom ? _fromPredictions.clear() : _toPredictions.clear();
-      });
-      return;
-    }
-
-    var sessionToken = 'xyzabc_1234'; // You may generate this token dynamically
-    var response =
-        await _places.autocomplete(query, sessionToken: sessionToken);
-
-    if (response.isOkay) {
-      setState(() {
-        if (isFrom) {
-          _fromPredictions = response.predictions;
-        } else {
-          _toPredictions = response.predictions;
-        }
-      });
-    }
-  }
-
-  // Function to select place and fill text field
-  Future<void> _selectPlace(Prediction prediction, bool isFrom) async {
-    final placeId = prediction.placeId;
-    if (placeId == null) return;
-
-    var details = await _places.getDetailsByPlaceId(placeId);
-    final location = details.result.geometry?.location;
-    if (location == null) return;
-
-    setState(() {
-      if (isFrom) {
-        _fromController.text = prediction.description ?? '';
-        _fromPredictions.clear();
-        selectedFromLocation = LatLng(location.lat, location.lng);
-        _searchOffers(); // Search with new location
-      }
-    });
-  }
-
-  Widget buildAddressRow(String label, String address) {
-    return Row(
-      children: [
-        Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: "MontserratM",
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-              Text(
-                address,
-                style: const TextStyle(fontFamily: "MontserratM"),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper method to format date for display
-  String _formatDateForDisplay(DateTime date) {
-    return DateFormat('E, d MMM').format(date);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -551,19 +449,34 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                 GetBuilder<LiveOfferController>(
                                   builder: (liveOffersInstance) {
                                     return Container(
-                                      color: Colors.white,
-                                      height: 180,
-                                      child: 
-                                        liveOffersInstance.searchLiveOfferState == SearchLiveOfferState.created && liveOffersInstance.searchCabsList != null && liveOffersInstance.searchCabsList!.isNotEmpty
-                                        ? ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: liveOfferController.searchCabsList?.length ?? 0,
-                                          itemBuilder: (context, index) {
-                                            final offer = liveOfferController.searchCabsList![index];
-                                            return _buildOfferCard(offer , context);
-                                          },
-                                        ) : _buildEmptyState()
-                                    );
+                                        color: Colors.white,
+                                        height: 180,
+                                        child: liveOffersInstance
+                                                        .searchLiveOfferState ==
+                                                    SearchLiveOfferState
+                                                        .created &&
+                                                liveOffersInstance
+                                                        .searchCabsList !=
+                                                    null &&
+                                                liveOffersInstance
+                                                    .searchCabsList!.isNotEmpty
+                                            ? ListView.builder(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: liveOfferController
+                                                        .searchCabsList
+                                                        ?.length ??
+                                                    0,
+                                                itemBuilder: (context, index) {
+                                                  final offer =
+                                                      liveOfferController
+                                                              .searchCabsList![
+                                                          index];
+                                                  return _buildOfferCard(
+                                                      offer, context);
+                                                },
+                                              )
+                                            : _buildEmptyState());
                                   },
                                 ),
                               ],
@@ -574,10 +487,8 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                         Positioned(
                           bottom: MediaQuery.of(context).size.height *
                               0.32, // Positioned above the bottom container
-                          left: 
-                          screenWidth * 0.1,
-                          right: 
-                          screenWidth * 0.1,
+                          left: screenWidth * 0.1,
+                          right: screenWidth * 0.1,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 12, horizontal: 16),
@@ -604,7 +515,9 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                                 //       }).toList()
                                 //     : liveOfferInstance.liveOffersList;
 
-                                final offersCount =  liveOfferInstance.searchCabsList?.length ?? 0;
+                                final offersCount =
+                                    liveOfferInstance.searchCabsList?.length ??
+                                        0;
 
                                 return Center(
                                   child: Text.rich(
@@ -677,6 +590,75 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     );
   }
 
+  Widget buildAddressRow(String label, String address) {
+    return Row(
+      children: [
+        Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: "MontserratM",
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                address,
+                style: const TextStyle(fontFamily: "MontserratM"),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Update the didUpdateWidget method
+  @override
+  void didUpdateWidget(covariant ShareCabScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // _initializeMarkers(); // Refresh markers when widget updates
+  }
+
+  @override
+  void dispose() {
+    mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocationAndSearch();
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.no_transfer, size: 48, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            "No cabs available in this area",
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFromLocationField({
     required TextEditingController controller,
     required String label,
@@ -732,17 +714,71 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     );
   }
 
-  // Update the didUpdateWidget method
-  @override
-  void didUpdateWidget(covariant ShareCabScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // _initializeMarkers(); // Refresh markers when widget updates
+  Widget _buildOffersListView() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: liveOfferController.searchCabsList?.length ?? 0,
+      itemBuilder: (context, index) {
+        final offer = liveOfferController.searchCabsList![index];
+        return _buildOfferCard(offer, context);
+      },
+    );
   }
 
-  @override
-  void dispose() {
-    mapController?.dispose();
-    super.dispose();
+  // Helper method to format date for display
+  String _formatDateForDisplay(DateTime date) {
+    return DateFormat('E, d MMM').format(date);
+  }
+
+  Future<void> _getAddressFromLatLng(Position position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          _currentAddress =
+              "${place.street}, ${place.subLocality}, ${place.locality}";
+          _fromController.text = _currentAddress ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error getting address: $e');
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        currentPosition = position;
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('currentLocation'),
+            position: LatLng(position.latitude, position.longitude),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueGreen),
+            infoWindow: const InfoWindow(title: 'Your Location'),
+          ),
+        );
+      });
+
+      // Move camera to current location
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 14.0,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint("Error getting location: $e");
+    }
   }
 
   void _getToChat(
@@ -768,199 +804,177 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     }
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.no_transfer, size: 48, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            "No cabs available in this area",
-            style: GoogleFonts.montserrat(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+  Future<void> _initializeLocationAndSearch() async {
+    await _getCurrentLocation();
+    if (currentPosition != null) {
+      await _getAddressFromLatLng(currentPosition!);
+      selectedFromLocation = LatLng(
+        currentPosition!.latitude,
+        currentPosition!.longitude,
+      );
+      _searchOffers();
+    }
+  }
+
+  Future<void> _searchOffers() async {
+    if (selectedFromLocation == null) return;
+
+    // Format the selected date with time to ISO string
+    final startTimeISO = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      DateTime.now().hour,
+      DateTime.now().minute,
+      DateTime.now().second,
+    ).toUtc().toIso8601String();
+
+    debugPrint('Searching offers with date: $startTimeISO'); // Debug log
+
+    final SearchCabsPayload payload = SearchCabsPayload(
+      from: From(
+        lat: selectedFromLocation!.latitude,
+        lng: selectedFromLocation!.longitude,
       ),
+      radius: defaultRadius,
+      startTime: startTimeISO, // Send the formatted date string
     );
+
+    await liveOfferController.searchLiveOffer(payload);
+    if (liveOfferController.searchLiveOfferState ==
+        SearchLiveOfferState.created) {
+      _updateMarkersFromSearch();
+    }
   }
 
-  Widget _buildOffersListView() {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: liveOfferController.searchCabsList?.length ?? 0,
-      itemBuilder: (context, index) {
-        final offer = liveOfferController.searchCabsList![index];
-        return _buildOfferCard(offer, context);
-      },
-    );
-  }
-}
+  // Function to search location and show suggestions
+  Future<void> _searchPlaces(String query, bool isFrom) async {
+    if (query.isEmpty) {
+      setState(() {
+        isFrom ? _fromPredictions.clear() : _toPredictions.clear();
+      });
+      return;
+    }
 
-Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.only(right: 16.0),
-    child: GestureDetector(
-      onTap: () {
-        // setState(() {
-        //   _selectedCab = 'cab${index + 1}';
-        // });
-      },
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.7,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    DateFormat('hh:mm a').format(offer.expiryAt!),
-                    style: const TextStyle(
-                      fontFamily: "MontserratM",
-                      fontSize: 20,
-                    ),
+    var sessionToken = 'xyzabc_1234'; // You may generate this token dynamically
+    var response =
+        await _places.autocomplete(query, sessionToken: sessionToken);
+
+    if (response.isOkay) {
+      setState(() {
+        if (isFrom) {
+          _fromPredictions = response.predictions;
+        } else {
+          _toPredictions = response.predictions;
+        }
+      });
+    }
+  }
+
+  // Function to open a date picker and allow the user to select a date
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        // Preserve the time from the previous selection
+        _selectedDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          _selectedDate.hour,
+          _selectedDate.minute,
+          _selectedDate.second,
+        );
+        formattedDate = _formatDateForDisplay(_selectedDate);
+      });
+      _searchOffers(); // Search with new date
+    }
+  }
+
+  // Function to select place and fill text field
+  Future<void> _selectPlace(Prediction prediction, bool isFrom) async {
+    final placeId = prediction.placeId;
+    if (placeId == null) return;
+
+    var details = await _places.getDetailsByPlaceId(placeId);
+    final location = details.result.geometry?.location;
+    if (location == null) return;
+
+    setState(() {
+      if (isFrom) {
+        _fromController.text = prediction.description ?? '';
+        _fromPredictions.clear();
+        selectedFromLocation = LatLng(location.lat, location.lng);
+        _searchOffers(); // Search with new location
+      }
+    });
+  }
+
+  // Function to set the date to today
+  void _setToday() {
+    setState(() {
+      _selectedDate = DateTime.now();
+      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
+    });
+    debugPrint('Date set to today: $_selectedDate'); // Debug log
+    _searchOffers(); // This will now use the updated _selectedDate
+  }
+
+  // Function to set the date to tomorrow
+  void _setTomorrow() {
+    setState(() {
+      _selectedDate = DateTime.now().add(const Duration(days: 1));
+      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
+    });
+    debugPrint('Date set to tomorrow: $_selectedDate'); // Debug log
+    _searchOffers(); // This will now use the updated _selectedDate
+  }
+
+  void _updateMarkersFromSearch() async {
+    setState(() {
+      _markers.removeWhere(
+          (marker) => !marker.markerId.value.startsWith('current'));
+    });
+
+    if (liveOfferController.searchCabsList != null) {
+      for (var offer in liveOfferController.searchCabsList!) {
+        try {
+          // Get place details using placeId
+          final placeDetails =
+              await _places.getDetailsByPlaceId(offer.fromAddress ?? "");
+          if (placeDetails.result.geometry?.location != null) {
+            final location = placeDetails.result.geometry!.location;
+
+            setState(() {
+              _markers.add(
+                Marker(
+                  markerId: MarkerId('offer_${offer.id}'),
+                  position: LatLng(location.lat, location.lng),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueOrange),
+                  infoWindow: InfoWindow(
+                    title: DateFormat('hh:mm a').format(offer.expiryAt!),
+                    snippet: '${offer.seats} seats available',
                   ),
-                  // TODO: Uncomment after seats is fixed from the backend
-                  // Container(
-                  //   padding:
-                  //       const EdgeInsets
-                  //           .symmetric(
-                  //     horizontal: 8,
-                  //     vertical: 4,
-                  //   ),
-                  //   decoration:
-                  //       BoxDecoration(
-                  //     border: Border.all(
-                  //       color: Colors
-                  //           .grey[300]!,
-                  //     ),
-                  //     borderRadius:
-                  //         BorderRadius
-                  //             .circular(
-                  //                 12),
-                  //   ),
-                  // child: Row(
-                  //   children:
-                  //       List.generate(
-                  //     offer.seats ?? 0,
-                  //     (index) =>
-                  //         const Padding(
-                  //       padding:
-                  //           EdgeInsets
-                  //               .only(
-                  //         right: 2,
-                  //       ),
-                  //       child: Icon(
-                  //         Icons.person,
-                  //         size: 16,
-                  //         color: Color(
-                  //           0xffFF8D41,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  // ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
-              const SizedBox(height: 8),
-              buildAddressRow(
-                "To",
-                offer.toAddress ?? "EMPTY",
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // _getToChat(index);
+                  onTap: () {
+                    setState(() {
+                      _selectedCab = 'offer_${offer.id}';
+                    });
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xffFF8D41,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        10,
-                      ),
-                    ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ImageIcon(
-                          AssetImage("assets/icons/bus.png"),
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "Join Chat",
-                          style: TextStyle(
-                            fontFamily: "MontserratR",
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-Widget buildAddressRow(String label, String address) {
-  return Row(
-    children: [
-      Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
-      const SizedBox(width: 8),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: "MontserratM",
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
-            ),
-            Text(
-              address,
-              style: const TextStyle(fontFamily: "MontserratM"),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
+              );
+            });
+          }
+        } catch (e) {
+          debugPrint('Error fetching place details: $e');
+        }
+      }
+    }
+  }
 }

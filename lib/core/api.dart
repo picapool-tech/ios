@@ -3,25 +3,16 @@ import 'dart:developer';
 
 import 'package:fpdart/fpdart.dart';
 import 'package:get/get.dart';
-import 'package:picapool/controllers/network_controller.dart';
+import 'package:http/http.dart' as http;
 import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env_constants.dart';
 import 'package:picapool/functions/network/connection_status_listener.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/models/response_model.dart';
-import 'package:http/http.dart' as http;
-
-enum RequestMethod {
-  post,
-  getRequest,
-  patch,
-  delete,
-}
 
 class PicapoolApi {
   static String baseUrl = APIConstants.apiUrl;
   final StorageController _storageController = Get.find<StorageController>();
-  final NetworkController _networkController = Get.find<NetworkController>();
 
   FutureEither<ResponseModel> makeRequest({
     required String enpoint,
@@ -126,4 +117,11 @@ class PicapoolApi {
       );
     }
   }
+}
+
+enum RequestMethod {
+  post,
+  getRequest,
+  patch,
+  delete,
 }

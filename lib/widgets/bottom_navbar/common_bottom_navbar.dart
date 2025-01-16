@@ -1,15 +1,10 @@
-import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/chats/chat_controller.dart';
-import 'package:picapool/functions/offers/offers_controller.dart';
-import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/screens/Middle%20Button/middleButton.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/screens/alerts/alertsPage.dart';
 import 'package:picapool/screens/ProfilePage/ProfilePage.dart';
+import 'package:picapool/screens/alerts/alertsPage.dart';
 import 'package:picapool/screens/chats/chat_homeScreen.dart';
 import 'package:picapool/screens/home_screen.dart';
 import 'package:picapool/utils/svg_icon.dart';
@@ -55,128 +50,6 @@ class _NewBottomBarState extends State<NewBottomBar> {
     'alerts',
     'settings',
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  Widget _buildNavItem(int index) {
-    bool isActive = index == _selectedIndex;
-
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgIcon(
-            isActive ? _activeIconPaths[index] : _iconPaths[index],
-            size: 24,
-          ),
-          Text(
-            _titles[index],
-            style: TextStyle(
-              color: isActive ? const Color(0xffFF8D41) : Colors.black,
-              fontSize: 12,
-              fontFamily: 'MontserratR',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  listenNotification() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Message received in foreground: ${message.notification?.title}');
-      // You can show a dialog, toast, or in-app UI here.
-      if (message.notification == null) {
-        return;
-      }
-
-      debugPrint(
-          'Notification opened the app in home: ${message.notification?.title}');
-      debugPrint('Notification opened the app: ${message.data.toString()}');
-      debugPrint('Notification opened the app: ${message.notification?.body}');
-
-      Get.snackbar(
-        message.notification!.title ?? 'Notification',
-        message.notification!.body ?? 'Notification',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        borderRadius: 10,
-        margin: const EdgeInsets.all(10),
-        icon: const Icon(Icons.notification_important, color: Colors.white),
-        duration: const Duration(seconds: 5),
-        onTap: (snack) {
-          // if it has chat id, offer id  action to openAlertPage.
-          var action = message.data['action'];
-          if (action != null) {
-            if (action == 'openAlertsPage') {
-              var offerId = message.data['offerId'];
-              if (offerId != null) {
-                setState(() {
-                  _selectedIndex = 2;
-                });
-              }
-            } else if (action == "openChatPage" ||
-                message.notification!.title!.contains("New Message")) {
-              setState(() {
-                _selectedIndex = 1;
-              });
-            }
-          } else {
-            if (message.notification!.title!.contains("New Message")) {
-              setState(() {
-                _selectedIndex = 1;
-              });
-              // }
-            }
-          }
-          debugPrint("Performing click on snack bar : ${_selectedIndex}");
-        },
-      );
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification clicked while in background: ${message.data}');
-
-      // Handle navigation or other actions.
-      var action = message.data['action'];
-      if (action != null) {
-        if (action == 'openAlertsPage') {
-          var offerId = message.data['offerId'];
-          if (offerId != null) {
-            setState(() {
-              _selectedIndex = 2;
-            });
-          }
-        } else if (action == "openChatPage" ||
-            message.notification!.title!.contains("New Message")) {
-          setState(() {
-            _selectedIndex = 1;
-          });
-        }
-      } else {
-        if (message.notification!.title!.contains("New Message")) {
-          setState(() {
-            _selectedIndex = 1;
-          });
-          // }
-        }
-      }
-    });
-  }
-
-  @override
-  initState() {
-    super.initState();
-    listenNotification();
-    _tagController.subscribeToTopics();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -271,5 +144,127 @@ class _NewBottomBarState extends State<NewBottomBar> {
       //   ],
       // ),
     );
+  }
+
+  @override
+  initState() {
+    super.initState();
+    listenNotification();
+    _tagController.subscribeToTopics();
+  }
+
+  listenNotification() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Message received in foreground: ${message.notification?.title}');
+      // You can show a dialog, toast, or in-app UI here.
+      if (message.notification == null) {
+        return;
+      }
+
+      debugPrint(
+          'Notification opened the app in home: ${message.notification?.title}');
+      debugPrint('Notification opened the app: ${message.data.toString()}');
+      debugPrint('Notification opened the app: ${message.notification?.body}');
+
+      Get.snackbar(
+        message.notification!.title ?? 'Notification',
+        message.notification!.body ?? 'Notification',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        borderRadius: 10,
+        margin: const EdgeInsets.all(10),
+        icon: const Icon(Icons.notification_important, color: Colors.white),
+        duration: const Duration(seconds: 5),
+        onTap: (snack) {
+          // if it has chat id, offer id  action to openAlertPage.
+          var action = message.data['action'];
+          if (action != null) {
+            if (action == 'openAlertsPage') {
+              var offerId = message.data['offerId'];
+              if (offerId != null) {
+                setState(() {
+                  _selectedIndex = 2;
+                });
+              }
+            } else if (action == "openChatPage" ||
+                message.notification!.title!.contains("New Message")) {
+              setState(() {
+                _selectedIndex = 1;
+              });
+            }
+          } else {
+            if (message.notification!.title!.contains("New Message")) {
+              setState(() {
+                _selectedIndex = 1;
+              });
+              // }
+            }
+          }
+          debugPrint("Performing click on snack bar : ${_selectedIndex}");
+        },
+      );
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification clicked while in background: ${message.data}');
+
+      // Handle navigation or other actions.
+      var action = message.data['action'];
+      if (action != null) {
+        if (action == 'openAlertsPage') {
+          var offerId = message.data['offerId'];
+          if (offerId != null) {
+            setState(() {
+              _selectedIndex = 2;
+            });
+          }
+        } else if (action == "openChatPage" ||
+            message.notification!.title!.contains("New Message")) {
+          setState(() {
+            _selectedIndex = 1;
+          });
+        }
+      } else {
+        if (message.notification!.title!.contains("New Message")) {
+          setState(() {
+            _selectedIndex = 1;
+          });
+          // }
+        }
+      }
+    });
+  }
+
+  Widget _buildNavItem(int index) {
+    bool isActive = index == _selectedIndex;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgIcon(
+            isActive ? _activeIconPaths[index] : _iconPaths[index],
+            size: 24,
+          ),
+          Text(
+            _titles[index],
+            style: TextStyle(
+              color: isActive ? const Color(0xffFF8D41) : Colors.black,
+              fontSize: 12,
+              fontFamily: 'MontserratR',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }

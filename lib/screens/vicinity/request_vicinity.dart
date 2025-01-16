@@ -1,16 +1,14 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
-
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
@@ -48,7 +46,6 @@ class RequestVicinity extends StatefulWidget {
 
 class _RequestVicinityState extends State<RequestVicinity> {
   final LocationController _locationController = Get.find<LocationController>();
-  final AuthController _authController = Get.find<AuthController>();
   final VicinityController _vicinityController = Get.find<VicinityController>();
   final UserController _userController = Get.find<UserController>();
 
@@ -74,342 +71,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   Marker? _userMarker;
   final Set<Marker> _userMarkers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    var model = Get.arguments;
-    debugPrint("$model");
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      loadMarker();
-
-      if (model != null) {
-        var brand = BrandOfferModel.fromJson(model['brands']);
-        _titleController.text = brand.title;
-        _descController.text = brand.description;
-        var imageUrl = await ImageUtils.imageToFile(
-          assetName: brand.imageUrl,
-        );
-        _imageFiles?.add(XFile(imageUrl.path));
-        setState(() {
-          _imageFiles;
-          fromBrands = true;
-        });
-      }
-      await _fetchLocation();
-    });
-  }
-
-  void loadMarker() async {
-    _locationMarker = await BitmapDescriptor.asset(
-        const ImageConfiguration(
-          size: Size.square(40),
-        ),
-        "assets/icons/location_marker.png");
-    setState(() {
-      _locationMarker;
-    });
-  }
-
-  Future<void> _fetchLocation() async {
-    if (_locationController.state.value.location == null) {
-      await _locationController.getLocation();
-    }
-    var location = _locationController.state.value.location;
-    if (location == null) {
-      debugPrint("NULL LOCATION : VICINITY");
-      Get.snackbar(
-        'Error',
-        'Failed to get current location.',
-        snackStyle: SnackStyle.GROUNDED,
-      );
-      return;
-    }
-
-    setState(() {
-      _currentPosition = LatLng(location.latitude, location.longitude);
-
-      _updateMarkersAndCircles();
-      getNearestUsers(_radius);
-
-      if (_controller != null && !_isMapInitialized) {
-        _controller!.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: _currentPosition!,
-              zoom: 16.0,
-              tilt: _is3DView ? 0 : 45.0,
-              bearing: _is3DView ? 0 : 45.0,
-            ),
-          ),
-        );
-        _isMapInitialized = true;
-      }
-    });
-  }
-
-  void _updateMarkersAndCircles() {
-    if (_currentPosition != null) {
-      // Add or update the current location marker
-      _userMarker = Marker(
-        markerId: const MarkerId("currentLocation"),
-        position: _currentPosition!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: const InfoWindow(
-          title: "Your Location",
-        ),
-      );
-
-      // Add or update the current location circle
-      _currentLocationCircle = Circle(
-        circleId: const CircleId("currentLocationCircle"),
-        center: _currentPosition!,
-        radius: _radius,
-        strokeColor: Colors.blue,
-        strokeWidth: 2,
-        fillColor: Colors.blue.withOpacity(0.3),
-      );
-    }
-  }
-
-  void _toggle3DView() {
-    if (_controller != null && _currentPosition != null) {
-      _controller!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: _currentPosition!,
-            zoom: 16.0,
-            tilt: _is3DView ? 0.0 : 45.0, // Toggle tilt for 3D view
-            bearing: _is3DView ? 0.0 : 45.0, // Toggle bearing for 3D effect
-          ),
-        ),
-      );
-      setState(() {
-        _is3DView = !_is3DView;
-      });
-    } else {
-      debugPrint("SOMETHING IS WRONG IN 3D VIEW");
-    }
-  }
-
-  Future<void> _pickImages() async {
-    var isPhotoPermissionGranted =
-        await PermissionUtil().isPhotoPermissionGranted();
-    if (!isPhotoPermissionGranted) {
-      await PermissionUtil().requestPhotoPermission();
-      return;
-    }
-    final pickedFiles = await _picker.pickMultiImage(
-      imageQuality: 10,
-    );
-    if (pickedFiles.isNotEmpty) {
-      setState(() {
-        _imageFiles = pickedFiles.take(3).toList();
-      });
-    }
-  }
-
-  void createVicinity() async {
-    if (_titleController.text.isEmpty || _descController.text.isEmpty) {
-      debugPrint("Please fill all the fields");
-      Get.snackbar(
-        "Fields required",
-        "Please fill all the fields",
-      );
-      return;
-    }
-
-    if (_currentPosition == null ||
-        _currentPosition?.latitude == null ||
-        _currentPosition?.longitude == null) {
-      Get.snackbar(
-        "Location required",
-        "Please check location services is working",
-      );
-      await _fetchLocation();
-      return;
-    }
-
-    var title = fromBrands
-        ? "${_titleController.text} - FROM BRANDS"
-        : _titleController.text;
-
-    final offer = VicinityOffer(
-      name: title,
-      images: [],
-      desc: _descController.text,
-      expiryAt: DateTime.now().add(Duration(minutes: _waitTime.toInt())),
-      userId: _userController.user.value!.id,
-      partnerID: null,
-      location: VicinityLocation(
-        lat: _currentPosition!.latitude,
-        long: _currentPosition!.longitude,
-      ),
-      distance: _radius,
-    );
-
-    var receivedOffer = await _vicinityController.createVicinity(
-      offer: offer,
-      pickedFile: _imageFiles?.firstOrNull,
-      uname: _userController.user.value!.name!,
-      offername: _titleController.text,
-    );
-
-    if (receivedOffer != null) {
-      reset();
-      if (receivedOffer.chats?.isNotEmpty ?? false) {
-        Get.off(
-          () => ChatPage(
-            chat: receivedOffer.chats!.first,
-            offer: receivedOffer,
-            chatTitle: receivedOffer.name,
-          ),
-        );
-      }
-    }
-  }
-
-  void reset() {
-    _titleController.clear();
-    _descController.clear();
-    _imageFiles = [];
-    _radius = 500;
-    _waitTime = 30;
-    _imageFiles?.clear();
-  }
-
-  ExpansionPanel expansionPanel() {
-    return ExpansionPanel(
-      backgroundColor: Colors.white,
-      canTapOnHeader: true,
-      headerBuilder: (context, isExpanded) {
-        return const Row(
-          children: [
-            Expanded(
-              child: Divider(
-                indent: 25,
-                thickness: 1,
-                color: Color(0xffFF8D41),
-              ),
-            ),
-            Text(
-              "  Request Vicinity  ",
-              style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
-            ),
-            Expanded(
-              child: Divider(
-                endIndent: 25,
-                thickness: 1,
-                color: Color(0xffFF8D41),
-              ),
-            ),
-          ],
-        );
-      },
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 4),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          labelText: "Add Title",
-                          labelStyle: const TextStyle(
-                              fontFamily: "MontserratM", color: Colors.grey),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Colors.grey,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xffFF8D41),
-                            ),
-                          ),
-                        ),
-                        showCursor: true,
-                        onTapOutside: (event) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _descController,
-                        decoration: InputDecoration(
-                          labelText: "Add Description",
-                          labelStyle: const TextStyle(
-                              fontFamily: "MontserratM", color: Colors.grey),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Colors.grey,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xffFF8D41),
-                            ),
-                          ),
-                        ),
-                        maxLines: 2,
-                        onTapOutside: (event) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                GestureDetector(
-                  onTap: _pickImages,
-                  child: Container(
-                    width: 104,
-                    height: 104,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      border: Border.all(color: Colors.grey, width: 1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: _imageFiles == null || _imageFiles!.isEmpty
-                        ? const Center(
-                            child: Icon(
-                              Icons.add_photo_alternate,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          )
-                        : PageView.builder(
-                            itemCount: _imageFiles!.length,
-                            itemBuilder: (context, index) {
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  File(_imageFiles![index].path),
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-      isExpanded: !_isCollapsed,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -692,6 +353,264 @@ class _RequestVicinityState extends State<RequestVicinity> {
     );
   }
 
+  void createVicinity() async {
+    if (_titleController.text.isEmpty || _descController.text.isEmpty) {
+      debugPrint("Please fill all the fields");
+      Get.snackbar(
+        "Fields required",
+        "Please fill all the fields",
+      );
+      return;
+    }
+
+    if (_currentPosition == null ||
+        _currentPosition?.latitude == null ||
+        _currentPosition?.longitude == null) {
+      Get.snackbar(
+        "Location required",
+        "Please check location services is working",
+      );
+      await _fetchLocation();
+      return;
+    }
+
+    var title = fromBrands
+        ? "${_titleController.text} - FROM BRANDS"
+        : _titleController.text;
+
+    final offer = VicinityOffer(
+      name: title,
+      images: [],
+      desc: _descController.text,
+      expiryAt: DateTime.now().add(Duration(minutes: _waitTime.toInt())),
+      userId: _userController.user.value!.id,
+      partnerID: null,
+      location: VicinityLocation(
+        lat: _currentPosition!.latitude,
+        long: _currentPosition!.longitude,
+      ),
+      distance: _radius,
+    );
+
+    var receivedOffer = await _vicinityController.createVicinity(
+      offer: offer,
+      pickedFile: _imageFiles?.firstOrNull,
+      uname: _userController.user.value!.name!,
+      offername: _titleController.text,
+    );
+
+    if (receivedOffer != null) {
+      reset();
+      if (receivedOffer.chats?.isNotEmpty ?? false) {
+        Get.off(
+          () => ChatPage(
+            chat: receivedOffer.chats!.first,
+            offer: receivedOffer,
+            chatTitle: receivedOffer.name,
+          ),
+        );
+      }
+    }
+  }
+
+  ExpansionPanel expansionPanel() {
+    return ExpansionPanel(
+      backgroundColor: Colors.white,
+      canTapOnHeader: true,
+      headerBuilder: (context, isExpanded) {
+        return const Row(
+          children: [
+            Expanded(
+              child: Divider(
+                indent: 25,
+                thickness: 1,
+                color: Color(0xffFF8D41),
+              ),
+            ),
+            Text(
+              "  Request Vicinity  ",
+              style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
+            ),
+            Expanded(
+              child: Divider(
+                endIndent: 25,
+                thickness: 1,
+                color: Color(0xffFF8D41),
+              ),
+            ),
+          ],
+        );
+      },
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 4),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: "Add Title",
+                          labelStyle: const TextStyle(
+                              fontFamily: "MontserratM", color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xffFF8D41),
+                            ),
+                          ),
+                        ),
+                        showCursor: true,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _descController,
+                        decoration: InputDecoration(
+                          labelText: "Add Description",
+                          labelStyle: const TextStyle(
+                              fontFamily: "MontserratM", color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xffFF8D41),
+                            ),
+                          ),
+                        ),
+                        maxLines: 2,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: _pickImages,
+                  child: Container(
+                    width: 104,
+                    height: 104,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      border: Border.all(color: Colors.grey, width: 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _imageFiles == null || _imageFiles!.isEmpty
+                        ? const Center(
+                            child: Icon(
+                              Icons.add_photo_alternate,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : PageView.builder(
+                            itemCount: _imageFiles!.length,
+                            itemBuilder: (context, index) {
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(_imageFiles![index].path),
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      isExpanded: !_isCollapsed,
+    );
+  }
+
+  void getNearestUsers(double radius) async {
+    if (_currentPosition == null) {
+      return;
+    }
+
+    var nearestUsers = await _userController.getNearestUsers(
+      currentPosition: _currentPosition!,
+      radius: radius,
+    );
+
+    if (nearestUsers != null) {
+      _nearestUsers = nearestUsers;
+    }
+
+    _addNearestUserMarkers();
+    setState(() {
+      poolingUsers = _nearestUsers.length;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    var model = Get.arguments;
+    debugPrint("$model");
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      loadMarker();
+
+      if (model != null) {
+        var brand = BrandOfferModel.fromJson(model['brands']);
+        _titleController.text = brand.title;
+        _descController.text = brand.description;
+        var imageUrl = await ImageUtils.imageToFile(
+          assetName: brand.imageUrl,
+        );
+        _imageFiles?.add(XFile(imageUrl.path));
+        setState(() {
+          _imageFiles;
+          fromBrands = true;
+        });
+      }
+      await _fetchLocation();
+    });
+  }
+
+  void loadMarker() async {
+    _locationMarker = await BitmapDescriptor.asset(
+        const ImageConfiguration(
+          size: Size.square(40),
+        ),
+        "assets/icons/location_marker.png");
+    setState(() {
+      _locationMarker;
+    });
+  }
+
+  void reset() {
+    _titleController.clear();
+    _descController.clear();
+    _imageFiles = [];
+    _radius = 500;
+    _waitTime = 30;
+    _imageFiles?.clear();
+  }
+
   void _addNearestUserMarkers() async {
     _userMarkers.clear();
     for (var user in _nearestUsers) {
@@ -722,23 +641,101 @@ class _RequestVicinityState extends State<RequestVicinity> {
     }
   }
 
-  void getNearestUsers(double radius) async {
-    if (_currentPosition == null) {
+  Future<void> _fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      await _locationController.getLocation();
+    }
+    var location = _locationController.state.value.location;
+    if (location == null) {
+      debugPrint("NULL LOCATION : VICINITY");
+      Get.snackbar(
+        'Error',
+        'Failed to get current location.',
+        snackStyle: SnackStyle.GROUNDED,
+      );
       return;
     }
 
-    var nearestUsers = await _userController.getNearestUsers(
-      currentPosition: _currentPosition!,
-      radius: radius,
-    );
-
-    if (nearestUsers != null) {
-      _nearestUsers = nearestUsers;
-    }
-
-    _addNearestUserMarkers();
     setState(() {
-      poolingUsers = _nearestUsers.length;
+      _currentPosition = LatLng(location.latitude, location.longitude);
+
+      _updateMarkersAndCircles();
+      getNearestUsers(_radius);
+
+      if (_controller != null && !_isMapInitialized) {
+        _controller!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: _currentPosition!,
+              zoom: 16.0,
+              tilt: _is3DView ? 0 : 45.0,
+              bearing: _is3DView ? 0 : 45.0,
+            ),
+          ),
+        );
+        _isMapInitialized = true;
+      }
     });
+  }
+
+  Future<void> _pickImages() async {
+    var isPhotoPermissionGranted =
+        await PermissionUtil().isPhotoPermissionGranted();
+    if (!isPhotoPermissionGranted) {
+      await PermissionUtil().requestPhotoPermission();
+      return;
+    }
+    final pickedFiles = await _picker.pickMultiImage(
+      imageQuality: 10,
+    );
+    if (pickedFiles.isNotEmpty) {
+      setState(() {
+        _imageFiles = pickedFiles.take(3).toList();
+      });
+    }
+  }
+
+  void _toggle3DView() {
+    if (_controller != null && _currentPosition != null) {
+      _controller!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _currentPosition!,
+            zoom: 16.0,
+            tilt: _is3DView ? 0.0 : 45.0, // Toggle tilt for 3D view
+            bearing: _is3DView ? 0.0 : 45.0, // Toggle bearing for 3D effect
+          ),
+        ),
+      );
+      setState(() {
+        _is3DView = !_is3DView;
+      });
+    } else {
+      debugPrint("SOMETHING IS WRONG IN 3D VIEW");
+    }
+  }
+
+  void _updateMarkersAndCircles() {
+    if (_currentPosition != null) {
+      // Add or update the current location marker
+      _userMarker = Marker(
+        markerId: const MarkerId("currentLocation"),
+        position: _currentPosition!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        infoWindow: const InfoWindow(
+          title: "Your Location",
+        ),
+      );
+
+      // Add or update the current location circle
+      _currentLocationCircle = Circle(
+        circleId: const CircleId("currentLocationCircle"),
+        center: _currentPosition!,
+        radius: _radius,
+        strokeColor: Colors.blue,
+        strokeWidth: 2,
+        fillColor: Colors.blue.withOpacity(0.3),
+      );
+    }
   }
 }

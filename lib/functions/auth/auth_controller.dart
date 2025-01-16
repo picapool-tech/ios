@@ -1,23 +1,19 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/access_token_model.dart';
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/login_model.dart';
-import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/login_screen.dart';
-import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
 import 'package:picapool/screens/public_profile.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
-import 'package:http/http.dart' as http;
 
 class AuthController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -30,43 +26,88 @@ class AuthController extends GetxController {
   var errorMessage = ''.obs;
   var notLoading = false;
 
-  @override
-  void onInit() {
-    super.onInit();
-    _loadUserOnStartup();
+  // Check if a user is logged in and navigate accordingly.
+  void checkForExistingUser() {
+    debugPrint('Checking for existing user from auth ${auth.value?.toJson()}');
+    debugPrint(
+        'Checking for existing user from user ${_userController.user.value?.toJson()}');
+
+    if (auth.value?.accessToken == null) {
+      Get.to(() => const LoginScreen());
+    } else if (_userController.user.value?.name == null) {
+      Get.to(() => const PersonalDetails());
+    } else if (_userController.user.value?.username == null) {
+      Get.to(() => const PublicProfile());
+    } else {
+      Get.offAll(() => const NewBottomBar());
+    }
   }
 
-  /// Load user and auth data from storage at startup.
-  Future<void> _loadUserOnStartup() async {
-    auth.value =
-        _storageController.auth.value ??= await _storageController.loadAuth();
-    debugPrint("loading auth controller from storage!.");
-    update();
+  Future<String?> getAccessToken() async {
+    if (auth.value == null) {
+      return null;
+    }
+
+    var accessToken = auth.value!.accessToken!;
+    debugPrint("GETITNG ACCESS TOKEN : $accessToken");
+    debugPrint("AUTH VALUE : ${auth.value?.toJson()}");
+    if (Jwt.isExpired(accessToken)) {
+      await _storageController.loadAuth();
+      var tempAuth = _storageController.auth.value;
+      if (tempAuth == null) {
+        return null;
+      }
+
+      if (!Jwt.isExpired(tempAuth.accessToken!)) {
+        auth.value = tempAuth;
+        update();
+        return tempAuth.accessToken;
+      }
+
+      debugPrint("JWT is expired");
+      var newAccessToken = await _authApi.updateAccessToken(
+        accessToken: accessToken,
+        refreshToken: auth.value!.refreshToken!,
+        userId: _userController.user.value!.id,
+      );
+
+      return newAccessToken.fold(
+        (error) {
+          logout();
+          return null;
+        },
+        (newAccessToken) async {
+          var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
+          await loadAndSaveAuth(newAuth);
+          accessToken = newAccessToken;
+          await _storageController.saveAccessToken(accessToken);
+          return newAccessToken;
+        },
+      );
+    }
+    return accessToken;
   }
 
-  /// Handle Google login and store auth and user data.
-  Future<void> loginWithGoogle() async {
-    isLoading.value = true;
-    update();
-    final result = await _authApi.signInWithGoogle();
-
-    await result.fold(
-      (fail) {
-        auth.value = null;
-        _userController.user.value = null;
-        debugPrint(fail.message);
-        showErrorDialog(fail.message);
-      },
-      (loginModel) async {
-        postLoginAction(loginModel);
-        // errorMessage.value = "";
-        // debugPrint("From LOGIN WITH GOOGLE : ${authData.toJson()}");
-        // await loadAndSaveAuth(authData);
-        // checkForExistingUser();
-      },
-    );
-    isLoading.value = false;
-    update();
+  Future<void> handleFCMToken() async {
+    debugPrint("handle fcm token");
+    var fcm = await NotificationService().retrieveToken();
+    if (_userController.user.value == null || fcm == null) {
+      return;
+    }
+    if (_userController.user.value!.fcmToken == null) {
+      debugPrint("UPDATED FCM TOKEN");
+      await _userController.updateUser({
+        "fcmToken": fcm,
+      });
+    } else {
+      if (_userController.user.value!.fcmToken != fcm) {
+        debugPrint(
+            "UPDATED FROM PREV FCM TOKEN : ${_userController.user.value!.fcmToken} to $fcm");
+        await _userController.updateUser({
+          "fcmToken": fcm,
+        });
+      }
+    }
   }
 
 // TODO: need to rethink of this approach to limit the api call for getUser
@@ -110,28 +151,6 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> handleFCMToken() async {
-    debugPrint("handle fcm token");
-    var fcm = await NotificationService().retrieveToken();
-    if (_userController.user.value == null || fcm == null) {
-      return;
-    }
-    if (_userController.user.value!.fcmToken == null) {
-      debugPrint("UPDATED FCM TOKEN");
-      await _userController.updateUser({
-        "fcmToken": fcm,
-      });
-    } else {
-      if (_userController.user.value!.fcmToken != fcm) {
-        debugPrint(
-            "UPDATED FROM PREV FCM TOKEN : ${_userController.user.value!.fcmToken} to $fcm");
-        await _userController.updateUser({
-          "fcmToken": fcm,
-        });
-      }
-    }
-  }
-
   /// Handle Apple login and store auth and user data.
   Future<void> loginWithApple() async {
     isLoading.value = true;
@@ -149,6 +168,31 @@ class AuthController extends GetxController {
         // await loadAndSaveAuth(authData);
         // errorMessage.value = "";
 
+        // checkForExistingUser();
+      },
+    );
+    isLoading.value = false;
+    update();
+  }
+
+  /// Handle Google login and store auth and user data.
+  Future<void> loginWithGoogle() async {
+    isLoading.value = true;
+    update();
+    final result = await _authApi.signInWithGoogle();
+
+    await result.fold(
+      (fail) {
+        auth.value = null;
+        _userController.user.value = null;
+        debugPrint(fail.message);
+        showErrorDialog(fail.message);
+      },
+      (loginModel) async {
+        postLoginAction(loginModel);
+        // errorMessage.value = "";
+        // debugPrint("From LOGIN WITH GOOGLE : ${authData.toJson()}");
+        // await loadAndSaveAuth(authData);
         // checkForExistingUser();
       },
     );
@@ -176,6 +220,25 @@ class AuthController extends GetxController {
 
     isLoading.value = false;
     update();
+  }
+
+  /// Updates the user data and stores it.
+
+  /// Logs out the user and clears the stored auth and user data.
+  Future<void> logout() async {
+    await _storageController.clearUser();
+    await _storageController.clearAuth();
+
+    auth.value = null;
+    update();
+    _userController.clear();
+    Get.offAll(() => const LoginScreen());
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadUserOnStartup();
   }
 
   Future<bool> postLoginAction(LoginModel loginModel, {String? mobile}) async {
@@ -239,83 +302,6 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> verifyOtp(String phoneNumber) async {}
-
-  /// Updates the user data and stores it.
-
-  /// Logs out the user and clears the stored auth and user data.
-  Future<void> logout() async {
-    await _storageController.clearUser();
-    await _storageController.clearAuth();
-
-    auth.value = null;
-    update();
-    _userController.clear();
-    Get.offAll(() => const LoginScreen());
-  }
-
-  Future<String?> getAccessToken() async {
-    if (auth.value == null) {
-      return null;
-    }
-
-    var accessToken = auth.value!.accessToken!;
-    debugPrint("GETITNG ACCESS TOKEN : $accessToken");
-    debugPrint("AUTH VALUE : ${auth.value?.toJson()}");
-    if (Jwt.isExpired(accessToken)) {
-      await _storageController.loadAuth();
-      var tempAuth = _storageController.auth.value;
-      if (tempAuth == null) {
-        return null;
-      }
-
-      if (!Jwt.isExpired(tempAuth.accessToken!)) {
-        auth.value = tempAuth;
-        update();
-        return tempAuth.accessToken;
-      }
-
-      debugPrint("JWT is expired");
-      var newAccessToken = await _authApi.updateAccessToken(
-        accessToken: accessToken,
-        refreshToken: auth.value!.refreshToken!,
-        userId: _userController.user.value!.id,
-      );
-
-      return newAccessToken.fold(
-        (error) {
-          logout();
-          return null;
-        },
-        (newAccessToken) async {
-          var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
-          await loadAndSaveAuth(newAuth);
-          accessToken = newAccessToken;
-          await _storageController.saveAccessToken(accessToken);
-          return newAccessToken;
-        },
-      );
-    }
-    return accessToken;
-  }
-
-  // Check if a user is logged in and navigate accordingly.
-  void checkForExistingUser() {
-    debugPrint('Checking for existing user from auth ${auth.value?.toJson()}');
-    debugPrint(
-        'Checking for existing user from user ${_userController.user.value?.toJson()}');
-
-    if (auth.value?.accessToken == null) {
-      Get.to(() => const LoginScreen());
-    } else if (_userController.user.value?.name == null) {
-      Get.to(() => const PersonalDetails());
-    } else if (_userController.user.value?.username == null) {
-      Get.to(() => const PublicProfile());
-    } else {
-      Get.offAll(() => const NewBottomBar());
-    }
-  }
-
   /// Show error dialog for failed operations.
   void showErrorDialog(String errorMessage) {
     Get.dialog(
@@ -334,6 +320,16 @@ class AuthController extends GetxController {
         ],
       ),
     );
+  }
+
+  Future<void> verifyOtp(String phoneNumber) async {}
+
+  /// Load user and auth data from storage at startup.
+  Future<void> _loadUserOnStartup() async {
+    auth.value =
+        _storageController.auth.value ??= await _storageController.loadAuth();
+    debugPrint("loading auth controller from storage!.");
+    update();
   }
 
   // Future<bool> updateAccessToken() async {

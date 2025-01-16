@@ -1,11 +1,9 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_api.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 
 class AssetsController extends GetxController {
-  final AuthController _authController = Get.find<AuthController>();
   final StorageController _storageController = Get.find<StorageController>();
 
   final AssetsApi _assetsApi = AssetsApi();

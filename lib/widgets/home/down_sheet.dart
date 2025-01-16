@@ -14,14 +14,58 @@ import 'package:picapool/widgets/home/coming_soon.dart';
 import 'package:picapool/widgets/home/divider.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 
+Widget _buildBrandItem(Map<String, String> brand) {
+  return GestureDetector(
+    onTap: () {
+      if (brand['name'] == "Food") {
+        Get.to(
+          () => const ProductsHomepage(currentIndex: 0),
+        );
+      } else {
+        Get.to(
+          () => ComingSoon(
+            title: brand['name']!,
+          ),
+        );
+      }
+    },
+    child: Container(
+      margin: const EdgeInsets.only(right: 20),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 90,
+            height: 90,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Image.asset(
+                brand['asset']!,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            brand['name']!,
+            style: const TextStyle(
+              fontSize: 12,
+              fontFamily: "MontserratR",
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class DownSheet extends StatefulWidget {
+  final String searchQuery;
+  final ScrollController scrollController;
   const DownSheet({
     Key? key,
     required this.searchQuery,
     required this.scrollController,
   }) : super(key: key);
-  final String searchQuery;
-  final ScrollController scrollController;
 
   @override
   State<DownSheet> createState() => _DownSheetState();
@@ -78,7 +122,6 @@ class _DownSheetState extends State<DownSheet> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     NotificationService().retrieveToken().then((toen) {
       debugPrint("GET FCM OTKEN: $toen");
     });
@@ -261,48 +304,4 @@ class _DownSheetState extends State<DownSheet> {
       ),
     );
   }
-}
-
-Widget _buildBrandItem(Map<String, String> brand) {
-  return GestureDetector(
-    onTap: () {
-      if (brand['name'] == "Food") {
-        Get.to(
-          () => const ProductsHomepage(currentIndex: 0),
-        );
-      } else {
-        Get.to(
-          () => ComingSoon(
-            title: brand['name']!,
-          ),
-        );
-      }
-    },
-    child: Container(
-      margin: const EdgeInsets.only(right: 20),
-      child: Column(
-        children: [
-          SizedBox(
-            width: 90,
-            height: 90,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Image.asset(
-                brand['asset']!,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            brand['name']!,
-            style: const TextStyle(
-              fontSize: 12,
-              fontFamily: "MontserratR",
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
 }

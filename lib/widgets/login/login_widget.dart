@@ -5,7 +5,6 @@ import 'package:picapool/utils/center_custom_text.dart';
 import 'package:picapool/utils/large_button.dart';
 import 'package:picapool/widgets/login/as_guest.dart';
 import 'package:picapool/widgets/login/country_dropdown.dart';
-import 'package:picapool/widgets/login/google_button.dart';
 import 'package:picapool/widgets/login/otp_verification.dart';
 
 class LoginWidget extends StatefulWidget {
@@ -30,23 +29,6 @@ class _LoginWidgetState extends State<LoginWidget> {
   ];
 
   TextEditingController phoneController = TextEditingController();
-
-  bool finalPhoneNumberRegex(String phone) {
-    RegExp phoneNumberRegExp = RegExp(r'^[6789]\d{9}$');
-    if (phoneNumberRegExp.hasMatch(phone)) {
-      return true;
-    }
-    return false;
-  }
-
-  bool firstDigitRegex(String input) {
-    RegExp regex = RegExp(r'^[6789]');
-
-    if (regex.hasMatch(input)) {
-      return true;
-    }
-    return false;
-  }
 
   bool showError = false;
 
@@ -141,6 +123,23 @@ class _LoginWidgetState extends State<LoginWidget> {
         ),
       ),
     );
+  }
+
+  bool finalPhoneNumberRegex(String phone) {
+    RegExp phoneNumberRegExp = RegExp(r'^[6789]\d{9}$');
+    if (phoneNumberRegExp.hasMatch(phone)) {
+      return true;
+    }
+    return false;
+  }
+
+  bool firstDigitRegex(String input) {
+    RegExp regex = RegExp(r'^[6789]');
+
+    if (regex.hasMatch(input)) {
+      return true;
+    }
+    return false;
   }
 
   Widget phoneTextFiled() {

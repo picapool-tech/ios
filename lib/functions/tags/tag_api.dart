@@ -1,11 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:picapool/core/core.dart';
-import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/tag_model.dart';
-import 'package:http/http.dart' as http;
 
 class TagApi {
   final PicapoolApi _api = PicapoolApi();

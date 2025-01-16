@@ -1,15 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:io';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/public_profile.dart';
 import 'package:picapool/widgets/login/google_button.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -28,43 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String selectedCountryCode = "91";
   String selectedFlag = "🇮🇳";
-
-  String? _validatePhoneNumber(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Enter a valid mobile number';
-    } else if (value.length != 10) {
-      return 'Mobile number must be 10 digits';
-    } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-      return 'Mobile number must contain only digits';
-    }
-    return null;
-  }
-
-  void _sendOtp(String phoneNumber) async {
-    if (authController.isLoading.value) {
-      return;
-    }
-    var isSent = await authController.sendOtp(phoneNumber);
-    if (isSent) {
-      Get.to(
-        () => OtpScreen(phoneNumber: phoneNumber),
-      );
-    }
-  }
-
-  void _signInWithGoogle() async {
-    if (authController.isLoading.value) {
-      return;
-    }
-    await authController.loginWithGoogle();
-  }
-
-  void _signInWithApple() async {
-    if (authController.isLoading.value) {
-      return;
-    }
-    await authController.loginWithApple();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           LengthLimitingTextInputFormatter(10),
                         ],
                         validator: _validatePhoneNumber,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
                       ),
                     ),
                   ],
@@ -421,6 +385,32 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _sendOtp(String phoneNumber) async {
+    if (authController.isLoading.value) {
+      return;
+    }
+    var isSent = await authController.sendOtp(phoneNumber);
+    if (isSent) {
+      Get.to(
+        () => OtpScreen(phoneNumber: phoneNumber),
+      );
+    }
+  }
+
+  void _signInWithApple() async {
+    if (authController.isLoading.value) {
+      return;
+    }
+    await authController.loginWithApple();
+  }
+
+  void _signInWithGoogle() async {
+    if (authController.isLoading.value) {
+      return;
+    }
+    await authController.loginWithGoogle();
+  }
+
   Widget _termText(String text, {VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
@@ -435,5 +425,16 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  String? _validatePhoneNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Enter a valid mobile number';
+    } else if (value.length != 10) {
+      return 'Mobile number must be 10 digits';
+    } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+      return 'Mobile number must contain only digits';
+    }
+    return null;
   }
 }

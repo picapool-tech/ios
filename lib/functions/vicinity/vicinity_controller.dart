@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
-import 'package:picapool/functions/storage/storage_controller.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_api.dart';
 import 'package:picapool/models/offer_model.dart';
@@ -15,7 +13,6 @@ class VicinityController extends GetxController {
   final UserController _userController = Get.find<UserController>();
   final VicinityApi _vicinityApi = VicinityApi();
   final AssetsController _assetsController = AssetsController();
-  final StorageController _storageController = Get.find<StorageController>();
 
   var isLoading = false.obs;
   var offers = <Offer>[].obs;
@@ -82,28 +79,6 @@ class VicinityController extends GetxController {
     );
   }
 
-  Future<void> searchVicinity() async {
-    isLoading.value = true;
-    update();
-
-    final result = await _vicinityApi.searchVicinity();
-
-    result.fold(
-      (failure) {
-        Get.snackbar('Error', failure.message,
-            snackPosition: SnackPosition.BOTTOM);
-      },
-      (offersList) {
-        offers.value = offersList;
-        Get.snackbar('Success', 'Offers fetched successfully',
-            snackPosition: SnackPosition.BOTTOM);
-      },
-    );
-
-    isLoading.value = false;
-    update();
-  }
-
   Future<bool> deleteImage(String imageName) async {
     isLoading.value = true;
     update();
@@ -127,5 +102,27 @@ class VicinityController extends GetxController {
     isLoading.value = false;
     update();
     return false;
+  }
+
+  Future<void> searchVicinity() async {
+    isLoading.value = true;
+    update();
+
+    final result = await _vicinityApi.searchVicinity();
+
+    result.fold(
+      (failure) {
+        Get.snackbar('Error', failure.message,
+            snackPosition: SnackPosition.BOTTOM);
+      },
+      (offersList) {
+        offers.value = offersList;
+        Get.snackbar('Success', 'Offers fetched successfully',
+            snackPosition: SnackPosition.BOTTOM);
+      },
+    );
+
+    isLoading.value = false;
+    update();
   }
 }

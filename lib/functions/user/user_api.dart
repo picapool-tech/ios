@@ -8,89 +8,6 @@ import 'package:picapool/screens/vicinity/request_vicinity.dart';
 class UserApi {
   final PicapoolApi _api = PicapoolApi();
 
-  FutureEither<bool> updateUser(
-      Map<String, dynamic> updateValues, String accessToken) async {
-    try {
-      const String url = "https://api.picapool.com/v2/user/update";
-
-      debugPrint("Updated Values: $updateValues");
-
-      debugPrint("Access token : $accessToken");
-      // var body = {
-
-      //     ...updateValues,
-
-      // };
-
-      debugPrint(updateValues.toString());
-
-      final response = await _api.makeRequest(
-          enpoint: APIEndpoints.updateUser,
-          method: RequestMethod.patch,
-          additionalHeaders: {'Content-Type': 'application/json'},
-          body: updateValues);
-
-      return response.fold((error) => left(error), (responseModel) {
-        if (responseModel.success) {
-          return right(true);
-        } else {
-          debugPrint(
-              'Update User Error: ${responseModel.message} with response ${responseModel.toString()}');
-          return left(
-            Failure(
-              message: responseModel.message,
-              stackTrace: StackTrace.current,
-            ),
-          );
-        }
-      });
-    } catch (e) {
-      debugPrint('Update User Error: $e');
-      return left(
-        Failure(
-          message: "Failed to update user details. Please try again.",
-          stackTrace: StackTrace.fromString(
-            e.toString(),
-          ),
-        ),
-      );
-    }
-  }
-
-  FutureEither<User> getUser(
-      {required int userId, required String accessToken}) async {
-    try {
-      final response = await _api.makeRequest(
-          enpoint: APIEndpoints.getUser(userId),
-          method: RequestMethod.getRequest,
-          additionalHeaders: {
-            'Content-Type': 'application/json',
-          });
-
-      return response.fold((error) => left(error), (responseModel) {
-        if (responseModel.success) {
-          var user = User.fromJson(responseModel.data);
-          return right(user);
-        } else {
-          return left(
-            Failure(
-              message: responseModel.message,
-              stackTrace: StackTrace.current,
-            ),
-          );
-        }
-      });
-    } catch (e) {
-      debugPrint('Get User Error: $e');
-      return left(
-        Failure(
-          message: "Not able to get the user : status code $e",
-          stackTrace: StackTrace.current,
-        ),
-      );
-    }
-  }
-
   FutureEither<List<NearUserModel>> getNearestUsers({
     required int userId,
     required LatLng currentPosition,
@@ -180,6 +97,82 @@ class UserApi {
         Failure(
           message: "Failed to fetch nearest users. Please try again.",
           stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<User> getUser(
+      {required int userId, required String accessToken}) async {
+    try {
+      final response = await _api.makeRequest(
+          enpoint: APIEndpoints.getUser(userId),
+          method: RequestMethod.getRequest,
+          additionalHeaders: {
+            'Content-Type': 'application/json',
+          });
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          var user = User.fromJson(responseModel.data);
+          return right(user);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('Get User Error: $e');
+      return left(
+        Failure(
+          message: "Not able to get the user : status code $e",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<bool> updateUser(
+      Map<String, dynamic> updateValues, String accessToken) async {
+    try {
+      debugPrint("Updated Values: $updateValues");
+
+      debugPrint("Access token : $accessToken");
+
+      debugPrint(updateValues.toString());
+
+      final response = await _api.makeRequest(
+          enpoint: APIEndpoints.updateUser,
+          method: RequestMethod.patch,
+          additionalHeaders: {'Content-Type': 'application/json'},
+          body: updateValues);
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(true);
+        } else {
+          debugPrint(
+              'Update User Error: ${responseModel.message} with response ${responseModel.toString()}');
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('Update User Error: $e');
+      return left(
+        Failure(
+          message: "Failed to update user details. Please try again.",
+          stackTrace: StackTrace.fromString(
+            e.toString(),
+          ),
         ),
       );
     }

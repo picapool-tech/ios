@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_google_maps_webservices/places.dart';
 
 class LocationScreen extends ConsumerStatefulWidget {
   const LocationScreen({super.key});
@@ -41,276 +41,6 @@ class _LocationScreenState extends ConsumerState<LocationScreen>
 
   final GoogleMapsPlaces _places =
       GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchLocation();
-    _loadSavedLocations();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: false);
-
-    _animation = Tween<double>(begin: 0, end: 100).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkKeyboardVisibility();
-    });
-  }
-
-  void _checkKeyboardVisibility() {
-    if (MediaQuery.of(context).viewInsets.bottom != 0) {
-      setState(() {
-        _isKeyboardVisible = true;
-      });
-    } else {
-      setState(() {
-        _isKeyboardVisible = false;
-      });
-    }
-  }
-
-  Future<void> _loadSavedLocations() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      savedLocations = prefs.getStringList('saved_locations') ?? [];
-    });
-  }
-
-  Future<void> _saveLocation(String location) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    savedLocations.add(location);
-    await prefs.setStringList('saved_locations', savedLocations);
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        _locationEnabled = false;
-        _locationMessage = "Device location is not enabled.";
-      });
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() {
-          _locationEnabled = false;
-          _locationMessage = "Location permissions are denied.";
-        });
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _locationEnabled = false;
-        _locationMessage = "Location permissions are permanently denied.";
-      });
-      return;
-    }
-
-    setState(() {
-      _locationEnabled = true;
-    });
-
-    final LocationController locationController =
-        Get.find<LocationController>();
-    await locationController.getLocation();
-
-    Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 10,
-    ));
-
-    setState(() {
-      _currentPosition = LatLng(position.latitude, position.longitude);
-
-      _selectedPosition = _currentPosition;
-      _updateMarkersAndCircles();
-    });
-  }
-
-  Future<BitmapDescriptor> _getCustomMarker() async {
-    String imagePath = Platform.isIOS
-        ? 'assets/icons/ios_location_pin.png'
-        : 'assets/icons/locationPin.png';
-
-    return BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(48, 48)),
-      imagePath,
-    ).catchError((error) {
-      print("Error loading custom marker: $error");
-      return BitmapDescriptor.defaultMarker;
-    });
-  }
-
-  void _updateMarkersAndCircles() async {
-    BitmapDescriptor customMarker = await _getCustomMarker();
-
-    setState(() {
-      _currentLocationCircle = Circle(
-        circleId: const CircleId("currentLocationCircle"),
-        center: _currentPosition!,
-        radius: _animation.value,
-        strokeColor: const Color(0xff333399).withOpacity(0.20),
-        strokeWidth: 2,
-        fillColor: const Color(0xff5000FF).withOpacity(0.16),
-      );
-
-      _centerDotCircle = Circle(
-        circleId: const CircleId("centerDotCircle"),
-        center: _currentPosition!,
-        radius: 8, // Fixed radius for the center dot
-        strokeColor: const Color(0xff2D0090),
-        strokeWidth: 2,
-        fillColor: const Color(0xff2D0090),
-      );
-
-      _pinMarker = Marker(
-        markerId: const MarkerId("selectedLocation"),
-        position: _selectedPosition!,
-        draggable: true,
-        icon: customMarker,
-        onDragEnd: (newPosition) {
-          setState(() {
-            _isPinDragged = true;
-          });
-          _getAddressFromLatLng(newPosition);
-        },
-        infoWindow: const InfoWindow(
-          title: "Place the pin accurately on the map",
-        ),
-      );
-    });
-  }
-
-  Future<void> _getAddressFromLatLng(LatLng position) async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-    if (placemarks.isNotEmpty) {
-      Placemark place = placemarks.first;
-      String address =
-          "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
-      setState(() {
-        _locationMessage = address;
-        _selectedPosition = position;
-        _updateMarkersAndCircles();
-      });
-    } else {
-      setState(() {
-        _locationMessage = "No address available for this location.";
-      });
-    }
-  }
-
-  Future<void> _searchPlaces(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        _predictions.clear();
-      });
-      return;
-    }
-
-    var sessionToken = 'xyzabc_1234';
-    var response =
-        await _places.autocomplete(query, sessionToken: sessionToken);
-
-    if (response.isOkay) {
-      setState(() {
-        _predictions = response.predictions;
-      });
-    } else {
-      print(response.errorMessage);
-    }
-  }
-
-  // 
-
-  Future<void> _selectPlace(Prediction prediction) async {
-    final placeId = prediction.placeId;
-    if (placeId == null) return;
-
-    var details = await _places.getDetailsByPlaceId(placeId);
-    final location = details.result.geometry?.location;
-    if (location == null) return;
-
-    LatLng newPosition = LatLng(location.lat, location.lng);
-    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 16));
-    _selectedPosition = newPosition;
-    _getAddressFromLatLng(newPosition);
-
-    setState(() {
-      _searchController.text = prediction.description ?? "";
-      _predictions.clear();
-    });
-  }
-
-  Future<void> _getCoordinatesFromPlace(Prediction prediction) async {
-    final placeId = prediction.placeId;
-    if (placeId == null) return;
-
-    var details = await _places.getDetailsByPlaceId(placeId);
-    final location = details.result.geometry?.location;
-    if (location == null) return;
-
-    LatLng newPosition = LatLng(location.lat, location.lng);
-    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 16));
-    _selectedPosition = newPosition;
-    _getAddressFromLatLng(newPosition);
-
-    setState(() {
-      _searchController.text = prediction.description ?? "";
-      _predictions.clear();
-    });
-  }
-
-  void _navigateToSavedLocation(String location) async {
-    _searchController.text = location;
-    await _searchPlaces(location);
-    if (_predictions.isNotEmpty) {
-      _selectPlace(_predictions.first);
-    }
-  }
-
-  void _toggle3DView() {
-    if (_mapController != null && _currentPosition != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: _currentPosition!,
-            zoom: 16.0,
-            tilt: _is3DView ? 0.0 : 45.0,
-            bearing: _is3DView ? 0.0 : 45.0,
-          ),
-        ),
-      );
-      setState(() {
-        _is3DView = !_is3DView;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -797,5 +527,275 @@ class _LocationScreenState extends ConsumerState<LocationScreen>
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocation();
+    _loadSavedLocations();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: false);
+
+    _animation = Tween<double>(begin: 0, end: 100).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkKeyboardVisibility();
+    });
+  }
+
+  void _checkKeyboardVisibility() {
+    if (MediaQuery.of(context).viewInsets.bottom != 0) {
+      setState(() {
+        _isKeyboardVisible = true;
+      });
+    } else {
+      setState(() {
+        _isKeyboardVisible = false;
+      });
+    }
+  }
+
+  Future<void> _fetchLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() {
+        _locationEnabled = false;
+        _locationMessage = "Device location is not enabled.";
+      });
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        setState(() {
+          _locationEnabled = false;
+          _locationMessage = "Location permissions are denied.";
+        });
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      setState(() {
+        _locationEnabled = false;
+        _locationMessage = "Location permissions are permanently denied.";
+      });
+      return;
+    }
+
+    setState(() {
+      _locationEnabled = true;
+    });
+
+    final LocationController locationController =
+        Get.find<LocationController>();
+    await locationController.getLocation();
+
+    Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10,
+    ));
+
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+
+      _selectedPosition = _currentPosition;
+      _updateMarkersAndCircles();
+    });
+  }
+
+  Future<void> _getAddressFromLatLng(LatLng position) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+    if (placemarks.isNotEmpty) {
+      Placemark place = placemarks.first;
+      String address =
+          "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
+      setState(() {
+        _locationMessage = address;
+        _selectedPosition = position;
+        _updateMarkersAndCircles();
+      });
+    } else {
+      setState(() {
+        _locationMessage = "No address available for this location.";
+      });
+    }
+  }
+
+  Future<void> _getCoordinatesFromPlace(Prediction prediction) async {
+    final placeId = prediction.placeId;
+    if (placeId == null) return;
+
+    var details = await _places.getDetailsByPlaceId(placeId);
+    final location = details.result.geometry?.location;
+    if (location == null) return;
+
+    LatLng newPosition = LatLng(location.lat, location.lng);
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 16));
+    _selectedPosition = newPosition;
+    _getAddressFromLatLng(newPosition);
+
+    setState(() {
+      _searchController.text = prediction.description ?? "";
+      _predictions.clear();
+    });
+  }
+
+  Future<BitmapDescriptor> _getCustomMarker() async {
+    String imagePath = Platform.isIOS
+        ? 'assets/icons/ios_location_pin.png'
+        : 'assets/icons/locationPin.png';
+
+    return BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(48, 48)),
+      imagePath,
+    ).catchError((error) {
+      print("Error loading custom marker: $error");
+      return BitmapDescriptor.defaultMarker;
+    });
+  }
+
+  Future<void> _loadSavedLocations() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      savedLocations = prefs.getStringList('saved_locations') ?? [];
+    });
+  }
+
+  void _navigateToSavedLocation(String location) async {
+    _searchController.text = location;
+    await _searchPlaces(location);
+    if (_predictions.isNotEmpty) {
+      _selectPlace(_predictions.first);
+    }
+  }
+
+  Future<void> _saveLocation(String location) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    savedLocations.add(location);
+    await prefs.setStringList('saved_locations', savedLocations);
+    setState(() {});
+  }
+
+  Future<void> _searchPlaces(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _predictions.clear();
+      });
+      return;
+    }
+
+    var sessionToken = 'xyzabc_1234';
+    var response =
+        await _places.autocomplete(query, sessionToken: sessionToken);
+
+    if (response.isOkay) {
+      setState(() {
+        _predictions = response.predictions;
+      });
+    } else {
+      print(response.errorMessage);
+    }
+  }
+
+  //
+
+  Future<void> _selectPlace(Prediction prediction) async {
+    final placeId = prediction.placeId;
+    if (placeId == null) return;
+
+    var details = await _places.getDetailsByPlaceId(placeId);
+    final location = details.result.geometry?.location;
+    if (location == null) return;
+
+    LatLng newPosition = LatLng(location.lat, location.lng);
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 16));
+    _selectedPosition = newPosition;
+    _getAddressFromLatLng(newPosition);
+
+    setState(() {
+      _searchController.text = prediction.description ?? "";
+      _predictions.clear();
+    });
+  }
+
+  void _toggle3DView() {
+    if (_mapController != null && _currentPosition != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _currentPosition!,
+            zoom: 16.0,
+            tilt: _is3DView ? 0.0 : 45.0,
+            bearing: _is3DView ? 0.0 : 45.0,
+          ),
+        ),
+      );
+      setState(() {
+        _is3DView = !_is3DView;
+      });
+    }
+  }
+
+  void _updateMarkersAndCircles() async {
+    BitmapDescriptor customMarker = await _getCustomMarker();
+
+    setState(() {
+      _currentLocationCircle = Circle(
+        circleId: const CircleId("currentLocationCircle"),
+        center: _currentPosition!,
+        radius: _animation.value,
+        strokeColor: const Color(0xff333399).withOpacity(0.20),
+        strokeWidth: 2,
+        fillColor: const Color(0xff5000FF).withOpacity(0.16),
+      );
+
+      _centerDotCircle = Circle(
+        circleId: const CircleId("centerDotCircle"),
+        center: _currentPosition!,
+        radius: 8, // Fixed radius for the center dot
+        strokeColor: const Color(0xff2D0090),
+        strokeWidth: 2,
+        fillColor: const Color(0xff2D0090),
+      );
+
+      _pinMarker = Marker(
+        markerId: const MarkerId("selectedLocation"),
+        position: _selectedPosition!,
+        draggable: true,
+        icon: customMarker,
+        onDragEnd: (newPosition) {
+          setState(() {
+            _isPinDragged = true;
+          });
+          _getAddressFromLatLng(newPosition);
+        },
+        infoWindow: const InfoWindow(
+          title: "Place the pin accurately on the map",
+        ),
+      );
+    });
   }
 }

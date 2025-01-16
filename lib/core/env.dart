@@ -1,11 +1,12 @@
-import 'dart:io';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Env {
   static final Map<String, String> _env = {};
+
+  static String get(String key) {
+    return _env[key]!;
+  }
 
   static Future<void> load() async {
     var file = await rootBundle.loadString(".env");
@@ -24,9 +25,5 @@ class Env {
     } else {
       debugPrint("No .env file found");
     }
-  }
-
-  static String get(String key) {
-    return _env[key]!;
   }
 }
