@@ -173,8 +173,9 @@ class ProductController extends GetxController {
 
       if (response.success == true) {
         searchOffersResponse = response;
+        var offersList = response.data;
         if(response.data != null){
-          searchedProductsList = response.data!.first.products ;
+          searchedProductsList = response.data!.map( (e)=> e.products!.first).toList() ?? [];
         }
         searchOffersState = SearchOffersState.searched;
       } else {
