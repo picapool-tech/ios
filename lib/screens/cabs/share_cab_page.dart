@@ -11,6 +11,7 @@ import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/screens/cabs/showallcabs.dart';
+import 'package:picapool/utils/date_time_utils.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
 import 'package:get/get.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
@@ -107,14 +108,14 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     if (selectedFromLocation == null) return;
 
     // Format the selected date with time to ISO string
-    final startTimeISO = DateTime(
+    final startTimeISO = DateTimeUtils.formatDateWithZone( DateTime(
       _selectedDate.year,
       _selectedDate.month,
       _selectedDate.day,
       DateTime.now().hour,
       DateTime.now().minute,
       DateTime.now().second,
-    ).toLocal().toIso8601String();
+    ));
 
     debugPrint('Searching offers with date: $startTimeISO'); // Debug log
 
@@ -517,7 +518,7 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                             ),
                             markers: _markers,
                             myLocationEnabled: true,
-                            
+
                             myLocationButtonEnabled: false,
                           ),
                         ),

@@ -34,8 +34,8 @@ class CreateLiveOfferPayload {
     Map<String, dynamic> toJson() => {
         "fromAddress": fromAddress,
         "toAddress": toAddress,
-        "createdAt": createdAt.toLocal().toIso8601String(),
-        "expiryAt": expiryAt.toLocal().toIso8601String(),
+        "createdAt": createdAt.toIso8601String(),
+        "expiryAt": expiryAt.toIso8601String(),
         "seats": seats,
     };
 }
