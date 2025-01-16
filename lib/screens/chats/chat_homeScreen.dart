@@ -445,7 +445,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
 
   String getChatTitle(ChatAndOfferModel chat) {
     return chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
-        chat.liveOffer?.from ??
+        'To:  ${chat.liveOffer?.to}' ??
         "No Title";
   }
 

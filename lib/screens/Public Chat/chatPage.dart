@@ -144,7 +144,7 @@ class _ChatPageState extends State<ChatPage>
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                widget.chatTitle,
+                'To:  ${widget.chatTitle}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(

@@ -134,18 +134,24 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     }
   }
 
-  void _updateMarkersFromSearch() async {
-    setState(() {
-      _markers.removeWhere(
-          (marker) => !marker.markerId.value.startsWith('current'));
-    });
+void _updateMarkersFromSearch() async {
+  // Clear non-current markers
+  setState(() {
+    _markers.removeWhere(
+        (marker) => !marker.markerId.value.startsWith('current'));
+  });
 
-    if (liveOfferController.searchCabsList != null) {
-      for (var offer in liveOfferController.searchCabsList!) {
-        try {
-          // Get place details using placeId
-          final placeDetails =
-              await _places.getDetailsByPlaceId(offer.fromAddress ?? "");
+  // Ensure searchCabsList is not null or empty
+  if (liveOfferController.searchCabsList != null &&
+      liveOfferController.searchCabsList!.isNotEmpty) {
+    for (var offer in liveOfferController.searchCabsList!) {
+      try {
+        if (offer.fromAddress != null && offer.fromAddress!.isNotEmpty) {
+          // Fetch place details using placeId or address
+          final placeDetails = await _places.getDetailsByPlaceId(
+            offer.fromAddress!,
+          );
+
           if (placeDetails.result.geometry?.location != null) {
             final location = placeDetails.result.geometry!.location;
 
@@ -153,11 +159,13 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
               _markers.add(
                 Marker(
                   markerId: MarkerId('offer_${offer.id}'),
-                  position: selectedLocationLatLng!,
+                  position: LatLng(location.lat, location.lng),
                   icon: BitmapDescriptor.defaultMarkerWithHue(
                       BitmapDescriptor.hueOrange),
                   infoWindow: InfoWindow(
-                    title: DateFormat('hh:mm a').format(offer.expiryAt!),
+                    title: offer.expiryAt != null
+                        ? DateFormat('hh:mm a').format(offer.expiryAt!)
+                        : 'No expiry time',
                     snippet: '${offer.seats} seats available',
                   ),
                   onTap: () {
@@ -169,12 +177,14 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
               );
             });
           }
-        } catch (e) {
-          debugPrint('Error fetching place details: $e');
         }
+      } catch (e) {
+        debugPrint(
+            'Error fetching place details for address ${offer.fromAddress}: $e');
       }
     }
   }
+}
 
   Future<void> _getAddressFromLatLng(LatLng coordinates) async {
     try {
