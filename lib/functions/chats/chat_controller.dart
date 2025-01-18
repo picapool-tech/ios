@@ -24,6 +24,65 @@ class ChatController extends GetxController {
   // just for scrolling need some rethinking on this.
   final ScrollController scrollController = ScrollController();
 
+  void connectToSocket(int userId, int chatId) async {
+    debugPrint('Connecting socket...');
+    var checkSocket = socketService.socket;
+    if (checkSocket != null) {
+      debugPrint(
+          "Socket is already connected with the party ${SocketService.roomIdG}");
+      socketService.socket!.disconnect();
+    }
+
+    var accessToken = await _authController.getAccessToken();
+    debugPrint("GETTING ACCESS TOKEN: $accessToken");
+    socketService.createSocketConnection(
+      userId: _userController.user.value!.id,
+      roomId: chatId,
+      userName: _userController.user.value!.name ?? "No Name",
+      accessToken: accessToken!,
+    );
+    var socket = socketService.socket;
+    if (socket == null) {
+      debugPrint('Socket is null');
+      return;
+    }
+    debugPrint("I am in connectToSocket Function");
+    socket.on('receiveMessage', handleIncomingMessage);
+  }
+
+  Future<ChatAndOfferModel?> createChatWithOfferId(int offerId) async {
+    isLoading.value = true;
+    update();
+
+    var accessToken = await _authController.getAccessToken();
+    var result = await _chatApi.createChatWithOfferId(
+      accessToken: accessToken!,
+      offerId: offerId,
+      userId: _userController.user.value!.id,
+    );
+
+    isLoading.value = false;
+    update();
+
+    return result.fold(
+      (error) {
+        Get.snackbar("Error", error.message);
+        return null;
+      },
+      (chatAndOfferModel) {
+        return chatAndOfferModel;
+      },
+    );
+  }
+
+  void disconnectSocket() {
+    debugPrint('Disconnecting socket...');
+    socketService.disconnectSocket();
+
+    messages.value = [];
+    usersInChat.value = [];
+  }
+
   Future<void> getAllChats() async {
     isLoading.value = true;
     errorMessage.value = '';
@@ -76,7 +135,7 @@ class ChatController extends GetxController {
           () {
             if (scrollController.hasClients) {
               scrollController.animateTo(
-                scrollController.position.maxScrollExtent + 100,
+                scrollController.position.maxScrollExtent,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
               );
@@ -95,103 +154,6 @@ class ChatController extends GetxController {
         curve: Curves.easeOut,
       );
     }
-  }
-
-  Future<ChatAndOfferModel?> createChatWithOfferId(int offerId) async {
-    isLoading.value = true;
-    update();
-
-    var accessToken = await _authController.getAccessToken();
-    var result = await _chatApi.createChatWithOfferId(
-      accessToken: accessToken!,
-      offerId: offerId,
-      userId: _userController.user.value!.id,
-    );
-
-    isLoading.value = false;
-    update();
-
-    return result.fold(
-      (error) {
-        Get.snackbar("Error", error.message);
-        return null;
-      },
-      (chatAndOfferModel) {
-        return chatAndOfferModel;
-      },
-    );
-  }
-
-  void connectToSocket(int userId, int chatId) async {
-    debugPrint('Connecting socket...');
-    var checkSocket = socketService.socket;
-    if (checkSocket != null) {
-      debugPrint(
-          "Socket is already connected with the party ${SocketService.roomIdG}");
-      socketService.socket!.disconnect();
-    }
-
-    var accessToken = await _authController.getAccessToken();
-    debugPrint("GETTING ACCESS TOKEN: $accessToken");
-    socketService.createSocketConnection(
-      userId: _userController.user.value!.id,
-      roomId: chatId,
-      userName: _userController.user.value!.name ?? "No Name",
-      accessToken: accessToken!,
-    );
-    var socket = socketService.socket;
-    if (socket == null) {
-      debugPrint('Socket is null');
-      return;
-    }
-    debugPrint("I am in connectToSocket Function");
-    socket.on('receiveMessage', handleIncomingMessage);
-  }
-
-  bool isSocketConnected() {
-    return socketService.socket?.connected ?? false;
-  }
-
-  void handleIncomingMessage(data) {
-    var message = data['createdMessage'];
-    var messageModel = Message.fromJson(message);
-    messages.add(messageModel);
-    update();
-    // await Future.wait([Future.value(const Duration(milliseconds: 300))]);
-    if (scrollController.hasClients) {
-      debugPrint("Scrolling here");
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent + 100,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-    debugPrint("Receive Message $data with data $message");
-  }
-
-  void sendMessage(String message, {int? replyMessageId}) {
-    debugPrint('Sending message... $message');
-    socketService.sendMessage(
-      message,
-      replyMessageId: replyMessageId,
-    );
-    debugPrint("I am in sendMessage Function");
-  }
-
-  void sendReaction(String content, int reactionMessageId) {
-    socketService.sendReaction(content, reactionMessageId);
-  }
-
-  void kickUser(int userId) {
-    socketService.kickUser(userId);
-  }
-
-  void disconnectSocket() {
-    debugPrint('Disconnecting socket...');
-    socketService.disconnectSocket();
-
-    messages.value = [];
-    usersInChat.value = [];
   }
 
   Future<void> getAllUsersInChat(int chatId) async {
@@ -223,14 +185,6 @@ class ChatController extends GetxController {
     update();
   }
 
-  String? getUserNameFromIdInChat(int userId) {
-    if (usersInChat.isEmpty) {
-      return null;
-    }
-
-    return usersInChat.firstWhereOrNull((user) => user.id == userId)?.username;
-  }
-
   Future<Chat?> getChatFromLiveOfferId(int liveOfferId) async {
     isLoading.value = true;
     update();
@@ -254,10 +208,56 @@ class ChatController extends GetxController {
     );
   }
 
+  String? getUserNameFromIdInChat(int userId) {
+    if (usersInChat.isEmpty) {
+      return null;
+    }
+
+    return usersInChat.firstWhereOrNull((user) => user.id == userId)?.username;
+  }
+
+  void handleIncomingMessage(data) {
+    var message = data['createdMessage'];
+    var messageModel = Message.fromJson(message);
+    messages.add(messageModel);
+    update();
+    // await Future.wait([Future.value(const Duration(milliseconds: 300))]);
+    if (scrollController.hasClients) {
+      debugPrint("Scrolling here");
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent + 100,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+    debugPrint("Receive Message $data with data $message");
+  }
+
+  bool isSocketConnected() {
+    return socketService.socket?.connected ?? false;
+  }
+
+  void kickUser(int userId) {
+    socketService.kickUser(userId);
+  }
+
   @override
   void onClose() {
     disconnectSocket();
     scrollController.dispose();
     super.onClose();
+  }
+
+  void sendMessage(String message, {int? replyMessageId}) {
+    debugPrint('Sending message... $message');
+    socketService.sendMessage(
+      message,
+      replyMessageId: replyMessageId,
+    );
+    debugPrint("I am in sendMessage Function");
+  }
+
+  void sendReaction(String content, int reactionMessageId) {
+    socketService.sendReaction(content, reactionMessageId);
   }
 }

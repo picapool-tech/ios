@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,6 @@ import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/ProfilePage/notification_preferences/notification_preferences.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/otp_screen.dart';
-import 'package:picapool/screens/personal_details.dart';
 import 'package:picapool/screens/pooling_history.dart';
 import 'package:picapool/utils/permission_util.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -75,7 +75,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ElevatedButton(
                     onPressed: () async {
                       if (kDebugMode) {
-                        Get.to(() => const PersonalDetails());
+                        Get.to(() => const OtpScreen(
+                              phoneNumber: "917224052216",
+                              returnValue: false,
+                            ));
                         return;
                       }
 
@@ -350,190 +353,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showPermissionsModal(BuildContext context) async {
-    var permissionUtil = PermissionUtil();
-
-    if (context.mounted) {
-      showModalBottomSheet(
-        backgroundColor: Colors.white,
-        context: context,
-        isScrollControlled: true, // This makes modal full screen
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (context) {
-          var locationEnabled = permissionUtil.isLocationPermissionGranted();
-          var notificationEnabled =
-              permissionUtil.isNotificationPermissionGranted();
-
-          var galleryEnabled = permissionUtil.isPhotoPermissionGranted();
-          var cameraEnabled = permissionUtil.isCameraPermissionGranted();
-
-          return StatefulBuilder(builder: (context, setState) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 10),
-                  Container(
-                    width: 50,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Edit your Preferences!",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "MontserratSB",
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Enable or Disable your settings",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                      fontFamily: "MontserratR",
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffFFF7F3),
-                      border: Border.all(color: Colors.orange, width: 1.5),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      children: [
-                        FutureBuilder<bool>(
-                            future: locationEnabled,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return InkWell(
-                                  onTap: () async {
-                                    if (snapshot.data ?? false) {
-                                      return;
-                                    } else {
-                                      await permissionUtil
-                                          .requestLocationPermission();
-                                      locationEnabled = permissionUtil
-                                          .isLocationPermissionGranted();
-                                      setState(() {});
-                                    }
-                                  },
-                                  child: _buildPermissionOption(
-                                    Icons.location_on,
-                                    "Location Access",
-                                    isEnabled: snapshot.data!,
-                                  ),
-                                );
-                              }
-
-                              return const SizedBox.shrink();
-                            }),
-                        const Divider(thickness: 1.5),
-                        FutureBuilder<bool>(
-                            future: notificationEnabled,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return InkWell(
-                                  onTap: () async {
-                                    if (snapshot.data ?? false) {
-                                      return;
-                                    } else {
-                                      await permissionUtil
-                                          .requestNotificationPermission();
-                                      locationEnabled = permissionUtil
-                                          .isNotificationPermissionGranted();
-                                      setState(() {});
-                                    }
-                                  },
-                                  child: _buildPermissionOption(
-                                    Icons.notifications,
-                                    "Notifications",
-                                    isEnabled: snapshot.data!,
-                                  ),
-                                );
-                              }
-
-                              return const SizedBox.shrink();
-                            }),
-                        const Divider(thickness: 1.5),
-                        FutureBuilder<bool>(
-                          future: galleryEnabled,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return InkWell(
-                                onTap: () async {
-                                  if (snapshot.data ?? false) {
-                                    return;
-                                  } else {
-                                    await permissionUtil
-                                        .requestPhotoPermission();
-                                    galleryEnabled = permissionUtil
-                                        .isPhotoPermissionGranted();
-                                    setState(() {});
-                                  }
-                                },
-                                child: _buildPermissionOption(
-                                  Icons.photo,
-                                  "Photos Library",
-                                  isEnabled: snapshot.data!,
-                                ),
-                              );
-                            }
-
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                        const Divider(thickness: 1.5),
-                        FutureBuilder<bool>(
-                          future: cameraEnabled,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return InkWell(
-                                onTap: () async {
-                                  if (snapshot.data ?? false) {
-                                    return;
-                                  } else {
-                                    await permissionUtil
-                                        .requestCameraPermission();
-                                    cameraEnabled = permissionUtil
-                                        .isCameraPermissionGranted();
-                                    setState(() {});
-                                  }
-                                },
-                                child: _buildPermissionOption(
-                                  Icons.camera,
-                                  "Camera",
-                                  isEnabled: snapshot.data!,
-                                ),
-                              );
-                            }
-
-                            return const SizedBox.shrink();
-                          },
-                        )
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            );
-          });
-        },
-      );
-    }
-  }
-
   Widget _buildPermissionOption(IconData icon, String title,
       {bool isEnabled = false}) {
     return Row(
@@ -561,6 +380,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildTextField(
+      IconData icon, String label, TextEditingController controller,
+      {bool disabled = false}) {
+    return TextField(
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.grey),
+        labelText: label,
+        border: InputBorder.none, // No border since the container has a border
+      ),
+      controller: controller,
+      enabled: !disabled,
+      onTapOutside: (event) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+    );
+  }
+
   Future<XFile?> _pickImage() async {
     if (!await PermissionUtil().isPhotoPermissionGranted()) {
       await PermissionUtil().requestPhotoPermission();
@@ -575,6 +411,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     debugPrint("Image has been picked : ${image?.name}");
     return image;
+  }
+
+  void _sendFeedback(String feedback) async {
+    await _feedbackController.sendFeedback(feedback);
+    if (mounted) {
+      Navigator.pop(context); // Close the modal
+    }
   }
 
   Future<void> _showEditProfileModal(BuildContext context, User user) async {
@@ -892,23 +735,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField(
-      IconData icon, String label, TextEditingController controller,
-      {bool disabled = false}) {
-    return TextField(
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.grey),
-        labelText: label,
-        border: InputBorder.none, // No border since the container has a border
-      ),
-      controller: controller,
-      enabled: !disabled,
-      onTapOutside: (event) {
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-    );
-  }
-
   void _showFeedbackModal(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: Colors.white,
@@ -1153,10 +979,187 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _sendFeedback(String feedback) async {
-    await _feedbackController.sendFeedback(feedback);
-    if (mounted) {
-      Navigator.pop(context); // Close the modal
+  void _showPermissionsModal(BuildContext context) async {
+    var permissionUtil = PermissionUtil();
+
+    if (context.mounted) {
+      showModalBottomSheet(
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true, // This makes modal full screen
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) {
+          var locationEnabled = permissionUtil.isLocationPermissionGranted();
+          var notificationEnabled =
+              permissionUtil.isNotificationPermissionGranted();
+
+          var galleryEnabled = permissionUtil.isPhotoPermissionGranted();
+          var cameraEnabled = permissionUtil.isCameraPermissionGranted();
+
+          return StatefulBuilder(builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Edit your Preferences!",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "MontserratSB",
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Enable or Disable your settings",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontFamily: "MontserratR",
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFFF7F3),
+                      border: Border.all(color: Colors.orange, width: 1.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        FutureBuilder<bool>(
+                            future: locationEnabled,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return InkWell(
+                                  onTap: () async {
+                                    if (snapshot.data ?? false) {
+                                      return;
+                                    } else {
+                                      await permissionUtil
+                                          .requestLocationPermission();
+                                      locationEnabled = permissionUtil
+                                          .isLocationPermissionGranted();
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: _buildPermissionOption(
+                                    Icons.location_on,
+                                    "Location Access",
+                                    isEnabled: snapshot.data!,
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            }),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                            future: notificationEnabled,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return InkWell(
+                                  onTap: () async {
+                                    if (snapshot.data ?? false) {
+                                      return;
+                                    } else {
+                                      await permissionUtil
+                                          .requestNotificationPermission();
+                                      locationEnabled = permissionUtil
+                                          .isNotificationPermissionGranted();
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: _buildPermissionOption(
+                                    Icons.notifications,
+                                    "Notifications",
+                                    isEnabled: snapshot.data!,
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            }),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                          future: galleryEnabled,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return InkWell(
+                                onTap: () async {
+                                  if (snapshot.data ?? false) {
+                                    return;
+                                  } else {
+                                    await permissionUtil
+                                        .requestPhotoPermission();
+                                    galleryEnabled = permissionUtil
+                                        .isPhotoPermissionGranted();
+                                    setState(() {});
+                                  }
+                                },
+                                child: _buildPermissionOption(
+                                  Icons.photo,
+                                  "Photos Library",
+                                  isEnabled: snapshot.data!,
+                                ),
+                              );
+                            }
+
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                        const Divider(thickness: 1.5),
+                        FutureBuilder<bool>(
+                          future: cameraEnabled,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return InkWell(
+                                onTap: () async {
+                                  if (snapshot.data ?? false) {
+                                    return;
+                                  } else {
+                                    await permissionUtil
+                                        .requestCameraPermission();
+                                    cameraEnabled = permissionUtil
+                                        .isCameraPermissionGranted();
+                                    setState(() {});
+                                  }
+                                },
+                                child: _buildPermissionOption(
+                                  Icons.camera,
+                                  "Camera",
+                                  isEnabled: snapshot.data!,
+                                ),
+                              );
+                            }
+
+                            return const SizedBox.shrink();
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          });
+        },
+      );
     }
   }
 }

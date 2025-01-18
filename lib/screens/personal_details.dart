@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
-import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/screens/otp_screen.dart';
 import 'package:picapool/screens/public_profile.dart';
@@ -24,15 +23,6 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   String? _selectedGender;
   final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController.text = _userController.user.value?.name ?? '';
-    _ageController.text = _userController.user.value?.age?.toString() ?? '';
-    _selectedGender = _userController.user.value?.gender;
-    _phoneController.text = _authController.auth.value?.mobile ?? "";
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,22 +75,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ),
               ),
               const SizedBox(height: 10),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(
-                    onTap: () async {
-                      var storage = Get.find<StorageController>();
-                      await storage.clearAuth();
-                      await storage.clearUser();
-
-                      _authController.logout();
-                    },
-                    child: const Icon(Icons.visibility_off,
-                        color: Colors.grey, size: 16),
-                  ),
-                  const SizedBox(width: 5),
-                  const Text(
+                  Icon(Icons.visibility_off, color: Colors.grey, size: 16),
+                  SizedBox(width: 5),
+                  Text(
                     'This is invisible for others',
                     style: TextStyle(
                       color: Colors.grey,
@@ -184,73 +164,80 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     );
   }
 
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    bool isName = false,
-    bool isAge = false,
-  }) {
-    return (isName && Platform.isIOS)
-        ? const SizedBox.shrink()
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = _userController.user.value?.name ?? '';
+    _ageController.text = _userController.user.value?.age?.toString() ?? '';
+    _selectedGender = _userController.user.value?.gender;
+    _phoneController.text = _authController.auth.value?.mobile ?? "";
+  }
+
+  Widget _buildGenderDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: const TextSpan(
+            text: 'Your gender',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 16,
+              fontFamily: 'MontserratR',
+            ),
             children: [
-              RichText(
-                text: TextSpan(
-                  text: label.split('*')[0],
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontFamily: 'MontserratR',
-                  ),
-                  children: const [
-                    TextSpan(
-                      text: '*',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ],
-                ),
+              TextSpan(
+                text: '*',
+                style: TextStyle(color: Colors.red),
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: controller,
-                keyboardType: isAge
-                    ? TextInputType.number
-                    : TextInputType.text, // Numeric keyboard for age field
-                decoration: InputDecoration(
-                  filled: true,
-                  hintText: (isAge) ? "Your age" : "Your full name",
-                  hintStyle: const TextStyle(
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 48, // Match the height of other fields
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFA3A3A3), width: 1),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              hint: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Select',
+                  style: TextStyle(
                       color: Colors.grey,
                       fontFamily: 'MontserratR',
                       fontSize: 12),
-                  fillColor: Colors.transparent,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        const BorderSide(color: Color(0xFFA3A3A3), width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        const BorderSide(color: Color(0xFFFF8D41), width: 2),
-                  ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
-                style: const TextStyle(fontSize: 14),
-                inputFormatters: [
-                  if (isName) ...[
-                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-                  ],
-                  if (isAge) ...[
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(2),
-                  ],
-                ],
               ),
-            ],
-          );
+              value: _selectedGender,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedGender = newValue;
+                });
+              },
+              items: <String>['Male', 'Female', 'Other']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      value,
+                      style: const TextStyle(
+                          fontFamily: 'MontserratR', fontSize: 12),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPhoneField() {
@@ -382,71 +369,73 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     );
   }
 
-  Widget _buildGenderDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RichText(
-          text: const TextSpan(
-            text: 'Your gender',
-            style: TextStyle(
-              color: Colors.black87,
-              fontSize: 16,
-              fontFamily: 'MontserratR',
-            ),
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool isName = false,
+    bool isAge = false,
+  }) {
+    return (isName && Platform.isIOS)
+        ? const SizedBox.shrink()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Colors.red),
+              RichText(
+                text: TextSpan(
+                  text: label.split('*')[0],
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                    fontFamily: 'MontserratR',
+                  ),
+                  children: const [
+                    TextSpan(
+                      text: '*',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 48, // Match the height of other fields
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFA3A3A3), width: 1),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              hint: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Select',
-                  style: TextStyle(
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller,
+                keyboardType: isAge
+                    ? TextInputType.number
+                    : TextInputType.text, // Numeric keyboard for age field
+                decoration: InputDecoration(
+                  filled: true,
+                  hintText: (isAge) ? "Your age" : "Your full name",
+                  hintStyle: const TextStyle(
                       color: Colors.grey,
                       fontFamily: 'MontserratR',
                       fontSize: 12),
-                ),
-              ),
-              value: _selectedGender,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedGender = newValue;
-                });
-              },
-              items: <String>['Male', 'Female', 'Other']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      value,
-                      style: const TextStyle(
-                          fontFamily: 'MontserratR', fontSize: 12),
-                    ),
+                  fillColor: Colors.transparent,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFA3A3A3), width: 1),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFFF8D41), width: 2),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                style: const TextStyle(fontSize: 14),
+                inputFormatters: [
+                  if (isName) ...[
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                  ],
+                  if (isAge) ...[
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                ],
+              ),
+            ],
+          );
   }
 
   bool _isFormValid() {

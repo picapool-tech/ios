@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/models/response_model.dart';
+import 'package:picapool/widgets/login/text_field_pin.dart';
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
@@ -23,8 +23,7 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(4, (index) => TextEditingController());
+  final TextEditingController _otpController = TextEditingController();
   final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
   bool _isOtpComplete = false;
   bool _isOtpIncorrect = false;
@@ -33,148 +32,6 @@ class _OtpScreenState extends State<OtpScreen> {
   Timer? _timer;
   String? otpCode;
   final authController = Get.find<AuthController>();
-
-  @override
-  void initState() {
-    super.initState();
-    debugPrint(
-      "OTP Screen: ${widget.phoneNumber} with return Value : ${widget.returnValue}",
-    );
-    for (var controller in _controllers) {
-      controller.addListener(_checkOtpComplete);
-    }
-  }
-
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.removeListener(_checkOtpComplete);
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _checkOtpComplete() {
-    setState(() {
-      _isOtpComplete =
-          _controllers.every((controller) => controller.text.length == 1);
-    });
-  }
-
-  Future<void> _verifyOtp() async {
-    if (authController.isLoading.value) return;
-    String otp = _controllers.map((controller) => controller.text).join('');
-    String url =
-        'https://api.picapool.com/v2/otp/verify?otp=$otp&mobile=${widget.phoneNumber}';
-    try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      debugPrint('Response: ${response.body}');
-      if (response.statusCode == 200) {
-        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-        if (responseModel.success) {
-          if (widget.returnValue) {
-            debugPrint("INSIDE RETURN VALUE");
-            Get.back(result: true);
-            return;
-          } else {
-            await authController.loginWithOtp(widget.phoneNumber, otp);
-          }
-        } else {
-          setState(() {
-            _isOtpIncorrect = true;
-          });
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Incorrect OTP. Please try again.')),
-            );
-          }
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Failed to verify OTP. Please try again.')),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('An error occurred. Please try again later.')),
-        );
-      }
-    }
-  }
-
-  Future<void> _resendOtp() async {
-    String url = 'https://api.picapool.com/v2/otp?mobile=${widget.phoneNumber}';
-
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'mobile': widget.phoneNumber,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        final responseBody = response.body;
-
-        if (responseBody.contains('"type":"success"')) {
-          setState(() {
-            _isResendButtonDisabled = true;
-            _resendCountdown = 59;
-          });
-          _startResendCountdown();
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to resend OTP. $responseBody')),
-            );
-          }
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Failed to resend OTP. Please try again.')),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('An error occurred. Please try again later.')),
-        );
-      }
-    }
-  }
-
-  void _startResendCountdown() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_resendCountdown > 0) {
-          _resendCountdown--;
-        } else {
-          _isResendButtonDisabled = false;
-          timer.cancel();
-        }
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,56 +66,35 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    4,
-                    (index) => Container(
-                      width: 50,
-                      height: 50,
-                      margin: const EdgeInsets.symmetric(horizontal: 5),
-                      child: TextField(
-                        controller: _controllers[index],
-                        focusNode: _focusNodes[index],
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        maxLength: 1,
-                        decoration: InputDecoration(
-                          counterText: '',
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: _isOtpIncorrect
-                                  ? Colors.red
-                                  : const Color(0xffFF8D41),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: _isOtpIncorrect
-                                  ? Colors.red
-                                  : const Color(0xffA3A3A3),
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          contentPadding: const EdgeInsets.only(bottom: 5),
-                        ),
-                        onChanged: (value) {
-                          if (value.length == 1 && index < 3) {
-                            _focusNodes[index + 1].requestFocus();
-                          }
-                          if (_isOtpIncorrect) {
-                            setState(() {
-                              _isOtpIncorrect = false;
-                            });
-                          }
-                        },
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                      ),
+                TextFieldPin(
+                  codeLength: 4,
+                  defaultBoxSize: 50.0,
+                  selectedBoxSize: 50.0,
+                  margin: 5,
+                  autoFocus: true,
+                  textController: _otpController,
+                  onChange: (value) {
+                    if (value.length == 1) {
+                      _focusNodes[1].requestFocus();
+                    }
+                    _checkOtpComplete();
+                  },
+                  defaultDecoration: BoxDecoration(
+                    border: Border.all(
+                      color: _isOtpIncorrect
+                          ? Colors.red
+                          : const Color(0xffA3A3A3),
                     ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  selectedDecoration: BoxDecoration(
+                    border: Border.all(
+                      color: _isOtpIncorrect
+                          ? Colors.red
+                          : const Color(0xffFF8D41),
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -333,5 +169,141 @@ class _OtpScreenState extends State<OtpScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint(
+      "OTP Screen: ${widget.phoneNumber} with return Value : ${widget.returnValue}",
+    );
+    _otpController.addListener(_checkOtpComplete);
+  }
+
+  void _checkOtpComplete() {
+    setState(() {
+      _isOtpComplete = _otpController.text.length == 4;
+    });
+  }
+
+  Future<void> _resendOtp() async {
+    String url = 'https://api.picapool.com/v2/otp?mobile=${widget.phoneNumber}';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'mobile': widget.phoneNumber,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final responseBody = response.body;
+
+        if (responseBody.contains('"type":"success"')) {
+          setState(() {
+            _isResendButtonDisabled = true;
+            _resendCountdown = 59;
+          });
+          _startResendCountdown();
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to resend OTP. $responseBody')),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Failed to resend OTP. Please try again.')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('An error occurred. Please try again later.')),
+        );
+      }
+    }
+  }
+
+  void _startResendCountdown() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_resendCountdown > 0) {
+          _resendCountdown--;
+        } else {
+          _isResendButtonDisabled = false;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  Future<void> _verifyOtp() async {
+    if (authController.isLoading.value) return;
+    String otp = _otpController.text;
+    String url =
+        'https://api.picapool.com/v2/otp/verify?otp=$otp&mobile=${widget.phoneNumber}';
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      debugPrint('Response: ${response.body}');
+      if (response.statusCode == 200) {
+        var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+        if (responseModel.success) {
+          if (widget.returnValue) {
+            debugPrint("INSIDE RETURN VALUE");
+            Get.back(result: true);
+            return;
+          } else {
+            await authController.loginWithOtp(widget.phoneNumber, otp);
+          }
+        } else {
+          setState(() {
+            _isOtpIncorrect = true;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Incorrect OTP. Please try again.')),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Failed to verify OTP. Please try again.')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('An error occurred. Please try again later.')),
+        );
+      }
+    }
   }
 }
