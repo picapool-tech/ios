@@ -32,8 +32,8 @@ class _SellConfirmationPageState extends State<SellConfirmationPage> {
           const Text('Your Product is listed for selling!'),
           const SizedBox(height: 16,),
           PrimaryButton(onPressed: (){
-            Get.offAllNamed(GetRoutes.home);
-          } , buttonLabel: 'Go to Home')
+            Get.offAllNamed(GetRoutes.productsListPage);
+          } , buttonLabel: 'Proceed')
         ],)  ,
     );
   }

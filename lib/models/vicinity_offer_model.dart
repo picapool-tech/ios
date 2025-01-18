@@ -69,7 +69,7 @@ class VicinityOffer {
       'name': name,
       'images': images,
       'desc': desc,
-      'expiryAt': expiryAt.toUtc().toIso8601String(),
+      'expiryAt': expiryAt.toIso8601String(),
       'userId': userId,
       'productIds': productIds,
       'tagIds': tagIds,

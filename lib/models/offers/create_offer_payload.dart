@@ -14,7 +14,7 @@ class CreateOfferPayload {
     String? name;
     List<String>? images;
     String? desc;
-    DateTime? expiryAt;
+    String? expiryAt;
     // int? partnerId;
     int? userId;
     List<int>? productIds;
@@ -39,7 +39,7 @@ class CreateOfferPayload {
         name: json["name"],
         images: json["images"] == null ? [] : List<String>.from(json["images"]!.map((x) => x)),
         desc: json["desc"],
-        expiryAt: json["expiryAt"] == null ? null : DateTime.parse(json["expiryAt"]),
+        expiryAt: json["expiryAt"] == null ? null : json["expiryAt"],
         // partnerId: json["partnerId"],
         userId: json["userId"],
         productIds: json["productIds"] == null ? [] : List<int>.from(json["productIds"]!.map((x) => x)),
@@ -52,7 +52,7 @@ class CreateOfferPayload {
         "name": name,
         "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x)),
         "desc": desc,
-        "expiryAt": expiryAt?.toIso8601String(),
+        "expiryAt": expiryAt,
         // "partnerId": partnerId,
         "userId": userId,
         "productIds": productIds == null ? [] : List<dynamic>.from(productIds!.map((x) => x)),

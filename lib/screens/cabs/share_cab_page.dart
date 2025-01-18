@@ -8,10 +8,295 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // To format the date
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/functions/chats/chat_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:picapool/screens/cabs/showallcabs.dart';
+import 'package:picapool/utils/date_time_utils.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
+import 'package:get/get.dart';
+import 'package:picapool/controllers/live_offer_controller.dart';
+import 'package:geolocator/geolocator.dart';
+
+class ShareCabScreen extends StatefulWidget {
+  const ShareCabScreen({super.key});
+
+  @override
+  _ShareCabScreenState createState() => _ShareCabScreenState();
+}
+
+class _ShareCabScreenState extends State<ShareCabScreen> {
+  static const LatLng _center = LatLng(25.276987, 55.296249);
+  String? _selectedCab; // To track the selected cab marker
+  DateTime _selectedDate = DateTime.now(); // Current selected date
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'); // Add your API key here
+  GoogleMapController? mapController;
+  Set<Marker> _markers = {};
+
+  TextEditingController _fromController = TextEditingController();
+  TextEditingController _toController = TextEditingController();
+  LocationController _locationController = Get.find<LocationController>();
+  List<Prediction> _fromPredictions = [];
+  List<Prediction> _toPredictions = [];
+  String formattedDate = '';
+  LatLng? selectedLocationLatLng;
+  GoogleMapController? _controller;
+
+  final LiveOfferController liveOfferController = Get.find();
+
+  // Add new variables
+  final int defaultRadius = 5000;
+  LatLng? selectedFromLocation;
+  bool isInitialLoad = true;
+  bool _isMapInitialized = false;
+  String? _currentAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocationAndSearch();
+  }
+
+  Future<void> _initializeLocationAndSearch() async {
+    await _fetchLocation();
+    if (selectedLocationLatLng != null) {
+      await _getAddressFromLatLng(selectedLocationLatLng!);
+      selectedFromLocation = selectedLocationLatLng!;
+      _searchOffers();
+      _updateMarkersFromSearch();
+    }
+    print("===== TRIGGERD =============");
+  }
+
+  Future<void> _fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      await _locationController.getLocation();
+    }
+    var location = _locationController.state.value.location;
+    if (location == null) {
+      debugPrint("NULL LOCATION : VICINITY");
+      Get.snackbar(
+        'Error',
+        'Failed to get current location.',
+        snackStyle: SnackStyle.GROUNDED,
+      );
+      return;
+    }
+
+    // Position position = await Geolocator.(
+    //     desiredAccuracy: LocationAccuracy.high
+    //   );
+
+    setState(() {
+      selectedLocationLatLng = LatLng(location.latitude, location.longitude);
+      // currentPosition = position;
+
+      if (_controller != null && !_isMapInitialized) {
+        _controller!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: selectedLocationLatLng!,
+              zoom: 16.0,
+            ),
+          ),
+        );
+        _isMapInitialized = true;
+      }
+    });
+  }
+
+  Future<void> _searchOffers() async {
+    if (selectedFromLocation == null) return;
+
+    // Format the selected date with time to ISO string
+    final startTimeISO = DateTimeUtils.formatDateWithZone( DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      DateTime.now().hour,
+      DateTime.now().minute,
+      DateTime.now().second,
+    ));
+
+    debugPrint('Searching offers with date: $startTimeISO'); // Debug log
+
+    final SearchCabsPayload payload = SearchCabsPayload(
+      from: From(
+        lat: selectedFromLocation!.latitude,
+        lng: selectedFromLocation!.longitude,
+      ),
+      radius: defaultRadius,
+      startTime: startTimeISO, // Send the formatted date string
+    );
+
+    await liveOfferController.searchLiveOffer(payload);
+    if (liveOfferController.searchLiveOfferState == SearchLiveOfferState.created) {
+      _updateMarkersFromSearch();
+    }
+  }
+
+void _updateMarkersFromSearch() async {
+  // Clear non-current markers
+  setState(() {
+    _markers.removeWhere(
+        (marker) => !marker.markerId.value.startsWith('current'));
+  });
+
+  // Ensure searchCabsList is not null or empty
+  if (liveOfferController.searchCabsList != null &&
+      liveOfferController.searchCabsList!.isNotEmpty) {
+    for (var offer in liveOfferController.searchCabsList!) {
+      try {
+        if (offer.fromAddress != null && offer.fromAddress!.isNotEmpty) {
+          // Fetch place details using placeId or address
+          final placeDetails = await _places.getDetailsByPlaceId(
+            offer.fromAddress!,
+          );
+
+          if (placeDetails.result.geometry?.location != null) {
+            final location = placeDetails.result.geometry!.location;
+
+            setState(() {
+              _markers.add(
+                Marker(
+                  markerId: MarkerId('offer_${offer.id}'),
+                  position: LatLng(location.lat, location.lng),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueOrange),
+                  infoWindow: InfoWindow(
+                    title: offer.expiryAt != null
+                        ? DateFormat('hh:mm a').format(offer.expiryAt!)
+                        : 'No expiry time',
+                    snippet: '${offer.seats} seats available',
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedCab = 'offer_${offer.id}';
+                    });
+                  },
+                ),
+              );
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint(
+            'Error fetching place details for address ${offer.fromAddress}: $e');
+      }
+    }
+  }
+}
+
+  Future<void> _getAddressFromLatLng(LatLng coordinates) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        coordinates.latitude,
+        coordinates.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          _currentAddress =
+              "${place.street}, ${place.subLocality}, ${place.locality}";
+          _fromController.text = _currentAddress ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error getting address: $e');
+    }
+  }
+
+  // Function to open a date picker and allow the user to select a date
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        // Preserve the time from the previous selection
+        _selectedDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          _selectedDate.hour,
+          _selectedDate.minute,
+          _selectedDate.second,
+        );
+        formattedDate = _formatDateForDisplay(_selectedDate);
+      });
+      _searchOffers(); // Search with new date
+    }
+  }
+
+  // Function to set the date to today
+  void _setToday() {
+    setState(() {
+      _selectedDate = DateTime.now();
+      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
+    });
+    debugPrint('Date set to today: $_selectedDate'); // Debug log
+    _searchOffers(); // This will now use the updated _selectedDate
+  }
+
+  // Function to set the date to tomorrow
+  void _setTomorrow() {
+    setState(() {
+      _selectedDate = DateTime.now().add(const Duration(days: 1));
+      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
+    });
+    debugPrint('Date set to tomorrow: $_selectedDate'); // Debug log
+    _searchOffers(); // This will now use the updated _selectedDate
+  }
+
+  // Function to search location and show suggestions
+  Future<void> _searchPlaces(String query, bool isFrom) async {
+    if (query.isEmpty) {
+      setState(() {
+        isFrom ? _fromPredictions.clear() : _toPredictions.clear();
+      });
+      return;
+    }
+
+    var sessionToken = 'xyzabc_1234'; // You may generate this token dynamically
+    var response =
+        await _places.autocomplete(query, sessionToken: sessionToken);
+
+    if (response.isOkay) {
+      setState(() {
+        if (isFrom) {
+          _fromPredictions = response.predictions;
+        } else {
+          _toPredictions = response.predictions;
+        }
+      });
+    }
+  }
+
+  // Function to select place and fill text field
+  Future<void> _selectPlace(Prediction prediction, bool isFrom) async {
+    final placeId = prediction.placeId;
+    if (placeId == null) return;
+
+    var details = await _places.getDetailsByPlaceId(placeId);
+    final location = details.result.geometry?.location;
+    if (location == null) return;
+
+    setState(() {
+      if (isFrom) {
+        _fromController.text = prediction.description ?? '';
+        _fromPredictions.clear();
+        selectedFromLocation = LatLng(location.lat, location.lng);
+        _searchOffers(); // Search with new location
+      }
+    });
+  }
 
 Widget buildAddressRow(String label, String address) {
   return Row(
@@ -384,13 +669,13 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                           child: GoogleMap(
                             onMapCreated: (GoogleMapController controller) {
                               mapController = controller;
-                              if (currentPosition != null) {
+                              if (selectedLocationLatLng != null) {
                                 controller.animateCamera(
                                   CameraUpdate.newCameraPosition(
                                     CameraPosition(
                                       target: LatLng(
-                                        currentPosition!.latitude,
-                                        currentPosition!.longitude,
+                                        selectedLocationLatLng!.latitude,
+                                        selectedLocationLatLng!.longitude,
                                       ),
                                       zoom: 14.0,
                                     ),
@@ -399,16 +684,17 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
                               }
                             },
                             initialCameraPosition: CameraPosition(
-                              target: currentPosition != null
-                                  ? LatLng(currentPosition!.latitude,
-                                      currentPosition!.longitude)
+                              target: selectedLocationLatLng != null
+                                  ? LatLng(selectedLocationLatLng!.latitude,
+                                      selectedLocationLatLng!.longitude)
                                   : const LatLng(0,
                                       0), // Default position until we get location
                               zoom: 14.0,
                             ),
                             markers: _markers,
                             myLocationEnabled: true,
-                            myLocationButtonEnabled: true,
+
+                            myLocationButtonEnabled: false,
                           ),
                         ),
                         // Bottom fixed container
@@ -698,13 +984,9 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
           suffixIcon: IconButton(
             icon: const Icon(Icons.my_location, color: Colors.orange),
             onPressed: () async {
-              await _getCurrentLocation();
-              if (currentPosition != null) {
-                await _getAddressFromLatLng(currentPosition!);
-                selectedFromLocation = LatLng(
-                  currentPosition!.latitude,
-                  currentPosition!.longitude,
-                );
+              await _initializeLocationAndSearch();
+              if (selectedLocationLatLng != null) {
+                selectedFromLocation = selectedLocationLatLng;
                 _searchOffers();
               }
             },
@@ -836,145 +1118,183 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
         lat: selectedFromLocation!.latitude,
         lng: selectedFromLocation!.longitude,
       ),
-      radius: defaultRadius,
-      startTime: startTimeISO, // Send the formatted date string
     );
-
-    await liveOfferController.searchLiveOffer(payload);
-    if (liveOfferController.searchLiveOfferState ==
-        SearchLiveOfferState.created) {
-      _updateMarkersFromSearch();
-    }
   }
 
-  // Function to search location and show suggestions
-  Future<void> _searchPlaces(String query, bool isFrom) async {
-    if (query.isEmpty) {
-      setState(() {
-        isFrom ? _fromPredictions.clear() : _toPredictions.clear();
-      });
-      return;
-    }
-
-    var sessionToken = 'xyzabc_1234'; // You may generate this token dynamically
-    var response =
-        await _places.autocomplete(query, sessionToken: sessionToken);
-
-    if (response.isOkay) {
-      setState(() {
-        if (isFrom) {
-          _fromPredictions = response.predictions;
-        } else {
-          _toPredictions = response.predictions;
-        }
-      });
-    }
-  }
-
-  // Function to open a date picker and allow the user to select a date
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
+  Widget _buildOffersListView() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: liveOfferController.searchCabsList?.length ?? 0,
+      itemBuilder: (context, index) {
+        final offer = liveOfferController.searchCabsList![index];
+        return _buildOfferCard(offer, context);
+      },
     );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        // Preserve the time from the previous selection
-        _selectedDate = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          _selectedDate.hour,
-          _selectedDate.minute,
-          _selectedDate.second,
-        );
-        formattedDate = _formatDateForDisplay(_selectedDate);
-      });
-      _searchOffers(); // Search with new date
-    }
   }
+ }
 
-  // Function to select place and fill text field
-  Future<void> _selectPlace(Prediction prediction, bool isFrom) async {
-    final placeId = prediction.placeId;
-    if (placeId == null) return;
-
-    var details = await _places.getDetailsByPlaceId(placeId);
-    final location = details.result.geometry?.location;
-    if (location == null) return;
-
-    setState(() {
-      if (isFrom) {
-        _fromController.text = prediction.description ?? '';
-        _fromPredictions.clear();
-        selectedFromLocation = LatLng(location.lat, location.lng);
-        _searchOffers(); // Search with new location
-      }
-    });
-  }
-
-  // Function to set the date to today
-  void _setToday() {
-    setState(() {
-      _selectedDate = DateTime.now();
-      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
-    });
-    debugPrint('Date set to today: $_selectedDate'); // Debug log
-    _searchOffers(); // This will now use the updated _selectedDate
-  }
-
-  // Function to set the date to tomorrow
-  void _setTomorrow() {
-    setState(() {
-      _selectedDate = DateTime.now().add(const Duration(days: 1));
-      formattedDate = DateFormat('E, d MMM').format(_selectedDate);
-    });
-    debugPrint('Date set to tomorrow: $_selectedDate'); // Debug log
-    _searchOffers(); // This will now use the updated _selectedDate
-  }
-
-  void _updateMarkersFromSearch() async {
-    setState(() {
-      _markers.removeWhere(
-          (marker) => !marker.markerId.value.startsWith('current'));
-    });
-
-    if (liveOfferController.searchCabsList != null) {
-      for (var offer in liveOfferController.searchCabsList!) {
-        try {
-          // Get place details using placeId
-          final placeDetails =
-              await _places.getDetailsByPlaceId(offer.fromAddress ?? "");
-          if (placeDetails.result.geometry?.location != null) {
-            final location = placeDetails.result.geometry!.location;
-
-            setState(() {
-              _markers.add(
-                Marker(
-                  markerId: MarkerId('offer_${offer.id}'),
-                  position: LatLng(location.lat, location.lng),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueOrange),
-                  infoWindow: InfoWindow(
-                    title: DateFormat('hh:mm a').format(offer.expiryAt!),
-                    snippet: '${offer.seats} seats available',
+Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.only(right: 16.0),
+    child: GestureDetector(
+      onTap: () {
+        // setState(() {
+        //   _selectedCab = 'cab${index + 1}';
+        // });
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.7,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateFormat('hh:mm a').format(offer.expiryAt!),
+                    style: const TextStyle(
+                      fontFamily: "MontserratM",
+                      fontSize: 20,
+                    ),
                   ),
-                  onTap: () {
-                    setState(() {
-                      _selectedCab = 'offer_${offer.id}';
-                    });
+                  // TODO: Uncomment after seats is fixed from the backend
+                  // Container(
+                  //   padding:
+                  //       const EdgeInsets
+                  //           .symmetric(
+                  //     horizontal: 8,
+                  //     vertical: 4,
+                  //   ),
+                  //   decoration:
+                  //       BoxDecoration(
+                  //     border: Border.all(
+                  //       color: Colors
+                  //           .grey[300]!,
+                  //     ),
+                  //     borderRadius:
+                  //         BorderRadius
+                  //             .circular(
+                  //                 12),
+                  //   ),
+                  // child: Row(
+                  //   children:
+                  //       List.generate(
+                  //     offer.seats ?? 0,
+                  //     (index) =>
+                  //         const Padding(
+                  //       padding:
+                  //           EdgeInsets
+                  //               .only(
+                  //         right: 2,
+                  //       ),
+                  //       child: Icon(
+                  //         Icons.person,
+                  //         size: 16,
+                  //         color: Color(
+                  //           0xffFF8D41,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
+              const SizedBox(height: 8),
+              buildAddressRow(
+                "To",
+                offer.toAddress ?? "EMPTY",
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // _getToChat(index);
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(
+                      0xffFF8D41,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ),
+                    ),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ImageIcon(
+                          AssetImage("assets/icons/bus.png"),
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          "Join Chat",
+                          style: TextStyle(
+                            fontFamily: "MontserratR",
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              );
-            });
-          }
-        } catch (e) {
-          debugPrint('Error fetching place details: $e');
-        }
-      }
-    }
-  }
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget buildAddressRow(String label, String address) {
+  return Row(
+    children: [
+      Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: "MontserratM",
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+            Text(
+              address,
+              style: const TextStyle(fontFamily: "MontserratM"),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
 }

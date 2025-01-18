@@ -14,6 +14,7 @@ import 'package:picapool/services/products/responses/get_single_product_response
 import 'package:picapool/services/products/responses/update_product_response.dart';
 import 'package:picapool/utils/auth_utils.dart';
 import 'package:picapool/utils/constants.dart';
+import 'package:picapool/utils/date_time_utils.dart';
 import 'package:picapool/utils/http_helper.dart';
 
 class ProductsServices {
@@ -343,7 +344,7 @@ class ProductsServices {
           name: productResponse.data!.name,
           images: productResponse.data!.images,
           desc: productResponse.data!.description,
-          expiryAt: DateTime.now().add(const Duration(days: 30)), // Set default expiry
+          expiryAt: DateTimeUtils.formatDateWithZone(DateTime.now().add(const Duration(days: 30))), // Set default expiry
           productIds: [productResponse.data!.id!],
           loc: location,
           dist: radius,

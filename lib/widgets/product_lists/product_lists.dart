@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/product_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/offers/search_offer_payload.dart';
 import 'package:picapool/models/product_grid_model.dart';
@@ -19,7 +21,12 @@ class ProductListsPage extends StatefulWidget {
 class ProductListsPageState extends State<ProductListsPage> {
   ProductController get productController => Get.find();
   Position? currentPosition;
+  LatLng? selectedCoordinates;
   final TextEditingController _productSearchController = TextEditingController();
+  final LocationController _locationController = Get.find<LocationController>();
+
+  bool _isMapInitialized = false;
+  GoogleMapController? _controller;
   
   // Radius options
   final List<Map<String, int>> radiusOptions = [
@@ -41,10 +48,45 @@ class ProductListsPageState extends State<ProductListsPage> {
   }
 
   Future<void> _initializeLocationAndSearch() async {
-    await _getCurrentLocation();
-    if (currentPosition != null) {
+    _fetchLocation();
+    if (selectedCoordinates != null) {
+      _searchWithLocation();
+    } else {
       _searchWithCurrentLocation();
     }
+  }
+
+  Future<void> _fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      await _locationController.getLocation();
+    }
+    var location = _locationController.state.value.location;
+    if (location == null) {
+      debugPrint("NULL LOCATION : VICINITY");
+      Get.snackbar(
+        'Error',
+        'Failed to get current location.',
+        snackStyle: SnackStyle.GROUNDED,
+      );
+      return;
+    }
+
+    setState(() {
+      selectedCoordinates = LatLng(location.latitude, location.longitude);
+
+      // Not needed in this page
+      // if (_controller != null && !_isMapInitialized) {
+      //   _controller!.animateCamera(
+      //     CameraUpdate.newCameraPosition(
+      //       CameraPosition(
+      //         target: selectedCoordinates!,
+      //         zoom: 16.0,
+      //       ),
+      //     ),
+      //   );
+      //   _isMapInitialized = true;
+      // }
+    });
   }
 
   Future<void> _getCurrentLocation() async {
@@ -73,6 +115,22 @@ class ProductListsPageState extends State<ProductListsPage> {
     }
   }
 
+  void _searchWithLocation() {
+    if (selectedCoordinates != null) {
+      productController.searchOffers(
+        SearchOfferPayload(
+          chats: true,
+          loc: Loc(
+            lat: selectedCoordinates!.latitude,
+            lng: selectedCoordinates!.longitude,
+          ),
+          products: true,
+          radius: selectedRadius,
+        )
+      );
+    }
+  }
+  
   void _searchWithCurrentLocation() {
     if (currentPosition != null) {
       productController.searchOffers(
@@ -165,7 +223,7 @@ class ProductListsPageState extends State<ProductListsPage> {
                                 setState(() {
                                   selectedRadius = newValue;
                                 });
-                                _searchWithCurrentLocation(); // Trigger new search with updated radius
+                                _searchWithLocation(); // Trigger new search with updated radius
                               }
                             },
                             dropdownColor: Colors.white,

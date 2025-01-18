@@ -9,6 +9,7 @@ import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:picapool/utils/date_time_utils.dart';
 
 
 class CreateLiveOffer extends StatefulWidget {
@@ -32,11 +33,11 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   // DateTime? _defaultExpiryDate;
   DateTime _selectedDateTime = DateTime.now();
   DateTime _defaultExpiryDate = DateTime.now();
-  DateTime updateDefaultExpiryDate() {
+  String updateDefaultExpiryDate() {
     setState(() {
       _defaultExpiryDate = _selectedDateTime.add(const Duration(days: 3));
     });
-      return _defaultExpiryDate ?? DateTime.now();
+      return DateTimeUtils.formatDateWithZone(_defaultExpiryDate ?? DateTime.now());
   }
 
   bool isLoading = false;
@@ -279,7 +280,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     // if (!_validateInputs()) return;
 
     final payload = CreateLiveOfferPayload(
-      createdAt: _selectedDateTime,
+      createdAt: DateTimeUtils.formatDateWithZone(_selectedDateTime),
       expiryAt: updateDefaultExpiryDate(),
       fromAddress: _fromController.text,
       seats: 3,

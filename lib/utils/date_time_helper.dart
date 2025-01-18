@@ -2,8 +2,8 @@ import 'package:intl/intl.dart';
 
 class DateTimeHelper {
   static String timeAgoSince(String iso8601String, {bool numericDates = true}) {
-    DateTime date = DateTime.parse(iso8601String).toLocal();
-    final now = DateTime.now().toLocal();
+    DateTime date = DateTime.parse(iso8601String);
+    final now = DateTime.now();
     final difference = now.difference(date);
 
     final seconds = difference.inSeconds;

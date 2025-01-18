@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/utils/routes.dart';
@@ -16,7 +18,8 @@ class SellFormTwo extends StatefulWidget {
 }
 
 class _SellFormTwoState extends State<SellFormTwo> {
-  Position? currentPosition;
+  LatLng? selectedCoordinates;
+  LocationController _locationController = Get.find<LocationController>();
   bool isLessThanMonth = false; // To track the state of the checkbox
   TextEditingController yearsController = TextEditingController();
   TextEditingController monthsController = TextEditingController();
@@ -25,27 +28,28 @@ class _SellFormTwoState extends State<SellFormTwo> {
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController emailIdController = TextEditingController();
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return Future.error('Location services are disabled.');
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return Future.error('Location permissions are denied');
-        }
-      }
-
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  void updateCenter() {
+    if (_locationController.state.value.location != null) {
+      debugPrint(
+          "UPDATING CENTER : ${_locationController.state.value.location}");
       setState(() {
-        currentPosition = position;
+        selectedCoordinates = LatLng(
+          _locationController.state.value.location!.latitude,
+          _locationController.state.value.location!.longitude,
+        );
       });
-    } catch (e) {
-      debugPrint('Error getting location: $e');
+    } else {
+      debugPrint("Location is null");
+    }
+  }
+
+  Future<void> fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      debugPrint("FETCHING LOCATION");
+      await _locationController.getLocation();
+      updateCenter();
+    } else {
+      updateCenter();
     }
   }
 
@@ -68,8 +72,8 @@ class _SellFormTwoState extends State<SellFormTwo> {
         );
 
         // Attempt to create the product
-        final bool success =
-            await formController.instantiateCreateProduct(context, currentLocation, radius);
+        final bool success = await formController.instantiateCreateProduct(
+            context, currentLocation, radius);
 
         // Hide loading indicator
         Navigator.pop(context);
@@ -231,41 +235,48 @@ class _SellFormTwoState extends State<SellFormTwo> {
                         textEditingController: emailIdController,
                         onEditingComplete: () {}),
                     const SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: (){
-                        _getCurrentLocation();
-                        handleProductCreation( Loc(
-                          lat: currentPosition?.latitude ?? 00.00 ,
-                          lng: currentPosition?.longitude ?? 00.00 ,
-                        ) ,500);
-                        }, 
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xffFF8D41),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Sell now',
-                              style: TextStyle(
-                                  fontSize: 20,
+                    GetBuilder<LocationController>(
+                      builder: (locationInstance) {
+                        return Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              fetchLocation();
+                              Future.delayed(const Duration(seconds: 1));
+                              handleProductCreation(
+                                  Loc(
+                                    lat: locationInstance.state.value.location?.latitude ?? 00.00,
+                                    lng: locationInstance.state.value.location?.longitude ?? 00.00,
+                                  ),
+                                  500);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xffFF8D41),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Sell now',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.white,
+                                      fontFamily: "MontserratSB"),
+                                ),
+                                SizedBox(width: 10),
+                                Icon(
+                                  Icons.arrow_forward_ios,
                                   color: Colors.white,
-                                  fontFamily: "MontserratSB"),
+                                  size: 20,
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 10),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

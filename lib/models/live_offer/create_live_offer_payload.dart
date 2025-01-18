@@ -11,8 +11,8 @@ String createLiveOfferPayloadToJson(CreateLiveOfferPayload data) => json.encode(
 class CreateLiveOfferPayload {
     final String fromAddress;
     final String toAddress;
-    final DateTime createdAt;
-    final DateTime expiryAt;
+    final String createdAt;
+    final String expiryAt;
     final int seats;
 
     CreateLiveOfferPayload({
@@ -26,16 +26,16 @@ class CreateLiveOfferPayload {
     factory CreateLiveOfferPayload.fromJson(Map<String, dynamic> json) => CreateLiveOfferPayload(
         fromAddress: json["fromAddress"] as String,
         toAddress: json["toAddress"] as String,
-        createdAt: DateTime.parse(json["createdAt"]),
-        expiryAt: DateTime.parse(json["expiryAt"]),
+        createdAt: json["createdAt"],
+        expiryAt: json["expiryAt"],
         seats: json["seats"] as int,
     );
 
     Map<String, dynamic> toJson() => {
         "fromAddress": fromAddress,
         "toAddress": toAddress,
-        "createdAt": createdAt.toUtc().toIso8601String(),
-        "expiryAt": expiryAt.toUtc().toIso8601String(),
+        "createdAt": createdAt,
+        "expiryAt": expiryAt,
         "seats": seats,
     };
 }
