@@ -27,7 +27,7 @@ class TextFieldPin extends StatelessWidget {
     this.autoFocus = true,
     this.alignment = MainAxisAlignment.center,
     textController,
-  })  : textController = textController ?? new TextEditingController(),
+  })  : textController = textController ?? TextEditingController(),
         selectedBoxSize = selectedBoxSize ?? defaultBoxSize,
         defaultDecoration = defaultDecoration ??
             BoxDecoration(
@@ -81,6 +81,9 @@ class TextFieldPin extends StatelessWidget {
         keyboardType: TextInputType.phone,
         controller: textController,
         onChanged: onChange,
+        onTapOutside: (event) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
       ),
     );
   }

@@ -232,7 +232,9 @@ class AuthController extends GetxController {
     auth.value = null;
     update();
     _userController.clear();
-    Get.offAll(() => const LoginScreen());
+    Get.offAll(
+      () => const LoginScreen(),
+    );
   }
 
   @override

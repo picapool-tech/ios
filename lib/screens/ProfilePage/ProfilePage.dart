@@ -381,8 +381,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildTextField(
-      IconData icon, String label, TextEditingController controller,
-      {bool disabled = false}) {
+    IconData icon,
+    String label,
+    TextEditingController controller, {
+    bool disabled = false,
+    bool isNumberOnly = false,
+  }) {
     return TextField(
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.grey),
@@ -391,6 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       controller: controller,
       enabled: !disabled,
+      keyboardType: (isNumberOnly) ? TextInputType.number : TextInputType.text,
       onTapOutside: (event) {
         FocusManager.instance.primaryFocus?.unfocus();
       },
@@ -520,8 +525,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildTextField(
                               Icons.person, "Name", _nameController),
                           const Divider(thickness: 1.5),
-                          _buildTextField(
-                              Icons.info, "Username", _usernameController),
+                          _buildTextField(Icons.alternate_email, "Username",
+                              _usernameController),
                           const Divider(thickness: 1.5),
                           Row(
                             children: [
@@ -533,6 +538,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   disabled:
                                       _authController.auth.value?.mobile !=
                                           null,
+                                  isNumberOnly: true,
                                 ),
                               ),
                               if (_authController.auth.value?.mobile == null)
@@ -617,6 +623,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       );
                                     },
                                   ),
+                                )
+                              else
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
                                 ),
                             ],
                           ),
