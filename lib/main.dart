@@ -68,6 +68,32 @@ Future<void> handleNotification(RemoteMessage message) async {
   debugPrint('Notification opened the app: ${message.notification?.title}');
   debugPrint('Notification opened the app: ${message.data.toString()}');
   debugPrint('Notification opened the app: ${message.notification?.body}');
+
+  var action = message.data['action'];
+  if (action != null) {
+    if (action == 'openAlertsPage') {
+      var offerId = message.data['offerId'];
+      if (offerId != null) {
+        Get.to(() => const NewBottomBar(
+              currentIndex: 2,
+            ));
+      }
+    } else if (action == "openChatPage" ||
+        message.notification!.title!.contains("New Message")) {
+      Get.to(() => const NewBottomBar(
+            currentIndex: 1,
+          ));
+    }
+  } else {
+    if (message.notification!.title!.contains("New Message")) {
+      Get.to(
+        () => const NewBottomBar(
+          currentIndex: 1,
+        ),
+      );
+      // }
+    }
+  }
   // Handle navigation or other actions.
 }
 
@@ -82,15 +108,6 @@ class _MyAppState extends State<MyApp> {
   final StorageController storageController = Get.find<StorageController>();
 
   @override
-  void initState() {
-    super.initState();
-    ConnectionStatusListener.getInstance().initialize();
-    if (Platform.isAndroid) {
-      checkForUpdate();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       getPages: GetRoutes.routes,
@@ -101,30 +118,12 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: GetBuilder(
-          init: storageController,
-          builder: (controller) {
-            return _handleAuthState();
-          }),
+        init: storageController,
+        builder: (controller) {
+          return _handleAuthState();
+        },
+      ),
     );
-  }
-
-  Widget _handleAuthState() {
-    debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
-
-    if (storageController.auth.value != null &&
-        storageController.auth.value!.accessToken == null) {
-      return const LoginScreen();
-    } else if (storageController.user.value != null &&
-        storageController.user.value!.name == null) {
-      return const PersonalDetails();
-    } else if (storageController.auth.value != null &&
-        storageController.auth.value!.accessToken != null &&
-        storageController.user.value != null &&
-        storageController.user.value!.name != null) {
-      return const NewBottomBar();
-    } else {
-      return const LoginScreen();
-    }
   }
 
   void checkForUpdate() async {
@@ -148,6 +147,34 @@ class _MyAppState extends State<MyApp> {
       }
     } catch (e) {
       debugPrint('Error checking for updates: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    ConnectionStatusListener.getInstance().initialize();
+    if (Platform.isAndroid) {
+      checkForUpdate();
+    }
+  }
+
+  Widget _handleAuthState() {
+    debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
+
+    if (storageController.auth.value != null &&
+        storageController.auth.value!.accessToken == null) {
+      return const LoginScreen();
+    } else if (storageController.user.value != null &&
+        storageController.user.value!.name == null) {
+      return const PersonalDetails();
+    } else if (storageController.auth.value != null &&
+        storageController.auth.value!.accessToken != null &&
+        storageController.user.value != null &&
+        storageController.user.value!.name != null) {
+      return const NewBottomBar();
+    } else {
+      return const LoginScreen();
     }
   }
 }

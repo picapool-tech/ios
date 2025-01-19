@@ -234,6 +234,39 @@ class _NewBottomBarState extends State<NewBottomBar> {
         }
       }
     });
+
+    FirebaseMessaging.instance.getInitialMessage().then(
+      (message) {
+        print('---- getInitialMessage called ----');
+        if (message != null) {
+          var action = message.data['action'];
+          if (action != null) {
+            if (action == 'openAlertsPage') {
+              var offerId = message.data['offerId'];
+              if (offerId != null) {
+                setState(() {
+                  _selectedIndex = 2;
+                });
+              }
+            } else if (action == "openChatPage" ||
+                message.notification!.title!.contains("New Message")) {
+              setState(() {
+                _selectedIndex = 1;
+              });
+            }
+          } else {
+            if (message.notification!.title!.contains("New Message")) {
+              setState(() {
+                _selectedIndex = 1;
+              });
+              // }
+            }
+          }
+        } else {
+          print('---- getInitialMessage is not opened ----');
+        }
+      },
+    );
   }
 
   Widget _buildNavItem(int index) {
