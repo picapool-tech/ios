@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
@@ -49,12 +48,8 @@ class VicinityController extends GetxController {
       distance: offer.distance,
     );
 
-    var accessToken = await _authController.getAccessToken();
-    debugPrint("FROM REQUEST VICINITY: $accessToken");
-
     final result = await _vicinityApi.createVicinity(
       offer: newOffer,
-      accessToken: accessToken!,
     );
 
     isLoading.value = false;

@@ -102,8 +102,9 @@ class UserApi {
     }
   }
 
-  FutureEither<User> getUser(
-      {required int userId, required String accessToken}) async {
+  FutureEither<User> getUser({
+    required int userId,
+  }) async {
     try {
       final response = await _api.makeRequest(
           enpoint: APIEndpoints.getUser(userId),
@@ -136,20 +137,18 @@ class UserApi {
     }
   }
 
-  FutureEither<bool> updateUser(
-      Map<String, dynamic> updateValues, String accessToken) async {
+  FutureEither<bool> updateUser(Map<String, dynamic> updateValues) async {
     try {
       debugPrint("Updated Values: $updateValues");
-
-      debugPrint("Access token : $accessToken");
 
       debugPrint(updateValues.toString());
 
       final response = await _api.makeRequest(
-          enpoint: APIEndpoints.updateUser,
-          method: RequestMethod.patch,
-          additionalHeaders: {'Content-Type': 'application/json'},
-          body: updateValues);
+        enpoint: APIEndpoints.updateUser,
+        method: RequestMethod.patch,
+        additionalHeaders: {'Content-Type': 'application/json'},
+        body: updateValues,
+      );
 
       return response.fold((error) => left(error), (responseModel) {
         if (responseModel.success) {

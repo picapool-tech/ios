@@ -57,7 +57,6 @@ class _RequestVicinityState extends State<RequestVicinity> {
   bool _is3DView = true;
   GoogleMapController? _controller;
   LatLng? _currentPosition;
-  Marker? _pinMarker;
   Circle? _currentLocationCircle;
   bool _isMapInitialized = false; // New flag to check if the map is initialized
   List<NearUserModel> _nearestUsers = [];

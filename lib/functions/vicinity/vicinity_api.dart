@@ -12,10 +12,8 @@ class VicinityApi {
 
   FutureEither<Offer> createVicinity({
     required VicinityOffer offer,
-    required String accessToken,
+    
   }) async {
-    debugPrint(
-        'Creating offer with access token $accessToken with offer : ${offer.toJson()}');
 
     try {
       final response = await _api.makeRequest(

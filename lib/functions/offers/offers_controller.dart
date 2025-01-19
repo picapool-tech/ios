@@ -28,45 +28,12 @@ class OffersController extends GetxController {
   final UserController _userController = Get.find<UserController>();
   final OffersApi _offersApi = OffersApi();
 
-  Future<void> getOffersForUser() async {
-    isLoading.value = true;
-    errorMessage.value = '';
-    update();
-    var accessToken = await _authController.getAccessToken();
-    if (accessToken == null) {
-      debugPrint("Access Token Not Updated");
-      return;
-    }
-    final result = await _offersApi.getOffersForUser(
-      userId: _userController.user.value!.id,
-      accessToken: accessToken,
-    );
-
-    result.fold(
-      (failure) {
-        errorMessage.value = failure.message;
-        Get.snackbar('Error', failure.message,
-            snackPosition: SnackPosition.TOP);
-      },
-      (offersList) {
-        offers.value = offersList.reversed.toList();
-      },
-    );
-
-    isLoading.value = false;
-    update();
-  }
-
   Future<void> fetchAllOffers() async {
     isLoading.value = true;
     errorMessage.value = '';
     update();
-    var accessToken = await _authController.getAccessToken();
-    if (accessToken == null) {
-      debugPrint("Not updated");
-      return;
-    }
-    final result = await _offersApi.getAllOffers(accessToken: accessToken);
+
+    final result = await _offersApi.getAllOffers();
 
     result.fold(
       (failure) {
@@ -84,16 +51,31 @@ class OffersController extends GetxController {
     update();
   }
 
+  // pooling offers request
+  Future<void> getAllUserCreatedOffer() async {
+    isLoading.value = true;
+    update();
+
+    var result = await _offersApi.getAllUserCreatedOffer(
+      userId: _userController.user.value!.id,
+    );
+
+    result.fold((error) {
+      Get.snackbar("Error", error.message);
+    }, (offers) {
+      poolingOffers.value = offers.reversed.toList();
+    });
+
+    isLoading.value = false;
+    update();
+  }
+
   Future<Chat?> getChatFromOfferId({
     required int offerId,
   }) async {
     isLoading.value = true;
     update();
-
-    var accessToken = await _authController.getAccessToken();
-
     var result = await _offersApi.getChatFromOfferId(
-      accessToken: accessToken!,
       offerId: offerId,
     );
 
@@ -110,61 +92,6 @@ class OffersController extends GetxController {
     }, (chat) {
       return chat;
     });
-  }
-
-  // pooling offers request
-  Future<void> getAllUserCreatedOffer() async {
-    isLoading.value = true;
-    update();
-
-    var accessToken = await _authController.getAccessToken();
-    var result = await _offersApi.getAllUserCreatedOffer(
-      userId: _userController.user.value!.id,
-      accessToken: accessToken!,
-    );
-
-    result.fold((error) {
-      Get.snackbar("Error", error.message);
-    }, (offers) {
-      poolingOffers.value = offers.reversed.toList();
-    });
-
-    isLoading.value = false;
-    update();
-  }
-
-  Future<void> getOffersInVicinity({
-    required VicinityLocation location,
-  }) async {
-    isLoading.value = true;
-    update();
-    var accessToken = await _authController.getAccessToken();
-
-    if (accessToken == null) {
-      debugPrint("Access Token Not Updated");
-      isLoading.value = false;
-      update();
-      return;
-    }
-
-    var result = await _offersApi.getOffersInVicinity(
-      accessToken: accessToken,
-      location: location,
-    );
-
-    result.fold(
-      (error) {
-        Get.snackbar(
-          "Error",
-          error.message,
-        );
-      },
-      (nearestOffersResponse) {
-        nearestOffers.value = nearestOffersResponse.reversed.toList();
-      },
-    );
-    isLoading.value = false;
-    update();
   }
 
   Future<List<Offer>> getOffersByTagId(int tagId) async {
@@ -185,5 +112,62 @@ class OffersController extends GetxController {
         return offers;
       },
     );
+  }
+
+  Future<void> getOffersForUser() async {
+    isLoading.value = true;
+    errorMessage.value = '';
+    update();
+
+    final result = await _offersApi.getOffersForUser(
+      userId: _userController.user.value!.id,
+    );
+
+    result.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        Get.snackbar('Error', failure.message,
+            snackPosition: SnackPosition.TOP);
+      },
+      (offersList) {
+        offers.value = offersList.reversed.toList();
+      },
+    );
+
+    isLoading.value = false;
+    update();
+  }
+
+  Future<void> getOffersInVicinity({
+    required VicinityLocation location,
+  }) async {
+    isLoading.value = true;
+    update();
+    var accessToken = await _authController.getAccessToken();
+
+    if (accessToken == null) {
+      debugPrint("Access Token Not Updated");
+      isLoading.value = false;
+      update();
+      return;
+    }
+
+    var result = await _offersApi.getOffersInVicinity(
+      location: location,
+    );
+
+    result.fold(
+      (error) {
+        Get.snackbar(
+          "Error",
+          error.message,
+        );
+      },
+      (nearestOffersResponse) {
+        nearestOffers.value = nearestOffersResponse.reversed.toList();
+      },
+    );
+    isLoading.value = false;
+    update();
   }
 }

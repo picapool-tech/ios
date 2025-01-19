@@ -9,9 +9,7 @@ import 'package:picapool/models/vicinity_offer_model.dart';
 class OffersApi {
   final PicapoolApi _api = PicapoolApi();
 
-  FutureEither<List<Offer>> getAllOffers({
-    required String accessToken,
-  }) async {
+  FutureEither<List<Offer>> getAllOffers() async {
     try {
       final response = await _api.makeRequest(
         enpoint: APIEndpoints.getAllOffers,
@@ -43,7 +41,6 @@ class OffersApi {
 
   FutureEither<List<Offer>> getAllUserCreatedOffer({
     required int userId,
-    required String accessToken,
   }) async {
     try {
       var response = await _api.makeRequest(
@@ -95,7 +92,6 @@ class OffersApi {
   }
 
   FutureEither<Chat> getChatFromOfferId({
-    required String accessToken,
     required int offerId,
   }) async {
     try {
@@ -160,7 +156,6 @@ class OffersApi {
 
   FutureEither<List<Offer>> getOffersForUser({
     required int userId,
-    required String accessToken,
   }) async {
     try {
       final response = await _api.makeRequest(
@@ -265,7 +260,6 @@ class OffersApi {
   // }
 
   FutureEither<List<Offer>> getOffersInVicinity({
-    required String accessToken,
     required VicinityLocation location,
   }) async {
     try {
