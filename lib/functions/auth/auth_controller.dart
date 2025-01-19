@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:jwt_decode/jwt_decode.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/notification/notification_service.dart';
@@ -43,51 +42,6 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<String?> getAccessToken() async {
-    if (auth.value == null) {
-      return null;
-    }
-
-    var accessToken = auth.value!.accessToken!;
-    debugPrint("GETITNG ACCESS TOKEN : $accessToken");
-    debugPrint("AUTH VALUE : ${auth.value?.toJson()}");
-    if (Jwt.isExpired(accessToken)) {
-      await _storageController.loadAuth();
-      var tempAuth = _storageController.auth.value;
-      if (tempAuth == null) {
-        return null;
-      }
-
-      if (!Jwt.isExpired(tempAuth.accessToken!)) {
-        auth.value = tempAuth;
-        update();
-        return tempAuth.accessToken;
-      }
-
-      debugPrint("JWT is expired");
-      var newAccessToken = await _authApi.updateAccessToken(
-        accessToken: accessToken,
-        refreshToken: auth.value!.refreshToken!,
-        userId: _userController.user.value!.id,
-      );
-
-      return newAccessToken.fold(
-        (error) {
-          logout();
-          return null;
-        },
-        (newAccessToken) async {
-          var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
-          await loadAndSaveAuth(newAuth);
-          accessToken = newAccessToken;
-          await _storageController.saveAccessToken(accessToken);
-          return newAccessToken;
-        },
-      );
-    }
-    return accessToken;
-  }
-
   Future<void> handleFCMToken() async {
     debugPrint("handle fcm token");
     var fcm = await NotificationService().retrieveToken();
@@ -111,10 +65,13 @@ class AuthController extends GetxController {
   }
 
 // TODO: need to rethink of this approach to limit the api call for getUser
-  Future<bool> loadAndSaveAuth(Auth authData,
-      {int? userId, String? name}) async {
+  Future<bool> loadAndSaveAuth(
+    Auth authData, {
+    int? userId,
+    String? name,
+  }) async {
     try {
-      var accessToken = await getAccessToken();
+      var accessToken = await _storageController.getAccessToken();
       var userData = await _userController.getUser(
         userId ?? _userController.user.value!.id,
         accessToken: accessToken ?? authData.accessToken!,

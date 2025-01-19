@@ -26,6 +26,9 @@ class Offer {
   final List<Tag>? tags;
   final List<Product>? products;
   final int? radius;
+  final bool top;
+  final int? units;
+  final int? maxUnits;
 
   Offer({
     required this.id,
@@ -47,6 +50,9 @@ class Offer {
     this.tags,
     this.products,
     this.radius,
+    this.top = false,
+    this.units,
+    this.maxUnits,
   });
 
   factory Offer.fromJson(Map<String, dynamic> json) {
@@ -79,6 +85,9 @@ class Offer {
           //     ? (json['products'] as List).map((p) => Product.fromJson(p)).toList()
           null,
       radius: json['radius'],
+      top: json['top'] ?? false,
+      units: json['units'] as int?,
+      maxUnits: json['maxUnits'] as int?,
     );
   }
 
@@ -103,6 +112,9 @@ class Offer {
       'tags': tags?.map((t) => t.toJson()).toList(),
       'products': products?.map((p) => p.toJson()).toList(),
       'radius': radius,
+      'top': top,
+      'units': units,
+      'maxUnits': maxUnits,
     };
   }
 }

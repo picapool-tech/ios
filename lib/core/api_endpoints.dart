@@ -16,7 +16,7 @@ class APIEndpoints {
   static const String updateUser = "/user/update";
   static const String createOffer = "/offer";
   static const String createChat = "/chat";
-  static const String getOffersInVicinity = "/offer/search";
+  static const String searchOffer = "/offer/search";
 
   static const String sendFeedback = "/feedback";
   static const String getAllOffers = "/offer/all";

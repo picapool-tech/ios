@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:fpdart/fpdart.dart';
-import 'package:picapool/core/core.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:picapool/core/core.dart';
 import 'package:picapool/functions/network/connection_status_listener.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
+
+String getFileName(String filePath) {
+  return path.basename(filePath);
+}
 
 class VicinityApi {
   final PicapoolApi _api = PicapoolApi();
 
   FutureEither<Offer> createVicinity({
     required VicinityOffer offer,
-    
   }) async {
-
     try {
       final response = await _api.makeRequest(
-          enpoint: APIEndpoints.createOffer,
-          method: RequestMethod.post,
-          body: offer.toJson(),
-          additionalHeaders: {
-            'Content-Type': 'application/json',
-          });
+        enpoint: APIEndpoints.createOffer,
+        method: RequestMethod.post,
+        body: offer.toJson(),
+        additionalHeaders: {
+          'Content-Type': 'application/json',
+        },
+      );
 
       // final response = await http.post(
       //   Uri.parse(endpoint),
@@ -54,14 +57,6 @@ class VicinityApi {
         stackTrace: StackTrace.fromString(err.toString()),
       ));
     }
-  }
-
-  FutureEither<Offer> getVicinity(int offerId) async {
-    throw UnimplementedError();
-  }
-
-  FutureEither<List<Offer>> searchVicinity() async {
-    throw UnimplementedError();
   }
 
   FutureEither<bool> deleteImage({
@@ -102,8 +97,12 @@ class VicinityApi {
       );
     }
   }
-}
 
-String getFileName(String filePath) {
-  return path.basename(filePath);
+  FutureEither<Offer> getVicinity(int offerId) async {
+    throw UnimplementedError();
+  }
+
+  FutureEither<List<Offer>> searchVicinity() async {
+    throw UnimplementedError();
+  }
 }

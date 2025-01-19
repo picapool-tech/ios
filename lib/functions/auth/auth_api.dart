@@ -4,8 +4,8 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/login_model.dart';
@@ -14,28 +14,81 @@ import 'package:picapool/models/user_model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthApi {
-  FutureEither<LoginModel> signInWithGoogle() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn(
-      scopes: ['profile', 'email'],
-      forceCodeForRefreshToken: true,
-    );
+  FutureEither<User> createUser(User user, String accessToken) async {
     try {
-      final GoogleSignInAccount? account = await googleSignIn.signIn();
-
-      if (account == null) {
-        throw Exception('No account found');
+      const String url = "https://api.picapool.com/v2/user";
+      var body = {
+        "name": user.name,
+        "bio": user.bio,
+        "pic": user.pic,
+        "tagList": [],
+      };
+      http.Response response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+      int statusCode = response.statusCode;
+      if (statusCode >= 200 && statusCode < 300) {
+        debugPrint('User Created: ${response.body}');
+        var user = jsonDecode(response.body);
+        return right(user);
+      } else if (JwtDecoder.isExpired(accessToken)) {
+        return left(
+          Failure(
+            message: "Access token expired",
+            stackTrace: StackTrace.current,
+          ),
+        );
+      } else {
+        return left(
+          Failure(
+            message: "Not able to create the user : status code $statusCode",
+            stackTrace: StackTrace.current,
+          ),
+        );
       }
+    } catch (e) {
+      debugPrint('Create User Error: $e');
+      return left(
+        Failure(
+          message: "Failed to create user. Please try again.",
+          stackTrace: StackTrace.fromString(
+            e.toString(),
+          ),
+        ),
+      );
+    }
+  }
 
-      final GoogleSignInAuthentication googleAuth =
-          await account.authentication;
-      log('Google Token: ${googleAuth.idToken}');
+  FutureEither<LoginModel> loginWithOtp(String mobile, String otp) async {
+    const String url = 'https://api.picapool.com/v2/auth/login/User';
 
-      final http.Response response =
-          await _sendGoogleTokenToServer(googleAuth.idToken!);
+    var body = {
+      // 'authInfo': {
+      'msgOTP': {
+        'mobile': mobile,
+        'otp': otp,
+      }
+      // }
+    };
 
-      debugPrint('Google Sign-In Response : $response');
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    log('OTP Sign-In Response: ${response.body}');
+
+    final int statusCode = response.statusCode;
+
+    debugPrint('OTP Sign-In Response Status Code: $statusCode');
+
+    if (statusCode >= 200 && statusCode < 300) {
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
       if (responseModel.success) {
         return right(LoginModel.fromJson(responseModel.data));
       } else {
@@ -46,12 +99,11 @@ class AuthApi {
           ),
         );
       }
-    } catch (e) {
-      debugPrint('Google Sign-In Error: $e');
+    } else {
       return left(
         Failure(
-          message: "Failed to sign in with Google. Please try again.",
-          stackTrace: StackTrace.fromString(e.toString()),
+          message: "Not able to sign in with otp : Status Code $statusCode",
+          stackTrace: StackTrace.current,
         ),
       );
     }
@@ -122,68 +174,28 @@ class AuthApi {
     }
   }
 
-  Future<http.Response> _sendGoogleTokenToServer(String googleToken) async {
-    const String url = 'https://api.picapool.com/v2/auth/login/User';
-
-    var body = {
-      "googleToken": googleToken,
-    };
-
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
+  FutureEither<LoginModel> signInWithGoogle() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['profile', 'email'],
+      forceCodeForRefreshToken: true,
     );
+    try {
+      final GoogleSignInAccount? account = await googleSignIn.signIn();
 
-    log('Google Sign-In Response: ${response.body}');
-
-    return response;
-  }
-
-  Future<http.Response> _sendAppleTokenToServer(String appleToken) async {
-    const String url = 'https://api.picapool.com/v2/auth/login/User';
-
-    var body = {
-      "appleToken": appleToken,
-    };
-
-    http.Response response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
-
-    log('Apple Sign-In Response: ${response.body}');
-
-    return response;
-  }
-
-  FutureEither<LoginModel> loginWithOtp(String mobile, String otp) async {
-    const String url = 'https://api.picapool.com/v2/auth/login/User';
-
-    var body = {
-      // 'authInfo': {
-      'msgOTP': {
-        'mobile': mobile,
-        'otp': otp,
+      if (account == null) {
+        throw Exception('No account found');
       }
-      // }
-    };
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+      final GoogleSignInAuthentication googleAuth =
+          await account.authentication;
+      log('Google Token: ${googleAuth.idToken}');
 
-    log('OTP Sign-In Response: ${response.body}');
+      final http.Response response =
+          await _sendGoogleTokenToServer(googleAuth.idToken!);
 
-    final int statusCode = response.statusCode;
-
-    debugPrint('OTP Sign-In Response Status Code: $statusCode');
-
-    if (statusCode >= 200 && statusCode < 300) {
+      debugPrint('Google Sign-In Response : $response');
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+
       if (responseModel.success) {
         return right(LoginModel.fromJson(responseModel.data));
       } else {
@@ -194,60 +206,12 @@ class AuthApi {
           ),
         );
       }
-    } else {
-      return left(
-        Failure(
-          message: "Not able to sign in with otp : Status Code $statusCode",
-          stackTrace: StackTrace.current,
-        ),
-      );
-    }
-  }
-
-  FutureEither<User> createUser(User user, String accessToken) async {
-    try {
-      const String url = "https://api.picapool.com/v2/user";
-      var body = {
-        "name": user.name,
-        "bio": user.bio,
-        "pic": user.pic,
-        "tagList": [],
-      };
-      http.Response response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
-      int statusCode = response.statusCode;
-      if (statusCode >= 200 && statusCode < 300) {
-        debugPrint('User Created: ${response.body}');
-        var user = jsonDecode(response.body);
-        return right(user);
-      } else if (JwtDecoder.isExpired(accessToken)) {
-        return left(
-          Failure(
-            message: "Access token expired",
-            stackTrace: StackTrace.current,
-          ),
-        );
-      } else {
-        return left(
-          Failure(
-            message: "Not able to create the user : status code $statusCode",
-            stackTrace: StackTrace.current,
-          ),
-        );
-      }
     } catch (e) {
-      debugPrint('Create User Error: $e');
+      debugPrint('Google Sign-In Error: $e');
       return left(
         Failure(
-          message: "Failed to create user. Please try again.",
-          stackTrace: StackTrace.fromString(
-            e.toString(),
-          ),
+          message: "Failed to sign in with Google. Please try again.",
+          stackTrace: StackTrace.fromString(e.toString()),
         ),
       );
     }
@@ -363,5 +327,41 @@ class AuthApi {
         ),
       );
     }
+  }
+
+  Future<http.Response> _sendAppleTokenToServer(String appleToken) async {
+    const String url = 'https://api.picapool.com/v2/auth/login/User';
+
+    var body = {
+      "appleToken": appleToken,
+    };
+
+    http.Response response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    log('Apple Sign-In Response: ${response.body}');
+
+    return response;
+  }
+
+  Future<http.Response> _sendGoogleTokenToServer(String googleToken) async {
+    const String url = 'https://api.picapool.com/v2/auth/login/User';
+
+    var body = {
+      "googleToken": googleToken,
+    };
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    log('Google Sign-In Response: ${response.body}');
+
+    return response;
   }
 }

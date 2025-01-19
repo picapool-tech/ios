@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_api.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/message_model.dart';
@@ -12,6 +13,7 @@ class ChatController extends GetxController {
   final ChatApi _chatApi = ChatApi();
   final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
+  final StorageController _storageController = Get.find<StorageController>();
   final SocketService socketService = SocketService();
 
   var isLoading = false.obs;
@@ -33,13 +35,16 @@ class ChatController extends GetxController {
       socketService.socket!.disconnect();
     }
 
-    var accessToken = await _authController.getAccessToken();
-    debugPrint("GETTING ACCESS TOKEN: $accessToken");
+    var accessToken = await _storageController.getAccessToken();
+    if (accessToken == null) {
+      debugPrint('Access token is null');
+      return;
+    }
     socketService.createSocketConnection(
       userId: _userController.user.value!.id,
       roomId: chatId,
       userName: _userController.user.value!.name ?? "No Name",
-      accessToken: accessToken!,
+      accessToken: accessToken,
     );
     var socket = socketService.socket;
     if (socket == null) {
@@ -54,9 +59,7 @@ class ChatController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = await _authController.getAccessToken();
     var result = await _chatApi.createChatWithOfferId(
-      accessToken: accessToken!,
       offerId: offerId,
       userId: _userController.user.value!.id,
     );
@@ -88,9 +91,7 @@ class ChatController extends GetxController {
     errorMessage.value = '';
     update();
 
-    var accessToken = _authController.auth.value!.accessToken;
-
-    final result = await _chatApi.getChats(accessToken: accessToken!);
+    final result = await _chatApi.getChats();
 
     result.fold(
       (failure) {
@@ -115,10 +116,7 @@ class ChatController extends GetxController {
     errorMessage.value = '';
     update();
 
-    var accessToken = _authController.auth.value!.accessToken;
-
     final result = await _chatApi.getAllMessages(
-      accessToken: accessToken!,
       chatId: chatId,
     );
 
@@ -160,10 +158,7 @@ class ChatController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = _authController.auth.value!.accessToken;
-
     final result = await _chatApi.getAllUsersInChat(
-      accessToken: accessToken!,
       chatId: chatId,
     );
 
@@ -190,7 +185,6 @@ class ChatController extends GetxController {
     update();
 
     var result = await _chatApi.getChatFromLiveOfferId(
-      accessToken: _authController.auth.value!.accessToken!,
       liveOfferId: liveOfferId,
     );
 

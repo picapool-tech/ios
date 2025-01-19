@@ -214,6 +214,13 @@ class _DownSheetState extends State<DownSheet> {
               const SizedBox(
                 height: 24,
               ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: CustomDivider(text: " Amazing offers near you "),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
               const CarouselWidget(),
             ],
             const SizedBox(

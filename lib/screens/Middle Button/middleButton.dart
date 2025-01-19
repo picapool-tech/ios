@@ -7,6 +7,122 @@ import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
+// OfferContainer widget
+class OfferContainer extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String timeAgo;
+  final String countdown;
+  final IconData icon;
+
+  const OfferContainer({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.timeAgo,
+    required this.countdown,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Container(
+        height: 92,
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title.replaceAll("- FROM BRANDS", ""),
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontFamily: "MontserratM",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        timeAgo,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontFamily: "MontserratM",
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(icon, color: Colors.orange),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                subtitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontFamily: "MontserratM",
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10), // Added spacing
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.access_time, color: Colors.orange),
+                            const SizedBox(width: 5),
+                            Text(
+                              countdown,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "MontserratM",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const CircleAvatar(
+              radius: 15,
+              backgroundColor: Colors.orange,
+              child:
+                  Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class PoolOffersScreen extends StatefulWidget {
   const PoolOffersScreen({super.key});
 
@@ -20,81 +136,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
   final OffersController _offersController = Get.find<OffersController>();
   final LocationController _locationController = Get.find<LocationController>();
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
   final List<Marker> markers = [];
-
-  void updateCenter() {
-    if (_locationController.state.value.location != null) {
-      debugPrint(
-          "UPDATING CENTER : ${_locationController.state.value.location}");
-      setState(() {
-        _center = LatLng(
-          _locationController.state.value.location!.latitude,
-          _locationController.state.value.location!.longitude,
-        );
-      });
-    } else {
-      debugPrint("Location is null");
-    }
-  }
-
-  Future<void> fetchLocation() async {
-    if (_locationController.state.value.location == null) {
-      debugPrint("FETCHING LOCATION");
-      await _locationController.getLocation();
-      updateCenter();
-    } else {
-      updateCenter();
-    }
-  }
-
-  void createMarkersWithOffer() {
-    // Create markers with offers
-    for (var offer in _offersController.nearestOffers) {
-      markers.add(
-        Marker(
-          markerId: MarkerId(offer.id.toString()),
-          position: LatLng(
-            offer.location!.lat,
-            offer.location!.long,
-          ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueOrange,
-          ),
-          infoWindow: InfoWindow(
-            title: offer.name,
-            snippet: offer.desc,
-          ),
-        ),
-      );
-    }
-
-    setState(() {
-      markers;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchLocation();
-    WidgetsBinding.instance.addPostFrameCallback((duration) async {
-      if (_locationController.state.value.location != null) {
-        debugPrint("MAP IS UPDATED: WITH LOCATION : $_center");
-        await _offersController.getOffersInVicinity(
-          location: VicinityLocation(
-            lat: _center.latitude,
-            long: _center.longitude,
-          ),
-        );
-
-        createMarkersWithOffer();
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +229,6 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
               left: 0,
               right: 0,
               child: Container(
-                height: 60,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -196,7 +237,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                   ),
                 ),
                 padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -370,120 +411,78 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
           }),
     );
   }
-}
 
-// OfferContainer widget
-class OfferContainer extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String timeAgo;
-  final String countdown;
-  final IconData icon;
+  void createMarkersWithOffer() {
+    // Create markers with offers
+    for (var offer in _offersController.nearestOffers) {
+      markers.add(
+        Marker(
+          markerId: MarkerId(offer.id.toString()),
+          position: LatLng(
+            offer.location!.lat,
+            offer.location!.long,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueOrange,
+          ),
+          infoWindow: InfoWindow(
+            title: offer.name,
+            snippet: offer.desc,
+          ),
+        ),
+      );
+    }
 
-  const OfferContainer({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.timeAgo,
-    required this.countdown,
-    required this.icon,
-  });
+    setState(() {
+      markers;
+    });
+  }
+
+  Future<void> fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      debugPrint("FETCHING LOCATION");
+      await _locationController.getLocation();
+      updateCenter();
+    } else {
+      updateCenter();
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Container(
-        height: 92,
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title.replaceAll("- FROM BRANDS", ""),
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            fontFamily: "MontserratM",
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        timeAgo,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontFamily: "MontserratM",
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Icon(icon, color: Colors.orange),
-                            const SizedBox(width: 5),
-                            Expanded(
-                              child: Text(
-                                subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: "MontserratM",
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10), // Added spacing
-                      Expanded(
-                        child: Row(
-                          children: [
-                            const Icon(Icons.access_time, color: Colors.orange),
-                            const SizedBox(width: 5),
-                            Text(
-                              countdown,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontFamily: "MontserratM",
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const CircleAvatar(
-              radius: 15,
-              backgroundColor: Colors.orange,
-              child:
-                  Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
-            ),
-          ],
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    fetchLocation();
+    WidgetsBinding.instance.addPostFrameCallback((duration) async {
+      if (_locationController.state.value.location != null) {
+        debugPrint("MAP IS UPDATED: WITH LOCATION : $_center");
+        await _offersController.getOffersInVicinity(
+          location: VicinityLocation(
+            lat: _center.latitude,
+            long: _center.longitude,
+          ),
+        );
+
+        createMarkersWithOffer();
+      }
+    });
+  }
+
+  void updateCenter() {
+    if (_locationController.state.value.location != null) {
+      debugPrint(
+          "UPDATING CENTER : ${_locationController.state.value.location}");
+      setState(() {
+        _center = LatLng(
+          _locationController.state.value.location!.latitude,
+          _locationController.state.value.location!.longitude,
+        );
+      });
+    } else {
+      debugPrint("Location is null");
+    }
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
   }
 }

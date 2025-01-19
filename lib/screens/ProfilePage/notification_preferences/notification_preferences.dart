@@ -19,23 +19,6 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
   final StorageController _storageController = Get.find<StorageController>();
 
   @override
-  initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((duration) {
-      _tagController.getAllTags(forceRefresh: false);
-    });
-  }
-
-  @override
-  dispose() {
-    super.dispose();
-    _storageController.saveTags(_tagController.tags).then((onCompelete) {
-      _tagController.subscribeToTopics();
-      _tagController.unSubscribeToTopics();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -78,6 +61,23 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
             );
           }),
     );
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    _storageController.saveTags(_tagController.tags).then((onCompelete) {
+      _tagController.subscribeToTopics();
+      // _tagController.unSubscribeToTopics();
+    });
+  }
+
+  @override
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((duration) {
+      _tagController.getAllTags(forceRefresh: false);
+    });
   }
 
   Widget notificationListItem(

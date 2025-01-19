@@ -1,14 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/tags/tag_api.dart';
 import 'package:picapool/models/tag_model.dart';
 
 class TagController extends GetxController {
   final TagApi _tagApi = TagApi();
-  final AuthController _authController = Get.find<AuthController>();
   final StorageController _storageController = Get.find<StorageController>();
 
   var isLoading = false.obs;
@@ -21,11 +19,7 @@ class TagController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = await _authController.getAccessToken();
-    if (accessToken == null) {
-      return;
-    }
-    final result = await _tagApi.getAllTags(accessToken: accessToken);
+    final result = await _tagApi.getAllTags();
 
     result.fold(
       (failure) {
@@ -59,9 +53,7 @@ class TagController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = await _authController.getAccessToken();
-    final result =
-        await _tagApi.getTag(accessToken: accessToken!, tagId: tagId);
+    final result = await _tagApi.getTag(tagId: tagId);
 
     isLoading.value = false;
     update();

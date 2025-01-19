@@ -22,9 +22,181 @@ class ChatAndOfferModel {
 class ChatApi {
   final PicapoolApi _api = PicapoolApi();
 
-  FutureEither<List<ChatAndOfferModel>> getChats({
-    required String accessToken,
+  FutureEither<ChatAndOfferModel> createChatWithOfferId({
+    required int offerId,
+    required int userId,
   }) async {
+    try {
+      var body = {
+        "isMain": true,
+        "offerId": offerId,
+        "userIds": [
+          userId,
+        ]
+      };
+
+      debugPrint("$body");
+
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.createChat,
+        method: RequestMethod.post,
+        body: body,
+      );
+
+      // var response = await http.post(
+      //   Uri.parse("https://api.picapool.com/v2/chat"),
+      //   headers: {
+      //     "Authorization": "Bearer $accessToken",
+      //   },
+      //   body: jsonEncode(body),
+      // );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          var chat = Chat.fromJson(responseModel.data['chat']);
+          var offer = Offer.fromJson(responseModel.data['offer']);
+          return right(ChatAndOfferModel(chat: chat, offer: offer));
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint("Error creating chat with offer id : $e");
+      return left(
+        Failure(
+          message: "Error while creating chat with respective offer",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<List<Message>> getAllMessages({
+    required int chatId,
+  }) async {
+    try {
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllMessagesOfChat(chatId),
+        method: RequestMethod.getRequest,
+      );
+
+      // var response = await http.get(
+      //   Uri.parse('https://api.picapool.com/v2/chat/$chatId/messages'),
+      //   headers: {
+      //     'Authorization': 'Bearer $accessToken',
+      //   },
+      // );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          List<Message> messages = [];
+          var data = responseModel.data['Messages'];
+          for (var chat in data) {
+            messages.add(Message.fromJson(chat));
+          }
+          return right(messages);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint("Error on getAllMessages: $e");
+      return left(
+        Failure(message: e.toString(), stackTrace: StackTrace.current),
+      );
+    }
+  }
+
+  FutureEither<List<User>> getAllUsersInChat({
+    required int chatId,
+  }) async {
+    try {
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getAllUsersInChat(chatId),
+        method: RequestMethod.getRequest,
+      );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          List<User> users = [];
+          var data = responseModel.data;
+          for (var user in data) {
+            users.add(User.fromJson(user));
+          }
+          return right(users);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint("Error on getAllUsersInChat: $e");
+      return left(
+        Failure(
+          message: e.toString(),
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<Chat> getChatFromLiveOfferId({
+    required int liveOfferId,
+  }) async {
+    try {
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.getChatFromLiveOfferId(liveOfferId),
+        method: RequestMethod.getRequest,
+      );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          var chat = Chat.fromJson(responseModel.data);
+          return right(chat);
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message,
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+
+      // var response = await http.get(
+      //   Uri.parse("https://api.picapool.com/v2/chat/liveOffer/$liveOfferId"),
+      //   headers: {
+      //     "Authorization": "Bearer $accessToken",
+      //   },
+      // );
+
+      // debugPrint("GET CHAT FROM LVIE OFFER ID RESPONSE: ${response.body}");
+    } catch (e) {
+      debugPrint("GET CAHT FROM LIVE OFFER ID ERROR: $e");
+      return left(
+        Failure(
+          message: "Not able to get the chat for respective offer",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
+  FutureEither<List<ChatAndOfferModel>> getChats() async {
     try {
       final response = await _api.makeRequest(
         enpoint: APIEndpoints.getUserChats,
@@ -103,184 +275,6 @@ class ChatApi {
       return left(
         Failure(
           message: e.toString(),
-          stackTrace: StackTrace.current,
-        ),
-      );
-    }
-  }
-
-  FutureEither<List<Message>> getAllMessages({
-    required String accessToken,
-    required int chatId,
-  }) async {
-    try {
-      final response = await _api.makeRequest(
-        enpoint: APIEndpoints.getAllMessagesOfChat(chatId),
-        method: RequestMethod.getRequest,
-      );
-
-      // var response = await http.get(
-      //   Uri.parse('https://api.picapool.com/v2/chat/$chatId/messages'),
-      //   headers: {
-      //     'Authorization': 'Bearer $accessToken',
-      //   },
-      // );
-
-      return response.fold((error) => left(error), (responseModel) {
-        if (responseModel.success) {
-          List<Message> messages = [];
-          var data = responseModel.data['Messages'];
-          for (var chat in data) {
-            messages.add(Message.fromJson(chat));
-          }
-          return right(messages);
-        } else {
-          return left(
-            Failure(
-              message: responseModel.message,
-              stackTrace: StackTrace.current,
-            ),
-          );
-        }
-      });
-    } catch (e) {
-      debugPrint("Error on getAllMessages: $e");
-      return left(
-        Failure(message: e.toString(), stackTrace: StackTrace.current),
-      );
-    }
-  }
-
-  FutureEither<ChatAndOfferModel> createChatWithOfferId({
-    required String accessToken,
-    required int offerId,
-    required int userId,
-  }) async {
-    try {
-      var body = {
-        "isMain": true,
-        "offerId": offerId,
-        "userIds": [
-          userId,
-        ]
-      };
-
-      debugPrint("$body");
-
-      final response = await _api.makeRequest(
-        enpoint: APIEndpoints.createChat,
-        method: RequestMethod.post,
-        body: body,
-      );
-
-      // var response = await http.post(
-      //   Uri.parse("https://api.picapool.com/v2/chat"),
-      //   headers: {
-      //     "Authorization": "Bearer $accessToken",
-      //   },
-      //   body: jsonEncode(body),
-      // );
-
-      return response.fold((error) => left(error), (responseModel) {
-        if (responseModel.success) {
-          var chat = Chat.fromJson(responseModel.data['chat']);
-          var offer = Offer.fromJson(responseModel.data['offer']);
-          return right(ChatAndOfferModel(chat: chat, offer: offer));
-        } else {
-          return left(
-            Failure(
-              message: responseModel.message,
-              stackTrace: StackTrace.current,
-            ),
-          );
-        }
-      });
-    } catch (e) {
-      debugPrint("Error creating chat with offer id : $e");
-      return left(
-        Failure(
-          message: "Error while creating chat with respective offer",
-          stackTrace: StackTrace.current,
-        ),
-      );
-    }
-  }
-
-  FutureEither<List<User>> getAllUsersInChat({
-    required String accessToken,
-    required int chatId,
-  }) async {
-    try {
-      final response = await _api.makeRequest(
-        enpoint: APIEndpoints.getAllUsersInChat(chatId),
-        method: RequestMethod.getRequest,
-      );
-
-      return response.fold((error) => left(error), (responseModel) {
-        if (responseModel.success) {
-          List<User> users = [];
-          var data = responseModel.data;
-          for (var user in data) {
-            users.add(User.fromJson(user));
-          }
-          return right(users);
-        } else {
-          return left(
-            Failure(
-              message: responseModel.message,
-              stackTrace: StackTrace.current,
-            ),
-          );
-        }
-      });
-    } catch (e) {
-      debugPrint("Error on getAllUsersInChat: $e");
-      return left(
-        Failure(
-          message: e.toString(),
-          stackTrace: StackTrace.current,
-        ),
-      );
-    }
-  }
-
-  FutureEither<Chat> getChatFromLiveOfferId({
-    required String accessToken,
-    required int liveOfferId,
-  }) async {
-    try {
-      final response = await _api.makeRequest(
-        enpoint: APIEndpoints.getChatFromLiveOfferId(liveOfferId),
-        method: RequestMethod.getRequest,
-      );
-
-      return response.fold((error) => left(error), (responseModel) {
-        if (responseModel.success) {
-          var chat = Chat.fromJson(responseModel.data);
-          return right(chat);
-        } else {
-          return left(
-            Failure(
-              message: responseModel.message,
-              stackTrace: StackTrace.current,
-            ),
-          );
-        }
-      });
-
-      // var response = await http.get(
-      //   Uri.parse("https://api.picapool.com/v2/chat/liveOffer/$liveOfferId"),
-      //   headers: {
-      //     "Authorization": "Bearer $accessToken",
-      //   },
-      // );
-
-      // debugPrint("GET CHAT FROM LVIE OFFER ID RESPONSE: ${response.body}");
-    } catch (e) {
-      debugPrint("GET CAHT FROM LIVE OFFER ID ERROR: $e");
-      return left(
-        Failure(
-          message: "Not able to get the chat for respective offer",
           stackTrace: StackTrace.current,
         ),
       );

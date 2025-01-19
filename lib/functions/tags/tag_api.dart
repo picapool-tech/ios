@@ -5,9 +5,7 @@ import 'package:picapool/models/tag_model.dart';
 
 class TagApi {
   final PicapoolApi _api = PicapoolApi();
-  FutureEither<List<Tag>> getAllTags({
-    required String accessToken,
-  }) async {
+  FutureEither<List<Tag>> getAllTags() async {
     try {
       final response = await _api.makeRequest(
         enpoint: APIEndpoints.getAllTags,
@@ -36,7 +34,6 @@ class TagApi {
   }
 
   FutureEither<Tag> getTag({
-    required String accessToken,
     required int tagId,
   }) async {
     try {

@@ -1,14 +1,14 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_api.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class VicinityController extends GetxController {
-  final AuthController _authController = Get.find<AuthController>();
+  final StorageController _storageController = Get.find<StorageController>();
   final UserController _userController = Get.find<UserController>();
   final VicinityApi _vicinityApi = VicinityApi();
   final AssetsController _assetsController = AssetsController();
@@ -78,11 +78,15 @@ class VicinityController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = await _authController.getAccessToken();
+    var accessToken = await _storageController.getAccessToken();
+
+    if (accessToken == null) {
+      return false;
+    }
 
     final result = await _vicinityApi.deleteImage(
       fileName: imageName,
-      accessToken: accessToken!,
+      accessToken: accessToken,
     );
 
     result.fold(

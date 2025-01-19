@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_api.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
@@ -24,8 +23,10 @@ class OffersController extends GetxController {
 
   var offersByTagId = <int, List<Offer>>{}.obs;
 
-  final AuthController _authController = Get.find<AuthController>();
+  var carouselOffer = <Offer>[].obs;
+
   final UserController _userController = Get.find<UserController>();
+  final LocationController _locationController = Get.find<LocationController>();
   final OffersApi _offersApi = OffersApi();
 
   Future<void> fetchAllOffers() async {
@@ -70,6 +71,39 @@ class OffersController extends GetxController {
     update();
   }
 
+  Future<void> getCarasouelOffer() async {
+    isLoading.value = true;
+    update();
+
+    var location = _locationController.state.value;
+
+    if (location.location == null) {
+      Get.snackbar("Error", "Location not available");
+      return;
+    }
+
+    var result = await _offersApi.searchOffer({
+      "loc": {
+        "lat": location.location!.latitude,
+        "lng": location.location!.longitude,
+      },
+      "top": true,
+    });
+    result.fold(
+      (error) {
+        Get.snackbar("Error", error.message);
+      },
+      (responseModel) {
+        carouselOffer.value = responseModel.data
+            .map<Offer>((offer) => Offer.fromJson(offer))
+            .toList();
+      },
+    );
+
+    isLoading.value = false;
+    update();
+  }
+
   Future<Chat?> getChatFromOfferId({
     required int offerId,
   }) async {
@@ -98,7 +132,20 @@ class OffersController extends GetxController {
     isLoading.value = true;
     update();
 
-    final result = await _offersApi.getOffersByTagId(tagId);
+    var location = _locationController.state.value;
+
+    if (location.location == null) {
+      Get.snackbar("Error", "Location not available");
+      return [];
+    }
+
+    final result = await _offersApi.searchOffer({
+      "tagIds": [tagId],
+      "loc": {
+        "lat": location.location!.latitude,
+        "lng": location.location!.longitude,
+      }
+    });
 
     isLoading.value = false;
     update();
@@ -107,8 +154,10 @@ class OffersController extends GetxController {
         Get.snackbar("Error", error.message);
         return [];
       },
-      (offers) {
-        offersByTagId[tagId] = offers;
+      (responseModel) {
+        offersByTagId[tagId] = responseModel.data
+            .map<Offer>((offer) => Offer.fromJson(offer))
+            .toList();
         return offers;
       },
     );
@@ -143,14 +192,6 @@ class OffersController extends GetxController {
   }) async {
     isLoading.value = true;
     update();
-    var accessToken = await _authController.getAccessToken();
-
-    if (accessToken == null) {
-      debugPrint("Access Token Not Updated");
-      isLoading.value = false;
-      update();
-      return;
-    }
 
     var result = await _offersApi.getOffersInVicinity(
       location: location,

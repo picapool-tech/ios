@@ -4,6 +4,7 @@ import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class OffersApi {
@@ -276,7 +277,7 @@ class OffersApi {
       debugPrint("Request body of nearest offer: ${body.toString()}");
 
       final response = await _api.makeRequest(
-        enpoint: APIEndpoints.getOffersInVicinity,
+        enpoint: APIEndpoints.searchOffer,
         method: RequestMethod.post,
         body: body,
         additionalHeaders: {
@@ -308,6 +309,33 @@ class OffersApi {
           stackTrace: StackTrace.current,
         ),
       );
+    }
+  }
+
+  FutureEither<ResponseModel> searchOffer(
+      Map<String, dynamic> offerModel) async {
+    try {
+      final response = await _api.makeRequest(
+        enpoint: APIEndpoints.searchOffer,
+        method: RequestMethod.post,
+        body: {
+          ...offerModel,
+          "radius": 1000,
+        },
+        additionalHeaders: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      return response.fold((error) => left(error), (responseModel) {
+        return right(responseModel);
+      });
+    } catch (e) {
+      debugPrint("Error while searching offer: $e");
+      return left(Failure(
+        message: "Error while searching offer: $e",
+        stackTrace: StackTrace.current,
+      ));
     }
   }
 }

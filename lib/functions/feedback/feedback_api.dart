@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
+
 import '../../core/core.dart';
 
 class FeedbackApi {
   final PicapoolApi _api = PicapoolApi();
 
   FutureEither sendFeedback({
-    required String accessToken,
     required String feedback,
   }) async {
     // Send feedback to the server
