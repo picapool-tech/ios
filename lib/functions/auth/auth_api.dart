@@ -8,6 +8,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/core/core.dart';
+import 'package:picapool/core/env_constants.dart';
+import 'package:picapool/functions/auth/authUpdateModel/authUpdateModel.dart';
 import 'package:picapool/models/login_model.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';
@@ -190,6 +192,8 @@ class AuthApi {
           await account.authentication;
       log('Google Token: ${googleAuth.idToken}');
 
+      log("DISPLAY NAME: ${account.displayName}");
+
       final http.Response response =
           await _sendGoogleTokenToServer(googleAuth.idToken!);
 
@@ -197,7 +201,9 @@ class AuthApi {
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
 
       if (responseModel.success) {
-        return right(LoginModel.fromJson(responseModel.data));
+        var loginModel = LoginModel.fromJson(responseModel.data);
+        loginModel.name = account.displayName;
+        return right(loginModel);
       } else {
         return left(
           Failure(
@@ -216,75 +222,6 @@ class AuthApi {
       );
     }
   }
-
-  // FutureEither<Auth> verifyOtp(String phoneNumber, String otp) async {
-  //   String url =
-  //       'https://api.picapool.com/v2/otp/verify?otp=$otp&mobile=${phoneNumber}';
-  //   try {
-  //     final response = await http.get(
-  //       Uri.parse(url),
-  //       headers: {'Content-Type': 'application/json'},
-  //     );
-
-  //     if (response.statusCode == 200) {
-  //       final responseBody = response.body;
-  //       if (responseBody.contains('"type":"success"')) {}
-  //       // else {
-  //       //   setState(() {
-  //       //     _isOtpIncorrect = true;
-  //       //   });
-
-  //       //   ScaffoldMessenger.of(context).showSnackBar(
-  //       //     const SnackBar(content: Text('Incorrect OTP. Please try again.')),
-  //       //   );
-  //       // }
-  //     } else {
-  //       // ScaffoldMessenger.of(context).showSnackBar(
-  //       //   const SnackBar(
-  //       //       content: Text('Failed to verify OTP. Please try again.')),
-  //       // );
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //     // ScaffoldMessenger.of(context).showSnackBar(
-  //     //   const SnackBar(
-  //     //       content: Text('An error occurred. Please try again later.')),
-  //     // );
-  //   }
-  // }
-
-  // FutureEither<String> refreshAccessToken(String refreshToken) {
-  //   try {
-  //     const String url = "https://api.picapool.com/v2/auth/refresh";
-  //     var body = {
-  //       "refreshToken": refreshToken,
-  //     };
-  //     http.Response response = await http.post(
-  //       Uri.parse(url),
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: jsonEncode(body),
-  //     );
-  //     int statusCode = response.statusCode;
-  //     if (statusCode >= 200 && statusCode < 300) {
-  //       debugPrint('User Created: ${response.body}');
-  //       var user = jsonDecode(response.body);
-  //       return right(user);
-  //     } else {
-  //       return left(
-  //         Failure(
-  //           message: "Not able to create the user : status code $statusCode",
-  //           stackTrace: StackTrace.current,
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Create User Error: $e');
-  //     return left(
-  //       Failure(
-  //         message: "Failed to create user. Please try again.",
-  //         stackTrace: StackTrace.fromString(e.toString()),
-  //       ),
-  //     );
 
   FutureEither<String> updateAccessToken({
     required String accessToken,
@@ -324,6 +261,42 @@ class AuthApi {
           stackTrace: StackTrace.fromString(
             e.toString(),
           ),
+        ),
+      );
+    }
+  }
+
+  FutureEither<ResponseModel> updateAuth({
+    required Authupdatemodel updateValue,
+    required String accessToken,
+  }) async {
+    try {
+      debugPrint("UPDATE AUTH REQUEST: ${updateValue.toJson()}");
+      debugPrint("${APIConstants.apiUrl}${APIEndpoints.updateAuth}");
+
+      var response = await http.patch(
+        Uri.parse("${APIConstants.apiUrl}${APIEndpoints.updateAuth}"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(updateValue.toJson()),
+      );
+
+      debugPrint("UPDATE AUTH RESPONSE CODE: ${response.statusCode}");
+
+      debugPrint('UPDATE AUTH RESPONSE: ${response.body}');
+      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+
+      return right(responseModel);
+    } catch (e) {
+      debugPrint(
+          "ERROR IN UPDATE AUTH: $e : with stackTrace : ${StackTrace.current}");
+      debugPrint('UPDATE AUTH ERROR: ${StackTrace.fromString(e.toString())}');
+      return left(
+        Failure(
+          message: "Failed to update auth. Please try again.",
+          stackTrace: StackTrace.fromString(e.toString()),
         ),
       );
     }

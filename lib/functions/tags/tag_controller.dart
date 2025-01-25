@@ -35,6 +35,14 @@ class TagController extends GetxController {
             return !tags.any((element) => element.id == tag.id);
           }).toList();
 
+          // Update existing tags if there are any changes
+          for (var tag in tagsList) {
+            var index = tags.indexWhere((element) => element.id == tag.id);
+            if (index != -1) {
+              tags[index] = tag;
+            }
+          }
+
           tags.addAll(filtered);
           _storageController.saveTags(tags);
         }
@@ -52,6 +60,12 @@ class TagController extends GetxController {
   Future<Tag?> getTag(int tagId) async {
     isLoading.value = true;
     update();
+
+    if (tags.contains(tagId)) {
+      isLoading.value = false;
+      update();
+      return tags.firstWhereOrNull((element) => element.id == tagId);
+    }
 
     final result = await _tagApi.getTag(tagId: tagId);
 
@@ -157,4 +171,5 @@ class TagController extends GetxController {
     bool isValidTopic = RegExp(r'^[a-zA-Z0-9-_.~%]{1,900}$').hasMatch(topic);
     return isValidTopic;
   }
+
 }

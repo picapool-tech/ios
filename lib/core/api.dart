@@ -27,6 +27,7 @@ class PicapoolApi {
           Failure(
             message: "No Internet Connection",
             stackTrace: StackTrace.current,
+            showError: false,
           ),
         );
       }
@@ -44,6 +45,7 @@ class PicapoolApi {
           Failure(
             message: "No Access Token",
             stackTrace: StackTrace.current,
+            showError: false,
           ),
         );
       }

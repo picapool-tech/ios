@@ -24,6 +24,7 @@ class VicinityController extends GetxController {
   }) async {
     isLoading.value = true;
     update();
+
     String? uploadedImage = '';
     if (pickedFile != null) {
       uploadedImage = await _assetsController.uploadImage(pickedFile,
@@ -37,13 +38,22 @@ class VicinityController extends GetxController {
       }
     }
 
+    await _storageController.loadTags();
+    var tags = _storageController.tags.value;
+    
+    var id = tags
+            .where((tag) => tag.tag.toLowerCase().contains("vicinity"))
+            .firstOrNull
+            ?.id ??
+        8;
+
     var newOffer = VicinityOffer(
       name: offer.name,
       images: (uploadedImage.isNotEmpty) ? [uploadedImage] : [],
       desc: offer.desc,
       expiryAt: offer.expiryAt,
       userId: _userController.user.value!.id,
-      tagIds: [6],
+      tagIds: [id],
       location: offer.location,
       distance: offer.distance,
     );

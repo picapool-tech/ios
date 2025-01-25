@@ -1,7 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/partners/partnerModel/partner_request_model.dart';
+import 'package:picapool/functions/partners/partner_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/models/partner_model.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Products/selected_brand_page.dart';
 
@@ -17,17 +22,11 @@ class ProductsHomepage extends StatefulWidget {
 class _ProductsHomepageState extends State<ProductsHomepage> {
   final List<Map<String, String>> brands = [
     {'name': 'Dominos', 'asset': 'assets/dominos/logo.jpg'},
-    // {'name': 'PlayStation', 'asset': 'assets/icons/Vector (1).png'},
-    // {'name': 'Bose', 'asset': 'assets/icons/Vector (2).png'},
-    // {'name': 'Huawei', 'asset': 'assets/icons/Vector (3).png'},
-    // {'name': 'Apple', 'asset': 'assets/icons/Vector.png'},
-    // {'name': 'PlayStation', 'asset': 'assets/icons/Vector (1).png'},
-    // {'name': 'Bose', 'asset': 'assets/icons/Vector (2).png'},
-    // {'name': 'Huawei', 'asset': 'assets/icons/Vector (3).png'},
-    // Add more brands as needed
   ];
 
+  final PartnerController _partnerController = Get.find<PartnerController>();
   final UserController _userController = Get.find<UserController>();
+  final LocationController _locationController = Get.find<LocationController>();
 
   @override
   Widget build(BuildContext context) {
@@ -117,16 +116,35 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children:
-                        brands.map((brand) => _buildBrandItem(brand)).toList(),
-                  ),
-                ),
+                GetBuilder<PartnerController>(builder: (controller) {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (controller.partners.isEmpty) {
+                    return const Center(child: Text('No partners found'));
+                  }
+
+                  return ListView.builder(
+                    itemCount: controller.partners.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      return _buildBrandItem(controller.partners[index]);
+                    },
+                  );
+                }),
+                // SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   child: Row(
+                //     children:
+                //         brands.map((brand) => _buildBrandItem(brand)).toList(),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 GestureDetector(
-                  onTap: () => _showBrandBottomSheet(context, brands),
+                  onTap: (_partnerController.partners.isEmpty)
+                      ? null
+                      : () => _showBrandBottomSheet(context, brands),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -188,17 +206,33 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
     );
   }
 
-  Widget _buildBrandItem(Map<String, String> brand) {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      var location = _locationController.state.value.location;
+      if (location == null) {
+        await _locationController.getLocation();
+        return;
+      }
+      _partnerController.searchPartner(
+        PartnerRequestModel(
+          radius: 1000,
+          location: VicinityLocation(
+            lat: location.latitude,
+            long: location.longitude,
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildBrandItem(Partner partner) {
     return GestureDetector(
       onTap: () {
-        if (brand['name'] == 'Dominos') {
-          Get.to(() => const PlayStationPage());
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => const PlayStationPage()),
-          // );
-        }
-        // You can add more conditions for other brands to navigate to different pages.
+        // if (brand['name'] == 'Dominos') {
+        Get.to(() => const PlayStationPage());
+        // }
       },
       child: Container(
         margin: const EdgeInsets.only(right: 20),
@@ -221,15 +255,20 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Image.asset(
-                  brand['asset']!,
-                  fit: BoxFit.contain,
-                ),
+                child: (partner.pic != null)
+                    ? CachedNetworkImage(
+                        imageUrl: partner.pic!,
+                        fit: BoxFit.contain,
+                      )
+                    : Image.asset(
+                        'assets/dominos/logo.jpg',
+                        fit: BoxFit.contain,
+                      ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              brand['name']!,
+              partner.ownername ?? '',
               style: const TextStyle(
                 fontSize: 12,
                 fontFamily: "MontserratR",
@@ -290,6 +329,51 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
         ],
       ),
     );
+  }
+
+  Color _getBrandColor(String brandName) {
+    switch (brandName.toLowerCase()) {
+      case 'skullcandy':
+        return Colors.orange;
+      case 'bose':
+        return Colors.black;
+      case 'apple inc':
+        return Colors.white;
+      case 'playstation':
+        return Colors.deepPurple;
+      default:
+        return Colors.white;
+    }
+  }
+
+  String _getBrandDistance(String brandName) {
+    switch (brandName.toLowerCase()) {
+      case 'skullcandy':
+        return '2 km away';
+      case 'bose':
+        return '24 km away';
+      case 'apple inc':
+        return '12 km away';
+      case 'playstation':
+        return '12 km away';
+      default:
+        return '10 km away';
+    }
+  }
+
+  String _getBrandRating(String brandName) {
+    switch (brandName.toLowerCase()) {
+      case 'skullcandy':
+        return '4.1';
+      case 'bose':
+        return '4.6';
+      case 'apple inc':
+        return '4.8';
+      case 'playstation':
+        return '4.8';
+      default:
+        return '4.0';
+    }
   }
 
   void _showBrandBottomSheet(
@@ -443,50 +527,5 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
         );
       },
     );
-  }
-
-  Color _getBrandColor(String brandName) {
-    switch (brandName.toLowerCase()) {
-      case 'skullcandy':
-        return Colors.orange;
-      case 'bose':
-        return Colors.black;
-      case 'apple inc':
-        return Colors.white;
-      case 'playstation':
-        return Colors.deepPurple;
-      default:
-        return Colors.white;
-    }
-  }
-
-  String _getBrandRating(String brandName) {
-    switch (brandName.toLowerCase()) {
-      case 'skullcandy':
-        return '4.1';
-      case 'bose':
-        return '4.6';
-      case 'apple inc':
-        return '4.8';
-      case 'playstation':
-        return '4.8';
-      default:
-        return '4.0';
-    }
-  }
-
-  String _getBrandDistance(String brandName) {
-    switch (brandName.toLowerCase()) {
-      case 'skullcandy':
-        return '2 km away';
-      case 'bose':
-        return '24 km away';
-      case 'apple inc':
-        return '12 km away';
-      case 'playstation':
-        return '12 km away';
-      default:
-        return '10 km away';
-    }
   }
 }

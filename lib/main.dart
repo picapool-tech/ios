@@ -21,12 +21,13 @@ import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/network/connection_status_listener.dart';
 import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/partners/partner_controller.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/screens/login_screen.dart';
 import 'package:picapool/screens/personal_details.dart';
+import 'package:picapool/screens/public_profile.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
@@ -50,10 +51,11 @@ void main() async {
   Get.put(AssetsController());
   Get.put(LiveOfferController());
   Get.put(ProductController());
-  Get.put(TagController());
+
   Get.put(BrandController());
   Get.put(FormController());
   Get.put(CategoryController());
+  Get.put(PartnerController());
 
   await Env.load();
 
@@ -161,20 +163,27 @@ class _MyAppState extends State<MyApp> {
 
   Widget _handleAuthState() {
     debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
+    final auth = storageController.auth.value;
+    final user = storageController.user.value;
 
-    if (storageController.auth.value != null &&
-        storageController.auth.value!.accessToken == null) {
-      return const LoginScreen();
-    } else if (storageController.user.value != null &&
-        storageController.user.value!.name == null) {
-      return const PersonalDetails();
-    } else if (storageController.auth.value != null &&
-        storageController.auth.value!.accessToken != null &&
-        storageController.user.value != null &&
-        storageController.user.value!.name != null) {
-      return const NewBottomBar();
-    } else {
+    if (auth == null || auth.accessToken == null) {
       return const LoginScreen();
     }
+
+    if (user == null) {
+      return const LoginScreen();
+    }
+
+    if (user.name == null || user.age == null) {
+      return const PersonalDetails();
+    }
+
+    if (user.username == null ||
+        user.username!.isEmpty ||
+        user.username!.contains("PIC@USERNAME")) {
+      return const PublicProfile();
+    }
+
+    return const NewBottomBar();
   }
 }

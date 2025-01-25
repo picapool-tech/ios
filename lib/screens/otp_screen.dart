@@ -30,7 +30,7 @@ class _OtpScreenState extends State<OtpScreen> {
   bool _isResendButtonDisabled = false;
   int _resendCountdown = 59;
   Timer? _timer;
-  String? otpCode;
+
   final authController = Get.find<AuthController>();
 
   @override
@@ -273,7 +273,25 @@ class _OtpScreenState extends State<OtpScreen> {
         if (responseModel.success) {
           if (widget.returnValue) {
             debugPrint("INSIDE RETURN VALUE");
-            Get.back(result: true);
+            // var isUpdatePhone = await authController.updatePhoneNumber(
+            //   phoneNumber: widget.phoneNumber,
+            //   code: otp,
+            // );
+            debugPrint(
+              "INSIDE RETURN VALUE 2 : ${widget.phoneNumber} : $otp",
+            );
+            // return;
+            // if (!isUpdatePhone) {
+            //   if (mounted) {
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(
+            //         content: Text('Failed to update phone. Please try again.'),
+            //       ),
+            //     );
+            //   }
+            //   return;
+            // }
+            Get.back(result: <dynamic>[true, otp]);
             return;
           } else {
             await authController.loginWithOtp(widget.phoneNumber, otp);
@@ -292,7 +310,8 @@ class _OtpScreenState extends State<OtpScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Failed to verify OTP. Please try again.')),
+              content: Text('Failed to verify OTP. Please try again.'),
+            ),
           );
         }
       }

@@ -29,6 +29,16 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
             color: Color(0xffFFFFFF),
           ),
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(10),
+          child: Obx(() {
+            if (_tagController.tags.isNotEmpty &&
+                _tagController.isLoading.value) {
+              return const LinearProgressIndicator();
+            }
+            return const SizedBox.shrink();
+          }),
+        ),
         automaticallyImplyLeading: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -119,6 +129,7 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
           width: 28, // Adjust the size as needed
           height: 28,
           fit: BoxFit.cover,
+
           // color: (isDisabled) ? Colors.grey : null,
         ),
       ),

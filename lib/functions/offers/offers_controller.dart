@@ -75,12 +75,17 @@ class OffersController extends GetxController {
     isLoading.value = true;
     update();
 
-    var location = _locationController.state.value;
-
-    if (location.location == null) {
-      Get.snackbar("Error", "Location not available");
+    if (!await _locationController.isLocationEnabled()) {
+      isLoading.value = false;
+      update();
       return;
     }
+    // Wait until location is not null
+    while (_locationController.state.value.location == null) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    var location = _locationController.state.value;
 
     var result = await _offersApi.searchOffer({
       "loc": {

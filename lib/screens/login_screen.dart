@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.normal,
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate() &&
@@ -213,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 const Row(
                   children: [
                     Expanded(

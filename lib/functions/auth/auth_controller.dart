@@ -1,7 +1,9 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:picapool/functions/auth/authUpdateModel/authUpdateModel.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
 import 'package:picapool/functions/notification/notification_service.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
@@ -33,7 +35,8 @@ class AuthController extends GetxController {
 
     if (auth.value?.accessToken == null) {
       Get.to(() => const LoginScreen());
-    } else if (_userController.user.value?.name == null) {
+    } else if (_userController.user.value?.name == null ||
+        _userController.user.value?.age == null) {
       Get.to(() => const PersonalDetails());
     } else if (_userController.user.value?.username == null) {
       Get.to(() => const PublicProfile());
@@ -79,7 +82,7 @@ class AuthController extends GetxController {
 
       if (userData != null) {
         debugPrint('User from laod and auth: ${userData.toJson()}');
-        if (name != null) {
+        if (name != null && name.isNotEmpty) {
           debugPrint("Found username");
           await _userController.updateUser({
             "name": name,
@@ -92,9 +95,8 @@ class AuthController extends GetxController {
         handleFCMToken();
         var userAuth = userData.auth;
         if (userAuth != null) {
-          authData.update(
-            userAuth.toJson(),
-          );
+          debugPrint('User Auth: ${userAuth.toJson()}');
+          authData = authData.update(userAuth.toJson());
         }
       }
       auth.value = authData;
@@ -111,6 +113,7 @@ class AuthController extends GetxController {
   /// Handle Apple login and store auth and user data.
   Future<void> loginWithApple() async {
     isLoading.value = true;
+    update();
     final result = await _authApi.signInWithApple();
 
     await result.fold(
@@ -122,10 +125,6 @@ class AuthController extends GetxController {
       },
       (loginModel) async {
         postLoginAction(loginModel);
-        // await loadAndSaveAuth(authData);
-        // errorMessage.value = "";
-
-        // checkForExistingUser();
       },
     );
     isLoading.value = false;
@@ -147,10 +146,6 @@ class AuthController extends GetxController {
       },
       (loginModel) async {
         postLoginAction(loginModel);
-        // errorMessage.value = "";
-        // debugPrint("From LOGIN WITH GOOGLE : ${authData.toJson()}");
-        // await loadAndSaveAuth(authData);
-        // checkForExistingUser();
       },
     );
     isLoading.value = false;
@@ -189,6 +184,10 @@ class AuthController extends GetxController {
     auth.value = null;
     update();
     _userController.clear();
+    FirebaseMessaging.instance.deleteToken().then((va) {
+      debugPrint("Deleted token");
+    });
+
     Get.offAll(
       () => const LoginScreen(),
     );
@@ -197,7 +196,7 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadUserOnStartup();
+    _loadAuthOnStartup();
   }
 
   Future<bool> postLoginAction(LoginModel loginModel, {String? mobile}) async {
@@ -211,8 +210,11 @@ class AuthController extends GetxController {
       mobile: mobile,
     );
     await _storageController.saveAuth(authData);
-    await loadAndSaveAuth(authData,
-        userId: accessToken.tenant.id, name: loginModel.name);
+    await loadAndSaveAuth(
+      authData,
+      userId: accessToken.tenant.id,
+      name: loginModel.name,
+    );
     await _storageController.saveAccessToken(loginModel.accessToken);
     debugPrint("After LOAD AND SAVE MODEL : ${_userController.user.toJson()}");
 
@@ -281,52 +283,69 @@ class AuthController extends GetxController {
     );
   }
 
+  Future<bool> updatePhoneNumber({
+    required String phoneNumber,
+    required String code,
+  }) async {
+    isLoading.value = true;
+    update();
+
+    var accessToken = await _storageController.getAccessToken();
+    if (accessToken == null) {
+      isLoading.value = true;
+      update();
+      return false;
+    }
+    debugPrint(
+        "USERID FOR UPDATE PHONE NUMBER : ${_userController.user.value!.id}");
+
+    try {
+      final result = await _authApi.updateAuth(
+        updateValue: Authupdatemodel(
+          authId: _storageController.auth.value!.id!,
+          phone: AuthPhoneModel(
+            phone: phoneNumber,
+            code: code,
+          ),
+        ),
+        accessToken: accessToken,
+      );
+
+      isLoading(false);
+      update();
+
+      return await result.fold(
+        (fail) {
+          errorMessage.value = fail.message;
+          showErrorDialog(fail.message);
+          return false;
+        },
+        (responseModel) async {
+          if (responseModel.success) {
+            debugPrint(
+                "Phone number updated successfully : ${responseModel.data}");
+            await loadAndSaveAuth(auth.value!);
+            return true;
+          } else {
+            showErrorDialog(responseModel.message);
+            return false;
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('Error: $e : ${StackTrace.current}');
+      showErrorDialog("An error occurred. Please try again later.");
+      return false;
+    }
+  }
+
   Future<void> verifyOtp(String phoneNumber) async {}
 
   /// Load user and auth data from storage at startup.
-  Future<void> _loadUserOnStartup() async {
+  Future<void> _loadAuthOnStartup() async {
     auth.value =
         _storageController.auth.value ??= await _storageController.loadAuth();
     debugPrint("loading auth controller from storage!.");
     update();
   }
-
-  // Future<bool> updateAccessToken() async {
-  //   debugPrint('REQUESTED FOR UPDATE ACCESS TOKEN');
-  //   String rt = auth.value!.refreshToken!;
-  //   String at = auth.value!.accessToken!;
-  //   var userId = user.value?.id;
-  //   debugPrint('Refresh token: $rt');
-  //   if (userId == null) {
-  //     return false;
-  //   }
-
-  //   final response = await http.post(
-  //     Uri.parse("https://api.picapool.com/v2/auth/accessToken"),
-  //     body: jsonEncode({
-  //       "refreshToken": rt,
-  //     }),
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       'Authorization': 'Bearer $at',
-  //     },
-  //   );
-  //   debugPrint('UPDATE ACCESS TOKEN RESPONSE CODE : ${response.statusCode}');
-
-  //   if (response.statusCode < 300) {
-  //     String newAccessToken = response.body;
-  //     debugPrint('New Access Token: $newAccessToken');
-
-  //     auth.value!.copyWith(accessToken: newAccessToken);
-
-  //     await _storageController.saveAuth(auth.value!);
-  //     return true;
-  //   } else if (response.statusCode == 401) {
-  //     logout();
-  //     return false;
-  //   } else {
-  //     logout();
-  //     return false;
-  //   }
-  // }
 }

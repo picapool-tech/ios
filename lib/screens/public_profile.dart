@@ -1,8 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:picapool/functions/assets/assets_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
@@ -24,57 +25,6 @@ class _PublicProfileState extends State<PublicProfile> {
   final _authController = Get.find<AuthController>();
   final _userController = Get.find<UserController>();
   final _assetsController = Get.find<AssetsController>();
-
-  Future<void> createUser() async {
-    final user = _userController.user.value;
-    if (user == null) {
-      debugPrint('User is null');
-      return;
-    }
-    user.username = _usernameController.text;
-    user.bio = _bioController.text;
-    var profileUrl = user.pic;
-    if (_profileImage != null) {
-      profileUrl = await _assetsController.uploadImage(
-          XFile(_profileImage!.path),
-          '${user.id}-${user.name}-${DateTime.now().toIso8601String()}.jpg');
-    }
-    // await authController.createUser();
-    var success = await _userController.updateUser({
-      "username": _usernameController.text,
-      "bio": _bioController.text,
-      "pic": profileUrl,
-    });
-
-    if (success) {
-      _authController.checkForExistingUser();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _usernameController.addListener(_onUsernameChanged);
-    _usernameController.text = _userController.user.value?.username ?? '';
-    _bioController.text = _userController.user.value?.bio ?? '';
-  }
-
-  @override
-  void dispose() {
-    _usernameController.removeListener(_onUsernameChanged);
-    _usernameController.dispose();
-    _bioController.dispose();
-    super.dispose();
-  }
-
-  void _onUsernameChanged() {
-    setState(() {
-      _isUsernameValid = _usernameController.text.isNotEmpty &&
-          RegExp(r'^[a-zA-Z0-9@._-]+$').hasMatch(_usernameController.text);
-    });
-  }
-
-  bool get _isFinishButtonActive => _usernameController.text.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +60,7 @@ class _PublicProfileState extends State<PublicProfile> {
         ],
       ),
       body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -173,6 +124,18 @@ class _PublicProfileState extends State<PublicProfile> {
                 maxLength: 16,
                 isUsername: true, // Specific for username field
               ),
+              // const SizedBox(height: 10),
+              const Text(
+                '''
+• Username should be unique
+• Username should be between 4-16 characters
+''',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                  fontFamily: 'MontserratR',
+                ),
+              ),
               const SizedBox(height: 16),
               _buildTextField('Add bio', _bioController,
                   maxLength: 200, maxLines: 3),
@@ -187,7 +150,7 @@ class _PublicProfileState extends State<PublicProfile> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _isFinishButtonActive
+                onPressed: _isUsernameValid
                     ? () async {
                         await createUser();
                         // if (context.mounted) {
@@ -201,19 +164,18 @@ class _PublicProfileState extends State<PublicProfile> {
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isFinishButtonActive
+                  backgroundColor: _isUsernameValid
                       ? const Color(0xFFFF8D41)
                       : const Color(0xFFC2C2C2),
-                  foregroundColor: _isFinishButtonActive
-                      ? Colors.white
-                      : const Color(0xFF626262),
+                  foregroundColor:
+                      _isUsernameValid ? Colors.white : const Color(0xFF626262),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
                 child: Obx(() {
-                  if (_authController.isLoading.value) {
+                  if (_userController.isLoading.value) {
                     return const CircularProgressIndicator();
                   }
 
@@ -230,8 +192,66 @@ class _PublicProfileState extends State<PublicProfile> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {int? maxLength, int maxLines = 1, bool isUsername = false}) {
+  Future<void> createUser() async {
+    final user = _userController.user.value;
+    if (user == null) {
+      debugPrint('User is null');
+      return;
+    }
+    user.username = _usernameController.text;
+    user.bio = _bioController.text;
+    var profileUrl = user.pic;
+    if (_profileImage != null) {
+      profileUrl = await _assetsController.uploadImage(
+          XFile(_profileImage!.path),
+          '${user.id}-${user.name}-${DateTime.now().toIso8601String()}.jpg');
+    }
+    // await authController.createUser();
+    var success = await _userController.updateUser({
+      "username": _usernameController.text,
+      "bio": _bioController.text,
+      "pic": profileUrl,
+    });
+
+    if (success) {
+      _authController.checkForExistingUser();
+    }
+  }
+
+  @override
+  void dispose() {
+    _usernameController.removeListener(_onUsernameChanged);
+    _usernameController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((duration) {
+      var username = _userController.user.value?.username ?? " ";
+      if (username.contains("PIC@USERNAME") || username.length > 30) {
+        debugPrint("Username : $username");
+        _userController.user.value!.username = "";
+        username = "";
+      }
+      debugPrint("Username outside: $username");
+      setState(() {
+        _usernameController.text = username;
+        _bioController.text = _userController.user.value?.bio ?? '';
+      });
+      _usernameController.addListener(_onUsernameChanged);
+    });
+  }
+
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    int? maxLength,
+    int maxLines = 1,
+    bool isUsername = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -257,6 +277,7 @@ class _PublicProfileState extends State<PublicProfile> {
           controller: controller,
           maxLength: maxLength,
           maxLines: maxLines,
+          autocorrect: false,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.transparent,
@@ -290,39 +311,20 @@ class _PublicProfileState extends State<PublicProfile> {
                   });
                 }
               : null,
+          onTapOutside: (event) {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
         ),
       ],
     );
   }
 
-  void _showImagePickerOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () {
-                  _pickImage(ImageSource.gallery);
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Camera'),
-                onTap: () {
-                  _pickImage(ImageSource.camera);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _onUsernameChanged() {
+    setState(() {
+      _isUsernameValid = _usernameController.text.isNotEmpty &&
+          RegExp(r'^[A-Za-z][A-Za-z0-9_]{3,16}$')
+              .hasMatch(_usernameController.text);
+    });
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -361,5 +363,35 @@ class _PublicProfileState extends State<PublicProfile> {
         });
       }
     }
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () {
+                  _pickImage(ImageSource.gallery);
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  _pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

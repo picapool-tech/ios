@@ -91,8 +91,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ],
               ),
               const SizedBox(height: 20),
-              _buildTextField('Add your full name*', _nameController,
-                  isName: true),
+              _buildTextField(
+                'Add your full name*',
+                _nameController,
+                isName: true,
+              ),
               const SizedBox(height: 16),
               _buildPhoneField(), // Phone field is optional now
               const SizedBox(height: 16),
@@ -246,13 +249,18 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       children: [
         RichText(
           text: const TextSpan(
-            text: 'Add Phone no.',
-            style: TextStyle(
-              color: Colors.black87,
-              fontSize: 16,
-              fontFamily: 'MontserratR',
-            ),
-          ),
+              text: 'Add Phone no.',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 16,
+                fontFamily: 'MontserratR',
+              ),
+              children: [
+                TextSpan(
+                  text: '*',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ]),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -294,19 +302,29 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             phoneNumber: phone,
                             returnValue: true,
                           ),
-                        ) as bool?;
+                        ) as List<dynamic>?;
 
-                        if (value != null && value) {
+                        if (value != null && value[0]) {
                           // Verify successful
                           debugPrint("$value is from OTP");
+                          var updatedPhoneToServer =
+                              await _authController.updatePhoneNumber(
+                            phoneNumber: phone,
+                            code: value[1],
+                          );
+
+                          if (!updatedPhoneToServer) {
+                            Get.snackbar("Oops!",
+                                "Not able to update phone at this time.");
+                            return;
+                          }
+
                           var auth = _authController.auth.value!.update({
                             "mobile": phone,
                           });
                           await _authController.loadAndSaveAuth(auth);
                           _authController.auth.refresh();
-                          await _userController.updateUser({
-                            "mobile": phone,
-                          });
+
                           setState(() {});
                         } else {
                           // Verify failed
@@ -375,7 +393,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     bool isName = false,
     bool isAge = false,
   }) {
-    return (isName && Platform.isIOS)
+    return (isName &&
+            Platform.isIOS &&
+            _authController.auth.value?.appleSub != null)
         ? const SizedBox.shrink()
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,9 +459,16 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   }
 
   bool _isFormValid() {
-    return _nameController.text.isNotEmpty ||
-        Platform.isIOS &&
-            _ageController.text.isNotEmpty &&
-            _selectedGender != null;
+    var isValidName = _nameController.text.isNotEmpty ||
+        Platform.isIOS && _authController.auth.value?.appleSub != null;
+
+    var isValidPhone = _phoneController.text.length == 10 &&
+        _authController.auth.value?.mobile != null;
+
+    var isValidAge = _ageController.text.isNotEmpty;
+
+    var isValidGender = _selectedGender != null;
+
+    return isValidName && isValidAge && isValidGender && isValidPhone;
   }
 }

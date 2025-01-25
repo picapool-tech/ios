@@ -9,6 +9,9 @@ import 'package:picapool/utils/date_time_helper.dart';
 class ChatInfo extends StatefulWidget {
   final Offer? offer;
 
+  final int chatId;
+
+  final int creatorId;
   const ChatInfo({
     super.key,
     required this.chatId,
@@ -16,15 +19,74 @@ class ChatInfo extends StatefulWidget {
     this.offer,
   });
 
-  final int chatId;
-  final int creatorId;
-
   @override
   State<ChatInfo> createState() => _ChatInfoState();
 }
 
 class _ChatInfoState extends State<ChatInfo> {
   final ChatController _chatController = Get.find<ChatController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Chat Info'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.orange),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        centerTitle: false,
+      ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            if (widget.offer != null)
+              SliverToBoxAdapter(
+                child: offerCard(
+                  offer: widget.offer!,
+                ),
+              ),
+          ];
+        },
+        body: Column(
+          children: [
+            Expanded(
+              child: GetBuilder(
+                  init: _chatController,
+                  builder: (controller) {
+                    if (_chatController.isLoading.value &&
+                        _chatController.usersInChat.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (_chatController.usersInChat.isEmpty &&
+                        !_chatController.isLoading.value) {
+                      return const Center(
+                        child: Text('No users in chat'),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: _chatController.usersInChat.length,
+                      itemBuilder: (context, index) {
+                        final user =
+                            _chatController.usersInChat.values.elementAt(index);
+                        return userListItem(user);
+                      },
+                    );
+                  }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -152,84 +214,6 @@ class _ChatInfoState extends State<ChatInfo> {
     );
   }
 
-// Helper to build icon-label widgets
-  Widget _buildIconLabel(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: Colors.orange),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Chat Info'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.orange),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        centerTitle: false,
-      ),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            if (widget.offer != null)
-              SliverToBoxAdapter(
-                child: offerCard(
-                  offer: widget.offer!,
-                ),
-              ),
-          ];
-        },
-        body: Column(
-          children: [
-            Expanded(
-              child: GetBuilder(
-                  init: _chatController,
-                  builder: (controller) {
-                    if (_chatController.isLoading.value &&
-                        _chatController.usersInChat.isEmpty) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-
-                    if (_chatController.usersInChat.isEmpty &&
-                        !_chatController.isLoading.value) {
-                      return const Center(
-                        child: Text('No users in chat'),
-                      );
-                    }
-
-                    return ListView.builder(
-                      itemCount: _chatController.usersInChat.length,
-                      itemBuilder: (context, index) {
-                        final user = _chatController.usersInChat[index];
-                        return userListItem(user);
-                      },
-                    );
-                  }),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget userListItem(User user) {
     return ListTile(
       leading: CircleAvatar(
@@ -273,6 +257,23 @@ class _ChatInfoState extends State<ChatInfo> {
       //           style: TextStyle(color: Colors.orange),
       //         ),
       //       ),
+    );
+  }
+
+  // Helper to build icon-label widgets
+  Widget _buildIconLabel(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.orange),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+      ],
     );
   }
 }

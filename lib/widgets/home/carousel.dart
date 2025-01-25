@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/utils/theme.dart';
@@ -23,6 +24,7 @@ class _CarouselWidgetState extends State<CarouselWidget>
   //   'assets/carousel/image3.png',
   // ];
   final OffersController _offerController = Get.find<OffersController>();
+  final LocationController _locationController = Get.find<LocationController>();
 
   List<String> images = [
     'assets/carousel/image1.png',
@@ -64,6 +66,7 @@ class _CarouselWidgetState extends State<CarouselWidget>
       itemCount: offers.length,
       itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
         var offer = offers[itemIndex];
+        debugPrint("Offer in carousel: ${offer.toJson()}");
         return carouselItem(offer);
       },
       options: CarouselOptions(
@@ -90,68 +93,75 @@ class _CarouselWidgetState extends State<CarouselWidget>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
+          constraints: const BoxConstraints(
+            maxHeight: 180,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: Colors.white,
           ),
           clipBehavior: Clip.hardEdge,
-          child: CachedNetworkImage(
-            width: double.infinity,
-            height: 180,
-            imageUrl: offer.images.first,
-            fit: BoxFit.fitWidth,
-          ),
+          child: (offer.images.isEmpty)
+              ? Image.asset(
+                  images[0],
+                )
+              : CachedNetworkImage(
+                  width: double.infinity,
+                  imageUrl: offer.images.first,
+                  fit: BoxFit.fill,
+                ),
         ),
         const SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.white,
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          padding: const EdgeInsets.only(
-            left: 10,
-            right: 10,
-            top: 10,
-            bottom: 5,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              LinearProgressIndicator(
-                value: (offer.units! / offer.maxUnits!),
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-                backgroundColor: Colors.grey[300],
-                borderRadius: BorderRadius.circular(5),
-                minHeight: 10,
-              ),
-              const SizedBox(
-                height: 4,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "Only for first ${offer.maxUnits} units",
-                    style: const TextStyle(
-                      fontSize: 14,
+        if (offer.units != null || offer.maxUnits != null)
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            padding: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+              top: 10,
+              bottom: 5,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                LinearProgressIndicator(
+                  value: (offer.units! / offer.maxUnits!),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                  backgroundColor: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(5),
+                  minHeight: 10,
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Only for first ${offer.maxUnits} units",
+                      style: const TextStyle(
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                  Text(
-                    "${offer.units}/${offer.maxUnits} left",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  )
-                ],
-              )
-            ],
+                    Text(
+                      "${offer.maxUnits! - offer.units!}/${offer.maxUnits} left",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    )
+                  ],
+                )
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -175,9 +185,13 @@ class _CarouselWidgetState extends State<CarouselWidget>
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _offerController.getCarasouelOffer();
-    });
+    ever(
+      _locationController.state,
+      (LocationState state) {
+        if (state.location != null && !_offerController.isLoading.value) {
+          _offerController.getCarasouelOffer();
+        }
+      },
+    );
   }
 }

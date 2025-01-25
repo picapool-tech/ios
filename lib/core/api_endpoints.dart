@@ -17,8 +17,10 @@ class APIEndpoints {
   static const String createOffer = "/offer";
   static const String createChat = "/chat";
   static const String searchOffer = "/offer/search";
+  static const String searchPartner = "/partner/search";
 
   static const String sendFeedback = "/feedback";
   static const String getAllOffers = "/offer/all";
   static const String getAllTags = "/tag/all";
+  static const String updateAuth = "/auth/update";
 }

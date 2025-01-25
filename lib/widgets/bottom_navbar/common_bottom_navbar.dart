@@ -20,7 +20,7 @@ class NewBottomBar extends StatefulWidget {
 class _NewBottomBarState extends State<NewBottomBar> {
   int _selectedIndex = 0;
   // double height = Platform.isAndroid ? 70 : 100;
-  final TagController _tagController = Get.find<TagController>();
+  late TagController _tagController;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -150,6 +150,8 @@ class _NewBottomBarState extends State<NewBottomBar> {
   initState() {
     super.initState();
     listenNotification();
+    Get.put(TagController());
+    _tagController = Get.find<TagController>();
     _tagController.subscribeToTopics();
   }
 

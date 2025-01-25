@@ -90,6 +90,52 @@ class User {
     );
   }
 
+  User copyWith({
+    int? id,
+    String? name,
+    String? pic,
+    int? age,
+    String? gender,
+    String? username,
+    String? bio,
+    String? location,
+    String? fcmToken,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Auth? auth,
+    int? authId,
+    List<Feedback>? feedback,
+    List<Chat>? chats,
+    List<Message>? messages,
+    List<Offer>? offers,
+    List<Reaction>? reactions,
+    List<Tag>? tags,
+    List<LiveOffer>? liveOffers,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      pic: pic ?? this.pic,
+      age: age ?? this.age,
+      gender: gender ?? this.gender,
+      username: username ?? this.username,
+      bio: bio ?? this.bio,
+      location: location ?? this.location,
+      fcmToken: fcmToken ?? this.fcmToken,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      auth: auth ?? this.auth,
+      authId: authId ?? this.authId,
+      feedback: feedback ?? this.feedback,
+      chats: chats ?? this.chats,
+      messages: messages ?? this.messages,
+      offers: offers ?? this.offers,
+      reactions: reactions ?? this.reactions,
+      tags: tags ?? this.tags,
+      liveOffers: liveOffers ?? this.liveOffers,
+    );
+  }
+
   // Example of a method to convert the object back to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -104,7 +150,7 @@ class User {
       'fcmToken': fcmToken,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
-      'auth': auth?.toJson(),
+      'Auth': auth?.toJson(),
       'authId': authId,
       'feedback': feedback?.map((e) => e.toJson()).toList(),
       'chats': chats?.map((e) => e.toJson()).toList(),
@@ -152,51 +198,5 @@ class User {
             .toList()
         : liveOffers;
     updatedAt = DateTime.now();
-  }
-
-  User copyWith({
-    int? id,
-    String? name,
-    String? pic,
-    int? age,
-    String? gender,
-    String? username,
-    String? bio,
-    String? location,
-    String? fcmToken,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    Auth? auth,
-    int? authId,
-    List<Feedback>? feedback,
-    List<Chat>? chats,
-    List<Message>? messages,
-    List<Offer>? offers,
-    List<Reaction>? reactions,
-    List<Tag>? tags,
-    List<LiveOffer>? liveOffers,
-  }) {
-    return User(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      pic: pic ?? this.pic,
-      age: age ?? this.age,
-      gender: gender ?? this.gender,
-      username: username ?? this.username,
-      bio: bio ?? this.bio,
-      location: location ?? this.location,
-      fcmToken: fcmToken ?? this.fcmToken,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      auth: auth ?? this.auth,
-      authId: authId ?? this.authId,
-      feedback: feedback ?? this.feedback,
-      chats: chats ?? this.chats,
-      messages: messages ?? this.messages,
-      offers: offers ?? this.offers,
-      reactions: reactions ?? this.reactions,
-      tags: tags ?? this.tags,
-      liveOffers: liveOffers ?? this.liveOffers,
-    );
   }
 }

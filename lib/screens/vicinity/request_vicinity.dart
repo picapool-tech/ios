@@ -314,7 +314,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: (_userController.user.value?.id != null)
+                onPressed: (_userController.user.value?.id != null &&
+                        _currentPosition != null)
                     ? () {
                         createVicinity();
                       }
@@ -642,13 +643,16 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   Future<void> _fetchLocation() async {
     if (_locationController.state.value.location == null) {
+      if (!await _locationController.isLocationEnabled()) {
+        return;
+      }
       await _locationController.getLocation();
     }
     var location = _locationController.state.value.location;
     if (location == null) {
       debugPrint("NULL LOCATION : VICINITY");
       Get.snackbar(
-        'Error',
+        'Oops',
         'Failed to get current location.',
         snackStyle: SnackStyle.GROUNDED,
       );

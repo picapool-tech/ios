@@ -2,65 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:picapool/models/message_model_new.dart';
 
-class PublicChatView extends StatefulWidget {
-  final List<MessageModel> messages;
-  final ScrollController scrollController;
-  const PublicChatView({
-    super.key,
-    required this.messages,
-    required this.scrollController,
-  });
-
-  @override
-  State<PublicChatView> createState() => _PublicChatViewState();
-}
-
-class _PublicChatViewState extends State<PublicChatView> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
-    });
-  }
-
-  void _scrollToBottom() {
-    widget.scrollController.animateTo(
-      widget.scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    widget.scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      controller: widget.scrollController,
-      padding: const EdgeInsets.all(16.0),
-      itemCount: widget.messages.length,
-      itemBuilder: (context, index) {
-        final message = widget.messages[index];
-        return ChatBubble(
-          sender: message.sender,
-          message: message.message,
-          time: message.time,
-          isMe: message.isMe,
-          imageUrl: message.imageUrl ?? '',
-          showSenderDetails: true,
-          replyToMessage: message.replyToMessage,
-          replySender: message.replySender,
-        );
-      },
-    );
-  }
-}
-
 class ChatBubble extends StatelessWidget {
   final String sender;
   final String message;
@@ -223,6 +164,65 @@ class ChatBubble extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class PublicChatView extends StatefulWidget {
+  final List<MessageModel> messages;
+  final ScrollController scrollController;
+  const PublicChatView({
+    super.key,
+    required this.messages,
+    required this.scrollController,
+  });
+
+  @override
+  State<PublicChatView> createState() => _PublicChatViewState();
+}
+
+class _PublicChatViewState extends State<PublicChatView> {
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: widget.scrollController,
+      padding: const EdgeInsets.all(16.0),
+      itemCount: widget.messages.length,
+      itemBuilder: (context, index) {
+        final message = widget.messages[index];
+        return ChatBubble(
+          sender: message.sender,
+          message: message.message,
+          time: message.time,
+          isMe: message.isMe,
+          imageUrl: message.imageUrl ?? '',
+          showSenderDetails: true,
+          replyToMessage: message.replyToMessage,
+          replySender: message.replySender,
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    widget.scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
+
+  void _scrollToBottom() {
+    widget.scrollController.animateTo(
+      widget.scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
     );
   }
 }

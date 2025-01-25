@@ -117,7 +117,7 @@ class ChatApi {
     }
   }
 
-  FutureEither<List<User>> getAllUsersInChat({
+  FutureEither<Map<int, User>> getAllUsersInChat({
     required int chatId,
   }) async {
     try {
@@ -128,10 +128,11 @@ class ChatApi {
 
       return response.fold((error) => left(error), (responseModel) {
         if (responseModel.success) {
-          List<User> users = [];
+          Map<int, User> users = {};
           var data = responseModel.data;
           for (var user in data) {
-            users.add(User.fromJson(user));
+            var userModel = User.fromJson(user);
+            users.addAll({userModel.id: userModel});
           }
           return right(users);
         } else {

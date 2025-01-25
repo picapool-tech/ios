@@ -398,14 +398,7 @@ class _ChatPageState extends State<ChatPage>
                       );
                     }
                     chatController.sendMessage(message);
-                    if (_scrollController.hasClients) {
-                      debugPrint("Scrolling to bottom");
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      );
-                    }
+                    // chatController.sendReaction(message, 220);
                   }
                 : (message) {},
           ),

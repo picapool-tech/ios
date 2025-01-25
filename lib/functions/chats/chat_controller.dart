@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
 import 'package:picapool/functions/chats/chat_api.dart';
 import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
@@ -11,7 +10,6 @@ import 'package:picapool/services/socket.service.dart';
 
 class ChatController extends GetxController {
   final ChatApi _chatApi = ChatApi();
-  final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
   final StorageController _storageController = Get.find<StorageController>();
   final SocketService socketService = SocketService();
@@ -21,7 +19,7 @@ class ChatController extends GetxController {
   var chats = <ChatAndOfferModel>[].obs;
 
   var messages = <Message>[].obs;
-  var usersInChat = <User>[].obs;
+  var usersInChat = <int, User>{}.obs;
 
   // just for scrolling need some rethinking on this.
   final ScrollController scrollController = ScrollController();
@@ -83,7 +81,7 @@ class ChatController extends GetxController {
     socketService.disconnectSocket();
 
     messages.value = [];
-    usersInChat.value = [];
+    usersInChat.value = {};
   }
 
   Future<void> getAllChats() async {
@@ -172,7 +170,8 @@ class ChatController extends GetxController {
         );
       },
       (usersList) {
-        usersInChat.value = usersList;
+        usersInChat.assignAll(usersList);
+        // usersInChat.value = usersList;
       },
     );
 
@@ -207,12 +206,16 @@ class ChatController extends GetxController {
       return null;
     }
 
-    return usersInChat.firstWhereOrNull((user) => user.id == userId)?.username;
+    return usersInChat[userId]?.name;
   }
 
   void handleIncomingMessage(data) {
     var message = data['createdMessage'];
     var messageModel = Message.fromJson(message);
+    var userId = messageModel.userId;
+    if (!usersInChat.containsKey(userId)) {
+      getAllUsersInChat(messageModel.chatId!);
+    }
     messages.add(messageModel);
     update();
     // await Future.wait([Future.value(const Duration(milliseconds: 300))]);

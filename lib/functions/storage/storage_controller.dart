@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:picapool/functions/auth/auth_api.dart';
+import 'package:picapool/functions/network/connection_status_listener.dart';
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/user_model.dart';
@@ -21,12 +22,14 @@ class StorageController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth');
     auth.value = null;
+    update();
   }
 
   Future<void> clearUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
     user.value = null;
+    update();
   }
 
   Future<String?> getAccessToken() async {
@@ -38,11 +41,18 @@ class StorageController extends GetxController {
           debugPrint("User is null");
           return null;
         }
+
+        if (!await ConnectionStatusListener.getInstance().checkConnection()) {
+          debugPrint("No internet connection");
+          return null;
+        }
+
         final result = await _authApi.updateAccessToken(
           accessToken: auth.value!.accessToken!,
           refreshToken: auth.value!.refreshToken!,
           userId: user.value!.id,
         );
+
         return result.fold(
           (fail) {
             debugPrint(
@@ -50,6 +60,7 @@ class StorageController extends GetxController {
             clearAuth();
             clearUser();
             Get.offAll(() => const LoginScreen());
+
             return null;
           },
           (newAccessToken) async {
@@ -144,12 +155,11 @@ class StorageController extends GetxController {
   }
 
   Future<void> saveAuth(Auth auth) async {
-    assert(auth.accessToken != null);
     debugPrint("Saving auth : ${auth.toJson()}");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String authData = jsonEncode(auth.toJson());
-    await loadAuth();
     await prefs.setString('auth', authData);
+    await loadAuth();
   }
 
   Future<void> saveTags(List<Tag> tags) async {
@@ -168,7 +178,7 @@ class StorageController extends GetxController {
     debugPrint("Saving user: ${user.toJson()}");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userData = jsonEncode(user.toJson());
-    await loadUser();
     await prefs.setString('user', userData);
+    await loadUser();
   }
 }

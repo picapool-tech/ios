@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
+  final StorageController _storageController = Get.find<StorageController>();
   final FeedbackController _feedbackController = Get.find<FeedbackController>();
   bool imageError = false;
 
@@ -573,36 +574,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             "91${_phoneController.text}",
                                         returnValue: true,
                                       ),
-                                    ) as bool?;
+                                    ) as List<dynamic>?;
 
-                                    if (value != null && value) {
-                                      var updateUser = await _userController
-                                          .updateUser({
-                                        "mobile": "91${_phoneController.text}"
-                                      });
+                                    if (value != null && value[0]) {
+                                      // Verify successful
+                                      debugPrint("$value is from OTP");
+                                      var updatedPhoneToServer =
+                                          await _authController
+                                              .updatePhoneNumber(
+                                        phoneNumber:
+                                            "91${_phoneController.text}",
+                                        code: value[1],
+                                      );
 
-                                      if (updateUser) {
-                                        _authController.auth.value =
-                                            _authController.auth.value!
-                                                .copyWith(
-                                          mobile: "91${_phoneController.text}",
-                                        );
-                                        await Get.find<StorageController>()
-                                            .saveAuth(
-                                                _authController.auth.value!);
-                                        setState(() {});
-                                      } else {
-                                        Get.snackbar(
-                                          "Error",
-                                          "Could not update phone number",
-                                          snackPosition: SnackPosition.BOTTOM,
-                                        );
+                                      if (!updatedPhoneToServer) {
+                                        Get.snackbar("Oops!",
+                                            "Not able to update phone at this time.");
+                                        return;
                                       }
+
+                                      var auth =
+                                          _authController.auth.value!.update({
+                                        "mobile": "91${_phoneController.text}",
+                                      });
+                                      await _authController
+                                          .loadAndSaveAuth(auth);
+                                      _authController.auth.refresh();
+
+                                      setState(() {});
                                     } else {
+                                      // Verify failed
+                                      debugPrint("Failed");
                                       Get.snackbar(
                                         "Error",
-                                        "Could not verify phone number",
-                                        snackPosition: SnackPosition.BOTTOM,
+                                        "Could not update phone number",
+                                        snackPosition: SnackPosition.TOP,
                                       );
                                     }
                                   },

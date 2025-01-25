@@ -1,62 +1,84 @@
-import 'package:picapool/models/auth_model.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/models/tag_model.dart';
 
 class Partner {
   final int id;
-  final String? name;
+  final String? username;
+  final String? ownername;
   final String? pic;
-  final String? location;
-  final Auth? auth;
-  final int? authId;
-  final List<Offer>? offers;
+  final String? link;
+  final bool? delivery;
+  final String? email;
+  final String? phone;
+  final Location? location;
   final List<Tag>? tags;
   final List<Product>? products;
+  final List<Offer>? offers;
 
   Partner({
     required this.id,
-    this.name,
+    this.username,
+    this.ownername,
     this.pic,
+    this.link,
+    this.delivery,
+    this.email,
+    this.phone,
     this.location,
-    this.auth,
-    this.authId,
-    this.offers,
     this.tags,
     this.products,
+    this.offers,
   });
 
   factory Partner.fromJson(Map<String, dynamic> json) {
     return Partner(
       id: json['id'],
-      name: json['name'],
+      username: json['username'],
+      ownername: json['ownername'],
       pic: json['pic'],
-      location: json['location'],
-      auth: json['auth'] != null ? Auth.fromJson(json['auth']) : null,
-      authId: json['authId'],
-      offers: json['offers'] != null
-          ? (json['offers'] as List).map((o) => Offer.fromJson(o)).toList()
+      link: json['link'],
+      delivery: json['delivery'],
+      email: json['email'],
+      phone: json['phone'],
+      location: json['location'] != null
+          ? Location(
+              latitude: json['location']['lng'],
+              longitude: json['location']['lng'],
+              timestamp: DateTime.now())
           : null,
       tags: json['tags'] != null
-          ? (json['tags'] as List).map((t) => Tag.fromJson(t)).toList()
+          ? List<Tag>.from(json['tags'].map((tag) => Tag.fromJson(tag)))
           : null,
       products: json['products'] != null
-          ? (json['products'] as List).map((p) => Product.fromJson(p)).toList()
+          ? List<Product>.from(
+              json['products'].map((product) => Product.fromJson(product)))
+          : null,
+      offers: json['offers'] != null
+          ? List<Offer>.from(
+              json['offers'].map((offer) => Offer.fromJson(offer)))
           : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'pic': pic,
-      'location': location,
-      'auth': auth?.toJson(),
-      'authId': authId,
-      'offers': offers?.map((o) => o.toJson()).toList(),
-      'tags': tags?.map((t) => t.toJson()).toList(),
-      'products': products?.map((p) => p.toJson()).toList(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'username': username,
+        'ownername': ownername,
+        'pic': pic,
+        'link': link,
+        'delivery': delivery,
+        'email': email,
+        'phone': phone,
+        'location': (location != null)
+            ? {
+                'loc': location!.latitude,
+                'lng': location!.longitude,
+              }
+            : null,
+        'tags': tags?.map((tag) => tag.toJson()).toList(),
+        'products': products?.map((product) => product.toJson()).toList(),
+        'offers': offers?.map((offer) => offer.toJson()).toList(),
+      };
 }
