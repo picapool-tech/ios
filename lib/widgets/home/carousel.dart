@@ -89,7 +89,7 @@ class _CarouselWidgetState extends State<CarouselWidget>
 
   Widget carouselItem(Offer offer) {
     log("Offer in carousel: ${offer.toJson()}");
-    var color = determineColor(offer.units, offer.maxUnits);
+    // var color = determineColor(offer.units, offer.maxUnits);
     return InkWell(
       onTap: () => Get.to(
         () => OfferDetailsPage(offer: offer),
@@ -138,7 +138,8 @@ class _CarouselWidgetState extends State<CarouselWidget>
                 children: [
                   LinearProgressIndicator(
                     value: (offer.units! / offer.maxUnits!),
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(appTheme.primaryColor),
                     backgroundColor: Colors.grey[300],
                     borderRadius: BorderRadius.circular(5),
                     minHeight: 10,
@@ -161,7 +162,7 @@ class _CarouselWidgetState extends State<CarouselWidget>
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: color,
+                          color: appTheme.primaryColor,
                         ),
                       )
                     ],

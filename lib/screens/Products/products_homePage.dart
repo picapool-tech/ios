@@ -227,38 +227,36 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
   //   );
   // }
 
-  Stack offerImageBanner({
+  Widget offerImageBanner({
     required String? imageUrl,
     required VoidCallback onTap,
   }) {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: (imageUrl == null)
-              ? Image.asset(
-                  width: double.infinity,
-                  'assets/dominos/OfferImag1.png',
-                  fit: BoxFit.cover,
-                )
-              : CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                ),
-        ),
-        Positioned(
-          top: 20,
-          right: 20,
-          child: InkWell(
-            onTap: () {
-              onTap();
-              // if (_partnerController.partners.isEmpty) return;
-              // var offer = _partnerController.partners.firstOrNull?.offers;
-
-              // if (offer == null || offer.isEmpty) return;
-
-              // Get.to(() => OfferDetailsPage(offer: offer.first));
-            },
+    return InkWell(
+      onTap: onTap,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: (imageUrl == null)
+                ? Image.asset(
+                    width: double.infinity,
+                    'assets/dominos/OfferImag1.png',
+                    fit: BoxFit.cover,
+                  )
+                : CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                  ),
+          ),
+                // if (_partnerController.partners.isEmpty) return;
+                // var offer = _partnerController.partners.firstOrNull?.offers;
+      
+                // if (offer == null || offer.isEmpty) return;
+      
+                // Get.to(() => OfferDetailsPage(offer: offer.first));
+          Positioned(
+            top: 20,
+            right: 20,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -275,8 +273,8 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

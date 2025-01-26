@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -236,6 +238,8 @@ class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
       _userController.user.value!.id,
       listOfProducts,
     );
+
+    log(waLink);
 
     if (!await launchUrl(Uri.parse(waLink))) {
       Get.snackbar("Error", "Could not get WhatsApp link");

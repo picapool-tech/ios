@@ -1,4 +1,6 @@
 // Example usage
+import 'dart:developer';
+
 import 'package:picapool/models/product_model.dart';
 
 void main() {
@@ -35,14 +37,24 @@ String generateWhatsAppLink(
   for (int i = 0; i < products.length; i++) {
     final product = products[i];
     orderText +=
-        "${i + 1}. *${product.name}* (P_ID: ${product.id}) - ~₹${product.mrp}~ ₹${product.offerPrice}%0A";
+        "${i + 1}. *${product.name}* (P_ID: ${product.id}) - ~₹${product.mrp}~ ₹${product.offerPrice}\n";
   }
+  log(orderText);
 
   // Calculate totals
   double finalPrice =
-      products.fold(0, (sum, item) => sum + (item.offerPrice ?? 0));
-  double totalSavings = products.fold(
-      0, (sum, item) => sum + (item.mrp ?? 0 - (item.offerPrice ?? 0)));
+      products.fold(0, (sum, item) => sum + (item.offerPrice ?? 0)) * 1.05 + 30;
+
+  double totalSavings = 45;
+  for (var product in products) {
+    double diff =
+        (product.mrp ?? 0).toDouble() - (product.offerPrice ?? 0).toDouble();
+    if (diff < 0) diff = 0;
+    totalSavings += diff;
+  }
+  // double totalSavings = products.fold(
+  //         0, (sum, item) => sum + ((item.mrp ?? 0) - (item.offerPrice ?? 0))) +
+  //     45;
 
   // Generate message
   String message = """
@@ -52,8 +64,8 @@ This is *$username* (ID: $userId).
 I’d like to proceed with the following order:
 
 $orderText
-*Final Price:* ₹$finalPrice
-*Total Savings:* ₹$totalSavings
+*Final Price (Inc. Tax&Charges):* ₹$finalPrice
+*Total Savings (Inc. Tax&Charges):* ₹$totalSavings
 
 Could you please check if there are any additional discounts available? 😊
 """;

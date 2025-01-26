@@ -21,31 +21,31 @@ class PlayStationPage extends StatefulWidget {
 class _PlayStationPageState extends State<PlayStationPage> {
   final PartnerController _partnerController = Get.find<PartnerController>();
 
-  Stack banner({
+  Widget banner({
     required String? image,
     required VoidCallback onTap,
   }) {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: (image == null)
-              ? Image.asset(
-                  width: double.infinity,
-                  'assets/dominos/OfferImag1.png', // Replace with your offer image asset
-                  fit: BoxFit.cover,
-                )
-              : CachedNetworkImage(
-                  width: double.infinity,
-                  imageUrl: image,
-                  fit: BoxFit.cover,
-                ),
-        ),
-        Positioned(
-          top: 10,
-          right: 10,
-          child: InkWell(
-            onTap: onTap,
+    return InkWell(
+      onTap: onTap,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: (image == null)
+                ? Image.asset(
+                    width: double.infinity,
+                    'assets/dominos/OfferImag1.png', // Replace with your offer image asset
+                    fit: BoxFit.cover,
+                  )
+                : CachedNetworkImage(
+                    width: double.infinity,
+                    imageUrl: image,
+                    fit: BoxFit.cover,
+                  ),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -63,8 +63,8 @@ class _PlayStationPageState extends State<PlayStationPage> {
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
