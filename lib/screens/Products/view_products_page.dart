@@ -1,9 +1,18 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/Products/selected_product_page.dart';
 
 class ViewProductsPage extends StatelessWidget {
-  const ViewProductsPage({super.key});
+  final List<Product> products;
+  final String partnerName;
+
+  const ViewProductsPage({
+    super.key,
+    required this.products,
+    required this.partnerName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +38,14 @@ class ViewProductsPage extends StatelessWidget {
         ),
         centerTitle: false,
         actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundImage: AssetImage(
-                  'assets/avatar.jpg'), // Replace with your image asset path
-            ),
-          ),
+          // Padding(
+          //   padding: EdgeInsets.only(right: 16.0),
+          //   child: CircleAvatar(
+          //     backgroundImage: AssetImage(
+          //       'assets/avatar.jpg',
+          //     ), // Replace with your image asset path
+          //   ),
+          // ),
         ],
       ),
       body: Padding(
@@ -44,27 +54,27 @@ class ViewProductsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search Bar
-            Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Find "dominos" deals',
-                  hintStyle: TextStyle(
-                    color: Color(0xff000000),
-                    fontFamily: "MontserratR",
-                  ),
-                  prefixIcon: Icon(Icons.search, color: Colors.orange),
-                  border: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            // Container(
+            //   height: 40,
+            //   decoration: BoxDecoration(
+            //     color: Colors.grey[200],
+            //     borderRadius: BorderRadius.circular(20),
+            //   ),
+            //   child: TextField(
+            //     decoration: InputDecoration(
+            //       hintText: 'Find "$partnerName" deals',
+            //       hintStyle: const TextStyle(
+            //         color: Color(0xff000000),
+            //         fontFamily: "MontserratR",
+            //       ),
+            //       prefixIcon: const Icon(Icons.search, color: Colors.orange),
+            //       border: InputBorder.none,
+            //       contentPadding:
+            //           const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
             // Products Grid
             Expanded(
               child: GridView.builder(
@@ -74,7 +84,7 @@ class ViewProductsPage extends StatelessWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
-                itemCount: 3, // Number of items
+                itemCount: products.length, // Number of items
                 itemBuilder: (context, index) {
                   return _buildProductCard(context, index);
                 },
@@ -87,90 +97,15 @@ class ViewProductsPage extends StatelessWidget {
   }
 
   Widget _buildProductCard(BuildContext context, int index) {
-    final List<Map<String, String>> products = [
-      {
-        'image':
-            'assets/dominos/Margherita Pizza.png', // Replace with your image asset path
-        'title': 'Margherita Pizza',
-        'price': '₹ 109',
-        'status': 'available',
-        'description':
-            'Margherita Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh basil leaves. It is a simple and classic pizza that is perfect for any occasion.',
-        'details': """Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
-      },
-      {
-        'image':
-            'assets/dominos/Onion Pizza.png', // Replace with your image asset path
-        'title': 'Onion Pizza',
-        'price': '₹ 53',
-        'status': 'available',
-        'description':
-            'Onion Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh onions. It is a simple and classic pizza that is perfect for any occasion.',
-        'details': """Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
-      },
-      {
-        'image':
-            'assets/dominos/Tomato Pizza.png', // Replace with your image asset path
-        'title': 'Tomato Pizza',
-        'price': '₹ 53',
-        'status': 'available',
-        'description':
-            'Tomato Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh basil leaves. It is a simple and classic pizza that is perfect for any occasion.',
-        'details': """Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
-      },
-      // {
-      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-      //   'title': 'Game console Apple iPad play',
-      //   'price': '₹ 400',
-      //   'status': 'sold_out'
-      // },
-      // {
-      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-      //   'title': 'Game console Apple iPad play',
-      //   'price': '₹ 400',
-      //   'status': 'available'
-      // },
-      // {
-      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-      //   'title': 'Game console Apple iPad play',
-      //   'price': '₹ 400',
-      //   'status': 'available'
-      // },
-      // {
-      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-      //   'title': 'Game console Apple iPad play',
-      //   'price': '₹ 400',
-      //   'status': 'available'
-      // },
-      // {
-      //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-      //   'title': 'Game console Apple iPad play',
-      //   'price': '₹ 400',
-      //   'status': 'sold_out'
-      // },
-    ];
-
     final product = products[index];
-    final isSoldOut = product['status'] == 'sold_out';
+    const isSoldOut = false; // Replace with your logic
 
     return InkWell(
       onTap: () {
         Get.to(() => SelectedProductPage(
-              product: products[index],
+              product: product,
             ));
-        // Navigator.push(
+        // // Navigator.push(
         //   context,
         //   MaterialPageRoute(
         //     builder: (context) => const SelectedProductPage(),
@@ -197,21 +132,28 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(10)),
-                  child: Image.asset(
-                    product['image']!,
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child: (product.images.isNotEmpty)
+                      ? CachedNetworkImage(
+                          imageUrl: product.images.first,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          "assets/dominos/Onion Pizza.png",
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Domions Offer',
-                        style: TextStyle(
+                      Text(
+                        '${partnerName.split(" ").firstOrNull ?? partnerName} Offer',
+                        style: const TextStyle(
                           fontSize: 12,
                           fontFamily: 'MontserratR',
                           color: Colors.grey,
@@ -219,7 +161,7 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        product['title']!,
+                        product.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -230,7 +172,7 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        product['price']!,
+                        "₹ ${product.offerPrice}",
                         style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'MontserratM',

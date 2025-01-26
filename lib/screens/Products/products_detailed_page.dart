@@ -1,16 +1,22 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/screens/Public%20Chat/select_products_from_offer.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 
 class BrandOfferModel {
   final String title;
   final String description;
   final String imageUrl;
+  final bool remoteImageUrl;
 
   BrandOfferModel({
     required this.title,
     required this.description,
     required this.imageUrl,
+    this.remoteImageUrl = true,
   });
 
   factory BrandOfferModel.fromJson(Map<String, dynamic> json) {
@@ -30,23 +36,54 @@ class BrandOfferModel {
   }
 }
 
-class OnePlusCommunityOfferPage extends StatelessWidget {
-  OnePlusCommunityOfferPage({super.key});
+class OfferDetailsPage extends StatefulWidget {
+  final Offer offer;
 
-  final BrandOfferModel model = BrandOfferModel(
-    title: 'Dominos Offer',
-    description:
-        "Now that's a DEAL 🤝 Treat your family and friends with #DominosExclusiveOffers. Use code PIZZAPARTY and get 6 Pizzas at just Rs.350/-. Order Now.",
-    imageUrl: "assets/dominos/OfferImag1.png",
-  );
+  const OfferDetailsPage({
+    super.key,
+    required this.offer,
+  });
+
+  @override
+  State<OfferDetailsPage> createState() => _OfferDetailsPageState();
+}
+
+class _OfferDetailsPageState extends State<OfferDetailsPage> {
+  final OffersController _offersController = Get.find<OffersController>();
+
+  Future<Offer?> offerDetails = Future.value(null);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomAppBar(
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             // Handle pooling action
+            if (widget.offer.top) {
+              var offerValue = await offerDetails;
+              if (offerValue?.products == null ||
+                  offerValue!.products!.isEmpty) {
+                Get.snackbar(
+                  'No products in this offer',
+                  'Please try again later',
+                  snackPosition: SnackPosition.TOP,
+                );
+                return;
+              }
+              Get.to(
+                () => SelectProductsFromOffer(
+                  products: offerValue.products!,
+                  offerName: widget.offer.name,
+                ),
+              );
+              return;
+            }
+            var model = BrandOfferModel(
+                title: widget.offer.name,
+                description: widget.offer.desc,
+                imageUrl: widget.offer.images.firstOrNull ?? "",
+                remoteImageUrl: widget.offer.images.firstOrNull != null);
             Get.to(() => const RequestVicinity(), arguments: {
               "brands": {
                 ...model.toJson(),
@@ -60,9 +97,9 @@ class OnePlusCommunityOfferPage extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
           ),
-          child: const Text(
-            'Start Pooling',
-            style: TextStyle(
+          child: Text(
+            (widget.offer.top) ? 'Select Products' : 'Start Pooling',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontFamily: 'MontserratM',
@@ -81,7 +118,8 @@ class OnePlusCommunityOfferPage extends StatelessWidget {
           },
         ),
         title: Text(
-          model.title,
+          widget.offer.name,
+          maxLines: 1,
           style: const TextStyle(
             color: Colors.black,
             fontFamily: 'MontserratM',
@@ -98,11 +136,26 @@ class OnePlusCommunityOfferPage extends StatelessWidget {
             // Offer Image
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                width: double.infinity,
-                'assets/dominos/OfferImag1.png', // Replace with your image asset path
-                fit: BoxFit.cover,
-              ),
+              child: () {
+                if (widget.offer.images.isEmpty) {
+                  return Image.asset(
+                    'assets/dominos/OfferImag1.png',
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  );
+                } else {
+                  return CachedNetworkImage(
+                    imageUrl: widget.offer.images.first,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  );
+                }
+              }(),
+              // Image.asset(
+              //   width: double.infinity,
+              //   'assets/dominos/OfferImag1.png', // Replace with your image asset path
+              //   fit: BoxFit.cover,
+              // ),
             ),
             const SizedBox(height: 20),
             // View Details Text
@@ -117,15 +170,8 @@ class OnePlusCommunityOfferPage extends StatelessWidget {
             const SizedBox(height: 20),
             _productDetailsList(),
             const SizedBox(height: 20),
-            const Text("""
-Now that's a DEAL 🤝 Treat your family and friends with #DominosExclusiveOffers. Use code PIZZAPARTY and get 6 Pizzas at just Rs.350/-. Order Now.
-
-Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350
-
+            Text("""
+${widget.offer.desc}
 """)
             // Product 1 Details
             // _buildProductDetail(
@@ -164,121 +210,46 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350
     );
   }
 
-  final List<Map<String, String>> products = [
-    {
-      'image':
-          'assets/dominos/Margherita Pizza.png', // Replace with your image asset path
-      'title': 'Margherita Pizza',
-      'price': '₹ 109',
-      'status': 'available',
-      'originalPrice': "109",
-      'description':
-          'Margherita Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh basil leaves. It is a simple and classic pizza that is perfect for any occasion.',
-      'details': """Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
-    },
-    {
-      'image':
-          'assets/dominos/Onion Pizza.png', // Replace with your image asset path
-      'title': 'Onion Pizza',
-      'price': '₹ 53',
-      'status': 'available',
-      'originalPrice': "69",
-      'description':
-          'Onion Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh onions. It is a simple and classic pizza that is perfect for any occasion.',
-      'details': """Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
-    },
-    {
-      'image':
-          'assets/dominos/Tomato Pizza.png', // Replace with your image asset path
-      'title': 'Tomato Pizza',
-      'price': '₹ 53',
-      'status': 'available',
-      'originalPrice': "69",
-      'description':
-          'Tomato Pizza is a delicious pizza with a thin crust, topped with tomato sauce, mozzarella cheese, and fresh basil leaves. It is a simple and classic pizza that is perfect for any occasion.',
-      'details': """Step 1: Login the Dominos app
-Step 2: Choose the option for delivery (No takeaway)
-Step 3: Add 1 Margherita Pizza (Regular Size)
-Step 4: Go to the pizza Mania Section and Add 2 onion pizza and 3 tomato Pizza
-step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
-    },
-    // {
-    //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-    //   'title': 'Game console Apple iPad play',
-    //   'price': '₹ 400',
-    //   'status': 'sold_out'
-    // },
-    // {
-    //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-    //   'title': 'Game console Apple iPad play',
-    //   'price': '₹ 400',
-    //   'status': 'available'
-    // },
-    // {
-    //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-    //   'title': 'Game console Apple iPad play',
-    //   'price': '₹ 400',
-    //   'status': 'available'
-    // },
-    // {
-    //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-    //   'title': 'Game console Apple iPad play',
-    //   'price': '₹ 400',
-    //   'status': 'available'
-    // },
-    // {
-    //   'image': 'assets/images/ps 5.png', // Replace with your image asset path
-    //   'title': 'Game console Apple iPad play',
-    //   'price': '₹ 400',
-    //   'status': 'sold_out'
-    // },
-  ];
+  Future<Offer?> getOfferDetails(int id) async {
+    return await _offersController.getOfferDetails(id);
+  }
 
-  Widget _productDetailsList() {
-    return ListView.separated(
-      separatorBuilder: (context, index) => const SizedBox(height: 20),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        final product = products[index];
-        return _buildProductDetailDominos(
-          imagePath: product['image']!,
-          title: product['title']!,
-          price: product['price']!,
-          description: product['description']!,
-          originalPrice: product['originalPrice'] ?? "104",
-        );
-      },
-    );
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((duration) {
+      setState(() {
+        offerDetails = _offersController.getOfferDetails(widget.offer.id);
+      });
+    });
   }
 
   Widget _buildProductDetailDominos({
-    required String imagePath,
+    required String? imagePath,
     required String title,
     required String description,
-    required String price,
-    required String originalPrice,
+    required int? price,
+    required int? originalPrice,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.asset(
-            imagePath,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-          ),
+          child: (imagePath == null)
+              ? Image.asset(
+                  "assets/dominos/Margherita Pizza.png",
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                )
+              : CachedNetworkImage(
+                  imageUrl: imagePath,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -306,7 +277,7 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
               const SizedBox(height: 5),
               Text.rich(
                 TextSpan(
-                  text: price,
+                  text: "$price",
                   style: const TextStyle(
                     fontSize: 14,
                     fontFamily: 'MontserratM',
@@ -322,7 +293,7 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
                       ),
                     ),
                     TextSpan(
-                      text: originalPrice,
+                      text: "$originalPrice",
                       style: const TextStyle(
                         fontSize: 12,
                         fontFamily: 'MontserratR',
@@ -340,90 +311,46 @@ step 5: Apply Coupon code PIZZAPARTY and get 6 pizzas in 350"""
     );
   }
 
-  Widget _buildProductDetail({
-    required String imagePath,
-    required String title,
-    required String display,
-    required String processor,
-    required String ram,
-    required String storage,
-    required String camera,
-    required String price,
-    required String originalPrice,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.asset(
-            imagePath,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'MontserratM',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                '• Display: $display\n'
-                '• Processor: $processor\n'
-                '• RAM: $ram\n'
-                '• Storage: $storage\n'
-                '• Camera: $camera',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'MontserratR',
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text.rich(
-                TextSpan(
-                  text: price,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'MontserratM',
-                    color: Colors.black,
-                  ),
-                  children: <TextSpan>[
-                    const TextSpan(
-                      text: ' M.R.P. ',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'MontserratR',
-                        color: Colors.grey,
-                      ),
-                    ),
-                    TextSpan(
-                      text: originalPrice,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'MontserratR',
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  Widget _productDetailsList() {
+    return FutureBuilder<Offer?>(
+        future: offerDetails,
+        builder: (context, snapshot) {
+          debugPrint("OFFER : ${snapshot.data}");
+          if (snapshot.hasData) {
+            var offer = snapshot.data;
+
+            if (offer == null) {
+              return const Center(
+                child: Text("No product in this offer"),
+              );
+            }
+            var products = offer.products ?? [];
+            return ListView.separated(
+              separatorBuilder: (context, index) => const SizedBox(height: 20),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return _buildProductDetailDominos(
+                  imagePath: product.images.firstOrNull,
+                  title: product.name,
+                  price: product.offerPrice,
+                  description: product.description,
+                  originalPrice: product.mrp,
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            debugPrint("Error: ${snapshot.error}");
+            return Center(
+              child: Text("Error: ${snapshot.error}"),
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
   }
 }

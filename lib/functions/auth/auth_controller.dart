@@ -121,7 +121,9 @@ class AuthController extends GetxController {
         auth.value = null;
         _userController.user.value = null;
         errorMessage.value = fail.message;
-        showErrorDialog(fail.message);
+        if (fail.showError) {
+          showErrorDialog(fail.message);
+        }
       },
       (loginModel) async {
         postLoginAction(loginModel);
@@ -142,7 +144,9 @@ class AuthController extends GetxController {
         auth.value = null;
         _userController.user.value = null;
         debugPrint(fail.message);
-        showErrorDialog(fail.message);
+        if (fail.showError) {
+          showErrorDialog(fail.message);
+        }
       },
       (loginModel) async {
         postLoginAction(loginModel);
@@ -162,7 +166,9 @@ class AuthController extends GetxController {
         auth.value = null;
         _userController.user.value = null;
         errorMessage.value = fail.message;
-        showErrorDialog(fail.message);
+        if (fail.showError) {
+          showErrorDialog(fail.message);
+        }
       },
       (loginModel) async {
         await postLoginAction(loginModel, mobile: mobile);
@@ -317,7 +323,9 @@ class AuthController extends GetxController {
       return await result.fold(
         (fail) {
           errorMessage.value = fail.message;
-          showErrorDialog(fail.message);
+          if (fail.showError) {
+            showErrorDialog(fail.message);
+          }
           return false;
         },
         (responseModel) async {

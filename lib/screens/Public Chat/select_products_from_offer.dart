@@ -1,92 +1,33 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/models/product_model.dart';
+import 'package:picapool/screens/Products/send_to_whatsapp.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class PublicChatPage extends StatefulWidget {
-  const PublicChatPage({super.key});
+class SelectProductsFromOffer extends StatefulWidget {
+  final List<Product> products;
+  final String offerName;
+
+  const SelectProductsFromOffer({
+    super.key,
+    required this.products,
+    required this.offerName,
+  });
 
   @override
-  _PublicChatPageState createState() => _PublicChatPageState();
+  State<SelectProductsFromOffer> createState() =>
+      _SelectProductsFromOfferState();
 }
 
-class _PublicChatPageState extends State<PublicChatPage> {
-  List<Map<String, dynamic>> products = [
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 11 Pro',
-      'price': '₹ 40,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 11 Pro',
-      'price': '₹ 40,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-    {
-      'image':
-          'assets/images/image 82.png', // Replace with your actual image path
-      'name': 'OnePlus 10 Pro',
-      'price': '₹ 46,000',
-      'selected': false,
-    },
-  ];
+class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
+  late List<bool> selectedIndex;
+  final UserController _userController = Get.find<UserController>();
+
+  bool areProductsSelected() {
+    return selectedIndex.contains(true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +42,9 @@ class _PublicChatPageState extends State<PublicChatPage> {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
-          "Buy 1 get 2",
-          style: TextStyle(
+        title: Text(
+          widget.offerName,
+          style: const TextStyle(
             fontSize: 18,
             fontFamily: "MontserratM",
             color: Colors.black,
@@ -126,7 +67,7 @@ class _PublicChatPageState extends State<PublicChatPage> {
             const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
-                itemCount: products.length,
+                itemCount: widget.products.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio:
@@ -135,21 +76,21 @@ class _PublicChatPageState extends State<PublicChatPage> {
                   crossAxisSpacing: 16,
                 ),
                 itemBuilder: (context, index) {
+                  var product = widget.products[index];
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        products[index]['selected'] =
-                            !products[index]['selected'];
+                        selectedIndex[index] = !selectedIndex[index];
                       });
                     },
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         border: Border.all(
-                          color: products[index]['selected']
+                          color: selectedIndex[index]
                               ? Colors.orange
                               : Colors.grey.shade300,
-                          width: products[index]['selected'] ? 2 : 1,
+                          width: selectedIndex[index] ? 2 : 1,
                         ),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
@@ -163,27 +104,42 @@ class _PublicChatPageState extends State<PublicChatPage> {
                       ),
                       child: Stack(
                         clipBehavior: Clip
-                            .none, // This allows the checkbox to go out of bounds if needed
+                            .hardEdge, // This allows the checkbox to go out of bounds if needed
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
+                              Container(
+                                constraints: const BoxConstraints(
+                                  maxHeight: 120,
+                                ),
+                                decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(10),
+                                      topRight: Radius.circular(10)),
+                                  color: Colors.white,
+                                ),
+                                clipBehavior: Clip.hardEdge,
                                 child: Center(
-                                  child: Image.asset(
-                                    products[index]['image'],
-                                    height:
-                                        120, // Adjust image height to reduce card size
-                                    fit: BoxFit.contain,
-                                  ),
+                                  child: (product.images.isEmpty)
+                                      ? Image.asset(
+                                          "assets/images/ic_launcher.png",
+                                          fit: BoxFit.fill,
+                                        )
+                                      : CachedNetworkImage(
+                                          width: double.infinity,
+                                          imageUrl: product.images.first,
+                                          fit: BoxFit.cover,
+                                        ),
                                 ),
                               ),
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Text(
-                                  products[index]['name'],
+                                  product.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontFamily: "MontserratM",
@@ -194,7 +150,7 @@ class _PublicChatPageState extends State<PublicChatPage> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Text(
-                                  products[index]['price'],
+                                  "₹ ${product.offerPrice}",
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontFamily: "MontserratM",
@@ -210,16 +166,20 @@ class _PublicChatPageState extends State<PublicChatPage> {
                             right:
                                 -10, // Ensures it aligns with the top-right edge of the card
                             child: Checkbox(
-                              value: products[index]['selected'],
+                              value: selectedIndex[index],
                               onChanged: (bool? value) {
                                 setState(() {
-                                  products[index]['selected'] = value ?? false;
+                                  selectedIndex[index] = value ?? false;
                                 });
                               },
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               activeColor: Colors.orange,
+                              side: const BorderSide(
+                                color: Colors.black,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ],
@@ -234,16 +194,11 @@ class _PublicChatPageState extends State<PublicChatPage> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement the logic to proceed to the chat screen
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => ChatPage(
-                  //         chat: ,
-                  //       ),
-                  //     ));
-                },
+                onPressed: areProductsSelected()
+                    ? () {
+                        _sendToWhatsApp();
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(
@@ -264,5 +219,26 @@ class _PublicChatPageState extends State<PublicChatPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    selectedIndex = List.filled(widget.products.length, false);
+  }
+
+  void _sendToWhatsApp() async {
+    var listOfProducts = widget.products
+        .where((product) => selectedIndex[widget.products.indexOf(product)])
+        .toList();
+    var waLink = generateWhatsAppLink(
+      _userController.user.value!.name!,
+      _userController.user.value!.id,
+      listOfProducts,
+    );
+
+    if (!await launchUrl(Uri.parse(waLink))) {
+      Get.snackbar("Error", "Could not get WhatsApp link");
+    }
   }
 }

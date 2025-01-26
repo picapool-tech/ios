@@ -23,7 +23,9 @@ class TagController extends GetxController {
 
     result.fold(
       (failure) {
-        Get.snackbar('Error', failure.message);
+        if (failure.showError) {
+          Get.snackbar('Error', failure.message);
+        }
       },
       (tagsList) {
         if (tags.isEmpty) {
@@ -49,6 +51,7 @@ class TagController extends GetxController {
 
         if (forceRefresh) {
           tags.value = tagsList;
+          tags.sort((a, b) => a.id - b.id);
         }
       },
     );
@@ -74,13 +77,20 @@ class TagController extends GetxController {
 
     return result.fold(
       (failure) {
-        Get.snackbar('Error', failure.message);
+        if (failure.showError) {
+          Get.snackbar('Error', failure.message);
+        }
         return null;
       },
       (tag) {
         return tag;
       },
     );
+  }
+
+  Tag? getTagsByTagName(String name) {
+    return tags.firstWhereOrNull(
+        (element) => element.tag.toLowerCase().contains(name));
   }
 
   initialize() async {
@@ -171,5 +181,4 @@ class TagController extends GetxController {
     bool isValidTopic = RegExp(r'^[a-zA-Z0-9-_.~%]{1,900}$').hasMatch(topic);
     return isValidTopic;
   }
-
 }

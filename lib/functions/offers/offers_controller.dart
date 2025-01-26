@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_api.dart';
@@ -96,7 +97,9 @@ class OffersController extends GetxController {
     });
     result.fold(
       (error) {
-        Get.snackbar("Error", error.message);
+        if (error.showError) {
+          Get.snackbar("Error", error.message);
+        }
       },
       (responseModel) {
         carouselOffer.value = responseModel.data
@@ -104,7 +107,6 @@ class OffersController extends GetxController {
             .toList();
       },
     );
-
     isLoading.value = false;
     update();
   }
@@ -133,6 +135,27 @@ class OffersController extends GetxController {
     });
   }
 
+  Future<Offer?> getOfferDetails(int id) async {
+    isLoading.value = true;
+    update();
+
+    var result = await _offersApi.getOfferDetails(id);
+
+    isLoading.value = false;
+    update();
+
+    return result.fold(
+      (error) {
+        Get.snackbar("Error", error.message);
+        return null;
+      },
+      (offer) {
+        debugPrint("Offer details: ${offer.toJson()}");
+        return offer;
+      },
+    );
+  }
+
   Future<List<Offer>> getOffersByTagId(int tagId) async {
     isLoading.value = true;
     update();
@@ -156,7 +179,9 @@ class OffersController extends GetxController {
     update();
     return result.fold(
       (error) {
-        Get.snackbar("Error", error.message);
+        if (error.showError) {
+          Get.snackbar("Error", error.message);
+        }
         return [];
       },
       (responseModel) {
@@ -204,10 +229,12 @@ class OffersController extends GetxController {
 
     result.fold(
       (error) {
-        Get.snackbar(
-          "Error",
-          error.message,
-        );
+        if (error.showError) {
+          Get.snackbar(
+            "Error",
+            error.message,
+          );
+        }
       },
       (nearestOffersResponse) {
         nearestOffers.value = nearestOffersResponse.reversed.toList();

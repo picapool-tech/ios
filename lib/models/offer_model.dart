@@ -81,9 +81,9 @@ class Offer {
       tags: json['tags'] != null
           ? (json['tags'] as List).map((t) => Tag.fromJson(t)).toList()
           : null,
-      products: // json['products'] != null
-          //     ? (json['products'] as List).map((p) => Product.fromJson(p)).toList()
-          null,
+      products: json['Products'] != null
+          ? (json['Products'] as List).map((p) => Product.fromJson(p)).toList()
+          : null,
       radius: json['radius'],
       top: json['top'] ?? false,
       units: json['units'] as int?,
@@ -110,7 +110,7 @@ class Offer {
       'userId': userId,
       'chats': chats?.map((c) => c.toJson()).toList(),
       'tags': tags?.map((t) => t.toJson()).toList(),
-      'products': products?.map((p) => p.toJson()).toList(),
+      'Products': products?.map((p) => p.toJson()).toList(),
       'radius': radius,
       'top': top,
       'units': units,

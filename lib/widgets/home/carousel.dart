@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/utils/theme.dart';
 
 class CarouselWidget extends StatefulWidget {
@@ -70,7 +71,7 @@ class _CarouselWidgetState extends State<CarouselWidget>
         return carouselItem(offer);
       },
       options: CarouselOptions(
-        height: 280,
+        height: 250,
         viewportFraction: 1.0,
         initialPage: 0,
         enableInfiniteScroll: false,
@@ -89,80 +90,87 @@ class _CarouselWidgetState extends State<CarouselWidget>
   Widget carouselItem(Offer offer) {
     log("Offer in carousel: ${offer.toJson()}");
     var color = determineColor(offer.units, offer.maxUnits);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          constraints: const BoxConstraints(
-            maxHeight: 180,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.white,
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: (offer.images.isEmpty)
-              ? Image.asset(
-                  images[0],
-                )
-              : CachedNetworkImage(
-                  width: double.infinity,
-                  imageUrl: offer.images.first,
-                  fit: BoxFit.fill,
-                ),
-        ),
-        const SizedBox(height: 10),
-        if (offer.units != null || offer.maxUnits != null)
+    return InkWell(
+      onTap: () => Get.to(
+        () => OfferDetailsPage(offer: offer),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Container(
+            constraints: const BoxConstraints(
+              maxHeight: 180,
+            ),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(20),
               color: Colors.white,
-              border: Border.all(color: Colors.grey[300]!),
             ),
-            padding: const EdgeInsets.only(
-              left: 10,
-              right: 10,
-              top: 10,
-              bottom: 5,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                LinearProgressIndicator(
-                  value: (offer.units! / offer.maxUnits!),
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                  backgroundColor: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(5),
-                  minHeight: 10,
-                ),
-                const SizedBox(
-                  height: 4,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Only for first ${offer.maxUnits} units",
-                      style: const TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      "${offer.maxUnits! - offer.units!}/${offer.maxUnits} left",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    )
-                  ],
-                )
-              ],
-            ),
+            clipBehavior: Clip.hardEdge,
+            child: (offer.images.isEmpty)
+                ? Image.asset(
+                    width: double.infinity,
+                    images[0],
+                    fit: BoxFit.fill,
+                  )
+                : CachedNetworkImage(
+                    width: double.infinity,
+                    imageUrl: offer.images.first,
+                    fit: BoxFit.fill,
+                  ),
           ),
-      ],
+          const SizedBox(height: 10),
+          if (offer.units != null || offer.maxUnits != null)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              padding: const EdgeInsets.only(
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 5,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LinearProgressIndicator(
+                    value: (offer.units! / offer.maxUnits!),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    backgroundColor: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(5),
+                    minHeight: 10,
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Only for first ${offer.maxUnits} units",
+                        style: const TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        "${offer.maxUnits! - offer.units!}/${offer.maxUnits} left",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -185,6 +193,11 @@ class _CarouselWidgetState extends State<CarouselWidget>
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((duration) {
+      _offerController.getCarasouelOffer();
+    });
+
     ever(
       _locationController.state,
       (LocationState state) {

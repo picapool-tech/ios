@@ -17,6 +17,7 @@ class StorageController extends GetxController {
   var auth = Rx<Auth?>(null);
   var user = Rx<User?>(null);
   var tags = Rx<List<Tag>>([]);
+  var isGuest = false.obs;
 
   Future<void> clearAuth() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -33,6 +34,9 @@ class StorageController extends GetxController {
   }
 
   Future<String?> getAccessToken() async {
+    if (isGuest.value) {
+      return null;
+    }
     await loadAuth();
     debugPrint("Storage Auth: ${auth.toJson()}");
     if (auth.value != null && auth.value!.accessToken != null) {
@@ -180,5 +184,9 @@ class StorageController extends GetxController {
     String userData = jsonEncode(user.toJson());
     await prefs.setString('user', userData);
     await loadUser();
+  }
+
+  void setIsGuest(bool boolValue) {
+    isGuest.value = boolValue;
   }
 }

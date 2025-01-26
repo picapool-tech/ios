@@ -5,32 +5,18 @@ import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/screens/location_fetch_screen.dart';
 
 class LocationWidget extends StatefulWidget {
+  final Color? color;
   const LocationWidget({
     super.key,
     this.color = Colors.white,
   });
-  final Color? color;
 
   @override
-  _LocationWidgetState createState() => _LocationWidgetState();
+  State<LocationWidget> createState() => _LocationWidgetState();
 }
 
 class _LocationWidgetState extends State<LocationWidget> {
   final LocationController locationController = Get.find<LocationController>();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchLocation();
-    });
-  }
-
-  void _fetchLocation() async {
-    if (locationController.state.value.location == null) {
-      await locationController.getLocation();
-    }
-  }
 
   // String _extractMainLocation(String location) {
   //   // Splitting the address based on commas
@@ -55,7 +41,7 @@ class _LocationWidgetState extends State<LocationWidget> {
       String mainLocation =
           locationController.state.value.locationName?.locality != null
               ? locationController.state.value.locationName?.locality ?? ""
-              : "Locating...";
+              : "";
 
       return Row(
         children: [
@@ -112,16 +98,22 @@ class _LocationWidgetState extends State<LocationWidget> {
               ),
             ),
           ),
-          // const Spacer(),
-          // InkWell(
-          //   onTap: () {},
-          //   child: const SvgIcon(
-          //     "assets/icons/profile.svg",
-          //     size: 34,
-          //   ),
-          // ),
         ],
       );
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchLocation();
+    });
+  }
+
+  void _fetchLocation() async {
+    if (locationController.state.value.location == null) {
+      await locationController.getLocation();
+    }
   }
 }

@@ -4,15 +4,14 @@ import 'package:picapool/controllers/bindings/brand_bindings.dart';
 import 'package:picapool/controllers/bindings/category_bindings.dart';
 import 'package:picapool/controllers/bindings/live_offer_bindings.dart';
 import 'package:picapool/controllers/bindings/product_bindings.dart';
-import 'package:picapool/screens/Public%20Chat/publicChatScreen.dart';
 import 'package:picapool/screens/cabs/CreateCab.dart';
 import 'package:picapool/screens/create_cab.dart';
 import 'package:picapool/screens/create_pool.dart';
+import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/brands/brand_listing.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
-import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/widgets/sell/sell_confirmation_page.dart';
 import 'package:picapool/widgets/sell/sell_form.dart';
 import 'package:picapool/widgets/sell/sell_form_two.dart';
@@ -47,16 +46,14 @@ class GetRoutes {
   static const String createCabShare = '/createCabShare';
   static const String createPool = '/createPool';
 
-  
-
   // Define the routes list using a more concise structure
   static final List<GetPage<dynamic>> routes = [
     _buildRoute(
         name: splash, page: const NewBottomBar(), checkWithNetwork: false),
-    _buildRoute(
-        name: publicChat,
-        page: const PublicChatPage(),
-        checkWithNetwork: false),
+    // _buildRoute(
+    //     name: publicChat,
+    //     page: const SelectProductsFromOffer(),
+    //     checkWithNetwork: false),
     _buildRoute(
         name: createCabPool,
         page: const CreateCabPoolScreen(),

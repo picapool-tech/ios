@@ -5,8 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/functions/auth/auth_controller.dart';
+import 'package:picapool/functions/storage/storage_controller.dart';
 import 'package:picapool/screens/otp_screen.dart';
-import 'package:picapool/screens/public_profile.dart';
+import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/login/google_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -355,8 +356,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: InkWell(
                     onTap: () {
+                      Get.find<StorageController>().setIsGuest(true);
                       Get.to(
-                        () => const PublicProfile(),
+                        () => const NewBottomBar(),
                       );
                     },
                     child: const Text(

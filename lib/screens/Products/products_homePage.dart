@@ -2,9 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/partners/partnerModel/partner_request_model.dart';
 import 'package:picapool/functions/partners/partner_controller.dart';
-import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/models/partner_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
@@ -20,20 +21,20 @@ class ProductsHomepage extends StatefulWidget {
 }
 
 class _ProductsHomepageState extends State<ProductsHomepage> {
-  final List<Map<String, String>> brands = [
-    {'name': 'Dominos', 'asset': 'assets/dominos/logo.jpg'},
-  ];
-
   final PartnerController _partnerController = Get.find<PartnerController>();
-  final UserController _userController = Get.find<UserController>();
+
   final LocationController _locationController = Get.find<LocationController>();
+  final OffersController _offersController = Get.find<OffersController>();
+
+  int? tagId;
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context, widget.currentIndex);
-        return false;
+    return PopScope(
+      onPopInvokedWithResult: (pop, result) {
+        if (!pop) {
+          Get.back();
+        }
       },
       child: Scaffold(
         backgroundColor: const Color(0xffffffff),
@@ -49,7 +50,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                   shape: BoxShape.circle),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.orange),
-                onPressed: () => Navigator.of(context).pop(widget.currentIndex),
+                onPressed: () => Get.back(),
               ),
             ),
           ),
@@ -73,17 +74,17 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
               ),
             ),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(
-                backgroundImage: (_userController.user.value?.pic != null)
-                    ? CachedNetworkImageProvider(
-                        _userController.user.value!.pic!)
-                    : const AssetImage('assets/icons/Frame 64.png')
-                        as ImageProvider,
-              ),
-            ),
+          actions: const [
+            // Padding(
+            //   padding: const EdgeInsets.only(right: 16.0),
+            //   child: CircleAvatar(
+            //     backgroundImage: (_userController.user.value?.pic != null)
+            //         ? CachedNetworkImageProvider(
+            //             _userController.user.value!.pic!)
+            //         : const AssetImage('assets/icons/Frame 64.png')
+            //             as ImageProvider,
+            //   ),
+            // ),
           ],
         ),
         body: SingleChildScrollView(
@@ -117,7 +118,8 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                 ),
                 const SizedBox(height: 20),
                 GetBuilder<PartnerController>(builder: (controller) {
-                  if (controller.isLoading.value) {
+                  if (controller.isLoading.value &&
+                      controller.partners.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
@@ -125,26 +127,26 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     return const Center(child: Text('No partners found'));
                   }
 
-                  return ListView.builder(
-                    itemCount: controller.partners.length,
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (context, index) {
-                      return _buildBrandItem(controller.partners[index]);
-                    },
-                  );
+                  return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: List.generate(
+                          controller.partners.length,
+                          (index) => _buildBrandItem(
+                            controller.partners[index],
+                          ),
+                        ),
+                      ));
                 }),
-                // SingleChildScrollView(
-                //   scrollDirection: Axis.horizontal,
-                //   child: Row(
-                //     children:
-                //         brands.map((brand) => _buildBrandItem(brand)).toList(),
-                //   ),
-                // ),
+
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: (_partnerController.partners.isEmpty)
                       ? null
-                      : () => _showBrandBottomSheet(context, brands),
+                      : () => _showBrandBottomSheet(
+                            context,
+                            _partnerController.partners,
+                          ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -165,31 +167,11 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     ],
                   ),
                 ),
+                // const SizedBox(height: 20),
+                // _buildCommunitySaleCard(),
                 const SizedBox(height: 20),
-                _buildCommunitySaleCard(),
-                const SizedBox(height: 20),
-                // const Row(
-                //   children: [
-                //     Expanded(
-                //       child: Divider(
-                //         indent: 40,
-                //         thickness: 1,
-                //         color: Color(0xffFF8D41),
-                //       ),
-                //     ),
-                // Text(
-                //   "  Best Offers  ",
-                //   style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
-                // ),
-                // Expanded(
-                //   child: Divider(
-                //     endIndent: 40,
-                //     thickness: 1,
-                //     color: Color(0xffFF8D41),
-                //   ),
-                // ),
-                //   ],
-                // ),
+                if (tagId != null) _bestOffers(),
+
                 // const SizedBox(height: 20),
                 // _buildCommunitySaleCard(),
                 // const SizedBox(height: 20),
@@ -224,14 +206,125 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
           ),
         ),
       );
+      var tags = Get.find<TagController>();
+      var tag = tags.getTagsByTagName("food");
+      if (tag != null) {
+        await _offersController.getOffersByTagId(tag.id);
+        setState(() {
+          tagId = tag.id;
+        });
+      }
     });
+  }
+
+  // Widget _buildCommunitySaleCard() {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: Colors.black,
+  //       borderRadius: BorderRadius.circular(15),
+  //     ),
+  //     child: offerImageBanner(),
+  //   );
+  // }
+
+  Stack offerImageBanner({
+    required String? imageUrl,
+    required VoidCallback onTap,
+  }) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: (imageUrl == null)
+              ? Image.asset(
+                  width: double.infinity,
+                  'assets/dominos/OfferImag1.png',
+                  fit: BoxFit.cover,
+                )
+              : CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                ),
+        ),
+        Positioned(
+          top: 20,
+          right: 20,
+          child: InkWell(
+            onTap: () {
+              onTap();
+              // if (_partnerController.partners.isEmpty) return;
+              // var offer = _partnerController.partners.firstOrNull?.offers;
+
+              // if (offer == null || offer.isEmpty) return;
+
+              // Get.to(() => OfferDetailsPage(offer: offer.first));
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'See Details',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  _bestOffers() {
+    return GetBuilder(
+      init: _offersController,
+      builder: (controller) {
+        if (controller.isLoading.value &&
+            controller.offersByTagId[tagId] == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.offersByTagId[tagId] == null ||
+            controller.offersByTagId[tagId]!.isEmpty) {
+          return const Center(
+            child: Text('No offers found'),
+          );
+        }
+        var offers = controller.offersByTagId[tagId]!;
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: offers.length,
+          itemBuilder: (context, index) {
+            var offer = offers[index];
+            return offerImageBanner(
+              imageUrl: offer.images.firstOrNull,
+              onTap: () {
+                Get.to(
+                  () => OfferDetailsPage(offer: offer),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildBrandItem(Partner partner) {
     return GestureDetector(
       onTap: () {
         // if (brand['name'] == 'Dominos') {
-        Get.to(() => const PlayStationPage());
+        Get.to(
+          () => PlayStationPage(
+            partner: partner,
+          ),
+        );
         // }
       },
       child: Container(
@@ -276,57 +369,6 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCommunitySaleCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(15),
-            child: Image.asset(
-              width: double.infinity,
-              'assets/dominos/OfferImag1.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          Positioned(
-            top: 20,
-            right: 20,
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => OnePlusCommunityOfferPage(),
-                  ),
-                );
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'See Details',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -376,8 +418,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
     }
   }
 
-  void _showBrandBottomSheet(
-      BuildContext context, List<Map<String, String>> brands) {
+  void _showBrandBottomSheet(BuildContext context, List<Partner> brands) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -444,7 +485,6 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     final brand = brands[index];
                     return Container(
                       decoration: BoxDecoration(
-                        color: _getBrandColor(brand['name']!),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Column(
@@ -453,15 +493,15 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(12.0),
-                            child: Image.asset(
-                              brand['asset']!,
+                            child: CachedNetworkImage(
+                              imageUrl: brand.pic ?? '',
                               width: 40,
                               height: 40,
                               fit: BoxFit.contain,
-                              color:
-                                  _getBrandColor(brand['name']!) == Colors.white
-                                      ? null
-                                      : Colors.white,
+                              // color:
+                              //     _getBrandColor(brand['name']!) == Colors.white
+                              //         ? null
+                              //         : Colors.white,
                             ),
                           ),
                           Padding(
@@ -470,15 +510,15 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  brand['name']!,
-                                  style: TextStyle(
+                                  brand.ownername ?? '',
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontFamily: "MontserratM",
                                     fontWeight: FontWeight.bold,
-                                    color: _getBrandColor(brand['name']!) ==
-                                            Colors.white
-                                        ? Colors.black
-                                        : Colors.white,
+                                    // color: _getBrandColor(brand['name']!) ==
+                                    //         Colors.white
+                                    //     ? Colors.black
+                                    //     : Colors.white,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -491,26 +531,26 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _getBrandRating(brand['name']!),
-                                      style: TextStyle(
+                                      _getBrandRating(brand.ownername ?? ''),
+                                      style: const TextStyle(
                                         fontSize: 12,
-                                        color: _getBrandColor(brand['name']!) ==
-                                                Colors.white
-                                            ? Colors.grey
-                                            : Colors.white70,
+                                        // color: _getBrandColor(brand['name']!) ==
+                                        //         Colors.white
+                                        //     ? Colors.grey
+                                        //     : Colors.white70,
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  _getBrandDistance(brand['name']!),
-                                  style: TextStyle(
+                                  _getBrandDistance(brand.ownername ?? ''),
+                                  style: const TextStyle(
                                     fontSize: 12,
-                                    color: _getBrandColor(brand['name']!) ==
-                                            Colors.white
-                                        ? Colors.grey
-                                        : Colors.white70,
+                                    // color: _getBrandColor(brand['name']!) ==
+                                    //         Colors.white
+                                    //     ? Colors.grey
+                                    //     : Colors.white70,
                                   ),
                                 ),
                               ],

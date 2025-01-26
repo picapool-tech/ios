@@ -122,6 +122,39 @@ class OffersApi {
     }
   }
 
+  FutureEither<Offer> getOfferDetails(int id) async {
+    try {
+      var result = await _api.makeRequest(
+        enpoint: APIEndpoints.getOfferDetails(id),
+        method: RequestMethod.getRequest,
+      );
+
+      return result.fold(
+        (error) => left(error),
+        (responseModel) {
+          if (responseModel.success) {
+            return right(Offer.fromJson(responseModel.data));
+          } else {
+            return left(
+              Failure(
+                message: responseModel.message,
+                stackTrace: StackTrace.current,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint("Error in getOfferDetails : $e");
+      return left(
+        Failure(
+          message: "Not able to get offer details",
+          stackTrace: StackTrace.current,
+        ),
+      );
+    }
+  }
+
   FutureEither<List<Offer>> getOffersByTagId(int tagId) async {
     try {
       final response = await _api.makeRequest(

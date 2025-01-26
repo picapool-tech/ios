@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/functions/tags/tag_controller.dart';
+import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
@@ -14,6 +16,7 @@ class OfferContainer extends StatelessWidget {
   final String timeAgo;
   final String countdown;
   final IconData icon;
+  final int? tagId;
 
   const OfferContainer({
     super.key,
@@ -22,6 +25,7 @@ class OfferContainer extends StatelessWidget {
     required this.timeAgo,
     required this.countdown,
     required this.icon,
+    this.tagId,
   });
 
   @override
@@ -71,12 +75,33 @@ class OfferContainer extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Row(
-                          children: [
-                            Icon(icon, color: Colors.orange),
-                            const SizedBox(width: 5),
-                            Expanded(
-                              child: Text(
+                        child: FutureBuilder<Tag?>(
+                            future: getTag(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                var tag = snapshot.data;
+                                if (tag != null) {
+                                  return Row(
+                                    children: [
+                                      Icon(icon, color: Colors.orange),
+                                      const SizedBox(width: 5),
+                                      Expanded(
+                                        child: Text(
+                                          tag.tag,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontFamily: "MontserratM",
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              }
+
+                              return Text(
                                 subtitle,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -84,10 +109,8 @@ class OfferContainer extends StatelessWidget {
                                   color: Colors.grey,
                                   fontFamily: "MontserratM",
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
+                              );
+                            }),
                       ),
                       const SizedBox(width: 10), // Added spacing
                       Expanded(
@@ -120,6 +143,14 @@ class OfferContainer extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<Tag?>? getTag() {
+    if (tagId == null) {
+      return null;
+    }
+
+    return Get.find<TagController>().getTag(tagId!);
   }
 }
 
@@ -455,6 +486,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
     WidgetsBinding.instance.addPostFrameCallback((duration) async {
       if (_locationController.state.value.location != null) {
         debugPrint("MAP IS UPDATED: WITH LOCATION : $_center");
+        
         await _offersController.getOffersInVicinity(
           location: VicinityLocation(
             lat: _center.latitude,

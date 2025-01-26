@@ -33,6 +33,15 @@ class PicapoolApi {
       }
 
       String? accessToken;
+      if (_storageController.isGuest.value) {
+        return left(
+          Failure(
+            message: "Guest User",
+            stackTrace: StackTrace.current,
+            showError: false,
+          ),
+        );
+      }
       if (requireAccessToken) {
         log("Getting Access Token from Storage", name: "Network Request");
         accessToken = await _storageController.getAccessToken();

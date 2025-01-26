@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
@@ -12,7 +13,6 @@ import 'package:picapool/functions/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/utils/image_utils.dart';
 import 'package:picapool/utils/permission_util.dart';
 
 class NearUserModel {
@@ -578,14 +578,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
         var brand = BrandOfferModel.fromJson(model['brands']);
         _titleController.text = brand.title;
         _descController.text = brand.description;
-        var imageUrl = await ImageUtils.imageToFile(
-          assetName: brand.imageUrl,
-        );
-        _imageFiles?.add(XFile(imageUrl.path));
-        setState(() {
-          _imageFiles;
-          fromBrands = true;
-        });
+        _handleImage(brand);
       }
       await _fetchLocation();
     });
@@ -679,6 +672,22 @@ class _RequestVicinityState extends State<RequestVicinity> {
         _isMapInitialized = true;
       }
     });
+  }
+
+  Future<void> _handleImage(BrandOfferModel brand) async {
+    try {
+      var manager = CachedNetworkImageProvider.defaultCacheManager;
+      var file = await manager.downloadFile(brand.imageUrl);
+      _imageFiles?.add(XFile(file.file.path));
+      setState(() {
+        _imageFiles;
+        fromBrands = true;
+      });
+    } catch (e) {
+      setState(() {
+        fromBrands = true;
+      });
+    }
   }
 
   Future<void> _pickImages() async {

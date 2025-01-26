@@ -174,7 +174,7 @@ class _MyAppState extends State<MyApp> {
       return const LoginScreen();
     }
 
-    if (user.name == null || user.age == null) {
+    if (user.name == null || user.age == null || auth.mobile == null) {
       return const PersonalDetails();
     }
 

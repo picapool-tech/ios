@@ -1,48 +1,62 @@
 import 'package:picapool/models/offer_model.dart';
-import 'package:picapool/models/partner_model.dart';
+import 'package:picapool/models/tag_model.dart';
 
 class Product {
   final int id;
   final String name;
-  final String pic;
-  final int price;
-  final int offerPriceMin;
-  final int offerPriceMax;
+  final List<String> images;
+  final String description;
+  final int? mrp;
+  final int? offerPrice;
+  final String? email;
+  final String? phone;
+  final Map<String, dynamic>? attributes;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final Partner partner;
-  final int partnerId;
-  final List<Offer>? offers;
+  final int? partnerId;
+  final int? userId;
+  final List<Offer> offers;
+  final List<Tag> tags;
 
   Product({
     required this.id,
     required this.name,
-    required this.pic,
-    required this.price,
-    required this.offerPriceMin,
-    required this.offerPriceMax,
+    required this.images,
+    required this.description,
+    this.mrp,
+    this.offerPrice,
+    this.email,
+    this.phone,
+    this.attributes,
     required this.createdAt,
     required this.updatedAt,
-    required this.partner,
-    required this.partnerId,
-    this.offers,
+    this.partnerId,
+    this.userId,
+    required this.offers,
+    required this.tags,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'],
       name: json['name'],
-      pic: json['pic'],
-      price: json['price'],
-      offerPriceMin: json['offerPriceMin'],
-      offerPriceMax: json['offerPriceMax'],
+      images: List<String>.from(json['images']),
+      description: json['description'],
+      mrp: json['mrp'],
+      offerPrice: json['offerPrice'],
+      email: json['email'],
+      phone: json['phone'],
+      attributes: json['attributes'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      partner: Partner.fromJson(json['partner']),
       partnerId: json['partnerId'],
-      offers: json['offers'] != null
-          ? (json['offers'] as List).map((o) => Offer.fromJson(o)).toList()
-          : null,
+      userId: json['userId'],
+      offers: (json['Offer'] != null)
+          ? (json['Offer'] as List).map((o) => Offer.fromJson(o)).toList()
+          : [],
+      tags: (json['Tags'] != null)
+          ? (json['Tags'] as List).map((t) => Tag.fromJson(t)).toList()
+          : [],
     );
   }
 
@@ -50,15 +64,19 @@ class Product {
     return {
       'id': id,
       'name': name,
-      'pic': pic,
-      'price': price,
-      'offerPriceMin': offerPriceMin,
-      'offerPriceMax': offerPriceMax,
+      'images': images,
+      'description': description,
+      'mrp': mrp,
+      'offerPrice': offerPrice,
+      'email': email,
+      'phone': phone,
+      'attributes': attributes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
-      'partner': partner.toJson(),
       'partnerId': partnerId,
-      'offers': offers?.map((o) => o.toJson()).toList(),
+      'userId': userId,
+      'Offers': offers.map((o) => o.toJson()).toList(),
+      'tags': tags.map((t) => t.toJson()).toList(),
     };
   }
 }

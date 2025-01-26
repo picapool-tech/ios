@@ -1,6 +1,7 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
+// import 'package:picapool/models/product_model.dart';
 import 'package:picapool/models/tag_model.dart';
 
 class Partner {
@@ -51,13 +52,16 @@ class Partner {
       tags: json['tags'] != null
           ? List<Tag>.from(json['tags'].map((tag) => Tag.fromJson(tag)))
           : null,
-      products: json['products'] != null
+      products: json['Products'] != null
           ? List<Product>.from(
-              json['products'].map((product) => Product.fromJson(product)))
+              json['Products'].map((product) => Product.fromJson(product)))
           : null,
-      offers: json['offers'] != null
+      offers: json['Offer'] != null
           ? List<Offer>.from(
-              json['offers'].map((offer) => Offer.fromJson(offer)))
+              json['Offer'].map(
+                (offer) => Offer.fromJson(offer),
+              ),
+            )
           : null,
     );
   }
@@ -78,7 +82,7 @@ class Partner {
               }
             : null,
         'tags': tags?.map((tag) => tag.toJson()).toList(),
-        'products': products?.map((product) => product.toJson()).toList(),
-        'offers': offers?.map((offer) => offer.toJson()).toList(),
+        'Products': products?.map((product) => product.toJson()).toList(),
+        'Offers': offers?.map((offer) => offer.toJson()).toList(),
       };
 }

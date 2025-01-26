@@ -22,7 +22,6 @@ class AssetsController extends GetxController {
     if (accessToken == null) {
       isLoading.value = false;
       update();
-      Get.snackbar("Error", "No Access Token found");
       return null;
     }
 
@@ -37,11 +36,13 @@ class AssetsController extends GetxController {
 
     return result.fold(
       (failure) {
-        Get.snackbar(
-          'Error',
-          failure.message,
-          snackPosition: SnackPosition.TOP,
-        );
+        if (failure.showError) {
+          Get.snackbar(
+            'Error',
+            failure.message,
+            snackPosition: SnackPosition.TOP,
+          );
+        }
         return null;
       },
       (url) {

@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:picapool/models/product_model.dart';
 
 class SelectedProductPage extends StatefulWidget {
-  final Map<String, String> product;
+  final Product product;
 
   const SelectedProductPage({
     super.key,
@@ -84,7 +87,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             ),
             const SizedBox(height: 20),
             Text(
-              widget.product['title'] ?? "Product Title",
+              widget.product.name,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -114,12 +117,17 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                         },
                       ),
                       items: [
-                        Image.asset(
-                          width: double.infinity,
-                          widget.product['image'] ??
-                              'assets/images/Controller.png',
-                          fit: BoxFit.cover,
-                        )
+                        if (widget.product.images.isEmpty)
+                          Image.asset(
+                            width: double.infinity,
+                            'assets/images/Controller.png',
+                            fit: BoxFit.cover,
+                          )
+                        else
+                          CachedNetworkImage(
+                            imageUrl: widget.product.images.first,
+                            fit: BoxFit.cover,
+                          )
                       ],
                       // .map((item) => ClipRRect(
                       //       borderRadius: BorderRadius.circular(10),
@@ -151,7 +159,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             ),
             const SizedBox(height: 20),
             Text(
-              'MRP : ${widget.product['price'] ?? "0"}',
+              'MRP : ${widget.product.mrp ?? "Not Available"}',
               style: const TextStyle(
                 fontFamily: "MontserratM",
                 fontSize: 20,
@@ -171,7 +179,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             ),
             const SizedBox(height: 5),
             Text(
-              widget.product['description'] ?? "Product Description",
+              widget.product.description,
               style: const TextStyle(
                 fontSize: 14,
                 fontFamily: "MontserratR",
@@ -187,24 +195,24 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             //   ),
             // ),
             const SizedBox(height: 20),
-            const Text(
-              'Details',
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: "MontserratM",
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              widget.product['details'] ?? "Product Details",
-              style: const TextStyle(
-                fontSize: 14,
-                fontFamily: "MontserratM",
-                color: Colors.black,
-              ),
-            ),
+            // const Text(
+            //   'Details',
+            //   style: TextStyle(
+            //     fontSize: 16,
+            //     fontFamily: "MontserratM",
+            //     fontWeight: FontWeight.bold,
+            //     color: Colors.black,
+            //   ),
+            // ),
+            // const SizedBox(height: 10),
+            // Text(
+            //   widget.product. ?? "Product Details",
+            //   style: const TextStyle(
+            //     fontSize: 14,
+            //     fontFamily: "MontserratM",
+            //     color: Colors.black,
+            //   ),
+            // ),
             // const Row(
             //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
             //   children: [
@@ -262,6 +270,8 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
         child: ElevatedButton(
           onPressed: () {
             // Handle See Offers action
+            Get.back();
+            Get.back();
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xffFF8D41),
@@ -271,7 +281,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
           child: const Text(
-            'See Offers',
+            'See More Offers',
             style: TextStyle(
               fontSize: 20,
               color: Colors.white,

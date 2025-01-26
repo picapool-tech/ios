@@ -8,6 +8,49 @@ class PartnerController extends GetxController {
 
   var isLoading = false.obs;
   var partners = <Partner>[].obs;
+  Rxn<Partner> partner = Rxn<Partner>();
+
+  Future<Partner?> getPartnerById({
+    required int id,
+    required bool products,
+    required bool offers,
+  }) async {
+    isLoading(true);
+    update();
+    try {
+      var response = await _partnerApi.getPartnerById(
+        id: id,
+        products: products,
+        offers: offers,
+      );
+      isLoading(false);
+      update();
+      return response.fold(
+        (error) {
+          if (error.showError) {
+            Get.snackbar(
+              "Error",
+              error.message,
+            );
+          }
+          return null;
+        },
+        (partner) {
+          this.partner.value = partner;
+          return partner;
+        },
+      );
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "$e",
+      );
+      return null;
+    } finally {
+      isLoading(false);
+      update();
+    }
+  }
 
   Future<List<Partner>> searchPartner(PartnerRequestModel data) async {
     isLoading(true);
@@ -15,10 +58,14 @@ class PartnerController extends GetxController {
     try {
       var response = await _partnerApi.searchPartner(data);
       response.fold(
-        (error) => Get.snackbar(
-          "Error",
-          error.message,
-        ),
+        (error) {
+          if (error.showError) {
+            Get.snackbar(
+              "Error",
+              error.message,
+            );
+          }
+        },
         (listOfPartners) => partners.assignAll(
           listOfPartners,
         ),

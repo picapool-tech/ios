@@ -7,6 +7,7 @@ import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/functions/tags/tag_controller.dart';
 import 'package:picapool/functions/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
@@ -15,6 +16,49 @@ class AlertsPage extends StatefulWidget {
 
   @override
   _AlertsPageState createState() => _AlertsPageState();
+}
+
+class CategoryButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final String image;
+  final String assetImage;
+  final VoidCallback onTap;
+
+  const CategoryButton({
+    super.key,
+    required this.label,
+    required this.image,
+    required this.onTap,
+    this.selected = false,
+    this.assetImage = "",
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: selected ? Colors.white : Colors.black,
+          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+        ),
+        onPressed: onTap,
+        icon: (assetImage.isNotEmpty)
+            ? Image.asset(assetImage, width: 20, height: 20)
+            : CachedNetworkImage(imageUrl: image, width: 20, height: 20),
+        label: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _AlertsPageState extends State<AlertsPage> {
@@ -26,15 +70,6 @@ class _AlertsPageState extends State<AlertsPage> {
   final ChatController _chatController = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
   final TagController _tagController = Get.find<TagController>();
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (_userController.user.value != null) {
-      _offers.getOffersForUser();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +233,20 @@ class _AlertsPageState extends State<AlertsPage> {
     );
   }
 
+  Future<Tag?>? getTagById(int? tagId) async {
+    if (tagId == null) return null;
+    return _tagController.getTag(tagId);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (_userController.user.value != null) {
+      _offers.getOffersForUser();
+    }
+  }
+
   Widget listItem({
     required Offer offer,
     required Function()? onTap,
@@ -265,24 +314,33 @@ class _AlertsPageState extends State<AlertsPage> {
                               ],
                             ),
                             const SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Image.asset(
-                                  'assets/icons/tshirt.png',
-                                  width: 15,
-                                  height: 15,
-                                ),
-                                const SizedBox(width: 2),
-                                const Text(
-                                  'Category here',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: "MontserratM",
-                                    color: Color(0xff7B7B7B),
+                            if (offer.tags != null && offer.tags!.isNotEmpty)
+                              Row(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: offer.tags!.first.icon,
+                                    width: 15,
+                                    height: 15,
                                   ),
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(width: 2),
+                                  Expanded(
+                                    child: Text(
+                                      offer.tags!.first.tag,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: "MontserratM",
+                                        color: Color(0xff7B7B7B),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Text(
+                                offer.desc,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                           ],
                         ),
                         const Spacer(),
@@ -504,48 +562,5 @@ class _AlertsPageState extends State<AlertsPage> {
           offer: offer,
           chatTitle: chat.offer?.name ?? "Chat",
         ));
-  }
-}
-
-class CategoryButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final String image;
-  final String assetImage;
-  final VoidCallback onTap;
-
-  const CategoryButton({
-    super.key,
-    required this.label,
-    required this.image,
-    required this.onTap,
-    this.selected = false,
-    this.assetImage = "",
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: selected ? Colors.white : Colors.black,
-          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-        onPressed: onTap,
-        icon: (assetImage.isNotEmpty)
-            ? Image.asset(assetImage, width: 20, height: 20)
-            : CachedNetworkImage(imageUrl: image, width: 20, height: 20),
-        label: Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
   }
 }

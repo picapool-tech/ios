@@ -18,10 +18,12 @@ class LocationController extends GetxController {
       // Check if location services are enabled
       bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        state(LocationState(
-          isLoading: false,
-          errorMessage: 'Location services are disabled.',
-        ));
+        state(
+          LocationState(
+            isLoading: false,
+            errorMessage: 'Location services are disabled.',
+          ),
+        );
         return;
       }
 
@@ -30,10 +32,12 @@ class LocationController extends GetxController {
       if (!status) {
         status = await _permissionUtil.requestLocationPermission();
         if (!status) {
-          state(LocationState(
-            isLoading: false,
-            errorMessage: 'Location permission denied.',
-          ));
+          state(
+            LocationState(
+              isLoading: false,
+              errorMessage: 'Location permission denied.',
+            ),
+          );
           return;
         }
       }
@@ -47,25 +51,38 @@ class LocationController extends GetxController {
       _updateUserLocation(position);
 
       // Get address
-      final placemarks =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
+      List<Placemark> placemarks = [];
+      try {
+        placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+      } catch (e) {
+        placemarks = [];
+      }
 
       // Update state with all information
-      state(LocationState(
-        isLoading: false,
-        location: Location(
-          latitude: position.latitude,
-          longitude: position.longitude,
-          timestamp: DateTime.now(),
+      state(
+        LocationState(
+          isLoading: false,
+          location: Location(
+            latitude: position.latitude,
+            longitude: position.longitude,
+            timestamp: DateTime.now(),
+          ),
+          locationName: placemarks.isNotEmpty ? placemarks.first : null,
         ),
-        locationName: placemarks.isNotEmpty ? placemarks.first : null,
-      ));
+      );
+      update();
     } catch (e) {
       debugPrint("Location Error: ${e.toString()}");
-      state(LocationState(
-        isLoading: false,
-        errorMessage: 'Failed to get location',
-      ));
+      state(
+        LocationState(
+          isLoading: false,
+          errorMessage: 'Failed to get location',
+        ),
+      );
+      update();
     }
   }
 
@@ -96,16 +113,25 @@ class LocationController extends GetxController {
         location.longitude,
       );
 
-      state(LocationState(
-        location: location,
-        locationName: placemarks.isNotEmpty ? placemarks.first : null,
-      ));
+      state(
+        LocationState(
+          isLoading: false,
+          location: location,
+          locationName: placemarks.isNotEmpty ? placemarks.first : null,
+          errorMessage: "",
+        ),
+      );
+      update();
     } catch (e) {
       debugPrint("Error updating location: ${e.toString()}");
-      state(LocationState(
-        location: location,
-        errorMessage: 'Failed to get address',
-      ));
+      state(
+        LocationState(
+          isLoading: false,
+          location: location,
+          errorMessage: 'Failed to get address',
+        ),
+      );
+      update();
     }
   }
 

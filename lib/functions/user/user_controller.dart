@@ -121,7 +121,7 @@ class UserController extends GetxController {
       update();
       return result.fold(
         (fail) {
-          showErrorDialog(fail.message);
+          // showErrorDialog(fail.message);
           return false;
         },
         (updatedUser) async {
