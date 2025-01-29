@@ -11,15 +11,16 @@ class Tag {
   final List<User>? users;
   final List<Partner>? partners;
   bool isActive;
-  Tag({
-    required this.id,
-    required this.tag,
-    required this.icon,
-    this.offers,
-    this.users,
-    this.partners,
-    this.isActive = true,
-  });
+  bool hasChangedImage;
+  Tag(
+      {required this.id,
+      required this.tag,
+      required this.icon,
+      this.offers,
+      this.users,
+      this.partners,
+      this.isActive = true,
+      this.hasChangedImage = false});
 
   factory Tag.fromJson(Map<String, dynamic> json) {
     var tag = Tag(
@@ -50,6 +51,7 @@ class Tag {
       'users': users?.map((u) => u.toJson()).toList(),
       'partners': partners?.map((p) => p.toJson()).toList(),
       'isActive': isActive,
+      'hasChangedImage': hasChangedImage
     };
   }
 }

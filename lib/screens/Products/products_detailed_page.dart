@@ -48,48 +48,53 @@ class OfferDetailsPage extends StatefulWidget {
   State<OfferDetailsPage> createState() => _OfferDetailsPageState();
 }
 
-class _OfferDetailsPageState extends State<OfferDetailsPage> {
+class _OfferDetailsPageState extends State<OfferDetailsPage>
+    with TickerProviderStateMixin {
   final OffersController _offersController = Get.find<OffersController>();
 
   Future<Offer?> offerDetails = Future.value(null);
+
+  bool isShowingTimer = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomAppBar(
         child: ElevatedButton(
-          onPressed: () async {
-            // Handle pooling action
-            if (widget.offer.top) {
-              var offerValue = await offerDetails;
-              if (offerValue?.products == null ||
-                  offerValue!.products!.isEmpty) {
-                Get.snackbar(
-                  'No products in this offer',
-                  'Please try again later',
-                  snackPosition: SnackPosition.TOP,
-                );
-                return;
-              }
-              Get.to(
-                () => SelectProductsFromOffer(
-                  products: offerValue.products!,
-                  offerName: widget.offer.name,
-                ),
-              );
-              return;
-            }
-            var model = BrandOfferModel(
-                title: widget.offer.name,
-                description: widget.offer.desc,
-                imageUrl: widget.offer.images.firstOrNull ?? "",
-                remoteImageUrl: widget.offer.images.firstOrNull != null);
-            Get.to(() => const RequestVicinity(), arguments: {
-              "brands": {
-                ...model.toJson(),
-              }
-            });
-          },
+          onPressed: (!isShowingTimer)
+              ? () async {
+                  // Handle pooling action
+                  if (widget.offer.top) {
+                    var offerValue = await offerDetails;
+                    if (offerValue?.products == null ||
+                        offerValue!.products!.isEmpty) {
+                      Get.snackbar(
+                        'No products in this offer',
+                        'Please try again later',
+                        snackPosition: SnackPosition.TOP,
+                      );
+                      return;
+                    }
+                    Get.to(
+                      () => SelectProductsFromOffer(
+                        products: offerValue.products!,
+                        offerName: widget.offer.name,
+                      ),
+                    );
+                    return;
+                  }
+                  var model = BrandOfferModel(
+                      title: widget.offer.name,
+                      description: widget.offer.desc,
+                      imageUrl: widget.offer.images.firstOrNull ?? "",
+                      remoteImageUrl: widget.offer.images.firstOrNull != null);
+                  Get.to(() => const RequestVicinity(), arguments: {
+                    "brands": {
+                      ...model.toJson(),
+                    }
+                  });
+                }
+              : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xffFF8D41),
             shape: RoundedRectangleBorder(
@@ -97,14 +102,16 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
           ),
-          child: Text(
-            (widget.offer.top) ? 'Select Products' : 'Start Pooling',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'MontserratM',
-            ),
-          ),
+          child: (!isShowingTimer)
+              ? Text(
+                  (widget.offer.top) ? 'Select Products' : 'Start Pooling',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontFamily: 'MontserratM',
+                  ),
+                )
+              : getAnimation(),
         ),
       ),
       backgroundColor: Colors.white,
@@ -145,17 +152,22 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                   );
                 } else {
                   return CachedNetworkImage(
-                    imageUrl: widget.offer.images.first,
+                    imageUrl: widget.offer.images.lastOrNull ??
+                        widget.offer.images.first,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   );
                 }
               }(),
-              // Image.asset(
-              //   width: double.infinity,
-              //   'assets/dominos/OfferImag1.png', // Replace with your image asset path
-              //   fit: BoxFit.cover,
-              // ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              widget.offer.desc,
+              style: const TextStyle(
+                fontSize: 14,
+                fontFamily: 'MontserratR',
+                color: Colors.black,
+              ),
             ),
             const SizedBox(height: 20),
             // View Details Text
@@ -169,10 +181,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
             ),
             const SizedBox(height: 20),
             _productDetailsList(),
-            const SizedBox(height: 20),
-            Text("""
-${widget.offer.desc}
-""")
+
             // Product 1 Details
             // _buildProductDetail(
             //   imagePath: 'assets/images/image 80.png',
@@ -210,6 +219,32 @@ ${widget.offer.desc}
     );
   }
 
+  getAnimation() {
+    final remainingDuration = DateTime(
+            DateTime.now().year, DateTime.now().month, DateTime.now().day, 18)
+        .difference(DateTime.now());
+
+    return TweenAnimationBuilder<Duration>(
+      tween: Tween<Duration>(begin: remainingDuration, end: Duration.zero),
+      duration: remainingDuration,
+      onEnd: () {
+        setState(() {
+          isShowingTimer = false;
+        });
+      },
+      builder: (context, Duration value, child) {
+        return Text(
+          "Activates in ${value.inHours.remainder(60)}h ${value.inMinutes.remainder(60)}m ${value.inSeconds.remainder(60)}s",
+          style: const TextStyle(
+            fontSize: 16,
+            fontFamily: 'MontserratM',
+            color: Colors.black,
+          ),
+        );
+      },
+    );
+  }
+
   Future<Offer?> getOfferDetails(int id) async {
     return await _offersController.getOfferDetails(id);
   }
@@ -219,8 +254,10 @@ ${widget.offer.desc}
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((duration) {
+      var dateTime = DateTime.now().hour;
       setState(() {
         offerDetails = _offersController.getOfferDetails(widget.offer.id);
+        isShowingTimer = widget.offer.top && dateTime < 18 && dateTime >= 0;
       });
     });
   }

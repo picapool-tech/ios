@@ -27,7 +27,7 @@ class TagController extends GetxController {
           Get.snackbar('Error', failure.message);
         }
       },
-      (tagsList) {
+      (tagsList) async {
         if (tags.isEmpty) {
           _storageController.saveTags(tagsList);
           tags.value = tagsList;
@@ -43,15 +43,15 @@ class TagController extends GetxController {
             if (index != -1) {
               tags[index] = tag;
             }
+
+            tags.addAll(filtered);
+            _storageController.saveTags(tags);
+
+            if (forceRefresh) {
+              tags.value = tagsList;
+              tags.sort((a, b) => a.id - b.id);
+            }
           }
-
-          tags.addAll(filtered);
-          _storageController.saveTags(tags);
-        }
-
-        if (forceRefresh) {
-          tags.value = tagsList;
-          tags.sort((a, b) => a.id - b.id);
         }
       },
     );

@@ -114,7 +114,7 @@ class UserController extends GetxController {
 
     try {
       final result = await _userApi.updateUser(
-        updateValues,
+        updateValues: updateValues,
       );
 
       isLoading.value = false;

@@ -137,7 +137,9 @@ class UserApi {
     }
   }
 
-  FutureEither<bool> updateUser(Map<String, dynamic> updateValues) async {
+  FutureEither<bool> updateUser({
+    required Map<String, dynamic> updateValues,
+  }) async {
     try {
       debugPrint("Updated Values: $updateValues");
 

@@ -244,16 +244,17 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                     fit: BoxFit.cover,
                   )
                 : CachedNetworkImage(
+                    width: double.infinity,
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                   ),
           ),
-                // if (_partnerController.partners.isEmpty) return;
-                // var offer = _partnerController.partners.firstOrNull?.offers;
-      
-                // if (offer == null || offer.isEmpty) return;
-      
-                // Get.to(() => OfferDetailsPage(offer: offer.first));
+          // if (_partnerController.partners.isEmpty) return;
+          // var offer = _partnerController.partners.firstOrNull?.offers;
+
+          // if (offer == null || offer.isEmpty) return;
+
+          // Get.to(() => OfferDetailsPage(offer: offer.first));
           Positioned(
             top: 20,
             right: 20,

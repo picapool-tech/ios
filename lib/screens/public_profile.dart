@@ -125,17 +125,18 @@ class _PublicProfileState extends State<PublicProfile> {
                 isUsername: true, // Specific for username field
               ),
               // const SizedBox(height: 10),
-              const Text(
-                '''
-• Username should be unique
-• Username should be between 4-16 characters
-''',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                  fontFamily: 'MontserratR',
-                ),
-              ),
+              validationListWidget(),
+//               const Text(
+//                 '''
+// • Username should be unique
+// • Username should be between 4-16 characters
+// ''',
+//                 style: TextStyle(
+//                   color: Colors.grey,
+//                   fontSize: 12,
+//                   fontFamily: 'MontserratR',
+//                 ),
+//               ),
               const SizedBox(height: 16),
               _buildTextField('Add bio', _bioController,
                   maxLength: 200, maxLines: 3),
@@ -226,6 +227,10 @@ class _PublicProfileState extends State<PublicProfile> {
     super.dispose();
   }
 
+  bool getUsernameLength() =>
+      _usernameController.text.length > 3 &&
+      _usernameController.text.length < 17;
+
   @override
   void initState() {
     super.initState();
@@ -243,6 +248,52 @@ class _PublicProfileState extends State<PublicProfile> {
       });
       _usernameController.addListener(_onUsernameChanged);
     });
+  }
+
+  textWithCheckIcon(String text, bool isValid) {
+    return FittedBox(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            isValid ? Icons.check_circle : Icons.close,
+            color: isValid ? Colors.green : Colors.red,
+            size: 16,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              color: isValid ? Colors.green : Colors.grey,
+              fontSize: 12,
+              fontFamily: 'MontserratR',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  validationListWidget() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        textWithCheckIcon(
+          "Username should be between 4-16 characters",
+          getUsernameLength(),
+        ),
+        textWithCheckIcon(
+          "Should not contains any spaces",
+          !_usernameController.text.contains(" "),
+        ),
+        textWithCheckIcon(
+          "No special characters other than underscore",
+          RegExp(r'^[A-Za-z0-9_]+$').hasMatch(_usernameController.text),
+        ),
+      ],
+    );
   }
 
   Widget _buildTextField(
@@ -303,14 +354,14 @@ class _PublicProfileState extends State<PublicProfile> {
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           ),
           style: const TextStyle(fontSize: 14),
-          onChanged: isUsername
-              ? (value) {
-                  setState(() {
-                    _isUsernameValid =
-                        RegExp(r'^[a-zA-Z0-9@._-]+$').hasMatch(value);
-                  });
-                }
-              : null,
+          // onChanged: isUsername
+          //     ? (value) { 
+          //         setState(() {
+          //           _isUsernameValid =
+          //               RegExp(r'^[a-zA-Z0-9@._-]+$').hasMatch(value);
+          //         });
+          //       }
+          //     : null,
           onTapOutside: (event) {
             FocusManager.instance.primaryFocus?.unfocus();
           },
@@ -322,7 +373,7 @@ class _PublicProfileState extends State<PublicProfile> {
   void _onUsernameChanged() {
     setState(() {
       _isUsernameValid = _usernameController.text.isNotEmpty &&
-          RegExp(r'^[A-Za-z][A-Za-z0-9_]{3,16}$')
+          RegExp(r'^[A-Za-z]{1}[A-Za-z0-9_]{3,16}$')
               .hasMatch(_usernameController.text);
     });
   }

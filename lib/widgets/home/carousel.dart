@@ -17,13 +17,7 @@ class CarouselWidget extends StatefulWidget {
   State<CarouselWidget> createState() => _CarouselWidgetState();
 }
 
-class _CarouselWidgetState extends State<CarouselWidget>
-    with TickerProviderStateMixin {
-  // List<String> images = [
-  //   'assets/carousel/image1.png',
-  //   'assets/carousel/image2.png',
-  //   'assets/carousel/image3.png',
-  // ];
+class _CarouselWidgetState extends State<CarouselWidget> {
   final OffersController _offerController = Get.find<OffersController>();
   final LocationController _locationController = Get.find<LocationController>();
 
@@ -137,13 +131,20 @@ class _CarouselWidgetState extends State<CarouselWidget>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   LinearProgressIndicator(
-                    value: (offer.units! / offer.maxUnits!),
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(appTheme.primaryColor),
-                    backgroundColor: Colors.grey[300],
+                    value: ((offer.maxUnits! - offer.units!) / offer.maxUnits!),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+                    backgroundColor: Colors.red[100],
                     borderRadius: BorderRadius.circular(5),
                     minHeight: 10,
                   ),
+                  // LinearProgressIndicator(
+                  //   value: widget.value,
+                  //   minHeight: 10,
+                  //   backgroundColor: Colors.grey[300],
+                  //   valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  // ),
+                  // The sparkle effect
+
                   const SizedBox(
                     height: 4,
                   ),
@@ -159,10 +160,10 @@ class _CarouselWidgetState extends State<CarouselWidget>
                       ),
                       Text(
                         "${offer.maxUnits! - offer.units!}/${offer.maxUnits} left",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: appTheme.primaryColor,
+                          color: Colors.red,
                         ),
                       )
                     ],

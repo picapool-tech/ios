@@ -84,6 +84,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
           children: [
             Expanded(
               child: _buildNavItem(0),
+              
             ),
             Expanded(
               child: _buildNavItem(1),

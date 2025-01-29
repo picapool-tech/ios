@@ -39,6 +39,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  await Env.load();
+
   Get.put(NetworkController.getInstance());
   Get.put(StorageController());
   Get.put(UserController());
@@ -56,8 +58,6 @@ void main() async {
   Get.put(FormController());
   Get.put(CategoryController());
   Get.put(PartnerController());
-
-  await Env.load();
 
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
@@ -174,7 +174,7 @@ class _MyAppState extends State<MyApp> {
       return const LoginScreen();
     }
 
-    if (user.name == null || user.age == null || auth.mobile == null) {
+    if (user.name == null || user.age == null) {
       return const PersonalDetails();
     }
 

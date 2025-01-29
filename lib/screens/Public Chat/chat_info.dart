@@ -121,10 +121,14 @@ class _ChatInfoState extends State<ChatInfo> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  offer.name,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    offer.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 Text(
                   DateTimeHelper.timeAgoSince(
@@ -143,7 +147,7 @@ class _ChatInfoState extends State<ChatInfo> {
 
             // Image Row
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Column(
@@ -177,6 +181,7 @@ class _ChatInfoState extends State<ChatInfo> {
                           fit: BoxFit.cover,
                         )
                       : CachedNetworkImage(
+                          width: MediaQuery.of(context).size.width * 0.5,
                           imageUrl: offer.images.first,
                           height: 120,
                           fit: BoxFit.cover,

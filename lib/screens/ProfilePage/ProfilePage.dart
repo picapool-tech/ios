@@ -269,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 onTap: () async {
                                   // Open privacy policy page
                                   final Uri url = Uri.parse(
-                                    'https://www.picapool.com/privacy-policy',
+                                    'https://www.picapool.com/privacy-policy.html',
                                   );
                                   debugPrint(url.toString());
                                   if (!await launchUrl(url)) {

@@ -48,44 +48,12 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
           ),
         ),
         centerTitle: false,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundImage: AssetImage(
-                'assets/avatar.jpg',
-              ), // Replace with your image asset path
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
-            Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Find "dominos" offer',
-                  hintStyle: TextStyle(
-                    color: Color(0xff000000),
-                    fontFamily: "MontserratR",
-                  ),
-                  prefixIcon: Icon(Icons.search, color: Colors.orange),
-                  border: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
             Text(
               widget.product.name,
               style: const TextStyle(
@@ -104,12 +72,15 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                       border: Border.all(
                           color: Colors.grey.withOpacity(0.5), width: 1),
                     ),
+                    clipBehavior: Clip.hardEdge,
                     child: CarouselSlider(
                       options: CarouselOptions(
                         height: 250,
                         enlargeCenterPage: true,
                         enableInfiniteScroll: false,
-                        viewportFraction: 0.9,
+                        viewportFraction: 1,
+                        autoPlay: true,
+                        clipBehavior: Clip.hardEdge,
                         onPageChanged: (index, reason) {
                           setState(() {
                             _current = index;
@@ -125,6 +96,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                           )
                         else
                           CachedNetworkImage(
+                            width: double.infinity,
                             imageUrl: widget.product.images.first,
                             fit: BoxFit.cover,
                           )
@@ -138,7 +110,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: imgList.map((url) {
+                    children: widget.product.images.map((url) {
                       int index = imgList.indexOf(url);
                       return Container(
                         width: 8.0,
@@ -158,14 +130,25 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'MRP : ${widget.product.mrp ?? "Not Available"}',
-              style: const TextStyle(
-                fontFamily: "MontserratM",
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.orange,
-              ),
+            RichText(
+              text: TextSpan(
+                  text: 'MRP : ₹ ${widget.product.mrp ?? "Not Available"}',
+                  style: const TextStyle(
+                      fontFamily: "MontserratM",
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange,
+                      decoration: TextDecoration.lineThrough),
+                  children: [
+                    if (widget.product.offerPrice != null)
+                      TextSpan(
+                        text: " ${widget.product.offerPrice}",
+                        style: const TextStyle(
+                          decoration: TextDecoration.none,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ]),
             ),
             const SizedBox(height: 10),
             const Text(

@@ -46,10 +46,11 @@ class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
         ),
         title: Text(
           widget.offerName,
+          maxLines: 1,
           style: const TextStyle(
-            fontSize: 18,
-            fontFamily: "MontserratM",
             color: Colors.black,
+            fontFamily: 'MontserratM',
+            fontSize: 16,
           ),
         ),
         // centerTitle: true,
@@ -70,15 +71,16 @@ class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
             Expanded(
               child: GridView.builder(
                 itemCount: widget.products.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio:
-                      0.90, // Adjust the aspect ratio to reduce the height
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
+                  mainAxisExtent: 200,
                   mainAxisSpacing: 25,
                   crossAxisSpacing: 16,
+                  childAspectRatio: 0.75,
                 ),
                 itemBuilder: (context, index) {
                   var product = widget.products[index];
+
                   return GestureDetector(
                     onTap: () {
                       setState(() {
@@ -105,6 +107,7 @@ class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
                         ],
                       ),
                       child: Stack(
+                        fit: StackFit.expand,
                         clipBehavior: Clip
                             .hardEdge, // This allows the checkbox to go out of bounds if needed
                         children: [
@@ -117,8 +120,9 @@ class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
                                 ),
                                 decoration: const BoxDecoration(
                                   borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(10),
-                                      topRight: Radius.circular(10)),
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10),
+                                  ),
                                   color: Colors.white,
                                 ),
                                 clipBehavior: Clip.hardEdge,
@@ -163,10 +167,8 @@ class _SelectProductsFromOfferState extends State<SelectProductsFromOffer> {
                             ],
                           ),
                           Positioned(
-                            top:
-                                -10, // Make sure this positions the checkbox visibly outside
-                            right:
-                                -10, // Ensures it aligns with the top-right edge of the card
+                            top: 5, // Adjusted to stay within bounds
+                            right: 5, // Adjusted to stay within bounds
                             child: Checkbox(
                               value: selectedIndex[index],
                               onChanged: (bool? value) {

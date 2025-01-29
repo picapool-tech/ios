@@ -78,11 +78,12 @@ class ViewProductsPage extends StatelessWidget {
             // Products Grid
             Expanded(
               child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
                   childAspectRatio: 0.75,
+                  mainAxisSpacing: 25,
                   crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  mainAxisExtent: 200,
                 ),
                 itemCount: products.length, // Number of items
                 itemBuilder: (context, index) {
@@ -159,7 +160,7 @@ class ViewProductsPage extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         product.name,
                         maxLines: 1,
@@ -185,29 +186,29 @@ class ViewProductsPage extends StatelessWidget {
               ],
             ),
           ),
-          if (isSoldOut)
-            Positioned(
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text(
-                    'SOLD OUT',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'MontserratM',
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // if (isSoldOut)
+          //   Positioned(
+          //     top: 0,
+          //     right: 0,
+          //     bottom: 0,
+          //     left: 0,
+          //     child: Container(
+          //       decoration: BoxDecoration(
+          //         color: Colors.black.withOpacity(0.6),
+          //         borderRadius: BorderRadius.circular(10),
+          //       ),
+          //       child: const Center(
+          //         child: Text(
+          //           'SOLD OUT',
+          //           style: TextStyle(
+          //             color: Colors.white,
+          //             fontFamily: 'MontserratM',
+          //             fontSize: 16,
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
     );

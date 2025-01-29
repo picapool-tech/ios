@@ -209,7 +209,7 @@ class OffersController extends GetxController {
             snackPosition: SnackPosition.TOP);
       },
       (offersList) {
-        offers.value = offersList.reversed.toList();
+        offers.value = offersList.toList();
       },
     );
 

@@ -12,6 +12,9 @@ class LocationController extends GetxController {
 
   // Request permission and fetch the current location
   Future<void> getLocation() async {
+    if (state.value.isLoading) {
+      return;
+    }
     state(LocationState(isLoading: true));
 
     try {
@@ -96,13 +99,6 @@ class LocationController extends GetxController {
       debugPrint("Error checking location service: ${e.toString()}");
       return false;
     }
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Initialize location on controller init
-    getLocation();
   }
 
   // Method to update location with new coordinates

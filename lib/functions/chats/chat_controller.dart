@@ -206,7 +206,7 @@ class ChatController extends GetxController {
       return null;
     }
 
-    return usersInChat[userId]?.name;
+    return usersInChat[userId]?.username;
   }
 
   void handleIncomingMessage(data) {

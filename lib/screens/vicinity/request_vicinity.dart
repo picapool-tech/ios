@@ -641,7 +641,9 @@ class _RequestVicinityState extends State<RequestVicinity> {
       }
       await _locationController.getLocation();
     }
-    var location = _locationController.state.value.location;
+
+    final location = _locationController.state.value.location;
+
     if (location == null) {
       debugPrint("NULL LOCATION : VICINITY");
       Get.snackbar(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/widgets/home/down_sheet.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
 
@@ -10,11 +12,16 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
   String searchQuery = "";
   final ScrollController _scrollController = ScrollController();
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xff02005D),
@@ -40,6 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
         statusBarBrightness: Brightness.dark,
       ),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<LocationController>().getLocation();
+    });
     debugPrint("HomeScreen");
   }
 }
