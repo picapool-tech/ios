@@ -10,6 +10,8 @@ class PartnerController extends GetxController {
   var partners = <Partner>[].obs;
   Rxn<Partner> partner = Rxn<Partner>();
 
+  Partner? get getPartner => partner.value;
+
   Future<Partner?> getPartnerById({
     required int id,
     required bool products,
@@ -66,9 +68,7 @@ class PartnerController extends GetxController {
             );
           }
         },
-        (listOfPartners) => partners.assignAll(
-          listOfPartners,
-        ),
+        (listOfPartners) => partners.value = listOfPartners,
       );
     } catch (e) {
       Get.snackbar(

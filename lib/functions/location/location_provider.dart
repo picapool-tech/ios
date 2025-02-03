@@ -11,6 +11,7 @@ class LocationController extends GetxController {
   final PermissionUtil _permissionUtil = PermissionUtil();
 
   // Request permission and fetch the current location
+
   Future<void> getLocation() async {
     if (state.value.isLoading) {
       return;
@@ -89,6 +90,10 @@ class LocationController extends GetxController {
     }
   }
 
+  init() {
+    getLocation();
+  }
+
   Future<bool> isLocationEnabled() async {
     try {
       bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled() &&
@@ -136,6 +141,9 @@ class LocationController extends GetxController {
     try {
       if (_userController.user.value == null) {
         return;
+      }
+      while (_userController.user.value == null) {
+        await Future.delayed(const Duration(milliseconds: 500));
       }
       await _userController.updateUser({
         "loc": {"lat": position.latitude, "lng": position.longitude}

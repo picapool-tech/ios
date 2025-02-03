@@ -15,7 +15,8 @@ class ProductGrid extends StatelessWidget {
     return GetBuilder<ProductController>(
         builder: (ProductController productInstance) {
       return productInstance.productsState == ProductsState.productsLoaded
-          ? productInstance.searchedProductsList == null || productInstance.searchedProductsList!.isEmpty
+          ? productInstance.searchedProductsList == null ||
+                  productInstance.searchedProductsList!.isEmpty
               ? const Center(
                   child: Text('No Products'),
                 )
@@ -31,20 +32,48 @@ class ProductGrid extends StatelessWidget {
                   itemCount: productInstance.searchedProductsList?.length,
                   itemBuilder: (context, index) {
                     return ProductItem(
-                      productId:
-                          productInstance.searchedProductsList?[index].id.toString() ?? "00",
-                      image: productInstance.searchedProductsList?[index].images == null || productInstance.searchedProductsList![index].images!.isEmpty
-                          ? "string"
-                          : productInstance.searchedProductsList?[index].images?.first ??
-                              "string",
+                      productId: productInstance.searchedProductsList?[index].id
+                              .toString() ??
+                          "00",
+                      image:
+                          productInstance.searchedProductsList?[index].images ==
+                                      null ||
+                                  productInstance.searchedProductsList![index]
+                                      .images!.isEmpty
+                              ? "string"
+                              : productInstance.searchedProductsList?[index]
+                                      .images?.first ??
+                                  "string",
                       title:
-                          productInstance.searchedProductsList?[index].name ?? "No Name",
-                      price: productInstance.searchedProductsList?[index].mrp.toString() ?? "N/A",
-                      offerPrice: productInstance.searchedProductsList?[index].offerPrice
-                          .toString() ?? "N/A",
-                      time: productInstance.searchedProductsList?[index].updatedAt
+                          productInstance.searchedProductsList?[index].name ??
+                              "No Name",
+                      price: productInstance
+                              .searchedProductsList?[index].offerPrice
+                              .toString() ??
+                          "N/A",
+                      offerPrice: productInstance
+                              .searchedProductsList?[index].mrp
+                              .toString() ??
+                          "N/A",
+                      time: productInstance
+                              .searchedProductsList?[index].updatedAt
                               ?.toIso8601String() ??
                           " ",
+                      offerId: productInstance.searchedOffersList
+                              .where(
+                                (offer) {
+                                  return offer.products?.any((product) {
+                                        return product.id ==
+                                            productInstance
+                                                .searchedProductsList?[index]
+                                                .id;
+                                      }) ??
+                                      false;
+                                },
+                              )
+                              .firstOrNull
+                              ?.id ??
+                          -1,
                     );
                   },
                 )
@@ -62,6 +91,7 @@ class ProductItem extends StatelessWidget {
   final String price;
   final String offerPrice;
   final String time;
+  final int offerId;
 
   const ProductItem({
     super.key,
@@ -71,14 +101,17 @@ class ProductItem extends StatelessWidget {
     required this.price,
     required this.offerPrice,
     required this.time,
+    required this.offerId,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Get.to(() => const ProductDetailsPage(),
-            arguments: {"productId": productId});
+        Get.to(() => const ProductDetailsPage(), arguments: {
+          "productId": productId,
+          if (offerId != -1) "offerId": offerId,
+        });
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),

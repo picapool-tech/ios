@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/widgets/home/down_sheet.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
 
@@ -47,10 +45,6 @@ class _HomeScreenState extends State<HomeScreen>
         statusBarBrightness: Brightness.dark,
       ),
     );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.find<LocationController>().getLocation();
-    });
     debugPrint("HomeScreen");
   }
 }

@@ -10,12 +10,15 @@ import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:picapool/widgets/loading/offer_loading.dart';
 
 class AlertsPage extends StatefulWidget {
-  const AlertsPage({super.key});
+  const AlertsPage({
+    super.key,
+  });
 
   @override
-  _AlertsPageState createState() => _AlertsPageState();
+  State<AlertsPage> createState() => _AlertsPageState();
 }
 
 class CategoryButton extends StatelessWidget {
@@ -66,6 +69,8 @@ class _AlertsPageState extends State<AlertsPage> {
   List<bool> expandedStates = [];
   List<bool> expandedTagStates = [];
 
+  final ScrollController _tagsScrollController = ScrollController();
+
   final OffersController _offers = Get.find<OffersController>();
   final ChatController _chatController = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
@@ -102,6 +107,7 @@ class _AlertsPageState extends State<AlertsPage> {
         child: Column(
           children: [
             SingleChildScrollView(
+              controller: _tagsScrollController,
               scrollDirection: Axis.horizontal,
               child: Row(children: [
                 CategoryButton(
@@ -167,9 +173,7 @@ class _AlertsPageState extends State<AlertsPage> {
                             case 0:
                               if (controller.offers.isEmpty &&
                                   controller.isLoading.value) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
+                                return const OfferLoading();
                               }
 
                               if (controller.offers.isEmpty) {
@@ -197,9 +201,7 @@ class _AlertsPageState extends State<AlertsPage> {
                               }
                               if (offerByTagId.isEmpty &&
                                   controller.isLoading.value) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
+                                return const OfferLoading();
                               }
 
                               if (offerByTagId.isEmpty) {
@@ -242,9 +244,21 @@ class _AlertsPageState extends State<AlertsPage> {
   void initState() {
     super.initState();
 
-    if (_userController.user.value != null) {
-      _offers.getOffersForUser();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((duration) async {
+      var tag = _tagController.getTagsByTagName("Req");
+      if (tag == null) {
+        debugPrint("Tag is null on alertsPage");
+        return;
+      }
+      var tagsIndex =
+          _tagController.tags.indexWhere((tagN) => tagN.id == tag.id);
+      setState(() {
+        setState(() {
+          selectedCategory = tagsIndex + 1;
+          _offers.getOffersByTagId(tag.id);
+        });
+      });
+    });
   }
 
   Widget listItem({

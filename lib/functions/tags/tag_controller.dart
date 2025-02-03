@@ -41,7 +41,9 @@ class TagController extends GetxController {
           for (var tag in tagsList) {
             var index = tags.indexWhere((element) => element.id == tag.id);
             if (index != -1) {
+              var isActive = tags[index].isActive;
               tags[index] = tag;
+              tags[index].isActive = isActive;
             }
 
             tags.addAll(filtered);
@@ -90,15 +92,13 @@ class TagController extends GetxController {
 
   Tag? getTagsByTagName(String name) {
     return tags.firstWhereOrNull(
-        (element) => element.tag.toLowerCase().contains(name));
+        (element) => element.tag.toLowerCase().contains(name.toLowerCase()));
   }
 
   initialize() async {
     await _storageController.loadTags();
     tags.value = _storageController.tags.value;
-    if (tags.isEmpty) {
-      getAllTags();
-    }
+    getAllTags();
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:picapool/widgets/loading/offer_loading.dart';
 
 // OfferContainer widget
 class OfferContainer extends StatelessWidget {
@@ -299,14 +300,6 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                 ),
               ),
             ),
-            // Bottom Container with Offers List
-            // Positioned(
-            //   bottom: 0,
-            //   left: 0,
-            //   right: 0,
-            //   child:
-
-            // ),
           ],
         ),
       ),
@@ -385,9 +378,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                         builder: (controller) {
                           if (controller.nearestOffers.isEmpty &&
                               controller.isLoading.value) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
+                            return const OfferLoading();
                           }
 
                           if (controller.nearestOffers.isEmpty) {
@@ -486,7 +477,7 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
     WidgetsBinding.instance.addPostFrameCallback((duration) async {
       if (_locationController.state.value.location != null) {
         debugPrint("MAP IS UPDATED: WITH LOCATION : $_center");
-        
+
         await _offersController.getOffersInVicinity(
           location: VicinityLocation(
             lat: _center.latitude,

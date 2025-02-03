@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
-import 'package:picapool/models/live_offer/live_offer_entity.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
@@ -188,25 +187,21 @@ class OffersApi {
     }
   }
 
-  FutureEither<List<Offer>> getOffersForUser({
-    required int userId,
-  }) async {
+  FutureEither<List<Offer>> getOffersForUser(
+      OfferSearchRequestModel offerRequest) async {
     try {
-      final response = await _api.makeRequest(
-        enpoint: APIEndpoints.getOffersForUser(userId),
-        method: RequestMethod.getRequest,
-      );
+      final response = await searchOffer(offerRequest);
 
       return response.fold((error) => left(error), (responseModel) {
         if (responseModel.success) {
-          var offers = responseModel.data['Offers'];
+          var offers = responseModel.data;
           List<Offer> offersList =
               offers.map<Offer>((offer) => Offer.fromJson(offer)).toList();
 
-          var liveOffers = responseModel.data['LiveOffers'];
-          List<LiveOffer> liveOffersList = liveOffers
-              .map<LiveOffer>((liveOffer) => LiveOffer.fromJson(liveOffer))
-              .toList();
+          // var liveOffers = responseModel.data['LiveOffers'];
+          // List<LiveOffer> liveOffersList = liveOffers
+          //     .map<LiveOffer>((liveOffer) => LiveOffer.fromJson(liveOffer))
+          //     .toList();
 
           return right(offersList);
         } else {
@@ -346,15 +341,12 @@ class OffersApi {
   }
 
   FutureEither<ResponseModel> searchOffer(
-      Map<String, dynamic> offerModel) async {
+      OfferSearchRequestModel offerModel) async {
     try {
       final response = await _api.makeRequest(
         enpoint: APIEndpoints.searchOffer,
         method: RequestMethod.post,
-        body: {
-          ...offerModel,
-          "radius": 1000,
-        },
+        body: offerModel.toJson(),
         additionalHeaders: {
           'Content-Type': 'application/json',
         },

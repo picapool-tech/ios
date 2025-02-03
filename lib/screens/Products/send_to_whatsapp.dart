@@ -30,7 +30,7 @@ String generateWhatsAppLink(
   int userId,
   List<Product> products,
 ) {
-  const String baseUrl = "https://wa.me/917224052216?text=";
+  const String baseUrl = "https://wa.me/918330935063?text=";
 
   // Prepare order text
   String orderText = "";
@@ -55,6 +55,8 @@ String generateWhatsAppLink(
   // double totalSavings = products.fold(
   //         0, (sum, item) => sum + ((item.mrp ?? 0) - (item.offerPrice ?? 0))) +
   //     45;
+
+  finalPrice = double.parse(finalPrice.toStringAsFixed(2));
 
   // Generate message
   String message = """

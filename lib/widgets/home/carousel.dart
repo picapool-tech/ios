@@ -8,7 +8,7 @@ import 'package:picapool/functions/location/location_provider.dart';
 import 'package:picapool/functions/offers/offers_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/Products/products_detailed_page.dart';
-import 'package:picapool/utils/theme.dart';
+import 'package:picapool/widgets/loading/carousel_loading.dart';
 
 class CarouselWidget extends StatefulWidget {
   const CarouselWidget({super.key});
@@ -34,7 +34,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
       builder: (controller) {
         if (_offerController.carouselOffer.isEmpty &&
             _offerController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const CarouselLoading();
         }
 
         if (_offerController.carouselOffer.isEmpty) {
@@ -42,7 +42,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
             height: 200,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: appTheme.primaryColor.withAlpha(150),
+              color: Theme.of(context).primaryColor.withAlpha(150),
               image: const DecorationImage(
                 image: AssetImage("assets/images/coming_soon.png"),
                 fit: BoxFit.fitHeight,
@@ -130,21 +130,19 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  LinearProgressIndicator(
-                    value: ((offer.maxUnits! - offer.units!) / offer.maxUnits!),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
-                    backgroundColor: Colors.red[100],
-                    borderRadius: BorderRadius.circular(5),
-                    minHeight: 10,
+                  TweenAnimationBuilder<double>(
+                    tween:
+                        Tween<double>(begin: 0.0, end: offer.units!.toDouble()),
+                    duration: const Duration(milliseconds: 500),
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: ((value) / offer.maxUnits!),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(Colors.red),
+                      backgroundColor: Colors.red[100],
+                      borderRadius: BorderRadius.circular(5),
+                      minHeight: 10,
+                    ),
                   ),
-                  // LinearProgressIndicator(
-                  //   value: widget.value,
-                  //   minHeight: 10,
-                  //   backgroundColor: Colors.grey[300],
-                  //   valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                  // ),
-                  // The sparkle effect
-
                   const SizedBox(
                     height: 4,
                   ),
@@ -159,7 +157,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         ),
                       ),
                       Text(
-                        "${offer.maxUnits! - offer.units!}/${offer.maxUnits} left",
+                        "${offer.units!}/${offer.maxUnits} units",
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

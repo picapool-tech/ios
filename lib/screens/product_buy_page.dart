@@ -1,20 +1,11 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/product_controller.dart';
-import 'package:picapool/screens/Products/products_homePage.dart';
-
-extension StringExtension on String {
-  String toTitleCase() {
-    if (length <= 1) return toUpperCase();
-    return split(' ').map((word) {
-      if (word.length <= 1) return word.toUpperCase();
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
-  }
-}
+import 'package:picapool/functions/offers/offers_controller.dart';
+import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key});
@@ -26,16 +17,7 @@ class ProductDetailsPage extends StatefulWidget {
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final ProductController productController = Get.find();
   late final String productId;
-
-  @override
-  void initState() {
-    super.initState();
-    productId = Get.arguments['productId'];
-    // Fetch data after widget is initialized
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      productController.getProductDetails(productId);
-    });
-  }
+  int? offerId;
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +45,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         Text(
                           productInstance.productDetails.name.toString(),
                           style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.normal,
-                              fontFamily: "MontserratR"),
+                            fontSize: 20,
+                            fontWeight: FontWeight.normal,
+                            fontFamily: "MontserratR",
+                          ),
                         ),
                         const SizedBox(height: 5),
                         ElevatedButton(
@@ -347,14 +330,40 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const ProductsHomepage(
-                        currentIndex: 1,
-                      )),
-            );
+          onPressed: () async {
+            var chatTitle = productController.productDetails.name;
+
+            try {
+              if (offerId == null) {
+                return;
+              }
+
+              var chat = await Get.find<OffersController>().getChatFromOfferId(
+                offerId: offerId!,
+              );
+
+              if (chat == null) {
+                return;
+              }
+
+              Get.to(
+                () => ChatPage(
+                  chat: chat,
+                  chatTitle: chatTitle ?? "N/A",
+                ),
+              );
+            } catch (e) {
+              debugPrint("Error: $e");
+            }
+
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => ChatPage(
+            //         chat: productController.productDetails.i,
+            //         chatTitle: chatTitle),
+            //   ),
+            // );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xffFF8D41),
@@ -384,5 +393,26 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    productId = Get.arguments['productId'];
+    offerId = Get.arguments['offerId'];
+    // Fetch data after widget is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      productController.getProductDetails(productId);
+    });
+  }
+}
+
+extension StringExtension on String {
+  String toTitleCase() {
+    if (length <= 1) return toUpperCase();
+    return split(' ').map((word) {
+      if (word.length <= 1) return word.toUpperCase();
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 }

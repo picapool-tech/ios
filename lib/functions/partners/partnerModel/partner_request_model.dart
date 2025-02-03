@@ -19,7 +19,7 @@ class PartnerRequestModel {
     return {
       if (username != null) 'username': username,
       if (delivery != null) 'delivery': delivery,
-      if (tags != null) 'tags': tags,
+      if (tags != null) 'tagIds': tags,
       'radius': radius,
       'loc': location.toJson(),
     };

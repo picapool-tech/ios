@@ -1,20 +1,19 @@
 import 'dart:io';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:get/get.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
 
 class ImagePickerWidget extends StatefulWidget {
   final List<String> imageFiles;
   final Function(List<String>) onImagesUploaded; // Add callback function
 
-  const ImagePickerWidget({
-    required this.imageFiles, 
-    required this.onImagesUploaded,
-    Key? key
-  }) : super(key: key);
+  const ImagePickerWidget(
+      {required this.imageFiles, required this.onImagesUploaded, Key? key})
+      : super(key: key);
 
   @override
   State<ImagePickerWidget> createState() => _ImagePickerWidgetState();
@@ -28,21 +27,22 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   Future<void> pickImage(List<String> imageURLs) async {
     final ImagePicker picker = ImagePicker();
     final List<XFile> images = await picker.pickMultiImage();
-    
+
     List<File> newCroppedImages = [];
-    
+
     for (var image in images) {
       File? croppedImage = await _cropImage(File(image.path));
       if (croppedImage != null) {
         newCroppedImages.add(croppedImage);
       }
     }
-    
+
     // Upload images and get URLs
     if (newCroppedImages.isNotEmpty) {
       try {
-        List<String> urls = await formController.uploadProductImages(newCroppedImages);
-        
+        List<String> urls =
+            await formController.uploadProductImages(newCroppedImages);
+
         // Add only unique URLs
         for (String url in urls) {
           if (!_uploadedImageUrls.contains(url)) {
@@ -50,10 +50,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             widget.imageFiles.add(url);
           }
         }
-        
+
         // Notify parent widget about new URLs
         widget.onImagesUploaded(widget.imageFiles.toList());
-        
+
         setState(() {}); // Refresh UI
       } catch (e) {
         debugPrint("Error uploading images: $e");
@@ -65,25 +65,29 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         );
       }
     }
-    }
+  }
 
   Future<File?> _cropImage(File imageFile) async {
-    return await ImageCropper().cropImage(
+    var croppedImage = await ImageCropper().cropImage(
       sourcePath: imageFile.path,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: Colors.orange,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+        ),
+        // IOSUiSettings(
+        //   minimumAspectRatio: 1.0,
+        // ),
       ],
-      androidUiSettings: const AndroidUiSettings(
-        toolbarTitle: 'Crop Image',
-        toolbarColor: Colors.orange,
-        toolbarWidgetColor: Colors.white,
-        initAspectRatio: CropAspectRatioPreset.square,
-        lockAspectRatio: true,
-      ),
-      iosUiSettings: const IOSUiSettings(
-        minimumAspectRatio: 1.0,
-      ),
     );
+    if (croppedImage == null) {
+      return null;
+    }
+    return File(croppedImage.path);
   }
 
   @override
@@ -104,11 +108,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined, 
-                           size: 60, 
-                           color: Colors.orange),
-                      Text('Add image', 
-                           style: TextStyle(color: Colors.orange)),
+                      Icon(Icons.add_photo_alternate_outlined,
+                          size: 60, color: Colors.orange),
+                      Text('Add image', style: TextStyle(color: Colors.orange)),
                     ],
                   ),
                 )
@@ -152,9 +154,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                                 child: const CircleAvatar(
                                   radius: 15,
                                   backgroundColor: Colors.red,
-                                  child: Icon(Icons.close, 
-                                            color: Colors.white, 
-                                            size: 20),
+                                  child: Icon(Icons.close,
+                                      color: Colors.white, size: 20),
                                 ),
                               ),
                             ),
@@ -167,8 +168,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                                   child: const CircleAvatar(
                                     radius: 15,
                                     backgroundColor: Colors.orange,
-                                    child: Icon(Icons.add, 
-                                              color: Colors.white),
+                                    child: Icon(Icons.add, color: Colors.white),
                                   ),
                                 ),
                               ),

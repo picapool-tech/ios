@@ -6,21 +6,6 @@ import 'package:picapool/screens/turf/turf_first_page.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 
-// Define a custom class for items if needed
-class Item {
-  final String imagePath;
-  final String text;
-  final Widget destinationPage;
-  bool isDisabled;
-
-  Item({
-    required this.imagePath,
-    required this.text,
-    required this.destinationPage,
-    this.isDisabled = false,
-  });
-}
-
 void showCustomModalBottomSheet(BuildContext context) {
   Size size = MediaQuery.of(context).size;
 
@@ -39,7 +24,7 @@ void showCustomModalBottomSheet(BuildContext context) {
     Item(
       imagePath: "assets/images/buy_sell.png",
       text: "Buy and sell",
-      destinationPage: ProductListsPage(),
+      destinationPage: const ProductListsPage(),
     ),
     // Item(imagePath: "assets/images/medical_help.png", text: "Medical help", destinationPage: RequestVicinityPage()),
     Item(
@@ -133,4 +118,19 @@ void showCustomModalBottomSheet(BuildContext context) {
       );
     },
   );
+}
+
+// Define a custom class for items if needed
+class Item {
+  final String imagePath;
+  final String text;
+  final Widget destinationPage;
+  bool isDisabled;
+
+  Item({
+    required this.imagePath,
+    required this.text,
+    required this.destinationPage,
+    this.isDisabled = false,
+  });
 }

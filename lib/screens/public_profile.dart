@@ -355,7 +355,7 @@ class _PublicProfileState extends State<PublicProfile> {
           ),
           style: const TextStyle(fontSize: 14),
           // onChanged: isUsername
-          //     ? (value) { 
+          //     ? (value) {
           //         setState(() {
           //           _isUsernameValid =
           //               RegExp(r'^[a-zA-Z0-9@._-]+$').hasMatch(value);
@@ -401,16 +401,18 @@ class _PublicProfileState extends State<PublicProfile> {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        androidUiSettings: const AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: Colors.deepOrange,
-          toolbarWidgetColor: Colors.white,
-          lockAspectRatio: true,
-        ),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            lockAspectRatio: true,
+          ),
+        ],
       );
       if (croppedFile != null) {
         setState(() {
-          _profileImage = croppedFile;
+          _profileImage = File(croppedFile.path);
         });
       }
     }

@@ -10,24 +10,23 @@ import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/widgets/home/bottom_modal_sheet.dart';
 import 'package:picapool/widgets/home/carousel.dart';
-import 'package:picapool/widgets/home/coming_soon.dart';
 import 'package:picapool/widgets/home/divider.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 
 Widget _buildBrandItem(Map<String, String> brand) {
   return GestureDetector(
     onTap: () {
-      if (brand['name'] == "Food") {
-        Get.to(
-          () => const ProductsHomepage(currentIndex: 0),
-        );
-      } else {
-        Get.to(
-          () => ComingSoon(
-            title: brand['name']!,
-          ),
-        );
-      }
+      // if (brand['name'] == "Food") {
+      Get.to(
+        () => ProductsHomepage(brandName: brand["name"]!),
+      );
+      // } else {
+      //   Get.to(
+      //     () => ComingSoon(
+      //       title: brand['name']!,
+      //     ),
+      //   );
+      // }
     },
     child: Container(
       margin: const EdgeInsets.only(right: 20),
@@ -112,7 +111,7 @@ class _DownSheetState extends State<DownSheet> {
   ];
 
   final List<Map<String, String>> secondBrandRow = [
-    {'name': 'Medicine', 'asset': 'assets/homepagebottomassets/image 43.png'},
+    {'name': 'Medical', 'asset': 'assets/homepagebottomassets/image 43.png'},
     {
       'name': 'Electronics',
       'asset': 'assets/homepagebottomassets/image 44.png'
@@ -162,15 +161,13 @@ class _DownSheetState extends State<DownSheet> {
                       Get.to(() => const ShareCabScreen());
                     },
                     assetImage: "assets/images/share_cab.png",
-                    isDisabled: true,
                   ),
                   mainActionView(
                     title: "Buy and sell",
                     onTap: () {
-                      Get.to(() => ProductListsPage());
+                      Get.to(() => const ProductListsPage());
                     },
                     assetImage: "assets/images/buy_sell.png",
-                    isDisabled: true,
                   ),
                 ],
               ),

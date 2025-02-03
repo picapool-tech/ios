@@ -96,10 +96,13 @@ class _PlayStationPageState extends State<PlayStationPage> {
                 height: 30,
               )
             else
-              CachedNetworkImage(
-                imageUrl: widget.partner.pic!,
-                width: 30,
-                height: 30,
+              Hero(
+                tag: widget.partner.id,
+                child: CachedNetworkImage(
+                  imageUrl: widget.partner.pic!,
+                  width: 30,
+                  height: 30,
+                ),
               ),
             const SizedBox(width: 8),
             Text(
@@ -115,145 +118,23 @@ class _PlayStationPageState extends State<PlayStationPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      // Define what happens when the button is tapped
-                      if (widget.partner.link == null) {
-                        return;
-                      }
-                      if (!await launchUrl(Uri.parse(widget.partner.link!))) {
-                        Get.snackbar(
-                          'Error',
-                          'Could not open the link',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffFF8D41),
-                      // side: BorderSide(color: Color(0xffFF6600)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.0,
-                      ),
-                      child: Row(
-                        mainAxisSize:
-                            MainAxisSize.min, // To minimize the button width
-                        children: [
-                          Text(
-                            'Go to store',
-                            style: TextStyle(
-                                fontFamily: "MontserratR",
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xffffffff)),
-                          ),
-                          SizedBox(width: 5), // Space between text and icon
-                          Icon(Icons.arrow_circle_right_outlined,
-                              size: 20,
-                              color: Color(
-                                0xffFFFFFF,
-                              )), // Icon with size
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8), // Space between buttons
-                Obx(
-                  () {
-                    if (_partnerController.partner.value == null) {
-                      return const SizedBox.shrink();
-                    }
-                    return Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (_partnerController.partner.value == null) {
-                            return;
-                          }
-                          Get.to(
-                            () => ViewProductsPage(
-                              partnerName: widget.partner.username ?? '',
-                              products:
-                                  _partnerController.partner.value?.products ??
-                                      [],
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xffFFE9DA),
-                          side: const BorderSide(color: Color(0xffFF6600)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10.0,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize
-                                .min, // To minimize the button width
-                            children: [
-                              Text(
-                                'View products',
-                                style: TextStyle(
-                                    fontFamily: "MontserratR",
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xffFF8D41)),
-                              ),
-                              // Space between text and icon
-                              // Icon with size
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20), // Space between buttons and search bar
-            // Search Bar
-            // Container(
-            //   height: 40,
-            //   decoration: BoxDecoration(
-            //     color: Colors.grey[200],
-            //     borderRadius: BorderRadius.circular(20),
-            //   ),
-            //   child: const TextField(
-            //     decoration: InputDecoration(
-            //       hintText: 'Find Offers and Brands',
-            //       hintStyle: TextStyle(
-            //         color: Color(0xff000000),
-            //         fontFamily: "MontserratR",
-            //       ),
-            //       prefixIcon: Icon(Icons.search, color: Colors.orange),
-            //       border: InputBorder.none,
-            //       contentPadding:
-            //           EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-            // Offer Banner
-            bigBanner(),
-            const SizedBox(height: 20),
-            // Limited Offers
-            _showLimitedOffers()
-          ],
-        ),
+        child: Obx(() {
+          if (_partnerController.isLoading.value &&
+              _partnerController.partner.value == null) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (_partnerController.partner.value == null &&
+              !_partnerController.isLoading.value) {
+            return const Center(
+              child: Text("No data found"),
+            );
+          }
+
+          return showProductInfo();
+        }),
       ),
     );
   }
@@ -279,6 +160,146 @@ class _PlayStationPageState extends State<PlayStationPage> {
       //   debugPrint("PARTNER IS : ${vo?.toJson()}");
       // });
     });
+  }
+
+  Column showProductInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  // Define what happens when the button is tapped
+                  if (widget.partner.link == null) {
+                    return;
+                  }
+                  if (!await launchUrl(Uri.parse(widget.partner.link!))) {
+                    Get.snackbar(
+                      'Error',
+                      'Could not open the link',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffFF8D41),
+                  // side: BorderSide(color: Color(0xffFF6600)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                  ),
+                  child: Row(
+                    mainAxisSize:
+                        MainAxisSize.min, // To minimize the button width
+                    children: [
+                      Text(
+                        'Go to store',
+                        style: TextStyle(
+                            fontFamily: "MontserratR",
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffffffff)),
+                      ),
+                      SizedBox(width: 5), // Space between text and icon
+                      Icon(Icons.arrow_circle_right_outlined,
+                          size: 20,
+                          color: Color(
+                            0xffFFFFFF,
+                          )), // Icon with size
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8), // Space between buttons
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_partnerController.partner.value == null) {
+                    Get.snackbar(widget.partner.username ?? "No products",
+                        "No products available at this time.");
+                    return;
+                  }
+
+                  Get.to(
+                    () => ViewProductsPage(
+                      partnerName: widget.partner.username ?? '',
+                      products:
+                          _partnerController.partner.value?.products ?? [],
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffFFE9DA),
+                  side: const BorderSide(color: Color(0xffFF6600)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                  ),
+                  child: Row(
+                    mainAxisSize:
+                        MainAxisSize.min, // To minimize the button width
+                    children: [
+                      Text(
+                        'View products',
+                        style: TextStyle(
+                            fontFamily: "MontserratR",
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffFF8D41)),
+                      ),
+                      // Space between text and icon
+                      // Icon with size
+                    ],
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
+        const SizedBox(height: 20), // Space between buttons and search bar
+        // Search Bar
+        // Container(
+        //   height: 40,
+        //   decoration: BoxDecoration(
+        //     color: Colors.grey[200],
+        //     borderRadius: BorderRadius.circular(20),
+        //   ),
+        //   child: const TextField(
+        //     decoration: InputDecoration(
+        //       hintText: 'Find Offers and Brands',
+        //       hintStyle: TextStyle(
+        //         color: Color(0xff000000),
+        //         fontFamily: "MontserratR",
+        //       ),
+        //       prefixIcon: Icon(Icons.search, color: Colors.orange),
+        //       border: InputBorder.none,
+        //       contentPadding:
+        //           EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        //     ),
+        //   ),
+        // ),
+        // const SizedBox(height: 20),
+        // Offer Banner
+        bigBanner(),
+        const SizedBox(height: 20),
+        // Limited Offers
+        if (_partnerController.getPartner?.offers != null &&
+            _partnerController.getPartner!.offers!.isNotEmpty)
+          _showLimitedOffers()
+      ],
+    );
   }
 
   Widget _showLimitedOffers() {
@@ -316,22 +337,20 @@ class _PlayStationPageState extends State<PlayStationPage> {
     bool withoutTop = false,
   }) {
     return Obx(() {
-      if (_partnerController.partner.value == null) {
-        return const SizedBox.shrink();
-      }
-
       final offers = _partnerController.partner.value!.offers;
 
       if (offers == null || offers.isEmpty) {
-        return const SizedBox.shrink();
+        return const Text("No offers available at this time.");
       }
 
-      var filteredOffers =
-          offers.where((offer) => offer.top && !withoutTop).toList();
+      final filteredOffers = withoutTop
+          ? offers.where((offer) => offer.top == false).toList()
+          : offers.where((offer) => offer.top == true).toList();
 
       if (filteredOffers.isEmpty) {
-        return const SizedBox.shrink();
+        return const Text("No offers at this time.");
       }
+
       return SizedBox(
         height: 200,
         child: PageView.builder(

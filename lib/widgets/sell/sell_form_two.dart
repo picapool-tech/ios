@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/product_controller.dart';
@@ -28,80 +27,10 @@ class _SellFormTwoState extends State<SellFormTwo> {
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController emailIdController = TextEditingController();
 
-  void updateCenter() {
-    if (_locationController.state.value.location != null) {
-      debugPrint(
-          "UPDATING CENTER : ${_locationController.state.value.location}");
-      setState(() {
-        selectedCoordinates = LatLng(
-          _locationController.state.value.location!.latitude,
-          _locationController.state.value.location!.longitude,
-        );
-      });
-    } else {
-      debugPrint("Location is null");
-    }
-  }
-
-  Future<void> fetchLocation() async {
-    if (_locationController.state.value.location == null) {
-      debugPrint("FETCHING LOCATION");
-      await _locationController.getLocation();
-      updateCenter();
-    } else {
-      updateCenter();
-    }
-  }
-
-  Future<void> handleProductCreation(Loc currentLocation, int radius) async {
-    if (sellformTwoKey.currentState?.validate() ?? false) {
-      try {
-        formController.saveFormTwoData(saveFormTwoData());
-
-        // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF8D41)),
-              ),
-            );
-          },
-        );
-
-        // Attempt to create the product
-        final bool success = await formController.instantiateCreateProduct(
-            context, currentLocation, radius);
-
-        // Hide loading indicator
-        Navigator.pop(context);
-
-        if (success) {
-          // Navigate to success page only if product creation was successful
-          Get.toNamed(GetRoutes.sellProductsConfirmationPage);
-        }
-      } catch (e) {
-        // Hide loading indicator if it's showing
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
-
-        // Show error message
-        Get.snackbar(
-          'Error',
-          'Failed to create product: ${e.toString()}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    }
-  }
-
   final formController = Get.find<FormController>();
+
   final productController = Get.find<ProductController>();
+
   final sellformTwoKey = GlobalKey<FormState>();
 
   @override
@@ -244,8 +173,12 @@ class _SellFormTwoState extends State<SellFormTwo> {
                               Future.delayed(const Duration(seconds: 1));
                               handleProductCreation(
                                   Loc(
-                                    lat: locationInstance.state.value.location?.latitude ?? 00.00,
-                                    lng: locationInstance.state.value.location?.longitude ?? 00.00,
+                                    lat: locationInstance
+                                            .state.value.location?.latitude ??
+                                        00.00,
+                                    lng: locationInstance
+                                            .state.value.location?.longitude ??
+                                        00.00,
                                   ),
                                   500);
                             },
@@ -288,6 +221,66 @@ class _SellFormTwoState extends State<SellFormTwo> {
     );
   }
 
+  Future<void> fetchLocation() async {
+    if (_locationController.state.value.location == null) {
+      debugPrint("FETCHING LOCATION");
+      await _locationController.getLocation();
+      updateCenter();
+    } else {
+      updateCenter();
+    }
+  }
+
+  Future<void> handleProductCreation(Loc currentLocation, int radius) async {
+    if (sellformTwoKey.currentState?.validate() ?? false) {
+      try {
+        formController.saveFormTwoData(saveFormTwoData());
+
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF8D41)),
+              ),
+            );
+          },
+        );
+
+        // Attempt to create the product
+        final bool success = await formController.instantiateCreateProduct(
+          context,
+          currentLocation,
+          radius,
+        );
+
+        // Hide loading indicator
+        Navigator.pop(context);
+
+        if (success) {
+          // Navigate to success page only if product creation was successful
+          Get.toNamed(GetRoutes.sellProductsConfirmationPage);
+        }
+      } catch (e) {
+        // Hide loading indicator if it's showing
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+
+        // Show error message
+        Get.snackbar(
+          'Error',
+          'Failed to create product: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
+  }
+
   Map<String, dynamic> saveFormTwoData() {
     Map<String, dynamic> formTwoData = {};
 
@@ -309,4 +302,20 @@ class _SellFormTwoState extends State<SellFormTwo> {
     print('Form Two Data: $formTwoData');
     return formTwoData;
   }
+
+  void updateCenter() {
+    if (_locationController.state.value.location != null) {
+      debugPrint(
+          "UPDATING CENTER : ${_locationController.state.value.location}");
+      setState(() {
+        selectedCoordinates = LatLng(
+          _locationController.state.value.location!.latitude,
+          _locationController.state.value.location!.longitude,
+        );
+      });
+    } else {
+      debugPrint("Location is null");
+    }
+  }
+
 }

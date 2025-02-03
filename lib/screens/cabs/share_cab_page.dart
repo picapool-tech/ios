@@ -12,6 +12,7 @@ import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_utils.dart';
+import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart'; // For location search and suggestions
 
 Widget buildAddressRow(String label, String address) {
@@ -571,26 +572,65 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
         elevation: 7,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => CreateLiveOffer()));
-        },
-        shape: const CircleBorder(),
-        backgroundColor: Colors.orange,
-        elevation: 7,
-        child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(36)),
-                border: Border.all(
-                    color: Colors.white, width: 2, style: BorderStyle.solid)),
-            child: const Icon(
-              Icons.local_taxi,
-              color: Colors.white,
-              size: 24,
-            )),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            backgroundColor: AppTheme.light.primaryColor,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateLiveOffer(),
+                ),
+              );
+            },
+            elevation: 2,
+            shape: const CircleBorder(),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(36)),
+                  border: Border.all(
+                      color: Colors.white, width: 2, style: BorderStyle.solid)),
+              child: const Icon(
+                Icons.local_taxi,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Create Now',
+            style: TextStyle(fontSize: 14),
+          ),
+        ],
       ),
+      // FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => const CreateLiveOffer(),
+      //       ),
+      //     );
+      //   },
+      //   shape: const CircleBorder(),
+      //   backgroundColor: Colors.orange,
+      //   elevation: 7,
+      // child: Container(
+      //     padding: const EdgeInsets.all(12),
+      //     decoration: BoxDecoration(
+      //         borderRadius: const BorderRadius.all(Radius.circular(36)),
+      //         border: Border.all(
+      //             color: Colors.white, width: 2, style: BorderStyle.solid)),
+      //     child: const Icon(
+      //       Icons.local_taxi,
+      //       color: Colors.white,
+      //       size: 24,
+      //     )),
+      // ),
     );
   }
 

@@ -88,13 +88,14 @@ class OffersController extends GetxController {
 
     var location = _locationController.state.value;
 
-    var result = await _offersApi.searchOffer({
-      "loc": {
-        "lat": location.location!.latitude,
-        "lng": location.location!.longitude,
-      },
-      "top": true,
-    });
+    var result = await _offersApi.searchOffer(OfferSearchRequestModel(
+      loc: VicinityLocation(
+        lat: location.location!.latitude,
+        long: location.location!.longitude,
+      ),
+      radius: 5000,
+      top: true,
+    ));
     result.fold(
       (error) {
         if (error.showError) {
@@ -167,13 +168,14 @@ class OffersController extends GetxController {
       return [];
     }
 
-    final result = await _offersApi.searchOffer({
-      "tagIds": [tagId],
-      "loc": {
-        "lat": location.location!.latitude,
-        "lng": location.location!.longitude,
-      }
-    });
+    final result = await _offersApi.searchOffer(OfferSearchRequestModel(
+      loc: VicinityLocation(
+        lat: location.location!.latitude,
+        long: location.location!.longitude,
+      ),
+      tagIds: [tagId],
+      radius: 5000,
+    ));
 
     isLoading.value = false;
     update();
@@ -199,7 +201,15 @@ class OffersController extends GetxController {
     update();
 
     final result = await _offersApi.getOffersForUser(
-      userId: _userController.user.value!.id,
+      OfferSearchRequestModel(
+        loc: VicinityLocation(
+          lat: _locationController.state.value.location!.latitude,
+          long: _locationController.state.value.location!.longitude,
+        ),
+        radius: 5000,
+        chats: true,
+        products: false,
+      ),
     );
 
     result.fold(

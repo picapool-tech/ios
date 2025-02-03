@@ -116,8 +116,8 @@ class _MyAppState extends State<MyApp> {
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: appTheme.primaryColor,
         useMaterial3: true,
+        colorSchemeSeed: AppTheme.light.primaryColor,
       ),
       home: GetBuilder(
         init: storageController,
@@ -163,6 +163,7 @@ class _MyAppState extends State<MyApp> {
 
   Widget _handleAuthState() {
     debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
+
     final auth = storageController.auth.value;
     final user = storageController.user.value;
 

@@ -76,21 +76,28 @@ class ViewProductsPage extends StatelessWidget {
             // ),
             // const SizedBox(height: 20),
             // Products Grid
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
-                  childAspectRatio: 0.75,
-                  mainAxisSpacing: 25,
-                  crossAxisSpacing: 16,
-                  mainAxisExtent: 200,
+            if (products.isNotEmpty)
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 200,
+                    childAspectRatio: 0.75,
+                    mainAxisSpacing: 25,
+                    crossAxisSpacing: 16,
+                    mainAxisExtent: 200,
+                  ),
+                  itemCount: products.length, // Number of items
+                  itemBuilder: (context, index) {
+                    return _buildProductCard(context, index);
+                  },
                 ),
-                itemCount: products.length, // Number of items
-                itemBuilder: (context, index) {
-                  return _buildProductCard(context, index);
-                },
-              ),
-            ),
+              )
+            else
+              const Center(
+                child: Text(
+                  "No products available at this moment.",
+                ),
+              )
           ],
         ),
       ),

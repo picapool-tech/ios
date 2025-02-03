@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:picapool/screens/Products/products_homePage.dart';
 import 'package:picapool/screens/home_screen.dart';
@@ -6,7 +7,8 @@ import 'package:picapool/utils/svg_icon.dart';
 
 class NewBottomBarProduct extends StatefulWidget {
   final int currentIndex;
-  const NewBottomBarProduct({Key? key, this.currentIndex = 0}) : super(key: key);
+  const NewBottomBarProduct({Key? key, this.currentIndex = 0})
+      : super(key: key);
 
   @override
   State<NewBottomBarProduct> createState() => _NewBottomBarProductState();
@@ -18,7 +20,9 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const ProductsHomepage(currentIndex: 1),
+    const ProductsHomepage(
+      brandName: "Food",
+    ),
     // Add more screens as needed
   ];
 
@@ -42,38 +46,6 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
     'alerts',
     'settings',
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  Widget _buildNavItem(int index) {
-    bool isActive = index == _selectedIndex;
-
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgIcon(
-            isActive ? _activeIconPaths[index] : _iconPaths[index],
-            size: 24,
-          ),
-          Text(
-            _titles[index],
-            style: TextStyle(
-              color: isActive ? const Color(0xffFF8D41) : Colors.black,
-              fontSize: 12,
-              fontFamily: 'MontserratR',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,13 +80,14 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
           ),
           Positioned(
             top: -30, // Adjust this value to move the icon up or down
-            left: MediaQuery.of(context).size.width / 2 - 35, // Center the icon horizontally
+            left: MediaQuery.of(context).size.width / 2 -
+                35, // Center the icon horizontally
             child: InkWell(
               onTap: () {
                 // Define action for this icon
               },
               child: const SvgIcon(
-                "assets/bottombar/sell.svg", 
+                "assets/bottombar/sell.svg",
                 size: 70, // Size of the center icon
               ),
             ),
@@ -122,5 +95,37 @@ class _NewBottomBarProductState extends State<NewBottomBarProduct> {
         ],
       ),
     );
+  }
+
+  Widget _buildNavItem(int index) {
+    bool isActive = index == _selectedIndex;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgIcon(
+            isActive ? _activeIconPaths[index] : _iconPaths[index],
+            size: 24,
+          ),
+          Text(
+            _titles[index],
+            style: TextStyle(
+              color: isActive ? const Color(0xffFF8D41) : Colors.black,
+              fontSize: 12,
+              fontFamily: 'MontserratR',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }

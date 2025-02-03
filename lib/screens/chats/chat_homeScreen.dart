@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,6 +9,47 @@ import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/screens/Public%20Chat/chatPage.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/svg_icon.dart';
+import 'package:picapool/utils/theme.dart';
+import 'package:picapool/widgets/loading/chat_loading.dart';
+
+class CategoryButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final String image;
+  final VoidCallback onTap;
+
+  const CategoryButton({
+    super.key,
+    required this.label,
+    required this.image,
+    required this.onTap,
+    this.selected = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: selected ? Colors.white : Colors.black,
+          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+        ),
+        onPressed: onTap,
+        icon: Image.asset(image, width: 20, height: 20),
+        label: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class MyChatsPage extends StatefulWidget {
   final List<Map<String, dynamic>>? unarchivedChats;
@@ -17,7 +57,7 @@ class MyChatsPage extends StatefulWidget {
   const MyChatsPage({super.key, this.unarchivedChats});
 
   @override
-  _MyChatsPageState createState() => _MyChatsPageState();
+  State<MyChatsPage> createState() => _MyChatsPageState();
 }
 
 class _MyChatsPageState extends State<MyChatsPage> {
@@ -30,28 +70,6 @@ class _MyChatsPageState extends State<MyChatsPage> {
   final TextEditingController _searchController = TextEditingController();
 
   String _searchQuery = "";
-
-  @override
-  void initState() {
-    super.initState();
-    // If there are unarchived chats, add them back to the chats list
-    // if (widget.unarchivedChats != null) {
-    //   chats.addAll(widget.unarchivedChats!);
-    // }
-    if (_userController.user.value != null) {
-      chatController.getAllChats();
-    }
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  void _onSearchChanged() {
-    setState(() {
-      // _filteredChats = chatController.chats
-      //     .where((chat) => chat.title.contains(_searchController.text))
-      //     .toList();
-      _searchQuery = _searchController.text;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,57 +133,114 @@ class _MyChatsPageState extends State<MyChatsPage> {
         child: Column(
           children: [
             // Search Bar remains unchanged
-            Container(
-                height: 63,
-                color: const Color(0xff02005D),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border:
-                        Border.all(color: const Color(0xff797979), width: 2),
-                    borderRadius: BorderRadius.circular(30),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: 
+              SearchBar(
+                surfaceTintColor:
+                    const WidgetStatePropertyAll(Colors.transparent),
+                controller: _searchController,
+                hintText: "Search",
+                leading: const SvgIcon(
+                  "assets/icons/search.svg",
+                  size: 24,
+                ),
+                padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 15, vertical: 0)),
+                side: WidgetStateBorderSide.resolveWith(
+                  (Set<WidgetState> states) => const BorderSide(
+                    color: Color(0xff797979),
+                    width: 2,
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(30),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
-                      child: SearchBar(
-                        elevation: WidgetStateProperty.resolveWith<double>(
-                            (Set<WidgetState> states) => 0.0),
-                        hintText: "Search",
-                        controller: _searchController,
-                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) =>
-                              const Color(0xff9A9A9A).withOpacity(0.2),
-                        ),
-                        hintStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-                          (Set<WidgetState> states) {
-                            return GoogleFonts.montserrat(
-                                color: const Color(0xffFFFFFF),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300);
-                          },
-                        ),
-                        textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-                          (Set<WidgetState> states) {
-                            return GoogleFonts.montserrat(
-                                color: const Color(0xffFFFFFF),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300);
-                          },
-                        ),
-                        leading: const Padding(
-                          padding: EdgeInsets.fromLTRB(9, 0, 4, 0),
-                          child: SvgIcon(
-                            "assets/icons/search.svg",
-                            size: 24,
+                ),
+                backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                  (Set<WidgetState> states) =>
+                      const Color(0xff9A9A9A).withOpacity(0.2),
+                ),
+                hintStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+                  (Set<WidgetState> states) {
+                    return GoogleFonts.montserrat(
+                        color: const Color(0xffFFFFFF),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300);
+                  },
+                ),
+                textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+                  (Set<WidgetState> states) {
+                    return GoogleFonts.montserrat(
+                        color: const Color(0xffFFFFFF),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300);
+                  },
+                ),
+                textInputAction: TextInputAction.done,
+                onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                trailing: (_searchController.text.isNotEmpty)
+                    ? Iterable.generate(1, (index) => index)
+                        .map(
+                          (index) => IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                            color: AppTheme.light.colorScheme.onSecondary,
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                )),
+                        )
+                        .toList()
+                    : null,
+              ),
+            ),
+            // Container(
+            //   height: 63,
+            //   color: const Color(0xff02005D),
+            //   padding:
+            //       const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            //   child: Container(
+            //     decoration: BoxDecoration(
+            //       border: Border.all(color: const Color(0xff797979), width: 2),
+            //       borderRadius: BorderRadius.circular(30),
+            //     ),
+            //     child: ClipRRect(
+            //       borderRadius: BorderRadius.circular(30),
+            //       child: BackdropFilter(
+            //         filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
+            //         child: SearchBar(
+            //           elevation: WidgetStateProperty.resolveWith<double>(
+            //               (Set<WidgetState> states) => 0.0),
+            //           hintText: "Search",
+            //           controller: _searchController,
+            //           backgroundColor: WidgetStateProperty.resolveWith<Color>(
+            //             (Set<WidgetState> states) =>
+            //                 const Color(0xff9A9A9A).withOpacity(0.2),
+            //           ),
+            //           hintStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+            //             (Set<WidgetState> states) {
+            //               return GoogleFonts.montserrat(
+            //                   color: const Color(0xffFFFFFF),
+            //                   fontSize: 14,
+            //                   fontWeight: FontWeight.w300);
+            //             },
+            //           ),
+            //           textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+            //             (Set<WidgetState> states) {
+            //               return GoogleFonts.montserrat(
+            //                   color: const Color(0xffFFFFFF),
+            //                   fontSize: 14,
+            //                   fontWeight: FontWeight.w300);
+            //             },
+            //           ),
+            //           leading: const Padding(
+            //             padding: EdgeInsets.fromLTRB(9, 0, 4, 0),
+            //             child: SvgIcon(
+            //               "assets/icons/search.svg",
+            //               size: 24,
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
             const SizedBox(height: 10),
             Obx(() {
               if (chatController.chats.isNotEmpty &&
@@ -378,8 +453,7 @@ class _MyChatsPageState extends State<MyChatsPage> {
                     ? GetBuilder<ChatController>(builder: (controller) {
                         if (chatController.chats.isEmpty &&
                             chatController.isLoading.value) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                          return const ChatLoading();
                         }
 
                         if (chatController.chats.isEmpty) {
@@ -411,42 +485,6 @@ class _MyChatsPageState extends State<MyChatsPage> {
         ),
       ),
     );
-  }
-
-  bool hasImage(ChatAndOfferModel chat) {
-    if (chat.offer != null) {
-      var offer = chat.offer;
-      if (offer!.images.isNotEmpty) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if (chat.liveOffer != null) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  ImageProvider _handleImage(ChatAndOfferModel chat) {
-    if (chat.offer != null) {
-      var offer = chat.offer;
-      if (offer!.images.isNotEmpty) {
-        return CachedNetworkImageProvider(offer.images.first);
-      } else {
-        return const AssetImage("assets/icons/Frame 64.png");
-      }
-    } else if (chat.liveOffer != null) {
-      return const AssetImage("assets/images/share_a_cab.png");
-    } else {
-      return const AssetImage("assets/icons/Frame 64.png");
-    }
-  }
-
-  String getChatTitle(ChatAndOfferModel chat) {
-    return chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
-        'To:  ${chat.liveOffer?.to}' ??
-        "No Title";
   }
 
   ListView chatList(List<ChatAndOfferModel> chats) {
@@ -587,6 +625,40 @@ class _MyChatsPageState extends State<MyChatsPage> {
     );
   }
 
+  String getChatTitle(ChatAndOfferModel chat) {
+    return chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
+        'To:  ${chat.liveOffer?.to}' ??
+        "No Title";
+  }
+
+  bool hasImage(ChatAndOfferModel chat) {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (chat.liveOffer != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // If there are unarchived chats, add them back to the chats list
+    // if (widget.unarchivedChats != null) {
+    //   chats.addAll(widget.unarchivedChats!);
+    // }
+    if (_userController.user.value != null) {
+      chatController.getAllChats();
+    }
+    _searchController.addListener(_onSearchChanged);
+  }
+
   String _getLastMessage(List<LastMessageModel>? list) {
     if (list == null) {
       return "";
@@ -598,43 +670,28 @@ class _MyChatsPageState extends State<MyChatsPage> {
 
     return list.last.content;
   }
-}
 
-class CategoryButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final String image;
-  final VoidCallback onTap;
+  ImageProvider _handleImage(ChatAndOfferModel chat) {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return CachedNetworkImageProvider(offer.images.first);
+      } else {
+        return const AssetImage("assets/icons/Frame 64.png");
+      }
+    } else if (chat.liveOffer != null) {
+      return const AssetImage("assets/images/share_a_cab.png");
+    } else {
+      return const AssetImage("assets/icons/Frame 64.png");
+    }
+  }
 
-  const CategoryButton({
-    super.key,
-    required this.label,
-    required this.image,
-    required this.onTap,
-    this.selected = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: selected ? Colors.white : Colors.black,
-          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-        onPressed: onTap,
-        icon: Image.asset(image, width: 20, height: 20),
-        label: Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
+  void _onSearchChanged() {
+    setState(() {
+      // _filteredChats = chatController.chats
+      //     .where((chat) => chat.title.contains(_searchController.text))
+      //     .toList();
+      _searchQuery = _searchController.text;
+    });
   }
 }
