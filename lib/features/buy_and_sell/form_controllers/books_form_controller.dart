@@ -6,6 +6,8 @@ import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/buy_and_sell/values/common_details_model.dart';
 import 'package:picapool/features/buy_and_sell/values/model.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/models/product_model.dart';
+import 'package:picapool/screens/buy_and_sell/values/filter_data.dart';
 
 class BooksFormController extends GetxController with BooksValidationMixin {
   final TextEditingController titleController = TextEditingController();
@@ -47,6 +49,15 @@ class BooksFormController extends GetxController with BooksValidationMixin {
     }
   }
 
+  void fillForUpdate(Product product) {
+    titleController.text = product.name;
+    descriptionController.text = product.description;
+    var attributes = product.attributes!;
+    authorController.text = attributes['author'] ?? '';
+    genreController.text = attributes['genre'] ?? '';
+    update();
+  }
+
   void onSubmit(CommonDetailsModel commonData) async {
     if (!validate()) {
       return;
@@ -58,6 +69,7 @@ class BooksFormController extends GetxController with BooksValidationMixin {
       description: descriptionController.text,
       userId: _storageController.user.value!.id,
       offerIds: [],
+      category: FilterDataEnum.books.name,
     );
 
     var additional = {

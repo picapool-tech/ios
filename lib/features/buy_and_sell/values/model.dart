@@ -70,6 +70,7 @@ class ProductRequestModel {
     required String description,
     required int userId,
     required List<int> offerIds,
+    required String category,
   }) {
     var model = {
       'name': name,
@@ -79,6 +80,7 @@ class ProductRequestModel {
       ...commonDetails.toJsonRequired(),
       'attributes': {
         ...commonDetails.toJsonForAttributes(),
+        'category' : category,
       },
       'phone' : "9100000000",
     };

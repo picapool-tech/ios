@@ -5,9 +5,12 @@ import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
+import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/tables.dart';
+import 'package:picapool/screens/buy_and_sell/features/user_listing/features/selling_category/books.dart';
+import 'package:picapool/screens/buy_and_sell/values/filter_data.dart';
 import 'package:picapool/screens/buy_and_sell/widgets/image_gallery.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/theme.dart';
@@ -45,16 +48,36 @@ class ProductDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final offerController = Get.find<OffersController>();
-
+    final storageController = Get.find<StorageController>();
     return Scaffold(
       appBar: AppBar(
-        actions: const [
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: const Icon(
-          //     Icons.mode_edit,
-          //   ),
-          // ),
+        actions: [
+          if (storageController.user.value!.id == product.userId)
+            IconButton(
+              onPressed: () {
+                Widget? destination;
+                var values = FilterDataEnum.values;
+                var category = values.firstWhere(
+                    (data) => data.name == product.attributes!['category']);
+
+                switch (category) {
+                  case FilterDataEnum.books:
+                    destination = CreateBookProducts(
+                      product: product,
+                    );
+                    break;
+                  default:
+                }
+                if (destination == null) {
+                  return;
+                }
+
+                Get.to(destination);
+              },
+              icon: const Icon(
+                Icons.edit,
+              ),
+            ),
         ],
       ),
       body: Container(

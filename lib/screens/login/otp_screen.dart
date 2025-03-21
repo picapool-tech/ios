@@ -205,8 +205,9 @@ class _OtpScreenState extends State<OtpScreen> {
                     height: 54,
                     child: PicaPrimaryButton(
                       onPressed: _isOtpComplete ? _verifyOtp : null,
-                      text: (widget.returnValue) ? "Done" : "Verify",
-                      isLoading: authController.getLoadingState(AuthLoadingEnum.verifyOtp),
+                      text: "Verify",
+                      isLoading: authController
+                          .getLoadingState(AuthLoadingEnum.verifyOtp),
                     ),
                   ),
 

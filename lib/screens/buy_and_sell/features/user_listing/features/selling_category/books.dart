@@ -5,12 +5,17 @@ import 'package:picapool/features/buy_and_sell/form_controllers/books_form_contr
 import 'package:picapool/features/buy_and_sell/form_controllers/common_additional_form_details_controller.dart';
 import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/buy_and_sell/values/enums.dart';
+import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/user_listing/features/selling_category/create_product_offer_with_category_widget.dart';
 import 'package:picapool/screens/buy_and_sell/features/user_listing/widgets/text_field_with_custom_heading.dart';
 import 'package:picapool/screens/buy_and_sell/values/product_condition_class.dart';
 
 class CreateBookProducts extends StatefulWidget {
-  const CreateBookProducts({super.key});
+  final Product? product;
+  const CreateBookProducts({
+    super.key,
+    this.product,
+  });
 
   @override
   State<CreateBookProducts> createState() => _CreateBookProductsState();
@@ -94,5 +99,12 @@ class _CreateBookProductsState extends State<CreateBookProducts> {
     Get.put(CommonAdditionalFormDetailsController());
     _additionalFormDetailsController =
         Get.find<CommonAdditionalFormDetailsController>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.product != null) {
+        _formController.fillForUpdate(widget.product!);
+        _additionalFormDetailsController.fillForUpdate(widget.product!);
+      }
+    });
   }
 }

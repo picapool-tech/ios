@@ -4,13 +4,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/buy_and_sell/form_controllers/validators/common_details_validator_mixin.dart';
 import 'package:picapool/features/buy_and_sell/values/common_details_model.dart';
+import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/values/product_condition_class.dart';
 
 class CommonAdditionalFormDetailsController extends GetxController
     with CommonDetailsValidatorMixin {
   var images = <XFile>[].obs;
   var isLessThanAMonth = false.obs;
-  ProductCondition? productCondition;
+  Rx<ProductCondition?> productCondition = Rx(null);
   final TextEditingController mrpController = TextEditingController();
   final TextEditingController offerPriceController = TextEditingController();
   final TextEditingController yearsHeldController = TextEditingController();
@@ -25,13 +26,31 @@ class CommonAdditionalFormDetailsController extends GetxController
     }
   }
 
+  void fillForUpdate(Product product) async {
+    var attributes = product.attributes!;
+    var condition = productBooksCondition.indexWhere(
+        (condition) => condition.name == attributes['productCondition']);
+
+    mrpController.text = product.mrp?.toString() ?? '0';
+    offerPriceController.text = product.offerPrice?.toString() ?? '0';
+
+    yearsHeldController.text = attributes['yearHeld'] ?? '0';
+    monthsHeldController.text = attributes['monthsHeld'] ?? '0';
+    isLessThanAMonth.value = attributes['timeHeld'] != null ? true : false;
+
+    reasonForSellController.text = attributes['reasonForSell'];
+
+    productCondition.value = productBooksCondition[condition];
+    update();
+  }
+
   CommonDetailsModel? getData() {
     if (!validate()) {
       return null;
     }
     var commonDetails = CommonDetailsModel(
       images: images,
-      productCondition: productCondition!,
+      productCondition: productCondition.value!,
       mrp: mrpController.text,
       offerPrice: offerPriceController.text,
       yearsHeld:
@@ -64,7 +83,7 @@ class CommonAdditionalFormDetailsController extends GetxController
       return false;
     }
 
-    if (productCondition == null) {
+    if (productCondition.value == null) {
       return false;
     }
 

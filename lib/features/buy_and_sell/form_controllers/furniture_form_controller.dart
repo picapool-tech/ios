@@ -6,6 +6,7 @@ import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/buy_and_sell/values/common_details_model.dart';
 import 'package:picapool/features/buy_and_sell/values/model.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/screens/buy_and_sell/values/filter_data.dart';
 import 'package:picapool/screens/buy_and_sell/values/product_condition_class.dart';
 
 class FurnitureFormController extends GetxController
@@ -64,6 +65,7 @@ class FurnitureFormController extends GetxController
       description: descriptionController.text,
       userId: _storageController.user.value!.id,
       offerIds: [],
+      category: FilterDataEnum.furniture.name,
     );
 
     productModel.imagesFile = commonDetails.images;

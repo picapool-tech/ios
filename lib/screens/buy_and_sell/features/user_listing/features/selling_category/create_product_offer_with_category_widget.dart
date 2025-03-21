@@ -75,7 +75,7 @@ class CreateProductOfferWithCategory<T extends Enum> extends StatelessWidget {
                   child: ProductContitionFormField(
                     conditions: productConditions,
                     onSelected: (ProductCondition selectedCondition) {
-                      additionalFormDetailsController.productCondition =
+                      additionalFormDetailsController.productCondition.value =
                           selectedCondition;
                     },
                     displayNameGetter: (ProductCondition productCondition) =>
@@ -83,7 +83,7 @@ class CreateProductOfferWithCategory<T extends Enum> extends StatelessWidget {
                     assetLocationGetter: (productCondition) =>
                         productCondition.assetLocation,
                     initialValue:
-                        additionalFormDetailsController.productCondition,
+                        additionalFormDetailsController.productCondition.value,
                     validator:
                         additionalFormDetailsController.validateCondition,
                   ),

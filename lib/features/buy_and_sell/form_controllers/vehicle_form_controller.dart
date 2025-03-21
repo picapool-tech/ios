@@ -6,6 +6,7 @@ import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/buy_and_sell/values/common_details_model.dart';
 import 'package:picapool/features/buy_and_sell/values/model.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/screens/buy_and_sell/values/filter_data.dart';
 import 'package:picapool/screens/buy_and_sell/values/product_condition_class.dart';
 
 class VehicleFormController extends GetxController with VehicleValidationMixin {
@@ -60,6 +61,7 @@ class VehicleFormController extends GetxController with VehicleValidationMixin {
       description: descriptionController.text,
       userId: _storageController.user.value!.id,
       offerIds: [],
+      category: FilterDataEnum.vehicle.name,
     );
 
     var additional = {

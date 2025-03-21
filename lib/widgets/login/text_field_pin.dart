@@ -57,7 +57,7 @@ class TextFieldPin extends StatelessWidget {
 
   Widget defaultTextField() {
     return Opacity(
-      opacity: 0.0,
+      opacity: 0,
       child: TextField(
         maxLength: codeLength,
         showCursor: true,
