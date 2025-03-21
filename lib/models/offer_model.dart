@@ -62,8 +62,10 @@ class Offer {
       name: json['name'],
       images: List<String>.from(json['images']),
       desc: json['desc'],
-      createdAt: DateTime.parse(json['createdAt']),
-      expiryAt: DateTime.parse(json['expiryAt']),
+      createdAt: DateTime.parse(
+        json['createdAt'],
+      ).toLocal(),
+      expiryAt: DateTime.parse(json['expiryAt']).toLocal(),
       link: json['link'] ?? "",
       isVerified: json['isVerified'] ?? false,
       priority: json['priority'] ?? 1,
@@ -78,8 +80,8 @@ class Offer {
       chats: json['Chats'] != null
           ? (json['Chats'] as List).map((c) => Chat.fromJson(c)).toList()
           : null,
-      tags: json['tags'] != null
-          ? (json['tags'] as List).map((t) => Tag.fromJson(t)).toList()
+      tags: json['Tags'] != null
+          ? (json['Tags'] as List).map((t) => Tag.fromJson(t)).toList()
           : null,
       products: json['Products'] != null
           ? (json['Products'] as List).map((p) => Product.fromJson(p)).toList()
@@ -109,52 +111,12 @@ class Offer {
       'user': user?.toJson(),
       'userId': userId,
       'chats': chats?.map((c) => c.toJson()).toList(),
-      'tags': tags?.map((t) => t.toJson()).toList(),
+      'Tags': tags?.map((t) => t.toJson()).toList(),
       'Products': products?.map((p) => p.toJson()).toList(),
       'radius': radius,
       'top': top,
       'units': units,
       'maxUnits': maxUnits,
-    };
-  }
-}
-
-class OfferSearchRequestModel {
-  final VicinityLocation? loc;
-  final int? radius;
-  final bool? chats;
-  final bool? products;
-  final bool? top;
-  final List<int>? tagIds;
-
-  OfferSearchRequestModel({
-    this.top,
-    this.tagIds,
-    this.loc,
-    this.radius,
-    this.chats,
-    this.products,
-  });
-
-  factory OfferSearchRequestModel.fromJson(Map<String, dynamic> json) {
-    return OfferSearchRequestModel(
-      loc: json['loc'] != null ? VicinityLocation.fromJson(json['loc']) : null,
-      radius: json['radius'],
-      chats: json['chats'],
-      products: json['products'],
-      top: json['top'],
-      tagIds: json['tagIds'] != null ? List<int>.from(json['tagIds']) : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'loc': loc?.toJson(),
-      if (radius != null) 'radius': radius,
-      if (chats != null) 'chats': chats,
-      if (products != null) 'products': products,
-      if (tagIds != null) 'tagIds': tagIds,
-      if (top != null) 'top': top,
     };
   }
 }

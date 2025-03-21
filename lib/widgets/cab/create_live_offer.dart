@@ -1,16 +1,17 @@
+import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:picapool/controllers/live_offer_controller.dart';
-import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/features/location/location_provider.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage.dart';
-import 'package:picapool/utils/date_time_utils.dart';
-
+import 'package:picapool/models/live_offer_model.dart';
+import 'package:picapool/screens/public_chat/chat_page.dart';
 
 class CreateLiveOffer extends StatefulWidget {
   const CreateLiveOffer({super.key});
@@ -19,50 +20,158 @@ class CreateLiveOffer extends StatefulWidget {
   State<CreateLiveOffer> createState() => _CreateLiveOfferState();
 }
 
-class _CreateLiveOfferState extends State<CreateLiveOffer> {
-  final LocationController locationController = Get.find<LocationController>();
-  final LiveOfferController liveOfferController = Get.find();
-  final TextEditingController _fromController = TextEditingController();
-  final TextEditingController _toController = TextEditingController();
+class LocationSearchDelegate extends SearchDelegate<Prediction> {
+  final GoogleMapsPlaces places;
+  final bool isFromField;
 
-  final GoogleMapsPlaces _places =
-      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
-  List<Prediction> _predictions = [];
-
-  // DateTime? _selectedDateTime;
-  // DateTime? _defaultExpiryDate;
-  DateTime _selectedDateTime = DateTime.now();
-  DateTime _defaultExpiryDate = DateTime.now();
-  String updateDefaultExpiryDate() {
-    setState(() {
-      _defaultExpiryDate = _selectedDateTime.add(const Duration(days: 3));
-    });
-      return DateTimeUtils.formatDateWithZone(_defaultExpiryDate ?? DateTime.now());
-  }
-
-  bool isLoading = false;
-  GoogleMapController? _mapController;
-  LatLng? _currentPosition;
-  LatLng? _selectedPosition;
-
-  // Location data
-  LatLng? _fromLatLng;
-  LatLng? _toLatLng;
-  String? _fromAddress;
-  String? _toAddress;
-  Circle? _currentLocationCircle;
-  String _locationMessage = "Loading...";
-  final double _radius = 500; // Default radius
-  final bool _isMapInitialized = false;
-  final places =
-      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
-
-  bool _isSearchingFrom = false; // Track which field is being searched
+  LocationSearchDelegate({
+    required this.places,
+    this.isFromField = true,
+  });
 
   @override
-  void initState() {
-    _fetchLocation();
-    super.initState();
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () => query = '',
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => close(context, Prediction()),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) => buildSuggestions(context);
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    if (query.isEmpty) {
+      return Center(
+        child: Text(
+          'Search for ${isFromField ? 'pickup' : 'drop-off'} location',
+          style: const TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return FutureBuilder<PlacesAutocompleteResponse>(
+      future: places.autocomplete(
+        query,
+        components: [Component(Component.country, "IN")],
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(
+              child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Color(0xffFF8D41)),
+          ));
+        }
+
+        final predictions = snapshot.data!.predictions;
+
+        if (predictions.isEmpty) {
+          return const Center(
+            child: Text('No locations found. Try a different search.'),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: predictions.length,
+          itemBuilder: (context, index) {
+            final prediction = predictions[index];
+            return ListTile(
+              leading: const Icon(Icons.location_on, color: Color(0xffFF8D41)),
+              title: Text(prediction.description ?? ''),
+              subtitle: Text(
+                prediction.structuredFormatting?.secondaryText ?? '',
+                style: const TextStyle(fontSize: 12),
+              ),
+              onTap: () => close(context, prediction),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _CreateLiveOfferState extends State<CreateLiveOffer> {
+  // Constants
+  static const double _mapPadding = 50.0;
+  static const double _defaultZoom = 15.0;
+  static const LatLng _defaultPosition = LatLng(28.6139, 77.2090); // New Delhi
+  // Controllers
+  final LocationController _locationController = Get.find<LocationController>();
+  final LiveOfferController _liveOfferController = Get.find();
+
+  final TextEditingController _fromController = TextEditingController();
+
+  final TextEditingController _toController = TextEditingController();
+  GoogleMapController? _mapController;
+  // Places API
+  final GoogleMapsPlaces _places =
+      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+  // UI State
+  bool _isLoading = false;
+  bool _isSearchingFrom = false;
+  List<Prediction> _predictions = [];
+  bool _isLoadingRoute = false;
+
+  // New state for collapsible time picker
+  bool _isTimePickerExpanded = false;
+
+  // Location State
+  LatLng? _currentPosition;
+  LatLng? _fromLatLng;
+  LatLng? _toLatLng;
+
+  String? _fromAddress;
+  String? _toAddress;
+
+  Circle? _currentLocationCircle;
+  // Route State
+  List<LatLng> _routePoints = [];
+
+  Map<String, dynamic>? _routeDetails;
+  // Time Selection
+  DateTime _selectedDateTime = DateTime.now().add(const Duration(minutes: 30));
+  DateTime _defaultExpiryDate = DateTime.now().add(const Duration(days: 3));
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          "Create Your Pool",
+          style: TextStyle(
+            fontSize: 18,
+            fontFamily: "MontserratM",
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: _buildBody(),
+    );
   }
 
   @override
@@ -73,14 +182,690 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocation();
+  }
+
+  Widget _buildBody() {
+    return Column(
+      children: [
+        // Location Search Fields
+        _buildLocationFields(),
+
+        // Map and Route Display
+        Expanded(
+          child: Stack(
+            children: [
+              _buildMap(),
+              if (_isLoadingRoute)
+                const Center(
+                  child: Card(
+                    elevation: 4,
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Color(0xffFF8D41)),
+                      ),
+                    ),
+                  ),
+                ),
+              if (_routeDetails != null && _routePoints.isNotEmpty)
+                _buildRouteInfoCard(),
+            ],
+          ),
+        ),
+
+        // Collapsible Time Selection
+        _buildCollapsibleTimeSelection(),
+
+        // Confirm Button
+        _buildConfirmButton(),
+      ],
+    );
+  }
+
+  // Replace _buildTimeSelection with a collapsible version
+  Widget _buildCollapsibleTimeSelection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            spreadRadius: 1,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isTimePickerExpanded = !_isTimePickerExpanded;
+              });
+            },
+            child: Row(
+              children: [
+                const Text(
+                  "Cab Time",
+                  style: TextStyle(
+                    fontFamily: "MontserratM",
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffFFF5ED),
+                    borderRadius: BorderRadius.circular(20),
+                    border:
+                        Border.all(color: const Color(0xffFF8D41), width: 1),
+                  ),
+                  child: Text(
+                    _formatDateTime(_selectedDateTime),
+                    style: const TextStyle(
+                      color: Color(0xffFF8D41),
+                      fontFamily: "MontserratM",
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isTimePickerExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: const Color(0xffFF8D41),
+                ),
+              ],
+            ),
+          ),
+          // Expandable time picker section
+          if (_isTimePickerExpanded)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: _isTimePickerExpanded ? 120 : 0,
+              child: CupertinoDatePicker(
+                minimumDate: DateTime.now(),
+                initialDateTime: _selectedDateTime,
+                onDateTimeChanged: (dateTime) {
+                  setState(() => _selectedDateTime = dateTime);
+                },
+                backgroundColor: Colors.white,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: GetBuilder<LiveOfferController>(
+        builder: (controller) {
+          final isCreating =
+              controller.createLiveOfferState == CreateLiveOfferState.creating;
+
+          return isCreating
+              ? const LinearProgressIndicator(
+                  color: Color(0xffFF8D41),
+                  backgroundColor: Colors.white,
+                )
+              : ElevatedButton(
+                  onPressed: _fromLatLng != null && _toLatLng != null
+                      ? _handleCreateLiveOffer
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: const Color(0xffFF8D41),
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text(
+                    "Confirm",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: "MontserratSB",
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLocationField({
+    required TextEditingController controller,
+    required String label,
+    required bool isFromField,
+    required IconData icon,
+  }) {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 1,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        readOnly: true,
+        textAlignVertical: TextAlignVertical.center,
+        decoration: InputDecoration(
+          hintText: 'Search for $label location...',
+          hintStyle: const TextStyle(
+            color: Colors.grey,
+            fontFamily: 'MontserratR',
+            fontSize: 14,
+          ),
+          border: InputBorder.none,
+          filled: false,
+          prefixIcon: Icon(icon, color: const Color(0xffFF8D41)),
+          suffixIcon: controller.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 16),
+                  onPressed: () {
+                    setState(() {
+                      controller.clear();
+                      if (isFromField) {
+                        _fromLatLng = null;
+                        _fromAddress = null;
+                      } else {
+                        _toLatLng = null;
+                        _toAddress = null;
+                      }
+                      // Clear route if either point is removed
+                      if (_fromLatLng == null || _toLatLng == null) {
+                        _clearRoute();
+                      }
+                    });
+                  },
+                )
+              : null,
+        ),
+        onTap: () => _handleLocationFieldTap(isFromField),
+      ),
+    );
+  }
+
+  Widget _buildLocationFields() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          _buildLocationField(
+            controller: _fromController,
+            label: 'pickup',
+            isFromField: true,
+            icon: Icons.my_location,
+          ),
+          const SizedBox(height: 12),
+          _buildLocationField(
+            controller: _toController,
+            label: 'drop-off',
+            isFromField: false,
+            icon: Icons.location_on,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMap() {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: _currentPosition ?? _defaultPosition,
+        zoom: _defaultZoom,
+      ),
+      myLocationEnabled: true,
+      myLocationButtonEnabled: true,
+      compassEnabled: true,
+      zoomControlsEnabled: false,
+      mapToolbarEnabled: false,
+      onMapCreated: (GoogleMapController controller) {
+        _mapController = controller;
+        if (_currentPosition != null) {
+          controller.animateCamera(
+            CameraUpdate.newLatLngZoom(_currentPosition!, _defaultZoom),
+          );
+        }
+      },
+      markers: _buildMarkers(),
+      polylines: _buildPolylines(),
+      circles: _currentLocationCircle != null ? {_currentLocationCircle!} : {},
+    );
+  }
+
+  Set<Marker> _buildMarkers() {
+    final markers = <Marker>{};
+
+    if (_fromLatLng != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('from'),
+          position: _fromLatLng!,
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          infoWindow:
+              InfoWindow(title: _fromAddress?.split(',').first ?? 'Pickup'),
+        ),
+      );
+    }
+
+    if (_toLatLng != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('to'),
+          position: _toLatLng!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow:
+              InfoWindow(title: _toAddress?.split(',').first ?? 'Destination'),
+        ),
+      );
+    }
+
+    return markers;
+  }
+
+  Set<Polyline> _buildPolylines() {
+    final polylines = <Polyline>{};
+
+    if (_routePoints.isNotEmpty) {
+      polylines.add(
+        Polyline(
+          polylineId: const PolylineId('route'),
+          points: _routePoints,
+          color: Colors.blue,
+          width: 5,
+          patterns: [
+            PatternItem.dash(20),
+            PatternItem.gap(10),
+          ],
+        ),
+      );
+    } else if (_fromLatLng != null && _toLatLng != null) {
+      polylines.add(
+        Polyline(
+          polylineId: const PolylineId('direct'),
+          points: [_fromLatLng!, _toLatLng!],
+          color: Colors.grey,
+          width: 3,
+          patterns: [
+            PatternItem.dash(10),
+            PatternItem.gap(10),
+          ],
+        ),
+      );
+    }
+
+    return polylines;
+  }
+
+  Widget _buildRouteInfoCard() {
+    // FIX: Access the 'text' property from the nested map
+    final distanceText =
+        _routeDetails?['distance']?['text'] ?? 'Unknown distance';
+    final durationText = _routeDetails?['duration']?['text'] ?? 'Unknown time';
+
+    return Positioned(
+      bottom: 16,
+      left: 16,
+      right: 16,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          child: Row(
+            children: [
+              const Icon(Icons.directions_car,
+                  color: Color(0xffFF8D41), size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      distanceText, // Fixed accessor
+                      style: const TextStyle(
+                        fontFamily: 'MontserratSB',
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      'Approx. $durationText by car', // Fixed accessor
+                      style: const TextStyle(
+                        fontFamily: 'MontserratR',
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                color: Colors.blue,
+                onPressed: _getDirections,
+                tooltip: 'Refresh route',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _clearRoute() {
+    setState(() {
+      _routePoints = [];
+      _routeDetails = null;
+    });
+  }
+
+  // Decode the polyline points
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> poly = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      final p = LatLng((lat / 1E5).toDouble(), (lng / 1E5).toDouble());
+      poly.add(p);
+    }
+    return poly;
+  }
+
+  void _fitRouteOnMap() {
+    if (_routePoints.isEmpty || _mapController == null) return;
+
+    try {
+      // Create bounds that include both points and the route
+      final bounds = LatLngBounds(
+        southwest: LatLng(
+          _routePoints.map((p) => p.latitude).reduce(min),
+          _routePoints.map((p) => p.longitude).reduce(min),
+        ),
+        northeast: LatLng(
+          _routePoints.map((p) => p.latitude).reduce(max),
+          _routePoints.map((p) => p.longitude).reduce(max),
+        ),
+      );
+
+      // Add padding
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(bounds, _mapPadding),
+      );
+    } catch (e) {
+      debugPrint('Error fitting map to route: $e');
+    }
+  }
+
+  // Helper method to format date time in a readable format
+  String _formatDateTime(DateTime dateTime) {
+    // Format: "May 15, 2023 • 3:30 PM"
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final selectedDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    String dateLabel;
+    if (selectedDate == today) {
+      dateLabel = "Today";
+    } else if (selectedDate == tomorrow) {
+      dateLabel = "Tomorrow";
+    } else {
+      final month = _getMonthName(dateTime.month);
+      dateLabel = "$month ${dateTime.day}, ${dateTime.year}";
+    }
+
+    final hour = dateTime.hour > 12
+        ? dateTime.hour - 12
+        : (dateTime.hour == 0 ? 12 : dateTime.hour);
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    final period = dateTime.hour >= 12 ? 'PM' : 'AM';
+
+    return "$dateLabel • $hour:$minute $period";
+  }
+
+  // Route methods
+  Future<void> _getDirections() async {
+    if (_fromLatLng == null || _toLatLng == null) return;
+
+    setState(() => _isLoadingRoute = true);
+
+    try {
+      // Make request to the Google Directions API
+
+      final directionsResponse = await http
+          .get(Uri.parse('https://maps.googleapis.com/maps/api/directions/json?'
+              'origin=${_fromLatLng!.latitude},${_fromLatLng!.longitude}'
+              '&destination=${_toLatLng!.latitude},${_toLatLng!.longitude}'
+              '&key=AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'));
+
+      if (directionsResponse.statusCode == 200) {
+        final data = json.decode(directionsResponse.body);
+
+        if (data['status'] == 'OK' && data['routes'].isNotEmpty) {
+          // Get route points
+          final points = data['routes'][0]['overview_polyline']['points'];
+          _routePoints = _decodePolyline(points);
+
+          // Store route details
+          _routeDetails = {
+            'distance': data['routes'][0]['legs'][0]['distance'],
+            'duration': data['routes'][0]['legs'][0]['duration'],
+            'startAddress': data['routes'][0]['legs'][0]['start_address'],
+            'endAddress': data['routes'][0]['legs'][0]['end_address'],
+          };
+
+          // Fit map to show the entire route
+          _fitRouteOnMap();
+        } else {
+          _showError(
+              'Route Error', 'Failed to get directions: ${data['status']}');
+          _clearRoute();
+        }
+      } else {
+        _showError('Network Error', 'Failed to connect to directions service');
+        _clearRoute();
+      }
+    } catch (e) {
+      _showError('Route Error', 'Error getting directions: $e');
+      _clearRoute();
+    } finally {
+      setState(() => _isLoadingRoute = false);
+    }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return months[month - 1];
+  }
+
+  void _handleCreateLiveOffer() {
+    if (!_validateInputs()) return;
+
+    final payload = CreateLiveOfferPayload(
+      createdAt: _selectedDateTime.toUtc().toIso8601String(),
+      expiryAt: _updateDefaultExpiryDate(),
+      fromAddress: _fromAddress ?? _fromController.text,
+      toAddress: _toAddress ?? _toController.text,
+      seats: 3, // Consider making this configurable
+    );
+
+    _liveOfferController.createLiveOffer(payload).then((_) {
+      if (_liveOfferController.createLiveOfferState ==
+          CreateLiveOfferState.created) {
+        _handleLiveOfferCreated();
+      } else {
+        _showError('Creation Failed',
+            'Failed to create your cab pool. Please try again.');
+      }
+    });
+  }
+
+  void _handleLiveOfferCreated() {
+    final chatId =
+        _liveOfferController.createLiveOfferResponse?.data?.chats?.first;
+
+    if (chatId != null && mounted) {
+      Get.off(
+        () => ChatPage(
+          chat: chatId,
+          chatTitle:
+              _liveOfferController.createLiveOfferResponse?.data?.fromAddress ??
+                  "Chat",
+          liveOffer: LiveOffer.fromJson(
+            _liveOfferController.createLiveOfferResponse!.data!.toJson(),
+          ),
+        ),
+      );
+    } else {
+      if (mounted) {
+        _showError('Chat Unavailable',
+            'Your cab pool was created successfully, but the chat is not available.');
+      }
+    }
+  }
+
+  Future<void> _handleLocationFieldTap(bool isFromField) async {
+    _isSearchingFrom = isFromField;
+
+    if (isFromField && _currentPosition != null && _fromLatLng == null) {
+      // For pickup location, offer to use current location
+      final useCurrentLocation = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Use Current Location?'),
+          content: const Text(
+              'Would you like to use your current location as the pickup point?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('SEARCH'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xffFF8D41),
+              ),
+              child: const Text('USE CURRENT'),
+            ),
+          ],
+        ),
+      );
+
+      if (useCurrentLocation == true) {
+        _setCurrentLocationAsPickup();
+        return;
+      }
+    }
+
+    final Prediction? result = await showSearch<Prediction>(
+      context: context,
+      delegate: LocationSearchDelegate(
+        places: _places,
+        isFromField: isFromField,
+      ),
+    );
+
+    if (result != null && result.placeId != null) {
+      await _selectPlace(result);
+    }
+  }
+
+  // Location methods
+  Future<void> _initializeLocation() async {
+    setState(() => _isLoading = true);
+
+    try {
+      var location = _locationController.state.value.location;
+
+      if (location == null) {
+        await _locationController.getLocation();
+        return;
+      }
+
+      setState(() {
+        _currentPosition = LatLng(location.latitude, location.longitude);
+        _updateLocationCircle();
+      });
+      _setCurrentLocationAsPickup();
+
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(_currentPosition!, _defaultZoom),
+      );
+    } catch (e) {
+      _showError('Location Error', 'Failed to get your location: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _selectPlace(Prediction prediction) async {
     final placeId = prediction.placeId;
     if (placeId == null) return;
 
-    setState(() => isLoading = true);
+    setState(() => _isLoading = true);
+
     try {
       var details = await _places.getDetailsByPlaceId(placeId);
       final location = details.result.geometry?.location;
+
       if (location != null) {
         final newPosition = LatLng(location.lat, location.lng);
 
@@ -97,114 +882,75 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
           _predictions.clear();
         });
 
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(newPosition, 15),
-        );
+        // If both points are set, get directions
+        if (_fromLatLng != null && _toLatLng != null) {
+          await _getDirections();
+        } else {
+          // Just zoom to the selected point
+          _mapController?.animateCamera(
+            CameraUpdate.newLatLngZoom(newPosition, _defaultZoom),
+          );
+        }
       }
     } catch (e) {
-      debugPrint('Error selecting place: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to get location details')),
-      );
+      _showError('Location Error', 'Failed to get location details: $e');
     } finally {
-      setState(() => isLoading = false);
+      setState(() => _isLoading = false);
     }
   }
 
-  Widget _buildLocationField({
-    required TextEditingController controller,
-    required String label,
-    required bool isFromField,
-  }) {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        readOnly: true, // Make it read-only since we're using SearchDelegate
-        decoration: InputDecoration(
-          hintText: 'Search for $label location...',
-          hintStyle: const TextStyle(
-            color: Colors.grey,
-            fontFamily: 'MontserratR',
-            fontSize: 16,
-          ),
-          border: InputBorder.none,
-          prefixIcon: const Icon(Icons.location_on, color: Colors.orange),
-        ),
-        onTap: () async {
-          _isSearchingFrom = isFromField;
-          final Prediction? result = await showSearch<Prediction>(
-            context: context,
-            delegate: LocationSearchDelegate(places: _places),
-          );
-          if (result != null) {
-            _selectPlace(result);
+  void _setCurrentLocationAsPickup() async {
+    if (_currentPosition != null) {
+      final location = _locationController.state.value.location;
+      final placemark = _locationController.state.value.locationName;
+
+      if (location != null && placemark != null) {
+        setState(() {
+          _fromLatLng = _currentPosition;
+          _fromAddress =
+              '${placemark.name}, ${placemark.locality}, ${placemark.administrativeArea}';
+          _fromController.text = _fromAddress ?? 'Current Location';
+
+          if (_toLatLng != null) {
+            _getDirections();
           }
-        },
+        });
+      }
+    }
+  }
+
+  void _showError(String title, String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(message),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 4),
       ),
     );
   }
 
-  Future<void> _initializeLocation() async {
-    await locationController.getLocation();
-    if (locationController.state.value.location != null) {
-      setState(() {
-        _currentPosition = LatLng(
-          locationController.state.value.location!.latitude,
-          locationController.state.value.location!.longitude,
-        );
-        _fromLatLng = _currentPosition; // Set initial pickup location
-        _fromController.text =
-            locationController.state.value.locationName?.locality ?? '';
-        _fromAddress = _fromController.text;
-      });
-    }
+  // Live Offer creation
+  String _updateDefaultExpiryDate() {
+    _defaultExpiryDate = _selectedDateTime.add(const Duration(days: 3));
+    return _defaultExpiryDate.toUtc().toIso8601String();
   }
 
-  Future<void> _fetchLocation({
-    bool fetchActualLocation = false,
-  }) async {
-    if (fetchActualLocation ||
-        locationController.state.value.location == null) {
-      await locationController.getLocation();
-    }
+  void _updateLocationCircle() {
+    if (_currentPosition == null) return;
 
-    var location = locationController.state.value.location;
-    if (location == null) {
-      Get.snackbar(
-        "Location not found",
-        "Location of this device not found",
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-
-    setState(() {
-      _currentPosition = LatLng(location.latitude, location.longitude);
-      Placemark firstPlacemark =
-          locationController.state.value.locationName ?? const Placemark();
-
-      _fromController.text =
-          '${firstPlacemark.name}, ${firstPlacemark.locality}, ${firstPlacemark.thoroughfare}, ${firstPlacemark.administrativeArea}' ??
-              "Cant Fetch current location";
-      _selectedPosition = _currentPosition;
-      _updateMarkersAndCircles();
-    });
-  }
-
-  void _updateMarkersAndCircles() async {
     setState(() {
       _currentLocationCircle = Circle(
         circleId: const CircleId("currentLocationCircle"),
@@ -217,346 +963,22 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     });
   }
 
-  Future<void> _getAddressFromLatLng(LatLng position) async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-    if (placemarks.isNotEmpty) {
-      Placemark place = placemarks.first;
-      String address =
-          "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
-      setState(() {
-        _locationMessage = address;
-        _selectedPosition = position;
-        _updateMarkersAndCircles();
-      });
-    } else {
-      setState(() {
-        _locationMessage = "No address available for this location.";
-      });
-    }
-  }
-
-  Future<void> _searchPlaces(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        _predictions.clear();
-      });
-      return;
-    }
-
-    var sessionToken = 'xyzabc_1234';
-    var response =
-        await _places.autocomplete(query, sessionToken: sessionToken);
-
-    if (response.isOkay) {
-      setState(() {
-        _predictions = response.predictions;
-      });
-    } else {
-      print(response.errorMessage);
-    }
-  }
-
   bool _validateInputs() {
-    if (_fromLatLng == null || _toLatLng == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please select both pickup and drop-off locations')),
-      );
+    if (_fromController.text.isEmpty) {
+      _showError('Missing Information', 'Please select a pickup location');
       return false;
     }
+
+    if (_toController.text.isEmpty) {
+      _showError('Missing Information', 'Please select a drop-off location');
+      return false;
+    }
+
     if (_selectedDateTime.isBefore(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a future date and time')),
-      );
+      _showError('Invalid Time', 'Please select a future date and time');
       return false;
     }
+
     return true;
-  }
-
-  void _handleCreateLiveOffer() {
-    // if (!_validateInputs()) return;
-
-    final payload = CreateLiveOfferPayload(
-      createdAt: DateTimeUtils.formatDateWithZone(_selectedDateTime),
-      expiryAt: updateDefaultExpiryDate(),
-      fromAddress: _fromController.text,
-      seats: 3,
-      toAddress: _toAddress ?? "empty",
-    );
-
-    liveOfferController.createLiveOffer(payload).then((_) {
-      if (liveOfferController.createLiveOfferState ==
-          CreateLiveOfferState.created) {
-        // Get the first chat ID from the response
-
-        final chatId =
-            liveOfferController.createLiveOfferResponse?.data?.chats?.first;
-
-        if (chatId != null && mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatPage(
-                chat: chatId,
-                chatTitle: "Chat" ,
-              ),
-            ),
-          );
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to not able to have chat right now'),
-              ),
-            );
-          }
-        }
-        // }
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffffffff),
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  "Create your pool",
-                  style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
-                ),
-              ),
-              // Location Fields
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  children: [
-                    _buildLocationField(
-                      controller: _fromController,
-                      label: 'pickup',
-                      isFromField: true,
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      child: _buildLocationField(
-                        controller: _toController,
-                        label: 'drop-off',
-                        isFromField: false,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Predictions List
-              if (_predictions.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _predictions.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(
-                          _predictions[index].description ?? '',
-                          style: const TextStyle(
-                            fontFamily: "MontserratR",
-                            fontSize: 14,
-                          ),
-                        ),
-                        onTap: () => _selectPlace(_predictions[index]),
-                      );
-                    },
-                  ),
-                ),
-
-              // Map
-              Expanded(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: _currentPosition ?? const LatLng(28.6139, 77.2090),
-                    zoom: 15,
-                  ),
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  onMapCreated: (GoogleMapController controller) {
-                    _mapController = controller;
-                    if (_currentPosition != null) {
-                      controller.animateCamera(
-                        CameraUpdate.newLatLngZoom(_currentPosition!, 15),
-                      );
-                    }
-                  },
-                  markers: {
-                    if (_fromLatLng != null)
-                      Marker(
-                        markerId: const MarkerId('from'),
-                        position: _fromLatLng!,
-                        icon: BitmapDescriptor.defaultMarkerWithHue(
-                          BitmapDescriptor.hueGreen,
-                        ),
-                      ),
-                    if (_toLatLng != null)
-                      Marker(
-                        markerId: const MarkerId('to'),
-                        position: _toLatLng!,
-                        icon: BitmapDescriptor.defaultMarkerWithHue(
-                          BitmapDescriptor.hueRed,
-                        ),
-                      ),
-                  },
-                  circles: _currentLocationCircle != null
-                      ? {_currentLocationCircle!}
-                      : {},
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    const Text(
-                      "Select your cab time",
-                      style: TextStyle(
-                        fontFamily: "MontserratM",
-                        fontSize: 16,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: CupertinoDatePicker(
-                        minimumDate: DateTime.now(),
-                        initialDateTime: DateTime.now(),
-                        onDateTimeChanged: (dateTime) {
-                          setState(() => _selectedDateTime = dateTime);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Confirm Button
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: GetBuilder<LiveOfferController>(
-                  builder: (liveOfferInstance) {
-                    return liveOfferInstance.createLiveOfferState ==
-                            CreateLiveOfferState.creating
-                        ? const LinearProgressIndicator(color: Colors.orange)
-                        : ElevatedButton(
-                            onPressed: _handleCreateLiveOffer,
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: const Color(0xffFF8D41),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            child: const Text(
-                              "Confirm",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontFamily: "MontserratSB",
-                                color: Colors.white,
-                              ),
-                            ),
-                          );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class LocationSearchDelegate extends SearchDelegate<Prediction> {
-  final GoogleMapsPlaces places;
-
-  LocationSearchDelegate({required this.places});
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, Prediction());
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return buildSuggestions(context);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return FutureBuilder<PlacesAutocompleteResponse>(
-      future: places.autocomplete(
-        query,
-        components: [Component(Component.country, "IN")],
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final predictions = snapshot.data!.predictions;
-
-        return ListView.builder(
-          itemCount: predictions.length,
-          itemBuilder: (context, index) {
-            final prediction = predictions[index];
-            return ListTile(
-              leading: const Icon(Icons.location_on),
-              title: Text(prediction.description ?? ''),
-              onTap: () {
-                close(context, prediction);
-              },
-            );
-          },
-        );
-      },
-    );
   }
 }

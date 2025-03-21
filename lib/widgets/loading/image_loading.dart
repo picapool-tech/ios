@@ -3,7 +3,13 @@ import 'package:picapool/core/shimmer.dart';
 import 'package:picapool/utils/theme.dart';
 
 class ImageLoading extends StatelessWidget {
-  const ImageLoading({super.key});
+  final double? height;
+  final double? width;
+  const ImageLoading({
+    super.key,
+    this.height,
+    this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +23,8 @@ class ImageLoading extends StatelessWidget {
         decoration: roundedContainer().copyWith(
           color: Colors.grey[300],
         ),
-        width: double.infinity,
-        height: 150,
+        width: width ?? double.infinity,
+        height: height ?? 150,
       ),
     );
   }

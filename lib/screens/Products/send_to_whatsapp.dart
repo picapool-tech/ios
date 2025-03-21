@@ -3,28 +3,6 @@ import 'dart:developer';
 
 import 'package:picapool/models/product_model.dart';
 
-void main() {
-  String username = "Dipan";
-  int userId = 34;
-  List<Map<String, dynamic>> products = [
-    {
-      "name": "Indi Tandoori Pizza (Regular)",
-      "id": 1,
-      "originalPrice": 299,
-      "discountPrice": 269
-    },
-    {
-      "name": "Farmhouse (Regular)",
-      "id": 2,
-      "originalPrice": 259,
-      "discountPrice": 152
-    },
-  ];
-
-  // String waLink = generateWhatsAppLink(username, userId, products);
-  // print(waLink);
-}
-
 String generateWhatsAppLink(
   String username,
   int userId,

@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:picapool/screens/Products/products_homePage.dart';
-import 'package:picapool/screens/home_screen.dart';
+import 'package:picapool/screens/products/products_home_page.dart';
+import 'package:picapool/screens/home/home_screen.dart';
 import 'package:picapool/utils/svg_icon.dart';
 
 class NewBottomBarProduct extends StatefulWidget {

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/partner_model.dart';
 import 'package:picapool/models/user_model.dart';
@@ -25,8 +24,8 @@ class Tag {
   factory Tag.fromJson(Map<String, dynamic> json) {
     var tag = Tag(
       id: json['id'],
-      tag: json['tag'],
-      icon: json['icon'],
+      tag: json['tag'] ?? "",
+      icon: json['icon'] ?? "",
       offers: json['offers'] != null
           ? (json['offers'] as List).map((o) => Offer.fromJson(o)).toList()
           : null,
@@ -38,7 +37,7 @@ class Tag {
           : null,
       isActive: json['isActive'] ?? true,
     );
-    debugPrint("TAG FROM JSON : ${tag.toJson()}");
+
     return tag;
   }
 
@@ -53,5 +52,10 @@ class Tag {
       'isActive': isActive,
       'hasChangedImage': hasChangedImage
     };
+  }
+
+  @override
+  String toString() {
+    return "{id : $id, name: $tag, pic: $icon}";
   }
 }

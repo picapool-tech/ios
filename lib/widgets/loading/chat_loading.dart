@@ -4,10 +4,12 @@ import 'package:picapool/widgets/loading/list_loading.dart';
 
 class ChatLoading extends StatelessWidget {
   final int count;
+  final Color? color;
 
   const ChatLoading({
     super.key,
     this.count = 10,
+    this.color,
   });
 
   @override
@@ -35,7 +37,7 @@ class ChatLoading extends StatelessWidget {
                 width: double.infinity,
                 height: 20,
                 decoration: roundedContainer(radius: 2).copyWith(
-                  color: Colors.grey[300],
+                  color: color ?? Colors.grey[300],
                 ),
               ),
               Container(
@@ -43,7 +45,7 @@ class ChatLoading extends StatelessWidget {
                 width: kBottomNavigationBarHeight,
                 height: 10,
                 decoration: roundedContainer(radius: 0).copyWith(
-                  color: Colors.grey[300],
+                  color: color ?? Colors.grey[300],
                 ),
               ),
             ],

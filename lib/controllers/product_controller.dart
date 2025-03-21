@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
-import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tags/tag_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offers/create_offer_payload.dart';
 import 'package:picapool/models/offers/create_offer_response.dart';
 import 'package:picapool/models/offers/location_entity.dart';
@@ -31,7 +31,7 @@ enum IndividualProductsState {
 
 class ProductController extends GetxController {
   final UserController _userController = Get.find<UserController>();
-  final AuthController authController = Get.find<AuthController>();
+  final StorageController _storageController = Get.find<StorageController>();
   ProductsState productsState = ProductsState.productsLoaded;
 
   CreateProductState createProductState = CreateProductState.created;
@@ -50,7 +50,8 @@ class ProductController extends GetxController {
   int currentIndex = 1;
   CreateOfferState createOfferState = CreateOfferState.initial;
   CreateOfferResponse? createOfferResponse;
-  String? get accessToken => authController.auth.value?.accessToken;
+  Future<String?>? get accessToken async =>
+      await _storageController.getAccessToken();
 
   /// Create a new offer
   Future<bool> createOffer(CreateOfferPayload createOfferPayload) async {
@@ -59,7 +60,7 @@ class ProductController extends GetxController {
       update();
 
       final response = await ProductsServices.createOffer(
-          createOfferPayload, accessToken ?? "");
+          createOfferPayload, await accessToken ?? "");
 
       if (response.success == true) {
         createOfferResponse = response;
@@ -107,7 +108,7 @@ class ProductController extends GetxController {
     try {
       final CreateProductResponse response =
           await ProductsServices.createProduct(
-              createProductPayload, accessToken ?? "");
+              createProductPayload, await accessToken ?? "");
       if (response.success ?? false) {
         createProductState = CreateProductState.created;
         await getAllProducts(); // Refresh the products list after creation
@@ -154,7 +155,7 @@ class ProductController extends GetxController {
       // First create the product
       final CreateProductResponse productResponse =
           await ProductsServices.createProduct(
-              createProductPayload, accessToken ?? "");
+              createProductPayload, await accessToken ?? "");
 
       // Debug log
       debugPrint('Product Response: ${productResponse.toJson()}');
@@ -190,13 +191,14 @@ class ProductController extends GetxController {
               DateTime.now().add(const Duration(days: 30))),
           productIds: [productResponse.data!.id!],
           loc: location,
-          userId: _userController.user.value!.id,
+          userId: _userController.user!.id,
           dist: radius,
           tagIds: tag != null ? [tag.id] : []);
 
       // Create the offer
       final CreateOfferResponse offerResponse =
-          await ProductsServices.createOffer(offerPayload, accessToken ?? "");
+          await ProductsServices.createOffer(
+              offerPayload, await accessToken ?? "");
 
       // Debug log
       debugPrint('Offer Response: ${offerResponse.toJson()}');
@@ -273,7 +275,7 @@ class ProductController extends GetxController {
 
     try {
       final List<ProductData> response =
-          await ProductsServices.getAllProducts(accessToken ?? "");
+          await ProductsServices.getAllProducts(await accessToken ?? "");
       if (response.isNotEmpty || response != []) {
         _allProducts = response; // Store original list
         productsList = response; // Display list
@@ -296,7 +298,7 @@ class ProductController extends GetxController {
     try {
       final GetSingleProductResponse response =
           await ProductsServices.getProductDetails(
-              productId, accessToken ?? "s");
+              productId, await accessToken ?? "s");
 
       // Debug log
       print('Controller response: ${response.data?.toJson()}');
@@ -322,7 +324,7 @@ class ProductController extends GetxController {
       update();
 
       final response = await ProductsServices.searchOffers(
-          searchOfferPayload, accessToken ?? "");
+          searchOfferPayload, await accessToken ?? "");
 
       if (response.success == true) {
         searchOffersResponse = response;
@@ -367,7 +369,7 @@ class ProductController extends GetxController {
     try {
       final UpdateProductResponse response =
           await ProductsServices.updateProduct(
-              productId, updateProductPayload, accessToken ?? "");
+              productId, updateProductPayload, await accessToken ?? "");
       if (response.success ?? false) {
         individualProductsState = IndividualProductsState.productsLoaded;
         await getAllProducts(); // Refresh the products list after updating

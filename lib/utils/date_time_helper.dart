@@ -1,6 +1,42 @@
 import 'package:intl/intl.dart';
 
 class DateTimeHelper {
+  static String durationFormat(Duration dur) {
+    int days = dur.inDays;
+    int hours = dur.inHours.remainder(24);
+    int minutes = dur.inMinutes.remainder(60);
+    int seconds = dur.inSeconds.remainder(60);
+
+    List<String> parts = [];
+    if (days > 0) parts.add("${days}d");
+    if (hours > 0) parts.add("${hours}h");
+    if (minutes > 0) parts.add("${minutes}m");
+    if (seconds > 0) parts.add("${seconds}s");
+
+    return parts.take(2).join(" ");
+  }
+
+  static String formatDateTime(DateTime dateTime, String formatString) {
+    try {
+      final DateFormat formatter = DateFormat(formatString);
+      return formatter.format(dateTime);
+    } catch (e) {
+      // Handle any formatting errors
+      return 'Invalid format';
+    }
+  }
+
+  static String formatDateTimeExpiry(DateTime expiryDate) {
+    DateTime now = DateTime.now();
+    if (now.isAfter(expiryDate)) {
+      return 'Expired';
+    }
+
+    return DateTimeHelper.durationFormat(
+      expiryDate.difference(now),
+    );
+  }
+
   static String timeAgoSince(String iso8601String, {bool numericDates = true}) {
     DateTime date = DateTime.parse(iso8601String);
     final now = DateTime.now();
@@ -16,7 +52,7 @@ class DateTimeHelper {
     } else if (seconds < 60) {
       return '$seconds seconds ago';
     } else if (minutes < 2) {
-      return numericDates ? '1 minute ago' : 'A minute ago';
+      return numericDates ? '1 min ago' : 'A min ago';
     } else if (minutes < 60) {
       return '$minutes mins ago';
     } else if (hours < 2) {
@@ -40,31 +76,5 @@ class DateTimeHelper {
     } else {
       return '${(days / 365).floor()} years ago';
     }
-  }
-
-  static String formatDateTime(DateTime dateTime, String formatString) {
-    try {
-      final DateFormat formatter = DateFormat(formatString);
-      return formatter.format(dateTime);
-    } catch (e) {
-      // Handle any formatting errors
-      return 'Invalid format';
-    }
-  }
-
-  static String durationFormat(Duration dur) {
-    int hours = dur.inHours;
-    return "${hours <= 9 ? "0$hours" : dur.inHours} : ${dur.inMinutes.remainder(60)}";
-  }
-
-  static String formatDateTimeExpiry(DateTime expiryDate) {
-    DateTime now = DateTime.now();
-    if (now.isAfter(expiryDate)) {
-      return 'Expired';
-    }
-
-    return DateTimeHelper.durationFormat(
-      expiryDate.difference(now),
-    );
   }
 }

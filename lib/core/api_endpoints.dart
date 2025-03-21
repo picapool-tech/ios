@@ -9,6 +9,10 @@ class APIEndpoints {
   static const String sendFeedback = "/feedback";
   static const String getAllOffers = "/offer/all";
   static const String getAllTags = "/tag/all";
+  static const String getAllProducts = "/product";
+  static const String searchProducts = "/product/search";
+  static const String createProduct = "/product";
+  static const String userLogin = "/auth/login/User";
 
   static const String updateAuth = "/auth/update";
   static String getAllMessagesOfChat(int chatId) => "/chat/$chatId/messages";
@@ -31,4 +35,7 @@ class APIEndpoints {
   static String getTagById(int tagId) => "/tag/$tagId";
 
   static String getUser(int id) => "/user/$id";
+
+  static String verifyOtp({required String phoneNumber, required String otp}) =>
+      "/otp/verify?otp=$otp&mobile=$phoneNumber";
 }

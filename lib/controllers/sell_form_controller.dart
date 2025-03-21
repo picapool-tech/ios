@@ -1,92 +1,34 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path;
 import 'package:picapool/controllers/product_controller.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
-import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/services/products/entities/product_attributes_entity.dart';
 import 'package:picapool/services/products/payloads/create_product_payload.dart';
 import 'package:picapool/widgets/sell/build_field.dart';
-import 'dart:io';
-import 'dart:convert';
-import 'dart:async';
-import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
 
 class FormController extends GetxController {
-  Position? currentPosition;
-  final UserController _userController = Get.find<UserController>();
   static ProductController get productController =>
       Get.find<ProductController>();
+  Position? currentPosition;
+  final UserController _userController = Get.find<UserController>();
   // First Form Data
   var formOneData = <String, dynamic>{}.obs;
 
   // Second Form Data
   var formTwoData = <String, dynamic>{}.obs;
 
-  final AuthController authController = Get.find<AuthController>();
-
-  // Function to save first form data
-  void saveFormOneData(Map<String, dynamic> data) {
-    formOneData.assignAll(data);
-  }
-
-  // Function to save second form data
-  void saveFormTwoData(Map<String, dynamic> data) {
-    formTwoData.assignAll(data);
-  }
-
-  // Future<void> _getCurrentLocation() async {
-  //   try {
-  //     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  //     if (!serviceEnabled) {
-  //       return Future.error('Location services are disabled.');
-  //     }
-
-  //     LocationPermission permission = await Geolocator.checkPermission();
-  //     if (permission == LocationPermission.denied) {
-  //       permission = await Geolocator.requestPermission();
-  //       if (permission == LocationPermission.denied) {
-  //         return Future.error('Location permissions are denied');
-  //       }
-  //     }
-
-  //     currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-  //     update();
-  //   } catch (e) {
-  //     debugPrint('Error getting location: $e');
-  //   }
-  // }
-
-  Future<bool> instantiateCreateProduct(BuildContext context, Loc currentLocation, int radius) async {
-    // _getCurrentLocation;
-    try {
-      // if (!validateForms()) {
-      //   Get.snackbar(
-      //     'Error',
-      //     'Please fill all required fields',
-      //     snackPosition: SnackPosition.BOTTOM,
-      //     backgroundColor: Colors.red,
-      //     colorText: Colors.white,
-      //   );
-      //   return false;
-      // }
-
-      return await productController.createProductWithOffer(combinedFormData, currentLocation , radius );
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to process request: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return false;
-    }
-  }
+  final StorageController _storageController = Get.find<StorageController>();
 
   // Function to get the combined data
   CreateProductPayload get combinedFormData {
@@ -96,12 +38,12 @@ class FormController extends GetxController {
       email: formTwoData['email'] ?? '',
       images: List<String>.from(formOneData['images'] ?? []),
       mrp: formOneData['price'].toInt(),
-      // offerIds: [formOneData['category'] ?? 1], 
+      // offerIds: [formOneData['category'] ?? 1],
       // Empty for now since backend has restarted and is not accepting any value
       offerIds: [],
       offerPrice: formTwoData['sellingPrice'].toInt(),
       phone: formTwoData['phone'] ?? '',
-      userId: _userController.user.value!.id,
+      userId: _userController.user!.id,
       attributes: Attributes(
           accessories: formOneData['accessories'],
           author: formOneData['author'],
@@ -129,6 +71,67 @@ class FormController extends GetxController {
     );
   }
 
+  // Future<void> _getCurrentLocation() async {
+  //   try {
+  //     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //     if (!serviceEnabled) {
+  //       return Future.error('Location services are disabled.');
+  //     }
+
+  //     LocationPermission permission = await Geolocator.checkPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       permission = await Geolocator.requestPermission();
+  //       if (permission == LocationPermission.denied) {
+  //         return Future.error('Location permissions are denied');
+  //       }
+  //     }
+
+  //     currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  //     update();
+  //   } catch (e) {
+  //     debugPrint('Error getting location: $e');
+  //   }
+  // }
+
+  Future<bool> instantiateCreateProduct(
+      BuildContext context, Loc currentLocation, int radius) async {
+    // _getCurrentLocation;
+    try {
+      // if (!validateForms()) {
+      //   Get.snackbar(
+      //     'Error',
+      //     'Please fill all required fields',
+      //     snackPosition: SnackPosition.BOTTOM,
+      //     backgroundColor: Colors.red,
+      //     colorText: Colors.white,
+      //   );
+      //   return false;
+      // }
+
+      return await productController.createProductWithOffer(
+          combinedFormData, currentLocation, radius);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to process request: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+  }
+
+  // Function to save first form data
+  void saveFormOneData(Map<String, dynamic> data) {
+    formOneData.assignAll(data);
+  }
+
+  // Function to save second form data
+  void saveFormTwoData(Map<String, dynamic> data) {
+    formTwoData.assignAll(data);
+  }
+
   // Add validation method
   // bool validateForms() {
   //   // Basic required fields validation
@@ -143,8 +146,9 @@ class FormController extends GetxController {
 
   Future<String?> uploadProductImage(File imageFile) async {
     try {
-      final auth = authController.auth.value;
-      if (auth?.accessToken == null) {
+      var accessToken = await _storageController.getAccessToken();
+      // final auth = authController.auth.value;
+      if (accessToken == null) {
         showSnackBar(content: "Authentication error", context: Get.context!);
         return null;
       }
@@ -175,7 +179,7 @@ class FormController extends GetxController {
       // Add headers
       request.headers.addAll({
         'Content-Type': 'multipart/form-data',
-        'Authorization': 'Bearer ${auth!.accessToken}',
+        'Authorization': 'Bearer $accessToken',
       });
 
       var response = await request.send();
@@ -187,7 +191,7 @@ class FormController extends GetxController {
           return responseModel.data['url'];
         }
       }
-      // using getAccessToken method from auth controller 
+      // using getAccessToken method from auth controller
       // automatically handles the expiration and refreshing of the token
       // else if (response.statusCode == 401) {
       //   bool tokenUpdated = await authController.getAccessToken();

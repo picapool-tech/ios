@@ -17,10 +17,10 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # android version
-# version: 2.7.1+104
+version: 3.0.8+175
 
 # ios version
-version: 2.9.7+102
+# version: 2.9.7+102
 
 environment:
   sdk: ">=3.2.4 <4.0.0"
@@ -43,7 +43,7 @@ dependencies:
   country_flags: ^2.2.0
   flutter_svg: ^2.0.10+1
   image_picker: ^1.0.7
-  image_cropper: ^1.5.1
+  image_cropper: ^9.0.0
   carousel_slider:
     git:
       url: https://github.com/sampaio96/flutter_carousel_slider.git
@@ -74,7 +74,6 @@ dependencies:
   fpdart: ^1.1.0
   firebase_core: ^3.9.0
   firebase_auth: ^5.3.4
-  flutter_riverpod: ^2.5.3
   http_parser: ^4.0.2
   socket_io_client: ^3.0.0
   flutter_dotenv: ^5.2.1
@@ -90,11 +89,13 @@ dependencies:
   firebase_messaging: ^15.1.6
   image: ^4.3.0
 
-  dio: any
+  dio: ^5.3.2
   path_provider: any
   path: any
   in_app_update: ^4.2.3
   in_app_review: ^2.0.10
+  flex_color_scheme: ^8.0.2
+  emoji_picker_flutter: ^4.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -121,6 +122,7 @@ flutter:
     - assets/
     - assets/icons/
     - assets/images/
+    - assets/images/buy_and_sell/
     - assets/bottombar/
     - assets/carousel/
     - assets/categories/
@@ -141,15 +143,14 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: MontserratSB
-      fonts:
-        - asset: assets/fonts/Montserrat-SemiBold.ttf
-    - family: MontserratR
+    - family: Montserrat
       fonts:
         - asset: assets/fonts/Montserrat-Regular.ttf
-    - family: MontserratM
-      fonts:
+          weight: 400
         - asset: assets/fonts/Montserrat-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Montserrat-SemiBold.ttf
+          weight: 600
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

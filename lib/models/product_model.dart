@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/tag_model.dart';
 
@@ -37,6 +38,7 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
+    debugPrint("PRODUCT JSON: $json");
     return Product(
       id: json['id'],
       name: json['name'],
@@ -51,11 +53,11 @@ class Product {
       updatedAt: DateTime.parse(json['updatedAt']),
       partnerId: json['partnerId'],
       userId: json['userId'],
-      offers: (json['Offer'] != null)
-          ? (json['Offer'] as List).map((o) => Offer.fromJson(o)).toList()
+      offers: (json['Offers'] != null)
+          ? (json['Offers'] as List).map((o) => Offer.fromJson(o)).toList()
           : [],
-      tags: (json['Tags'] != null)
-          ? (json['Tags'] as List).map((t) => Tag.fromJson(t)).toList()
+      tags: (json['tags'] != null)
+          ? (json['tags'] as List).map((t) => Tag.fromJson(t)).toList()
           : [],
     );
   }
@@ -76,7 +78,7 @@ class Product {
       'partnerId': partnerId,
       'userId': userId,
       'Offers': offers.map((o) => o.toJson()).toList(),
-      'tags': tags.map((t) => t.toJson()).toList(),
+      'Tags': tags.map((t) => t.toJson()).toList(),
     };
   }
 }

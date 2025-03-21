@@ -4,8 +4,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/controllers/product_controller.dart';
-import 'package:picapool/functions/offers/offers_controller.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:picapool/features/offers/offers_controller.dart';
+import 'package:picapool/screens/public_chat/chat_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key});
@@ -16,6 +17,7 @@ class ProductDetailsPage extends StatefulWidget {
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final ProductController productController = Get.find();
+  final OffersController _offerController = Get.find<OffersController>();
   late final String productId;
   int? offerId;
 
@@ -51,41 +53,70 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 5),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Define what happens when the button is tapped
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xffFFE9DA),
-                            side: const BorderSide(color: Color(0xffFF6600)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize
-                                  .min, // To minimize the button width
-                              children: [
-                                Text(
-                                  'Go to site',
-                                  style: TextStyle(
-                                      fontFamily: "MontserratR",
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xffFF6600)),
-                                ),
-                                SizedBox(
-                                    width: 5), // Space between text and icon
-                                Icon(Icons.arrow_circle_right_outlined,
-                                    size: 20,
-                                    color: Color(0xffFF6600)), // Icon with size
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
+                        // ElevatedButton(
+                        //   onPressed: () async {
+                        //     // Define what happens when the button is tapped
+                        //     try {
+                        //       if (offerId == null) {
+                        //         return;
+                        //       }
+
+                        //       var offer = await _offerController
+                        //           .getOfferDetails(offerId!);
+
+                        //       if (offer == null || offer.location == null) {
+                        //         debugPrint(
+                        //             "Offer is null : ${offer?.toJson()}");
+
+                        //         debugPrint(
+                        //             "Offer is null : ${offer?.location?.toJson()}");
+                        //         return;
+                        //       }
+
+                        //       debugPrint("offer details: $offer");
+                        //       openGoogleMaps(
+                        //           offer.location!.lat, offer.location!.long);
+                        //     } catch (e) {
+                        //       debugPrint("Error: $e");
+                        //     }
+                        //   },
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor: const Color(0xffFFE9DA),
+                        //     side: const BorderSide(color: Color(0xffFF6600)),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(12),
+                        //     ),
+                        //     padding: const EdgeInsets.symmetric(vertical: 10),
+                        //   ),
+                        //   child: Padding(
+                        //     padding: EdgeInsets.symmetric(horizontal: 10.0),
+                        //     child: Obx(() {
+                        //       if (_offerController.isLoading.value) {
+                        //         return CircularProgressIndicator();
+                        //       }
+                        //       return Row(
+                        //         mainAxisSize: MainAxisSize
+                        //             .min, // To minimize the button width
+                        //         children: [
+                        //           Text(
+                        //             'Go to site',
+                        //             style: TextStyle(
+                        //                 fontFamily: "MontserratR",
+                        //                 fontWeight: FontWeight.bold,
+                        //                 color: Color(0xffFF6600)),
+                        //           ),
+                        //           SizedBox(
+                        //               width: 5), // Space between text and icon
+                        //           Icon(Icons.arrow_circle_right_outlined,
+                        //               size: 20,
+                        //               color:
+                        //                   Color(0xffFF6600)), // Icon with size
+                        //         ],
+                        //       );
+                        //     }),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 20),
                         Center(
                           child: Column(
                             children: [
@@ -338,7 +369,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 return;
               }
 
-              var chat = await Get.find<OffersController>().getChatFromOfferId(
+              var chat = await _offerController.getChatFromOfferId(
                 offerId: offerId!,
               );
 
@@ -404,6 +435,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       productController.getProductDetails(productId);
     });
+  }
+
+  void openGoogleMaps(double latitude, double longitude) async {
+    String googleMapsUrl =
+        "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+    String googleMapsAppUrl = "geo:$latitude,$longitude";
+
+    if (await canLaunchUrl(Uri.parse(googleMapsAppUrl))) {
+      await launchUrl(Uri.parse(googleMapsAppUrl));
+    } else if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
+      await launchUrl(Uri.parse(googleMapsUrl));
+    } else {
+      throw "Could not open Google Maps";
+    }
   }
 }
 

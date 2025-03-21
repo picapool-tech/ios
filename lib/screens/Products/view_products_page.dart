@@ -2,7 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/models/product_model.dart';
-import 'package:picapool/screens/Products/selected_product_page.dart';
+import 'package:picapool/screens/products/selected_product_page.dart';
+import 'package:picapool/utils/theme.dart';
 
 class ViewProductsPage extends StatelessWidget {
   final List<Product> products;
@@ -17,10 +18,8 @@ class ViewProductsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         scrolledUnderElevation: 0,
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.orange),
@@ -28,13 +27,9 @@ class ViewProductsPage extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Deals',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'MontserratM',
-            fontSize: 16,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: false,
         actions: const [
@@ -49,42 +44,19 @@ class ViewProductsPage extends StatelessWidget {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
-            // Container(
-            //   height: 40,
-            //   decoration: BoxDecoration(
-            //     color: Colors.grey[200],
-            //     borderRadius: BorderRadius.circular(20),
-            //   ),
-            //   child: TextField(
-            //     decoration: InputDecoration(
-            //       hintText: 'Find "$partnerName" deals',
-            //       hintStyle: const TextStyle(
-            //         color: Color(0xff000000),
-            //         fontFamily: "MontserratR",
-            //       ),
-            //       prefixIcon: const Icon(Icons.search, color: Colors.orange),
-            //       border: InputBorder.none,
-            //       contentPadding:
-            //           const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-            // Products Grid
             if (products.isNotEmpty)
               Expanded(
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 200,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 9 / 10,
                     mainAxisSpacing: 25,
-                    crossAxisSpacing: 16,
-                    mainAxisExtent: 200,
+                    crossAxisSpacing: 2,
+                    mainAxisExtent: 220,
                   ),
                   itemCount: products.length, // Number of items
                   itemBuilder: (context, index) {
@@ -110,30 +82,28 @@ class ViewProductsPage extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        Get.to(() => SelectedProductPage(
-              product: product,
-            ));
-        // // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => const SelectedProductPage(),
-        //   ), // Navigate to SelectedProductPage
-        // );
+        Get.to(
+          () => SelectedProductPage(
+            product: product,
+          ),
+        );
       },
       child: Stack(
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.currentTheme.cardColor,
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  blurRadius: 5,
-                  spreadRadius: 2,
-                ),
+                    color: AppTheme.currentTheme.shadowColor.withOpacity(0.3),
+                    blurRadius: 5,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 3)),
               ],
             ),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            clipBehavior: Clip.hardEdge,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -161,31 +131,19 @@ class ViewProductsPage extends StatelessWidget {
                     children: [
                       Text(
                         '${partnerName.split(" ").firstOrNull ?? partnerName} Offer',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontFamily: 'MontserratR',
-                          color: Colors.grey,
-                        ),
+                        style: Theme.of(context).textTheme.labelSmall,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         product.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontFamily: 'MontserratM',
-                          color: Colors.black,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "₹ ${product.offerPrice}",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontFamily: 'MontserratM',
-                          color: Colors.black,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),

@@ -2,14 +2,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:picapool/functions/chats/chat_controller.dart';
-import 'package:picapool/functions/offers/offers_controller.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
-import 'package:picapool/functions/user/user_controller.dart';
+import 'package:picapool/common/values/values.dart';
+import 'package:picapool/features/chats/chat_controller.dart';
+import 'package:picapool/features/offers/offers_controller.dart';
+import 'package:picapool/features/tags/tag_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/tag_model.dart';
-import 'package:picapool/screens/Public%20Chat/chatPage.dart';
+import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/loading/offer_loading.dart';
 
 class AlertsPage extends StatefulWidget {
@@ -44,7 +46,8 @@ class CategoryButton extends StatelessWidget {
       child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
           foregroundColor: selected ? Colors.white : Colors.black,
-          backgroundColor: selected ? const Color(0xffFF8D41) : Colors.white,
+          backgroundColor:
+              selected ? AppTheme.currentTheme.primaryColor : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
@@ -52,7 +55,13 @@ class CategoryButton extends StatelessWidget {
         onPressed: onTap,
         icon: (assetImage.isNotEmpty)
             ? Image.asset(assetImage, width: 20, height: 20)
-            : CachedNetworkImage(imageUrl: image, width: 20, height: 20),
+            : CachedNetworkImage(
+                imageUrl: image,
+                width: 20,
+                height: 20,
+                // color: selected ? Colors.white : null,
+                // colorBlendMode: BlendMode.multiply,
+              ),
         label: Text(
           label,
           style: GoogleFonts.montserrat(
@@ -79,22 +88,58 @@ class _AlertsPageState extends State<AlertsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff02005D),
       appBar: AppBar(
-        title: const Padding(
-          padding: EdgeInsets.only(left: 8.0),
-          child: Text(
-            'Alerts',
-            style: TextStyle(
-              fontFamily: "MontserratM",
-              fontSize: 24,
-              color: Color(0xffFFFFFF),
-            ),
+        title: const Text(
+          'Alerts',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.white,
           ),
+        ),
+        systemOverlayStyle: uiOverlayStyle(
+          context,
+          brightness: Brightness.dark,
         ),
         automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: const Color(0xff02005D),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(kBottomNavigationBarHeight),
+          child: SingleChildScrollView(
+            controller: _tagsScrollController,
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              CategoryButton(
+                image: "",
+                assetImage: 'assets/icons/all.png',
+                label: 'All Offers',
+                selected: selectedCategory == 0,
+                onTap: () {
+                  setState(() {
+                    selectedCategory = 0;
+                    expandedTagStates = [];
+                    _offers.getOffersForUser();
+                  });
+                },
+              ),
+              ...List.generate(_tagController.tags.length, (index) {
+                var tag = _tagController.tags[index];
+                return CategoryButton(
+                  image: tag.icon,
+                  label: tag.tag,
+                  selected: selectedCategory == index + 1,
+                  onTap: () {
+                    setState(() {
+                      selectedCategory = index + 1;
+                      expandedTagStates = [];
+                      _offers.getOffersByTagId(selectedCategory);
+                    });
+                  },
+                );
+              }),
+            ]),
+          ),
+        ),
       ),
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
@@ -106,45 +151,6 @@ class _AlertsPageState extends State<AlertsPage> {
         },
         child: Column(
           children: [
-            SingleChildScrollView(
-              controller: _tagsScrollController,
-              scrollDirection: Axis.horizontal,
-              child: Row(children: [
-                CategoryButton(
-                  image: "",
-                  assetImage: 'assets/icons/all.png',
-                  label: 'All Offers',
-                  selected: selectedCategory == 0,
-                  onTap: () {
-                    setState(() {
-                      selectedCategory = 0;
-                      expandedTagStates = [];
-                      _offers.getOffersForUser();
-                    });
-                  },
-                ),
-                ...List.generate(_tagController.tags.length, (index) {
-                  var tag = _tagController.tags[index];
-                  return CategoryButton(
-                    image: tag.icon,
-                    label: tag.tag,
-                    selected: selectedCategory == index + 1,
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = index + 1;
-                        expandedTagStates = [];
-                        _offers.getOffersByTagId(selectedCategory);
-                      });
-                    },
-                  );
-                }),
-              ]),
-            ),
-
-            const SizedBox(
-              height: 8,
-            ),
-
             Obx(() {
               if (selectedCategory == 0) {
                 if (_offers.offers.isNotEmpty && _offers.isLoading.value) {
@@ -164,9 +170,8 @@ class _AlertsPageState extends State<AlertsPage> {
             // Alert List
             Expanded(
               child: Container(
-                decoration: const BoxDecoration(color: Colors.white),
                 padding: const EdgeInsets.only(top: 8),
-                child: (_userController.user.value != null)
+                child: (_userController.user != null)
                     ? GetBuilder<OffersController>(
                         builder: (controller) {
                           switch (selectedCategory) {
@@ -237,7 +242,7 @@ class _AlertsPageState extends State<AlertsPage> {
 
   Future<Tag?>? getTagById(int? tagId) async {
     if (tagId == null) return null;
-    return _tagController.getTag(tagId);
+    return _tagController.getTagFromCacheOrNetwork(tagId);
   }
 
   @override
@@ -245,17 +250,20 @@ class _AlertsPageState extends State<AlertsPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((duration) async {
-      var tag = _tagController.getTagsByTagName("Req");
+      Tag? tag;
+      tag = _tagController.getTagsByTagName("Ask") ??
+          _tagController.getTagsByTagName("Req");
+
       if (tag == null) {
         debugPrint("Tag is null on alertsPage");
         return;
       }
       var tagsIndex =
-          _tagController.tags.indexWhere((tagN) => tagN.id == tag.id);
+          _tagController.tags.indexWhere((tagN) => tagN.id == tag!.id);
       setState(() {
         setState(() {
           selectedCategory = tagsIndex + 1;
-          _offers.getOffersByTagId(tag.id);
+          _offers.getOffersByTagId(tag!.id);
         });
       });
     });
@@ -336,7 +344,7 @@ class _AlertsPageState extends State<AlertsPage> {
                                     width: 15,
                                     height: 15,
                                   ),
-                                  const SizedBox(width: 2),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       offer.tags!.first.tag,
@@ -460,39 +468,33 @@ class _AlertsPageState extends State<AlertsPage> {
                                   width: 15,
                                   height: 15,
                                 ),
-                                const SizedBox(width: 2),
+                                const SizedBox(width: 5),
                                 Text(
                                   DateTimeHelper.formatDateTimeExpiry(
                                     offer.expiryAt,
                                   ),
                                   style: const TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 12,
                                     fontFamily: "MontserratM",
                                   ),
                                 ),
                               ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 55.0),
-                              child: Row(
-                                children: [
-                                  Text(
+                            Row(
+                              children: [
+                                Text(
                                     isExpanded ? "Hide Details" : "See Details",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontFamily: "MontserratM",
-                                    ),
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Icon(
-                                    isExpanded
-                                        ? Icons.arrow_drop_up
-                                        : Icons.arrow_drop_down,
-                                    size: 15,
-                                    color: const Color(0xffFF8D41),
-                                  ),
-                                ],
-                              ),
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall),
+                                const SizedBox(width: 2),
+                                Icon(
+                                  isExpanded
+                                      ? Icons.arrow_drop_up
+                                      : Icons.arrow_drop_down,
+                                  size: 15,
+                                  color: const Color(0xffFF8D41),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -535,7 +537,13 @@ class _AlertsPageState extends State<AlertsPage> {
       itemCount: offers.length,
       itemBuilder: (context, index) {
         var offer = offers[index];
-        return listItem(
+        if (expandedStates.length != offers.length) {
+          expandedStates = List<bool>.filled(offers.length, false);
+        }
+        return
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+            listItem(
           offer: offer,
           onTap: () {
             setState(() {
@@ -552,7 +560,7 @@ class _AlertsPageState extends State<AlertsPage> {
   void _joinChat(Offer offer) async {
     var chat = await _offers.getChatFromOfferId(offerId: offer.id);
     debugPrint("INSIDE ALERT PAGE : ${offer.userId}");
-    if (chat == null && offer.userId == _userController.user.value!.id) {
+    if (chat == null && offer.userId == _userController.user!.id) {
       debugPrint("Here is in the chat");
       var chatAndOfferModel =
           await _chatController.createChatWithOfferId(offer.id);

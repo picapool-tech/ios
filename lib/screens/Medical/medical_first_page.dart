@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:picapool/screens/Medical/medical_second_page.dart';
+import 'package:picapool/screens/medical/medical_second_page.dart';
 
 class MedicalAttentionPage extends StatefulWidget {
   const MedicalAttentionPage({super.key});

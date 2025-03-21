@@ -9,25 +9,27 @@ import 'package:picapool/controllers/brand_controller.dart';
 import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/controllers/network_controller.dart';
-import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
+import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env.dart';
+import 'package:picapool/features/assets/assets_controller.dart';
+import 'package:picapool/features/auth/auth_controller.dart';
+import 'package:picapool/features/buy_and_sell/products_controller.dart';
+import 'package:picapool/features/chats/chat_controller.dart';
+import 'package:picapool/features/feedback/feedback_controller.dart';
+import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/network/connection_status_listener.dart';
+import 'package:picapool/features/notification/notification_service.dart';
+import 'package:picapool/features/offers/offers_controller.dart';
+import 'package:picapool/features/partners/partner_controller.dart';
+import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tags/tag_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
+import 'package:picapool/features/vicinity/vicinity_controller.dart';
 import 'package:picapool/firebase_options_new.dart';
-import 'package:picapool/functions/assets/assets_controller.dart';
-import 'package:picapool/functions/auth/auth_controller.dart';
-import 'package:picapool/functions/chats/chat_controller.dart';
-import 'package:picapool/functions/feedback/feedback_controller.dart';
-import 'package:picapool/functions/location/location_provider.dart';
-import 'package:picapool/functions/network/connection_status_listener.dart';
-import 'package:picapool/functions/notification/notification_service.dart';
-import 'package:picapool/functions/offers/offers_controller.dart';
-import 'package:picapool/functions/partners/partner_controller.dart';
-import 'package:picapool/functions/storage/storage_controller.dart';
-import 'package:picapool/functions/user/user_controller.dart';
-import 'package:picapool/functions/vicinity/vicinity_controller.dart';
-import 'package:picapool/screens/login_screen.dart';
-import 'package:picapool/screens/personal_details.dart';
-import 'package:picapool/screens/public_profile.dart';
+import 'package:picapool/screens/login/login_screen_imp.dart';
+import 'package:picapool/screens/personal_details/personal_details.dart';
+import 'package:picapool/screens/public_profile/public_profile.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
@@ -41,23 +43,25 @@ void main() async {
 
   await Env.load();
 
-  Get.put(NetworkController.getInstance());
-  Get.put(StorageController());
-  Get.put(UserController());
-  Get.put(AuthController());
-  Get.put(LocationController());
-  Get.put(VicinityController());
-  Get.put(OffersController());
-  Get.put(ChatController());
-  Get.put(FeedbackController());
-  Get.put(AssetsController());
-  Get.put(LiveOfferController());
-  Get.put(ProductController());
+  Get.put(StorageController(), permanent: true);
+  Get.put(PicapoolApi(), permanent: true);
+  Get.put(NetworkController.getInstance(), permanent: true);
 
-  Get.put(BrandController());
-  Get.put(FormController());
-  Get.put(CategoryController());
-  Get.put(PartnerController());
+  Get.lazyPut(() => UserController(), fenix: true);
+  Get.lazyPut(() => AuthController(), fenix: true);
+  Get.lazyPut(() => LocationController(), fenix: true);
+  Get.lazyPut(() => VicinityController(), fenix: true);
+  Get.lazyPut(() => OffersController(), fenix: true);
+  Get.lazyPut(() => ChatController(), fenix: true);
+  Get.lazyPut(() => FeedbackController(), fenix: true);
+  Get.lazyPut(() => AssetsController(), fenix: true);
+  Get.lazyPut(() => LiveOfferController(), fenix: true);
+  Get.lazyPut(() => TagController(), fenix: true);
+  Get.lazyPut(() => ProductsController(), fenix: true);
+  Get.lazyPut(() => BrandController(), fenix: true);
+  Get.lazyPut(() => FormController(), fenix: true);
+  Get.lazyPut(() => CategoryController(), fenix: true);
+  Get.lazyPut(() => PartnerController(), fenix: true);
 
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
@@ -76,15 +80,19 @@ Future<void> handleNotification(RemoteMessage message) async {
     if (action == 'openAlertsPage') {
       var offerId = message.data['offerId'];
       if (offerId != null) {
-        Get.to(() => const NewBottomBar(
-              currentIndex: 2,
-            ));
+        Get.to(
+          () => const NewBottomBar(
+            currentIndex: 2,
+          ),
+        );
       }
     } else if (action == "openChatPage" ||
         message.notification!.title!.contains("New Message")) {
-      Get.to(() => const NewBottomBar(
-            currentIndex: 1,
-          ));
+      Get.to(
+        () => const NewBottomBar(
+          currentIndex: 1,
+        ),
+      );
     }
   } else {
     if (message.notification!.title!.contains("New Message")) {
@@ -93,10 +101,8 @@ Future<void> handleNotification(RemoteMessage message) async {
           currentIndex: 1,
         ),
       );
-      // }
     }
   }
-  // Handle navigation or other actions.
 }
 
 class MyApp extends StatefulWidget {
@@ -107,7 +113,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final StorageController storageController = Get.find<StorageController>();
+  final StorageController _storageController = Get.find<StorageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -115,16 +121,47 @@ class _MyAppState extends State<MyApp> {
       getPages: GetRoutes.routes,
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: AppTheme.light.primaryColor,
-      ),
-      home: GetBuilder(
-        init: storageController,
-        builder: (controller) {
-          return _handleAuthState();
-        },
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.light,
+      home: Obx(() {
+        debugPrint(
+            "Main rebuild - Auth: ${_storageController.auth.value != null}, User: ${_storageController.user.value != null}");
+
+        final auth = _storageController.auth.value;
+        final user = _storageController.user.value;
+
+        // Clear state for debugging - optional
+        if (auth == null || auth.accessToken == null) {
+          debugPrint("No valid auth token - showing login screen");
+          return LoginScreenImp();
+        }
+
+        if (user == null) {
+          debugPrint("No user data - showing login screen");
+          return LoginScreenImp();
+        }
+
+        if (user.name == null || user.age == null) {
+          debugPrint("Missing user details - showing personal details screen");
+          return const PersonalDetails();
+        }
+
+        if (user.username == null ||
+            user.username!.isEmpty ||
+            user.username!.contains("PIC@USERNAME") ||
+            user.username!.contains(
+              RegExp(
+                r"^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+                dotAll: true,
+              ),
+            )) {
+          debugPrint("Missing username - showing public profile screen");
+          return const PublicProfile();
+        }
+
+        debugPrint("All conditions met - showing home screen");
+        return const NewBottomBar();
+      }),
     );
   }
 
@@ -141,7 +178,8 @@ class _MyAppState extends State<MyApp> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
-                    'An update is available. Please restart the app to complete the update.'),
+                  'An update is available. Please restart the app to complete the update.',
+                ),
               ),
             );
           }
@@ -156,35 +194,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     ConnectionStatusListener.getInstance().initialize();
+
     if (Platform.isAndroid) {
       checkForUpdate();
     }
-  }
-
-  Widget _handleAuthState() {
-    debugPrint("INSIDE MAIN METHOD Auth: ${storageController.auth.value}");
-
-    final auth = storageController.auth.value;
-    final user = storageController.user.value;
-
-    if (auth == null || auth.accessToken == null) {
-      return const LoginScreen();
-    }
-
-    if (user == null) {
-      return const LoginScreen();
-    }
-
-    if (user.name == null || user.age == null) {
-      return const PersonalDetails();
-    }
-
-    if (user.username == null ||
-        user.username!.isEmpty ||
-        user.username!.contains("PIC@USERNAME")) {
-      return const PublicProfile();
-    }
-
-    return const NewBottomBar();
   }
 }

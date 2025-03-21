@@ -49,7 +49,10 @@ class GetRoutes {
   // Define the routes list using a more concise structure
   static final List<GetPage<dynamic>> routes = [
     _buildRoute(
-        name: splash, page: const NewBottomBar(), checkWithNetwork: false),
+      name: splash,
+      page: const NewBottomBar(),
+      checkWithNetwork: false,
+    ),
     // _buildRoute(
     //     name: publicChat,
     //     page: const SelectProductsFromOffer(),

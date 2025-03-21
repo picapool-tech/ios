@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ImageUtils {
+  static final ImagePicker _picker = ImagePicker();
+
   static File compressAndResizeImage(File file) {
     img.Image? image = img.decodeImage(file.readAsBytesSync());
 
@@ -48,5 +51,22 @@ class ImageUtils {
     await file.writeAsBytes(
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
     return file;
+  }
+
+  static Future<List<XFile>?> pickImages() async {
+    // var isPhotoPermissionGranted =
+    //     await PermissionUtil().isPhotoPermissionGranted();
+    // if (!isPhotoPermissionGranted) {
+    //   isPhotoPermissionGranted =
+    //       await PermissionUtil().requestPhotoPermission();
+    //   if (!isPhotoPermissionGranted) {
+    //     return null;
+    //   }
+    // }
+    final pickedFiles = await _picker.pickMultiImage(
+      imageQuality: 10,
+    );
+
+    return pickedFiles;
   }
 }

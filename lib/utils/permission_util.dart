@@ -1,9 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:geolocator/geolocator.dart' as geo;
 
 class PermissionUtil {
+  Future<bool> isCameraPermissionGranted() async {
+    return await Permission.camera.isGranted ||
+        await Permission.camera.isLimited;
+  }
+
+  Future<bool> isLocationPermissionGranted() async {
+    return await Permission.location.isGranted ||
+        await Permission.locationWhenInUse.isGranted ||
+        await Permission.locationAlways.isGranted;
+  }
+
+  /// Checks if notification permission is granted
+  Future<bool> isNotificationPermissionGranted() async {
+    return await Permission.notification.isGranted;
+  }
+
+  Future<bool> isPhotoPermissionGranted() async {
+    return await Permission.photos.isGranted ||
+        await Permission.photos.isLimited;
+  }
+
+  Future<bool> requestCameraPermission() async {
+    PermissionStatus status = await Permission.camera.status;
+
+    if (status.isDenied) {
+      // Show custom dialog to request permission
+      bool request = await _showPermissionDialog(
+        title: 'Camera Permission',
+        content: 'This app requires access to your camera.',
+        permission: Permission.camera,
+      );
+      return request;
+    } else if (status.isPermanentlyDenied) {
+      // Show dialog directing to app settings
+      await _showPermanentlyDeniedDialog(
+        title: 'Camera Permission',
+        content:
+            'Camera permissions are permanently denied. Please enable them in settings.',
+      );
+      return false;
+    }
+
+    return status.isGranted;
+  }
+
   Future<bool> requestLocationPermission() async {
     bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -108,47 +153,32 @@ class PermissionUtil {
     return status.isGranted;
   }
 
-  Future<bool> requestCameraPermission() async {
-    PermissionStatus status = await Permission.camera.status;
-
-    if (status.isDenied) {
-      // Show custom dialog to request permission
-      bool request = await _showPermissionDialog(
-        title: 'Camera Permission',
-        content: 'This app requires access to your camera.',
-        permission: Permission.camera,
-      );
-      return request;
-    } else if (status.isPermanentlyDenied) {
-      // Show dialog directing to app settings
-      await _showPermanentlyDeniedDialog(
-        title: 'Camera Permission',
-        content:
-            'Camera permissions are permanently denied. Please enable them in settings.',
-      );
-      return false;
-    }
-
-    return status.isGranted;
-  }
-
-  Future<bool> isLocationPermissionGranted() async {
-    return await Permission.location.isGranted;
-  }
-
-  Future<bool> isPhotoPermissionGranted() async {
-    return await Permission.photos.isGranted ||
-        await Permission.photos.isLimited;
-  }
-
-  Future<bool> isCameraPermissionGranted() async {
-    return await Permission.camera.isGranted ||
-        await Permission.camera.isLimited;
-  }
-
-  /// Checks if notification permission is granted
-  Future<bool> isNotificationPermissionGranted() async {
-    return await Permission.notification.isGranted;
+  Future<void> _showPermanentlyDeniedDialog({
+    required String title,
+    required String content,
+  }) async {
+    await Get.dialog(
+      AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back(); // Cancel
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              openAppSettings();
+              Get.back(); // Close dialog
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   /// Displays a custom permission request dialog
@@ -183,33 +213,5 @@ class PermissionUtil {
     );
 
     return granted;
-  }
-
-  Future<void> _showPermanentlyDeniedDialog({
-    required String title,
-    required String content,
-  }) async {
-    await Get.dialog(
-      AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Get.back(); // Cancel
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              openAppSettings();
-              Get.back(); // Close dialog
-            },
-            child: const Text('Open Settings'),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
   }
 }

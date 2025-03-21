@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/create_live_offer_response.dart';
 import 'package:picapool/models/live_offer/get_live_offer_payload.dart';
@@ -96,7 +97,6 @@ class LiveOffersService {
 
   static Future<GetLiveOfferResponse> getLiveOffer(
       String liveOfferId, String accessToken) async {
-    GetLiveOfferResponse liveOfferResponse;
     try {
       await getAccessToken();
       final Dio dio = await getDio();
@@ -111,6 +111,7 @@ class LiveOffersService {
       if (response.statusCode! < 300 && response.statusCode! >= 200) {
         final responseData = response.data as Map<String, dynamic>;
         final liveOfferResponse = responseData['data'];
+        debugPrint('Live Offer Response: $liveOfferResponse');
         return liveOfferResponse
             .map((liveOffer) => GetLiveOfferResponse.fromJson(liveOffer))
             .toList();

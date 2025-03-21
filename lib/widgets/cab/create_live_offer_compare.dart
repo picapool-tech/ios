@@ -5,7 +5,7 @@ import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
-import 'package:picapool/functions/location/location_provider.dart';
+import 'package:picapool/features/location/location_provider.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/utils/date_time_utils.dart';
 

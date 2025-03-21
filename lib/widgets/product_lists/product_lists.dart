@@ -3,8 +3,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/product_controller.dart';
-import 'package:picapool/functions/location/location_provider.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
+import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/offers/search_offer_payload.dart';
 import 'package:picapool/models/product_grid_model.dart';
@@ -40,11 +40,6 @@ class ProductListsPageState extends State<ProductListsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title:   Text('Products'),
-      //   actions: [
-      //   ],
-      // ),
       backgroundColor: Colors.white,
       bottomNavigationBar: const BottomAppBar(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -70,7 +65,7 @@ class ProductListsPageState extends State<ProductListsPage> {
                   border: Border.all(
                       color: Colors.white, width: 2, style: BorderStyle.solid)),
               child: const Icon(
-                Icons.local_taxi,
+                Icons.label_important_outline,
                 color: Colors.white,
                 size: 24,
               ),
@@ -83,7 +78,6 @@ class ProductListsPageState extends State<ProductListsPage> {
           ),
         ],
       ),
-
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,

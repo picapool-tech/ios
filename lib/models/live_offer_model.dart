@@ -9,7 +9,6 @@ class LiveOffer {
   final String? to;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final DateTime expiryAt;
   final int seats;
   final User? user;
   final int? userId;
@@ -19,12 +18,11 @@ class LiveOffer {
 
   LiveOffer({
     required this.id,
-    this.from,
-    this.to,
     required this.createdAt,
     required this.updatedAt,
-    required this.expiryAt,
     required this.seats,
+    this.from,
+    this.to,
     this.user,
     this.userId,
     this.livePartner,
@@ -38,9 +36,8 @@ class LiveOffer {
       id: json['id'],
       from: json['fromAddress'],
       to: json['toAddress'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      expiryAt: DateTime.parse(json['expiryAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
+      updatedAt: DateTime.parse(json['updatedAt']).toLocal(),
       seats: json['seats'],
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       userId: json['userId'],
@@ -61,9 +58,8 @@ class LiveOffer {
       'id': id,
       'fromAddress': from,
       'toAddress': to,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      'expiryAt': expiryAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
+      'updatedAt': updatedAt.toUtc().toIso8601String(),
       'seats': seats,
       'user': user?.toJson(),
       'userId': userId,

@@ -1,10 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/partners/partner_controller.dart';
+import 'package:picapool/common/widgets/buttons_widgets.dart';
+import 'package:picapool/common/widgets/carousel_widget.dart';
+import 'package:picapool/features/partners/partner_controller.dart';
+import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/partner_model.dart';
-import 'package:picapool/screens/Products/products_detailed_page.dart';
-import 'package:picapool/screens/Products/view_products_page.dart';
+import 'package:picapool/screens/products/products_detailed_page.dart';
+import 'package:picapool/screens/products/view_products_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PlayStationPage extends StatefulWidget {
@@ -20,10 +24,13 @@ class PlayStationPage extends StatefulWidget {
 
 class _PlayStationPageState extends State<PlayStationPage> {
   final PartnerController _partnerController = Get.find<PartnerController>();
+  final CarouselControllerImpl _bigBannerCaouselController =
+      CarouselControllerImpl();
 
   Widget banner({
     required String? image,
     required VoidCallback onTap,
+    double? height,
   }) {
     return InkWell(
       onTap: onTap,
@@ -36,11 +43,16 @@ class _PlayStationPageState extends State<PlayStationPage> {
                     width: double.infinity,
                     'assets/dominos/OfferImag1.png', // Replace with your offer image asset
                     fit: BoxFit.cover,
+                    height: height,
                   )
-                : CachedNetworkImage(
-                    width: double.infinity,
-                    imageUrl: image,
-                    fit: BoxFit.cover,
+                : Hero(
+                    tag: image,
+                    child: CachedNetworkImage(
+                      width: double.infinity,
+                      imageUrl: image,
+                      height: height,
+                      fit: BoxFit.cover,
+                    ),
                   ),
           ),
           Positioned(
@@ -69,24 +81,45 @@ class _PlayStationPageState extends State<PlayStationPage> {
   }
 
   bigBanner() {
-    return _showOffers(withoutTop: true);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Row(
+          children: [
+            Expanded(
+              child: Divider(
+                indent: 40,
+                thickness: 1,
+                color: Color(0xffFF8D41),
+              ),
+            ),
+            Text(
+              "  Offers  ",
+              style: TextStyle(fontSize: 16, fontFamily: "MontserratM"),
+            ),
+            Expanded(
+              child: Divider(
+                endIndent: 40,
+                thickness: 1,
+                color: Color(0xffFF8D41),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _showOffers(
+          withoutTop: true,
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        toolbarHeight: 60,
         scrolledUnderElevation: 0,
-        backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.orange),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
         title: Row(
           children: [
             if (widget.partner.pic == null)
@@ -102,16 +135,18 @@ class _PlayStationPageState extends State<PlayStationPage> {
                   imageUrl: widget.partner.pic!,
                   width: 30,
                   height: 30,
+                  errorWidget: (context, url, error) => const Center(
+                    child: Icon(
+                      Icons.error,
+                      color: Colors.red,
+                    ),
+                  ),
                 ),
               ),
             const SizedBox(width: 8),
             Text(
               widget.partner.ownername ?? '',
-              style: const TextStyle(
-                color: Colors.black,
-                fontFamily: 'MontserratM',
-                fontSize: 16,
-              ),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ],
         ),
@@ -155,10 +190,6 @@ class _PlayStationPageState extends State<PlayStationPage> {
         products: true,
         offers: true,
       );
-
-      // partner?.then((vo) {
-      //   debugPrint("PARTNER IS : ${vo?.toJson()}");
-      // });
     });
   }
 
@@ -169,7 +200,7 @@ class _PlayStationPageState extends State<PlayStationPage> {
         Row(
           children: [
             Expanded(
-              child: ElevatedButton(
+              child: PicaPrimaryButton(
                 onPressed: () async {
                   // Define what happens when the button is tapped
                   if (widget.partner.link == null) {
@@ -183,44 +214,14 @@ class _PlayStationPageState extends State<PlayStationPage> {
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xffFF8D41),
-                  // side: BorderSide(color: Color(0xffFF6600)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.0,
-                  ),
-                  child: Row(
-                    mainAxisSize:
-                        MainAxisSize.min, // To minimize the button width
-                    children: [
-                      Text(
-                        'Go to store',
-                        style: TextStyle(
-                            fontFamily: "MontserratR",
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffffffff)),
-                      ),
-                      SizedBox(width: 5), // Space between text and icon
-                      Icon(Icons.arrow_circle_right_outlined,
-                          size: 20,
-                          color: Color(
-                            0xffFFFFFF,
-                          )), // Icon with size
-                    ],
-                  ),
-                ),
+                text: "Go to store",
+                isLoading: false.obs,
               ),
             ),
             const SizedBox(width: 8), // Space between buttons
 
             Expanded(
-              child: ElevatedButton(
+              child: PicaOutlineButton(
                 onPressed: () async {
                   if (_partnerController.partner.value == null) {
                     Get.snackbar(widget.partner.username ?? "No products",
@@ -236,68 +237,50 @@ class _PlayStationPageState extends State<PlayStationPage> {
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xffFFE9DA),
-                  side: const BorderSide(color: Color(0xffFF6600)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.0,
-                  ),
-                  child: Row(
-                    mainAxisSize:
-                        MainAxisSize.min, // To minimize the button width
-                    children: [
-                      Text(
-                        'View products',
-                        style: TextStyle(
-                            fontFamily: "MontserratR",
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffFF8D41)),
-                      ),
-                      // Space between text and icon
-                      // Icon with size
-                    ],
-                  ),
-                ),
+                text: "View products",
+                isLoading: false.obs,
+                // style: ElevatedButton.styleFrom(
+                //   backgroundColor: const Color(0xffFFE9DA),
+                //   side: const BorderSide(color: Color(0xffFF6600)),
+                //   shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   padding: const EdgeInsets.symmetric(vertical: 10),
+                // ),
+                // child: const Padding(
+                //   padding: EdgeInsets.symmetric(
+                //     horizontal: 10.0,
+                //   ),
+                //   child: Row(
+                //     mainAxisSize:
+                //         MainAxisSize.min, // To minimize the button width
+                //     children: [
+                //       Text(
+                //         'View products',
+                //         style: TextStyle(
+                //           fontFamily: "MontserratR",
+                //           fontWeight: FontWeight.bold,
+                //           color: Color(0xffFF8D41),
+                //         ),
+                //       ),
+                //       // Space between text and icon
+                //       // Icon with size
+                //     ],
+                //   ),
+                // ),
               ),
             )
           ],
         ),
         const SizedBox(height: 20), // Space between buttons and search bar
-        // Search Bar
-        // Container(
-        //   height: 40,
-        //   decoration: BoxDecoration(
-        //     color: Colors.grey[200],
-        //     borderRadius: BorderRadius.circular(20),
-        //   ),
-        //   child: const TextField(
-        //     decoration: InputDecoration(
-        //       hintText: 'Find Offers and Brands',
-        //       hintStyle: TextStyle(
-        //         color: Color(0xff000000),
-        //         fontFamily: "MontserratR",
-        //       ),
-        //       prefixIcon: Icon(Icons.search, color: Colors.orange),
-        //       border: InputBorder.none,
-        //       contentPadding:
-        //           EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-        //     ),
-        //   ),
-        // ),
-        // const SizedBox(height: 20),
-        // Offer Banner
-        bigBanner(),
-        const SizedBox(height: 20),
-        // Limited Offers
+
         if (_partnerController.getPartner?.offers != null &&
-            _partnerController.getPartner!.offers!.isNotEmpty)
-          _showLimitedOffers()
+            _partnerController.getPartner!.offers!.isNotEmpty) ...[
+          _showLimitedOffers(),
+          const SizedBox(height: 20),
+          bigBanner(),
+        ]
+        // Limited Offers
       ],
     );
   }
@@ -350,16 +333,17 @@ class _PlayStationPageState extends State<PlayStationPage> {
       if (filteredOffers.isEmpty) {
         return const Text("No offers at this time.");
       }
+      debugPrint("Filtered Offers: ${filteredOffers.length}");
 
-      return SizedBox(
-        height: 200,
-        child: PageView.builder(
+      if (withoutTop) {
+        return ListView.builder(
           itemCount: filteredOffers.length,
-          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
             final offer = filteredOffers[index];
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.only(bottom: 15.0),
               child: banner(
                 image: offer.images.isNotEmpty ? offer.images.first : null,
                 onTap: () {
@@ -371,8 +355,78 @@ class _PlayStationPageState extends State<PlayStationPage> {
               ),
             );
           },
-        ),
-      );
+        );
+      } else {
+        return CarouseldWiget(
+            count: filteredOffers.length,
+            height: 340,
+            itemBuilder: (context, index, realindex) {
+              Offer offer = filteredOffers[index];
+              return banner(
+                image: offer.images.last,
+                height: 400,
+                onTap: () {
+                  // Define what happens when the banner is tapped
+                  Get.to(
+                    () => OfferDetailsPage(offer: offer),
+                  );
+                },
+              );
+            });
+      }
+
+      // SizedBox(
+      //   width: double.infinity,
+      //   height: 200,
+      //   child: CarouselSlider.builder(
+      //     itemCount: filteredOffers.length,
+      //     options: CarouselOptions(
+      //       autoPlay: true,
+      //       enlargeCenterPage: true,
+      //       viewportFraction: 1,
+      //       aspectRatio: 1.0,
+      //       onPageChanged: (index, reason) => onPageChange?.call(index),
+      //     ),
+      //     carouselController: carouselController,
+      //     itemBuilder: (context, index, realIndex) {
+      //       final offer = filteredOffers[index];
+      //       return Padding(
+      //         padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      //         child: banner(
+      //           image: offer.images.isNotEmpty ? offer.images.first : null,
+      //           onTap: () {
+      //             // Define what happens when the banner is tapped
+      //             Get.to(
+      //               () => OfferDetailsPage(offer: offer),
+      //             );
+      //           },
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // const SizedBox(height: 10),
+      // Row(
+      //   mainAxisAlignment: MainAxisAlignment.center,
+      //   children: filteredOffers.asMap().entries.map((entry) {
+      //     return GestureDetector(
+      //       onTap: () => _carouselController.animateToPage(entry.key),
+      //       child: Container(
+      //         width: 8.0,
+      //         height: 8.0,
+      //         margin:
+      //             const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+      //         decoration: BoxDecoration(
+      //           shape: BoxShape.circle,
+      //           color: (Theme.of(context).brightness == Brightness.dark
+      //                   ? Colors.white
+      //                   : Colors.black)
+      //               .withOpacity(_current == entry.key ? 0.9 : 0.4),
+      //         ),
+      //       ),
+      //     );
+      //   }).toList(),
+      // ),
+      // );
 
       // return banner(
       //   image: filteredOffers.images.isNotEmpty ? offers[0].images.first : null,

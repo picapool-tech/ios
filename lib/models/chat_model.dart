@@ -35,7 +35,7 @@ class Chat {
     debugPrint("Here I am in Chat.fromJson $json");
     return Chat(
       id: json['id'],
-      updatedAt: DateTime.parse(json['updatedAt']),
+      updatedAt: DateTime.parse(json['updatedAt']).toLocal(),
       isMain: json['isMain'],
       status: json['status'],
       offer: json['Offer'] != null ? Offer.fromJson(json['Offer']) : null,
@@ -78,12 +78,12 @@ class Chat {
 class LastMessageModel {
   final String content;
   final String? admin;
-  // final MessageModalUser? user;
+  final MessageModalUser? user;
 
   LastMessageModel({
     required this.content,
     required this.admin,
-    // required this.user,
+    required this.user,
   });
 
   factory LastMessageModel.fromJson(Map<String, dynamic> json) {
@@ -91,7 +91,9 @@ class LastMessageModel {
     return LastMessageModel(
       content: json['content'],
       admin: json['Admin'],
-      // user: MessageModalUser.fromJson(json['User']),
+      user: (json['User'] != null)
+          ? MessageModalUser.fromJson(json['User'])
+          : null,
     );
   }
 
@@ -99,25 +101,25 @@ class LastMessageModel {
     return {
       'content': content,
       'Admin': admin,
-      // 'User': user?.name,
+      'User': user?.toJson(),
     };
   }
 }
 
 class MessageModalUser {
-  final String name;
+  final String username;
 
-  MessageModalUser({required this.name});
+  MessageModalUser({required this.username});
 
   factory MessageModalUser.fromJson(Map<String, dynamic> json) {
     return MessageModalUser(
-      name: json['name'],
+      username: json['username'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'username': username,
     };
   }
 }

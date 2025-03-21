@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' as material;
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/feedback_model.dart';
@@ -49,12 +50,13 @@ class User {
     this.messages,
     this.offers,
     this.reactions,
-    this.tags,
+    this.tags = const [],
     this.liveOffers,
   });
 
   // Example of a factory constructor for converting from JSON
   factory User.fromJson(Map<String, dynamic> json) {
+    material.debugPrint("USER FORM JSON: $json");
     return User(
       id: json['id'],
       name: json['name'],
@@ -83,7 +85,7 @@ class User {
       reactions: (json['reactions'] as List?)
           ?.map((e) => Reaction.fromJson(e))
           .toList(),
-      tags: (json['tags'] as List?)?.map((e) => Tag.fromJson(e)).toList(),
+      tags: (json['Tags'] as List?)?.map((e) => Tag.fromJson(e)).toList(),
       liveOffers: (json['liveOffers'] as List?)
           ?.map((e) => LiveOffer.fromJson(e))
           .toList(),
@@ -157,10 +159,11 @@ class User {
       'messages': messages?.map((e) => e.toJson()).toList(),
       'offers': offers?.map((e) => e.toJson()).toList(),
       'reactions': reactions?.map((e) => e.toJson()).toList(),
-      'tags': tags?.map((e) => e.toJson()).toList(),
+      'Tags': tags?.map((e) => e.toJson()).toList(),
       'liveOffers': liveOffers?.map((e) => e.toJson()).toList(),
     };
   }
+
 
   // Update method to modify certain fields
   void update(Map<String, dynamic> fields) {
@@ -189,9 +192,9 @@ class User {
             .map((e) => Reaction.fromJson(e))
             .toList()
         : reactions;
-    tags = fields['tags'] != null
-        ? (fields['tags'] as List).map((e) => Tag.fromJson(e)).toList()
-        : tags;
+    tags = fields['Tags'] != null
+            ? (fields['Tags'] as List).map((e) => Tag.fromJson(e)).toList()
+            : tags;
     liveOffers = fields['liveOffers'] != null
         ? (fields['liveOffers'] as List)
             .map((e) => LiveOffer.fromJson(e))

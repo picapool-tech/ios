@@ -10,14 +10,14 @@ class CreateCabPoolScreen extends StatefulWidget {
 }
 
 class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
+  static const LatLng _initialPosition = LatLng(25.276987, 55.296249);
   final TextEditingController _searchController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   var hour = 5;
   var minute = 45;
-  var timeFormat = "AM";
 
+  var timeFormat = "AM";
   final List<String> amPmOptions = ["AM", "PM"];
-  static const LatLng _initialPosition = LatLng(25.276987, 55.296249);
 
   @override
   Widget build(BuildContext context) {
@@ -294,28 +294,6 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
     );
   }
 
-  Widget _buildNumberPicker(
-      int value, int min, int max, ValueChanged<int> onChanged) {
-    return NumberPicker(
-      minValue: min,
-      maxValue: max,
-      value: value,
-      zeroPad: true,
-      infiniteLoop: true,
-      itemWidth: 50,
-      itemHeight: 60,
-      onChanged: onChanged,
-      textStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-      selectedTextStyle: const TextStyle(color: Colors.black, fontSize: 14),
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey),
-          bottom: BorderSide(color: Colors.grey),
-        ),
-      ),
-    );
-  }
-
   Widget _buildAmPmPicker() {
     return Container(
       height: 60,
@@ -353,18 +331,26 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
     );
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
+  Widget _buildNumberPicker(
+      int value, int min, int max, ValueChanged<int> onChanged) {
+    return NumberPicker(
+      minValue: min,
+      maxValue: max,
+      value: value,
+      zeroPad: true,
+      infiniteLoop: true,
+      itemWidth: 50,
+      itemHeight: 60,
+      onChanged: onChanged,
+      textStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+      selectedTextStyle: const TextStyle(color: Colors.black, fontSize: 14),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey),
+          bottom: BorderSide(color: Colors.grey),
+        ),
+      ),
     );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
   }
 
   String _formatDate(DateTime date) {
@@ -420,6 +406,20 @@ class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {
         return "Dec";
       default:
         return "";
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
     }
   }
 }

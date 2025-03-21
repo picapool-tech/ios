@@ -1,17 +1,22 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:picapool/functions/tags/tag_controller.dart';
-import 'package:picapool/screens/Middle%20Button/middleButton.dart';
-import 'package:picapool/screens/ProfilePage/ProfilePage.dart';
+import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/screens/alerts/alertsPage.dart';
 import 'package:picapool/screens/chats/chat_homeScreen.dart';
-import 'package:picapool/screens/home_screen.dart';
+import 'package:picapool/screens/home/home_screen.dart';
+import 'package:picapool/screens/middle_button/middle_button.dart';
+import 'package:picapool/screens/profile_page/profile_page.dart';
 import 'package:picapool/utils/svg_icon.dart';
+import 'package:picapool/utils/theme.dart';
 
 class NewBottomBar extends StatefulWidget {
   final int currentIndex;
-  const NewBottomBar({Key? key, this.currentIndex = 0}) : super(key: key);
+  const NewBottomBar({
+    Key? key,
+    this.currentIndex = 0,
+  }) : super(key: key);
 
   @override
   State<NewBottomBar> createState() => _NewBottomBarState();
@@ -45,25 +50,27 @@ class _NewBottomBarState extends State<NewBottomBar> {
   ];
 
   final List<String> _titles = [
-    'home',
-    'chats',
-    'alerts',
-    'settings',
+    'Home',
+    'Chats',
+    'Alerts',
+    'Settings',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
+      extendBody: true,
       floatingActionButton: SizedBox(
         width: 70,
         height: 70,
         child: FittedBox(
           child: FloatingActionButton(
+            elevation: 0,
             onPressed: () {
               Get.to(() => const PoolOffersScreen());
             },
-            backgroundColor: const Color(0xffFF8D41),
+            backgroundColor: AppTheme.currentTheme.primaryColor,
             shape: const CircleBorder(),
             child: Transform(
               transform: Matrix4.translationValues(0, 2, 0),
@@ -77,73 +84,20 @@ class _NewBottomBarState extends State<NewBottomBar> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        notchMargin: 10,
-        color: Colors.white,
+        shape: const CircularNotchedRectangle(),
+        color: AppTheme.currentTheme.scaffoldBackgroundColor,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              child: _buildNavItem(0),
-              
-            ),
-            Expanded(
-              child: _buildNavItem(1),
-            ),
-            const SizedBox(width: 40), // The space for the center icon
-            Expanded(
-              child: _buildNavItem(2),
-            ),
-            Expanded(
-              child: _buildNavItem(3),
-            ),
+            _buildNavItem(0),
+            _buildNavItem(1),
+            const SizedBox(width: 10), // The space for the center icon
+            _buildNavItem(2),
+            _buildNavItem(3),
           ],
         ),
       ),
-      // Stack(
-      //   clipBehavior: Clip.none,
-      //   children: [
-      // BottomAppBar(
-      //   color: Colors.white,
-      //   child: SizedBox(
-      //     height: height,
-      //     child: Row(
-      //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      //       children: [
-      //         Expanded(
-      //           child: _buildNavItem(0),
-      //         ),
-      //         Expanded(
-      //           child: _buildNavItem(1),
-      //         ),
-      //         const SizedBox(width: 40), // The space for the center icon
-      //         Expanded(
-      //           child: _buildNavItem(2),
-      //         ),
-      //         Expanded(
-      //           child: _buildNavItem(3),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // ),
-      //     Positioned(
-      //       top: -30, // Adjust this value to move the icon up or down
-      //       left: MediaQuery.of(context).size.width / 2 -
-      //           35, // Center the icon horizontally
-      //       child: InkWell(
-      //         onTap: () {
-      //           Get.to(
-      //             () => const PoolOffersScreen(),
-      //           );
-      //         },
-      // child: const SvgIcon(
-      //   "assets/bottombar/live.svg",
-      //   size: 70, // Size of the center icon
-      // ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 
@@ -177,7 +131,11 @@ class _NewBottomBarState extends State<NewBottomBar> {
         colorText: Colors.white,
         borderRadius: 10,
         margin: const EdgeInsets.all(10),
-        icon: const Icon(Icons.notification_important, color: Colors.white),
+        icon: Image.asset(
+          "assets/images/ic_launcher.png",
+          width: 20,
+          height: 20,
+        ),
         duration: const Duration(seconds: 5),
         onTap: (snack) {
           // if it has chat id, offer id  action to openAlertPage.
@@ -280,18 +238,25 @@ class _NewBottomBarState extends State<NewBottomBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgIcon(
+          SvgPicture.asset(
             isActive ? _activeIconPaths[index] : _iconPaths[index],
-            size: 24,
+            width: 24,
+            height: 24,
+            fit: BoxFit.cover,
+            colorFilter: !isActive
+                ? ColorFilter.mode(
+                    AppTheme.currentTheme.hintColor,
+                    BlendMode.srcIn,
+                  )
+                : null,
           ),
           Text(
             _titles[index],
-            style: TextStyle(
-              color: isActive ? const Color(0xffFF8D41) : Colors.black,
-              fontSize: 12,
-              fontFamily: 'MontserratR',
-              fontWeight: FontWeight.w500,
-            ),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: isActive
+                      ? const Color(0xffFF8D41)
+                      : AppTheme.currentTheme.hintColor,
+                ),
           ),
         ],
       ),
