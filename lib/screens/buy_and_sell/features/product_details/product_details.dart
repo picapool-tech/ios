@@ -9,8 +9,6 @@ import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/tables.dart';
-import 'package:picapool/screens/buy_and_sell/features/user_listing/features/selling_category/books.dart';
-import 'package:picapool/screens/buy_and_sell/values/filter_data.dart';
 import 'package:picapool/screens/buy_and_sell/widgets/image_gallery.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/theme.dart';
@@ -39,45 +37,45 @@ class HeadingText extends StatelessWidget {
 class ProductDetails extends StatelessWidget {
   final Product product;
   final Offer offer;
+  final OffersController offersController;
   const ProductDetails({
     super.key,
     required this.product,
     required this.offer,
+    required this.offersController,
   });
 
   @override
   Widget build(BuildContext context) {
-    final offerController = Get.find<OffersController>();
-    final storageController = Get.find<StorageController>();
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          if (storageController.user.value!.id == product.userId)
-            IconButton(
-              onPressed: () {
-                Widget? destination;
-                var values = FilterDataEnum.values;
-                var category = values.firstWhere(
-                    (data) => data.name == product.attributes!['category']);
+        actions: const [
+          // if (storageController.user.value!.id == product.userId)
+          //   IconButton(
+          //     onPressed: () {
+          //       Widget? destination;
+          //       var values = FilterDataEnum.values;
+          //       var category = values.firstWhere(
+          //           (data) => data.name == product.attributes!['category']);
 
-                switch (category) {
-                  case FilterDataEnum.books:
-                    destination = CreateBookProducts(
-                      product: product,
-                    );
-                    break;
-                  default:
-                }
-                if (destination == null) {
-                  return;
-                }
+          //       switch (category) {
+          //         case FilterDataEnum.books:
+          //           destination = CreateBookProducts(
+          //             product: product,
+          //           );
+          //           break;
+          //         default:
+          //       }
+          //       if (destination == null) {
+          //         return;
+          //       }
 
-                Get.to(destination);
-              },
-              icon: const Icon(
-                Icons.edit,
-              ),
-            ),
+          //       Get.to(destination);
+          //     },
+          //     icon: const Icon(
+          //       Icons.edit,
+          //     ),
+          //   ),
         ],
       ),
       body: Container(
@@ -193,7 +191,7 @@ class ProductDetails extends StatelessWidget {
           child: PicaPrimaryButton(
             text: "Go to chat",
             onPressed: () async {
-              var chat = await offerController.getChatFromOfferId(
+              var chat = await offersController.getChatFromOfferId(
                 offerId: offer.id,
               );
               if (chat == null) {
@@ -216,7 +214,7 @@ class ProductDetails extends StatelessWidget {
               );
             },
             isLoading:
-                offerController.getLoadingState(OfferLoadingEnums.fetchingChat),
+                offersController.getLoadingState(OfferLoadingEnums.fetchingChat),
           ),
         ),
       ),

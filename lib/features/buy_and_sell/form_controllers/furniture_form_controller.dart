@@ -33,8 +33,8 @@ class FurnitureFormController extends GetxController
         message: "Your listing has been created",
         confirmText: "Sounds Good",
         onConfirm: () {
+          Get.back(closeOverlays: true, canPop: true);
           formKey.currentState?.reset();
-          Get.back();
         },
       );
     } else {
@@ -42,8 +42,7 @@ class FurnitureFormController extends GetxController
         message: "Your listing has not been created",
         confirmText: "Try again",
         onConfirm: () {
-          Get.back();
-          formKey.currentState?.reset();
+          createProduct(productModel);
           Get.back();
         },
         cancelText: "Cancel",

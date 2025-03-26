@@ -98,6 +98,7 @@ class CommonAdditionalFormDetailsController extends GetxController
           Get.back();
         },
       );
+      return false;
     }
 
     debugPrint(mrpController.text);

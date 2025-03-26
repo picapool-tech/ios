@@ -23,6 +23,7 @@ class APIEndpoints {
       "/chat/liveOffer/$liveOfferId";
   static String getChatFromOfferId(int offerId) => "/chat/offer/$offerId";
   static String getOfferDetails(int id) => "/offer/$id";
+  static String updateOfferDetails(int id) => "/offer/$id";
 
   static String getOffersByTagId(int tagId) => "/offer/tag/$tagId";
   static String getOffersForUser(int userId) => "/user/$userId/alerts";

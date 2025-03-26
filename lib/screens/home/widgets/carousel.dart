@@ -28,11 +28,10 @@ class _CarouselWidgetState extends State<CarouselWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<OffersController>(
-      init: _offerController,
-      builder: (controller) {
+    return Obx(
+      () {
         var isLoading =
-            controller.getLoadingState(OfferLoadingEnums.carousel).value;
+            _offerController.getLoadingState(OfferLoadingEnums.carousel).value;
 
         if (_offerController.carouselOffer.isEmpty && isLoading) {
           return const CarouselLoading();
@@ -52,7 +51,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
           );
         }
 
-        return carousel(controller.carouselOffer);
+        return carousel(_offerController.carouselOffer);
       },
     );
   }
@@ -195,7 +194,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((duration) async {
-      if (await _locationController.isLocationEnabled()) {
+      if (!await _locationController.isLocationEnabled()) {
         return;
       }
       _offerController.getCarasouelOffer();
@@ -204,10 +203,13 @@ class _CarouselWidgetState extends State<CarouselWidget> {
     ever(
       _locationController.state,
       (LocationState state) async {
-        if (await _locationController.isLocationEnabled()) {
+        if (!await _locationController.isLocationEnabled()) {
           return;
         }
-        if (state.location != null && !_offerController.isLoading.value) {
+        if (state.location != null &&
+            !_offerController
+                .getLoadingState(OfferLoadingEnums.carousel)
+                .value) {
           _offerController.getCarasouelOffer();
         }
       },

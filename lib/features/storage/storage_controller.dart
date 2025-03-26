@@ -39,7 +39,9 @@ class StorageController extends GetxController {
     if (isGuest.value) {
       return null;
     }
-    await loadAuth();
+    if (auth.value == null) {
+      await loadAuth();
+    }
     debugPrint("Storage Auth: ${auth.toJson()}");
     if (auth.value != null && auth.value!.accessToken != null) {
       if (Jwt.isExpired(auth.value!.accessToken!)) {
@@ -123,7 +125,6 @@ class StorageController extends GetxController {
       Map<String, dynamic> authMap = jsonDecode(authData);
       Auth auth = Auth.fromJson(authMap);
       this.auth.value = auth;
-      this.auth.refresh();
       update();
       return auth;
     }
@@ -156,7 +157,6 @@ class StorageController extends GetxController {
       Map<String, dynamic> userMap = jsonDecode(userData);
       User user = User.fromJson(userMap);
       this.user.value = user;
-      this.user.refresh();
       update();
       return user;
     }

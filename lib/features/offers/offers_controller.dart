@@ -121,7 +121,7 @@ class OffersController extends GetxController
   }) async {
     isLoading.value = true;
     startLoading(OfferLoadingEnums.fetchingChat);
-    update();
+    // update();
 
     var result = await _offersApi.getChatFromOfferId(
       offerId: offerId,
@@ -129,7 +129,7 @@ class OffersController extends GetxController
 
     isLoading.value = false;
     stopLoading(OfferLoadingEnums.fetchingChat);
-    update();
+    // update();
 
     return result.fold((error) {
       Get.snackbar(
@@ -266,5 +266,24 @@ class OffersController extends GetxController
     );
     isLoading.value = false;
     update();
+  }
+
+  Future<Offer?> updateOffer({
+    required Offer updatedOffer,
+  }) async {
+    startLoading(OfferLoadingEnums.updateOffer);
+    update();
+    var response = await _offersApi.updateOffer(updatedOffer: updatedOffer);
+
+    return response.fold((error) {
+      stopLoading(OfferLoadingEnums.updateOffer);
+      update();
+      debugPrint("Not able to update the offer information this time.");
+      return null;
+    }, (offer) {
+      stopLoading(OfferLoadingEnums.updateOffer);
+      update();
+      return offer;
+    });
   }
 }

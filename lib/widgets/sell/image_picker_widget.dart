@@ -21,74 +21,8 @@ class ImagePickerWidget extends StatefulWidget {
 
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   final FormController formController = Get.find<FormController>();
-  final List<File> _imageFiles = []; // Store cropped images
+// Store cropped images
   final Set<String> _uploadedImageUrls = {}; // Use Set to prevent duplicates
-
-  Future<void> pickImage(List<String> imageURLs) async {
-    final ImagePicker picker = ImagePicker();
-    final List<XFile> images = await picker.pickMultiImage();
-
-    List<File> newCroppedImages = [];
-
-    for (var image in images) {
-      File? croppedImage = await _cropImage(File(image.path));
-      if (croppedImage != null) {
-        newCroppedImages.add(croppedImage);
-      }
-    }
-
-    // Upload images and get URLs
-    if (newCroppedImages.isNotEmpty) {
-      try {
-        List<String> urls =
-            await formController.uploadProductImages(newCroppedImages);
-
-        // Add only unique URLs
-        for (String url in urls) {
-          if (!_uploadedImageUrls.contains(url)) {
-            _uploadedImageUrls.add(url);
-            widget.imageFiles.add(url);
-          }
-        }
-
-        // Notify parent widget about new URLs
-        widget.onImagesUploaded(widget.imageFiles.toList());
-
-        setState(() {}); // Refresh UI
-      } catch (e) {
-        debugPrint("Error uploading images: $e");
-        Get.snackbar(
-          'Error',
-          'Failed to upload images',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    }
-  }
-
-  Future<File?> _cropImage(File imageFile) async {
-    var croppedImage = await ImageCropper().cropImage(
-      sourcePath: imageFile.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: Colors.orange,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: true,
-        ),
-        // IOSUiSettings(
-        //   minimumAspectRatio: 1.0,
-        // ),
-      ],
-    );
-    if (croppedImage == null) {
-      return null;
-    }
-    return File(croppedImage.path);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,5 +115,71 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         ),
       ),
     );
+  }
+
+  Future<void> pickImage(List<String> imageURLs) async {
+    final ImagePicker picker = ImagePicker();
+    final List<XFile> images = await picker.pickMultiImage();
+
+    List<File> newCroppedImages = [];
+
+    for (var image in images) {
+      File? croppedImage = await _cropImage(File(image.path));
+      if (croppedImage != null) {
+        newCroppedImages.add(croppedImage);
+      }
+    }
+
+    // Upload images and get URLs
+    if (newCroppedImages.isNotEmpty) {
+      try {
+        List<String> urls =
+            await formController.uploadProductImages(newCroppedImages);
+
+        // Add only unique URLs
+        for (String url in urls) {
+          if (!_uploadedImageUrls.contains(url)) {
+            _uploadedImageUrls.add(url);
+            widget.imageFiles.add(url);
+          }
+        }
+
+        // Notify parent widget about new URLs
+        widget.onImagesUploaded(widget.imageFiles.toList());
+
+        setState(() {}); // Refresh UI
+      } catch (e) {
+        debugPrint("Error uploading images: $e");
+        Get.snackbar(
+          'Error',
+          'Failed to upload images',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
+  }
+
+  Future<File?> _cropImage(File imageFile) async {
+    var croppedImage = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: Colors.orange,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+        ),
+        // IOSUiSettings(
+        //   minimumAspectRatio: 1.0,
+        // ),
+      ],
+    );
+    if (croppedImage == null) {
+      return null;
+    }
+    return File(croppedImage.path);
   }
 }

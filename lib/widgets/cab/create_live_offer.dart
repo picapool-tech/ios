@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:get/get.dart';
@@ -12,6 +13,148 @@ import 'package:picapool/features/location/location_provider.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
+
+// Move the polyline decoding function outside of the class so it can be used in the isolate
+List<Map<String, double>> _decodePolylinePoints(String encoded) {
+  List<Map<String, double>> poly = [];
+  int index = 0, len = encoded.length;
+  int lat = 0, lng = 0;
+
+  while (index < len) {
+    int b, shift = 0, result = 0;
+    do {
+      b = encoded.codeUnitAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.codeUnitAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+    lng += dlng;
+
+    poly.add({
+      'lat': (lat / 1E5).toDouble(),
+      'lng': (lng / 1E5).toDouble(),
+    });
+  }
+  return poly;
+}
+
+// Static function for compute - needs to be outside the class
+Future<Map<String, dynamic>> _fetchDirectionsIsolate(
+    Map<String, dynamic> params) async {
+  final fromLat = params['fromLat'];
+  final fromLng = params['fromLng'];
+  final toLat = params['toLat'];
+  final toLng = params['toLng'];
+  final apiKey = params['apiKey'];
+
+  final response = await http
+      .get(Uri.parse('https://maps.googleapis.com/maps/api/directions/json?'
+          'origin=$fromLat,$fromLng'
+          '&destination=$toLat,$toLng'
+          '&key=$apiKey'));
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    if (data['status'] == 'OK' && data['routes'].isNotEmpty) {
+      // Decode polyline points in the background thread
+      final points = data['routes'][0]['overview_polyline']['points'];
+      final decodedPoints = _decodePolylinePoints(points);
+
+      // Simplify the route to reduce the number of points
+      final simplifiedPoints = _simplifyRoute(decodedPoints);
+
+      return {
+        'success': true,
+        'data': data,
+        'decodedPoints': simplifiedPoints, // Use simplified points
+        'routeDetails': {
+          'distance': data['routes'][0]['legs'][0]['distance'],
+          'duration': data['routes'][0]['legs'][0]['duration'],
+          'startAddress': data['routes'][0]['legs'][0]['start_address'],
+          'endAddress': data['routes'][0]['legs'][0]['end_address'],
+        }
+      };
+    } else {
+      return {
+        'success': false,
+        'error': 'Failed to get directions: ${data['status']}',
+      };
+    }
+  } else {
+    return {
+      'success': false,
+      'error': 'Failed to connect to directions service',
+    };
+  }
+}
+
+// Add a route simplification algorithm to reduce the number of points
+List<Map<String, double>> _simplifyRoute(List<Map<String, double>> points) {
+  if (points.length <= 2) return points;
+
+  // Always include start and end points
+  List<Map<String, double>> simplified = [points.first];
+
+  // The tolerance determines how much simplification to apply
+  // Smaller values = less simplification, larger values = more simplification
+  double toleranceSquared = 0.00001; // Adjust based on your needs
+
+  // If the route is very long, increase the tolerance
+  if (points.length > 100) {
+    toleranceSquared = 0.0001;
+  }
+
+  Map<String, double> lastPoint = points.first;
+
+  for (int i = 1; i < points.length - 1; i++) {
+    final point = points[i];
+
+    // Calculate squared distance between current point and last added point
+    final dx = point['lat']! - lastPoint['lat']!;
+    final dy = point['lng']! - lastPoint['lng']!;
+    final distSquared = dx * dx + dy * dy;
+
+    // Check if the point is far enough from the last added point
+    if (distSquared > toleranceSquared) {
+      simplified.add(point);
+      lastPoint = point;
+    }
+  }
+
+  // Make sure to add the last point
+  if (points.last != simplified.last) {
+    simplified.add(points.last);
+  }
+
+  // Ensure we don't simplify too aggressively for short routes
+  if (simplified.length < 5 && points.length > 10) {
+    // Add some intermediate points for very simplified routes
+    int step = points.length ~/ 5;
+    for (int i = step; i < points.length - step; i += step) {
+      if (!simplified.contains(points[i])) {
+        simplified.add(points[i]);
+      }
+    }
+    // Re-sort points by original order
+    simplified.sort((a, b) {
+      int indexA = points.indexOf(a);
+      int indexB = points.indexOf(b);
+      return indexA.compareTo(indexB);
+    });
+  }
+
+  return simplified;
+}
 
 class CreateLiveOffer extends StatefulWidget {
   const CreateLiveOffer({super.key});
@@ -151,7 +294,6 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -170,7 +312,9 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: _buildBody(),
+      body: SafeArea(
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -491,19 +635,22 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     final polylines = <Polyline>{};
 
     if (_routePoints.isNotEmpty) {
+      // Use a single polyline with simplified path
       polylines.add(
         Polyline(
           polylineId: const PolylineId('route'),
           points: _routePoints,
           color: Colors.blue,
           width: 5,
-          patterns: [
-            PatternItem.dash(20),
-            PatternItem.gap(10),
-          ],
+          // Remove pattern for better performance on complex routes
+          // patterns: [
+          //   PatternItem.dash(20),
+          //   PatternItem.gap(10),
+          // ],
         ),
       );
     } else if (_fromLatLng != null && _toLatLng != null) {
+      // Direct line is simpler and more efficient
       polylines.add(
         Polyline(
           polylineId: const PolylineId('direct'),
@@ -584,52 +731,29 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     });
   }
 
-  // Decode the polyline points
-  List<LatLng> _decodePolyline(String encoded) {
-    List<LatLng> poly = [];
-    int index = 0, len = encoded.length;
-    int lat = 0, lng = 0;
-
-    while (index < len) {
-      int b, shift = 0, result = 0;
-      do {
-        b = encoded.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = encoded.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lng += dlng;
-
-      final p = LatLng((lat / 1E5).toDouble(), (lng / 1E5).toDouble());
-      poly.add(p);
-    }
-    return poly;
-  }
-
   void _fitRouteOnMap() {
     if (_routePoints.isEmpty || _mapController == null) return;
 
     try {
-      // Create bounds that include both points and the route
+      // Sample the route points instead of using all points for calculating bounds
+      List<LatLng> sampledPoints = _sampleRoutePoints(_routePoints);
+
+      // Create bounds that include both endpoints and sampled route points
+      double minLat = sampledPoints.first.latitude;
+      double maxLat = sampledPoints.first.latitude;
+      double minLng = sampledPoints.first.longitude;
+      double maxLng = sampledPoints.first.longitude;
+
+      for (var point in sampledPoints) {
+        minLat = min(minLat, point.latitude);
+        maxLat = max(maxLat, point.latitude);
+        minLng = min(minLng, point.longitude);
+        maxLng = max(maxLng, point.longitude);
+      }
+
       final bounds = LatLngBounds(
-        southwest: LatLng(
-          _routePoints.map((p) => p.latitude).reduce(min),
-          _routePoints.map((p) => p.longitude).reduce(min),
-        ),
-        northeast: LatLng(
-          _routePoints.map((p) => p.latitude).reduce(max),
-          _routePoints.map((p) => p.longitude).reduce(max),
-        ),
+        southwest: LatLng(minLat, minLng),
+        northeast: LatLng(maxLat, maxLng),
       );
 
       // Add padding
@@ -668,47 +792,45 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     return "$dateLabel • $hour:$minute $period";
   }
 
-  // Route methods
   Future<void> _getDirections() async {
     if (_fromLatLng == null || _toLatLng == null) return;
 
     setState(() => _isLoadingRoute = true);
 
     try {
-      // Make request to the Google Directions API
+      // Clear existing route to prevent rendering two routes simultaneously
+      _clearRoute();
 
-      final directionsResponse = await http
-          .get(Uri.parse('https://maps.googleapis.com/maps/api/directions/json?'
-              'origin=${_fromLatLng!.latitude},${_fromLatLng!.longitude}'
-              '&destination=${_toLatLng!.latitude},${_toLatLng!.longitude}'
-              '&key=AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'));
+      // Prepare parameters for the isolated function
+      final params = {
+        'fromLat': _fromLatLng!.latitude,
+        'fromLng': _fromLatLng!.longitude,
+        'toLat': _toLatLng!.latitude,
+        'toLng': _toLatLng!.longitude,
+        'apiKey': 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk',
+      };
 
-      if (directionsResponse.statusCode == 200) {
-        final data = json.decode(directionsResponse.body);
+      // Execute route calculation in background
+      final result = await compute(_fetchDirectionsIsolate, params);
 
-        if (data['status'] == 'OK' && data['routes'].isNotEmpty) {
-          // Get route points
-          final points = data['routes'][0]['overview_polyline']['points'];
-          _routePoints = _decodePolyline(points);
+      if (result['success']) {
+        // Convert decoded points from the isolate to LatLng objects
+        List<Map<String, double>> decodedPoints = result['decodedPoints'];
+        List<LatLng> routePoints = decodedPoints
+            .map((point) => LatLng(point['lat']!, point['lng']!))
+            .toList();
 
-          // Store route details
-          _routeDetails = {
-            'distance': data['routes'][0]['legs'][0]['distance'],
-            'duration': data['routes'][0]['legs'][0]['duration'],
-            'startAddress': data['routes'][0]['legs'][0]['start_address'],
-            'endAddress': data['routes'][0]['legs'][0]['end_address'],
-          };
+        // Batch state updates to reduce UI workload
+        setState(() {
+          _routePoints = routePoints;
+          _routeDetails = result['routeDetails'];
+        });
 
-          // Fit map to show the entire route
-          _fitRouteOnMap();
-        } else {
-          _showError(
-              'Route Error', 'Failed to get directions: ${data['status']}');
-          _clearRoute();
-        }
+        // Fit map to show the entire route
+        _fitRouteOnMap();
       } else {
-        _showError('Network Error', 'Failed to connect to directions service');
-        _clearRoute();
+        // Handle error
+        _showError('Route Error', result['error']);
       }
     } catch (e) {
       _showError('Route Error', 'Error getting directions: $e');
@@ -854,6 +976,23 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  // Helper method to sample route points for more efficient bounds calculation
+  List<LatLng> _sampleRoutePoints(List<LatLng> points) {
+    if (points.length <= 10) return points;
+
+    // Always include start and end points
+    List<LatLng> sampled = [points.first];
+
+    // Sample middle points
+    int step = (points.length / 8).floor();
+    for (int i = step; i < points.length - step; i += step) {
+      sampled.add(points[i]);
+    }
+
+    sampled.add(points.last);
+    return sampled;
   }
 
   Future<void> _selectPlace(Prediction prediction) async {

@@ -4,4 +4,5 @@ enum OfferLoadingEnums {
   alerts,
   poolingHistory,
   fetchingChat,
+  updateOffer,
 }

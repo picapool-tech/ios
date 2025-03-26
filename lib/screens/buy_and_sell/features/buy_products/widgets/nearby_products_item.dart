@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/image_with_top_widgets.dart';
@@ -20,10 +21,12 @@ class NearbyProductsItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        var offersController = Get.find<OffersController>();
         Get.to(
           () => ProductDetails(
             product: product,
             offer: offer,
+            offersController: offersController,
           ),
         );
       },

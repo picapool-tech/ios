@@ -365,7 +365,7 @@ class ProductsController extends GetxController
         name: model.name,
         images: imageUrls,
         desc: model.description,
-        expiryAt: DateTime.now().add(const Duration(days: 1)),
+        expiryAt: DateTime.now().add(const Duration(days: 366)),
         userId: model.userId,
         location: VicinityLocation(
           lat: location.location!.latitude,

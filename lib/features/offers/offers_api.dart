@@ -364,4 +364,40 @@ class OffersApi with PicapoolApiClass {
       ));
     }
   }
+
+  FutureEither<Offer> updateOffer({
+    required Offer updatedOffer,
+  }) async {
+    try {
+      debugPrint("Updating offer with ID: ${updatedOffer.id}");
+      debugPrint("Update payload: ${updatedOffer.toJson()}");
+
+      var result = await api.makeRequest(
+        enpoint: APIEndpoints.updateOfferDetails(updatedOffer.id),
+        method: RequestMethod.patch,
+        body: {
+          "expiryAt": updatedOffer.expiryAt.toUtc().toIso8601String(),
+        },
+      );
+
+      return result.fold((error) {
+        debugPrint("Error response from API: ${error.message}");
+        return left(error);
+      }, (responseModel) async {
+        debugPrint("Success response: ${responseModel.message}");
+        debugPrint("Response data: ${responseModel.data}");
+        var offer = await responseModel.parseData<Offer>(Offer.fromJson);
+        debugPrint("Parsed offer: ${offer.toJson()}");
+        return right(offer);
+      });
+    } catch (e, stackTrace) {
+      debugPrint("Error while updating offer: $e");
+      debugPrint("Stack trace: $stackTrace");
+      return left(
+        Failure(
+            message: "Not able to update offer information: $e",
+            stackTrace: stackTrace),
+      );
+    }
+  }
 }

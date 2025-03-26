@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:picapool/screens/buy_and_sell/features/user_listing/features/user_item_listing_details.dart';
 import 'package:picapool/screens/buy_and_sell/features/user_listing/widgets/listing_poster.dart';
 import 'package:picapool/screens/buy_and_sell/features/user_listing/widgets/sell_category.dart';
@@ -21,39 +20,48 @@ class UserListingState extends State<UserListing> {
         color: AppTheme.currentTheme.dividerColor.withAlpha(10),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-      child: const CustomScrollView(
-        slivers: [
-          // The poster at the top
-          SliverToBoxAdapter(
-            child: ListingPoster(),
-          ),
+      child: const SingleChildScrollView(
+        child: Column(
+          children: [
+            // The poster at the top
+            ListingPoster(),
 
-          // Small space
-          SliverToBoxAdapter(
-            child: SizedBox(height: 8),
-          ),
+            // Small space
+            SizedBox(height: 8),
 
-          // Category section header
-          SliverToBoxAdapter(
-            child: Text("Select your selling category"),
-          ),
+            // Category section header
+            Text("Select your selling category"),
 
-          // Sell Category
-          SliverToBoxAdapter(
-            child: SellCategory(),
-          ),
+            // Sell Category
+            SellCategory(),
 
-          // Divider
-          SliverToBoxAdapter(
-            child: CustomDivider(text: "View Your Listings"),
-          ),
+            // Divider
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(child: CustomDivider(text: "View Your Listings")),
+                // const SizedBox(
+                //   width: 10,
+                // ),
+                // IconButton(
+                //   onPressed: () async {
+                //     await _offersController.getAllUserCreatedOffer();
+                //   },
+                //   icon: const Icon(Icons.refresh),
+                // )
+              ],
+            ),
 
-          // User listings (now part of the same scrollable area)
-          SliverToBoxAdapter(
-            child: UserItemListingDetails(),
-          ),
-        ],
+            // User listings (now part of the same scrollable area)
+            UserItemListingDetails(),
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/common/widgets/buttons_widgets.dart';
+import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
@@ -24,15 +24,16 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
     return GetBuilder<OffersController>(
       init: _controller,
       builder: (controller) {
-        if (controller
-            .getLoadingState(OfferLoadingEnums.poolingHistory)
-            .value) {
+        if (_controller.poolingOffers.isEmpty &&
+            _controller
+                .getLoadingState(OfferLoadingEnums.poolingHistory)
+                .value) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        if (controller.poolingOffers.isEmpty) {
+        if (_controller.poolingOffers.isEmpty) {
           return Container(
             height: Get.size.height * 0.5,
             alignment: Alignment.topCenter,
@@ -42,7 +43,7 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
           );
         }
 
-        var offers = controller.poolingOffers.value;
+        var offers = _controller.poolingOffers.value;
         var tagId = _tagController.getTagsByTagName("buy")?.id;
         tagId ??= 3;
 
@@ -86,22 +87,42 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
                           const SizedBox(height: 8.0),
                           Text(
                               'Condition: ${product.attributes?['productCondition']}'),
-                          // const SizedBox(height: 8.0),
-                          // Text('Category: ${product.category}'),
+                          const SizedBox(height: 8.0),
                           Center(
-                            child: PicaTextButton(
-                              text: "More details",
+                            child: TextButton(
                               onPressed: () {
                                 Get.to(
                                   () => ProductDetails(
                                     product: product,
                                     offer: offer,
+                                    offersController: controller,
                                   ),
                                 );
                               },
-                              isLoading: false.obs,
+                              child: const Text("More details"),
                             ),
-                          )
+                          ),
+                          Center(
+                            child: FilledButton(
+                              onPressed: (!offer.isOfferExpired())
+                                  ? () async {
+                                      showPicaLoadingDialog();
+                                      var updatedOffer =
+                                          await _controller.updateOffer(
+                                              updatedOffer: offer.copyWith(
+                                                  expiryAt: DateTime.now()));
+                                      hidePicaDialog();
+                                      if (updatedOffer != null) {
+                                        await _controller
+                                            .getAllUserCreatedOffer();
+                                      }
+                                    }
+                                  : null,
+                              child: (offer.isOfferExpired())
+                                  ? const Text("PRODUCT SOLD")
+                                  : const Text("Mark product as sold"),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -119,7 +140,6 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.getAllUserCreatedOffer();
     });

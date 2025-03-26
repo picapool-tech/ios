@@ -14,6 +14,7 @@ import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
 import 'package:picapool/features/auth/auth_controller.dart';
+import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
@@ -27,9 +28,7 @@ import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/vicinity/vicinity_controller.dart';
 import 'package:picapool/firebase_options_new.dart';
-import 'package:picapool/screens/login/login_screen_imp.dart';
-import 'package:picapool/screens/personal_details/personal_details.dart';
-import 'package:picapool/screens/public_profile/public_profile.dart';
+import 'package:picapool/screens/auth_check_screen.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
@@ -45,8 +44,9 @@ void main() async {
 
   Get.put(StorageController(), permanent: true);
   Get.put(PicapoolApi(), permanent: true);
-  Get.put(NetworkController.getInstance(), permanent: true);
 
+  Get.put(NetworkController.getInstance(), permanent: true);
+  Get.put(AuthStateManager(), permanent: true);
   Get.lazyPut(() => UserController(), fenix: true);
   Get.lazyPut(() => AuthController(), fenix: true);
   Get.lazyPut(() => LocationController(), fenix: true);
@@ -123,45 +123,49 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.light,
-      home: Obx(() {
-        debugPrint(
-            "Main rebuild - Auth: ${_storageController.auth.value != null}, User: ${_storageController.user.value != null}");
+      home: AuthCheckScreen(),
+      // GetBuilder<StorageController>(
+      //     init: _storageController,
+      //     builder: (controller) {
+      //       debugPrint(
+      //           "Main rebuild - Auth: ${_storageController.auth.value != null}, User: ${_storageController.user.value != null}");
 
-        final auth = _storageController.auth.value;
-        final user = _storageController.user.value;
+      //       final auth = _storageController.auth.value;
+      //       final user = _storageController.user.value;
 
-        // Clear state for debugging - optional
-        if (auth == null || auth.accessToken == null) {
-          debugPrint("No valid auth token - showing login screen");
-          return LoginScreenImp();
-        }
+      //       // Clear state for debugging - optional
+      //       if (auth == null || auth.accessToken == null) {
+      //         debugPrint("No valid auth token - showing login screen");
+      //         return LoginScreenImp();
+      //       }
 
-        if (user == null) {
-          debugPrint("No user data - showing login screen");
-          return LoginScreenImp();
-        }
+      //       if (user == null) {
+      //         debugPrint("No user data - showing login screen");
+      //         return LoginScreenImp();
+      //       }
 
-        if (user.name == null || user.age == null) {
-          debugPrint("Missing user details - showing personal details screen");
-          return const PersonalDetails();
-        }
+      //       if (user.name == null || user.age == null) {
+      //         debugPrint(
+      //             "Missing user details - showing personal details screen");
+      //         return const PersonalDetails();
+      //       }
 
-        if (user.username == null ||
-            user.username!.isEmpty ||
-            user.username!.contains("PIC@USERNAME") ||
-            user.username!.contains(
-              RegExp(
-                r"^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
-                dotAll: true,
-              ),
-            )) {
-          debugPrint("Missing username - showing public profile screen");
-          return const PublicProfile();
-        }
+      //       if (user.username == null ||
+      //           user.username!.isEmpty ||
+      //           user.username!.contains("PIC@USERNAME") ||
+      //           user.username!.contains(
+      //             RegExp(
+      //               r"^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+      //               dotAll: true,
+      //             ),
+      //           )) {
+      //         debugPrint("Missing username - showing public profile screen");
+      //         return const PublicProfile();
+      //       }
 
-        debugPrint("All conditions met - showing home screen");
-        return const NewBottomBar();
-      }),
+      //       debugPrint("All conditions met - showing home screen");
+      //       return const NewBottomBar();
+      //     }),
     );
   }
 

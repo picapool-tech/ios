@@ -118,7 +118,17 @@ class PicapoolApi {
             break;
         }
 
-        var responseModel = ResponseModel.fromJson(response.data);
+        ResponseModel responseModel;
+        try {
+          responseModel = ResponseModel.fromJson(response.data);
+        } catch (e) {
+          responseModel = ResponseModel(
+            message: "",
+            success: response.statusCode == 200,
+            data: response.data,
+          );
+        }
+
         _hasRetired = false;
         return right(responseModel);
       } on dio.DioException catch (e) {

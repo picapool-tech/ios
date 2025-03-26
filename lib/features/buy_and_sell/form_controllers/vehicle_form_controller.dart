@@ -30,9 +30,8 @@ class VehicleFormController extends GetxController with VehicleValidationMixin {
         message: "Your listing has been created",
         confirmText: "Sounds Good",
         onConfirm: () {
-          Get.back();
+          Get.back(closeOverlays: true, canPop: true);
           formKey.currentState?.reset();
-          Get.back();
         },
       );
     } else {

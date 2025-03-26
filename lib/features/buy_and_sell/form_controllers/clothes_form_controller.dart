@@ -31,9 +31,8 @@ class ClothesFormController extends GetxController with ClothesValidationMixin {
         message: "Your listing has been created",
         confirmText: "Sounds Good",
         onConfirm: () {
-          Get.back();
+          Get.back(closeOverlays: true, canPop: true);
           formKey.currentState?.reset();
-          Get.back();
         },
       );
     } else {
