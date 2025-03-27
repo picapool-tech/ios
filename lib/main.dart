@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/controllers/brand_controller.dart';
 import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
@@ -40,6 +42,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  await checkingForDynamicLink();
+
   await Env.load();
 
   Get.put(StorageController(), permanent: true);
@@ -67,6 +71,33 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(handleNotification);
   NotificationService().handleTokenGeneration();
   runApp(const MyApp());
+}
+
+Future<void> checkingForDynamicLink() async {
+  final PendingDynamicLinkData? initialLink =
+      await FirebaseDynamicLinksPlatform.instance.getInitialLink();
+
+  if (initialLink != null) {
+    handleDynamicLink(initialLink);
+  }
+
+  FirebaseDynamicLinksPlatform.instance.onLink
+      .listen((PendingDynamicLinkData? pendingDynamicLinkData) {
+    if (pendingDynamicLinkData != null) {
+      handleDynamicLink(pendingDynamicLinkData);
+    }
+  });
+}
+
+void handleDynamicLink(PendingDynamicLinkData dynamicLinkData) {
+  showPicaAlertDialog(
+    title: "Dynamicy Link Detected",
+    message: dynamicLinkData.link.toString(),
+    confirmText: "Great",
+    onConfirm: () {
+      Get.back();
+    },
+  );
 }
 
 @pragma('vm:entry-point')

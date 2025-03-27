@@ -52,6 +52,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" android:host="picapool.com" />
                 <data android:scheme="https" />
+                <data android:scheme="http" android:host="picapool.page.link" />
+                <data android:scheme="https" />
             </intent-filter>
         </activity>
 
