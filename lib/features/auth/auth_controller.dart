@@ -6,6 +6,7 @@ import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/core/reactive_loading.dart';
 import 'package:picapool/features/auth/authUpdateModel/authUpdateModel.dart';
 import 'package:picapool/features/auth/auth_api.dart';
+import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/features/auth/values/enums.dart';
 import 'package:picapool/features/notification/notification_service.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
@@ -19,6 +20,7 @@ class AuthController extends GetxController
     with ReactiveLoading<AuthLoadingEnum> {
   final AuthApi _authApi = AuthApi();
   final StorageController _storageController = Get.find<StorageController>();
+  final AuthStateManager _authStateManager = Get.find<AuthStateManager>();
   final UserController _userController = Get.find<UserController>();
 
   var isLoading = false.obs;
@@ -120,7 +122,7 @@ class AuthController extends GetxController
         }
       },
       (loginModel) async {
-        postLoginAction(loginModel);
+        await postLoginAction(loginModel);
       },
     );
     stopLoading(AuthLoadingEnum.google);
@@ -157,7 +159,7 @@ class AuthController extends GetxController
   Future<void> logout() async {
     await _storageController.clearUser();
     await _storageController.clearAuth();
-    update();
+    _authStateManager.refreshAuthState();
   }
 
   Future<bool> postLoginAction(LoginModel loginModel, {String? mobile}) async {
@@ -185,6 +187,7 @@ class AuthController extends GetxController
     errorMessage.value = "";
     isLoading.value = false;
     update();
+    _authStateManager.refreshAuthState();
 
     return false;
   }

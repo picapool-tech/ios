@@ -243,7 +243,6 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   var value = await Get.to(
                     () => OtpScreen(
                       phoneNumber: phone,
-                      returnValue: true,
                     ),
                   ) as List<dynamic>?;
 

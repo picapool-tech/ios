@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/features/auth/auth_controller.dart';
-import 'package:picapool/features/tags/tag_controller.dart';
 
 class LogoutWidget extends StatelessWidget {
   const LogoutWidget({
@@ -34,7 +33,6 @@ class LogoutWidget extends StatelessWidget {
           PicaPrimaryButton(
             onPressed: () async {
               await Get.find<AuthController>().logout();
-              await Get.find<TagController>().unSubscribeToTopics();
 
               if (context.mounted) {
                 Get.back();

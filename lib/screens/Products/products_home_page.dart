@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/widgets/carousel_widget.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/partners/partnerModel/partner_request_model.dart';
 import 'package:picapool/features/partners/partner_controller.dart';

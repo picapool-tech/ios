@@ -8,7 +8,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/user/values/user_data_model_enum.dart';
@@ -588,7 +588,8 @@ class _LocationScreenState extends State<LocationScreen>
 
     try {
       if (fetchActualLocation ||
-          _locationController.state.value.location == null) {
+          _locationController.state.value.location == null &&
+              !_locationController.isUserProvidedLocation) {
         await _locationController.getLocation();
       }
 

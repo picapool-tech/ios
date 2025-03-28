@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:picapool/controllers/live_offer_controller.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';

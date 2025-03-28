@@ -126,6 +126,10 @@ class LocationController extends GetxController {
     }
   }
 
+  void resetLocationSelectionFlag() {
+    isUserProvidedLocation = false;
+  }
+
   // Request permission and fetch the current location
   void showDialog({
     required String title,
@@ -154,6 +158,10 @@ class LocationController extends GetxController {
         location.latitude,
         location.longitude,
       );
+
+      if (isUserSelected) {
+        isUserProvidedLocation = true;
+      }
 
       state(
         LocationState(

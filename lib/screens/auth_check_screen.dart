@@ -9,7 +9,9 @@ class AuthCheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
+    return GetBuilder<AuthStateManager>(initState: (state) {
+      _authStateManager.refreshAuthState();
+    }, builder: (controller) {
       if (!_authStateManager.isInitialized) {
         return Scaffold(
           body: Center(

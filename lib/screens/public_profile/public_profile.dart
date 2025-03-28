@@ -8,8 +8,8 @@ import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
 import 'package:picapool/features/auth/auth_controller.dart';
+import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
-import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/user/values/user_data_model_enum.dart';
 import 'package:picapool/features/user/values/user_loading_enums.dart';
@@ -170,7 +170,7 @@ class _PublicProfileState extends State<PublicProfile> {
     if (_profileImage != null) {
       profileUrl = await _assetsController.uploadImage(
           XFile(_profileImage!.path),
-          '${backupUser.id}-${backupUser.name}-${DateTime.now().toIso8601String()}.jpg');
+          '${backupUser.id}-${backupUser.name}-${DateTime.now().toUtc().toIso8601String()}.jpg');
     }
 
     storageController.user.update((user) {
@@ -182,12 +182,17 @@ class _PublicProfileState extends State<PublicProfile> {
       user.pic = profileUrl;
     });
 
-    var tagController = Get.find<TagController>();
-    await tagController.getAllTags();
+    // var tagController = Get.find<TagController>();
+    // await tagController.getAllTags();
     // await authController.createUser();
-    await _userController.updateUser(
+    var isUpdated = await _userController.updateUser(
       [UserField.username, UserField.bio, UserField.pic],
+      previousUser: backupUser,
     );
+
+    if (isUpdated) {
+      Get.find<AuthStateManager>().refreshAuthState();
+    }
   }
 
   @override

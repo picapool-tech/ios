@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:picapool/common/values/values.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/user/values/user_data_model_enum.dart';
 import 'package:picapool/features/vicinity/vicinity_controller.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/core/reactive_loading.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/offers/offers_api.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
 import 'package:picapool/features/user/user_controller.dart';

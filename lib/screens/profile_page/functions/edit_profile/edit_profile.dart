@@ -142,6 +142,7 @@ class _EditProfileState extends State<EditProfile> {
                   PicaPhoneField(
                     controller: _phoneController,
                     labelText: "Phone number",
+                    enabled: _authController.auth?.mobile == null,
                     suffixIcon: _checkNumberVerification(),
                   ),
                 ],
@@ -263,7 +264,6 @@ class _EditProfileState extends State<EditProfile> {
           var value = await Get.to(
             () => OtpScreen(
               phoneNumber: "91${_phoneController.text}",
-              returnValue: true,
             ),
           ) as List<dynamic>?;
 
@@ -284,8 +284,6 @@ class _EditProfileState extends State<EditProfile> {
               "mobile": "91${_phoneController.text}",
             });
             await _storageController.saveAuth(auth);
-            Get.find<StorageController>().auth.refresh();
-
             setState(() {});
           } else {
             // Verify failed

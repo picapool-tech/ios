@@ -11,7 +11,7 @@ import 'package:picapool/common/values/map_style.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';

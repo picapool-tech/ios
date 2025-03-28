@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/values/values.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/screens/home/widgets/down_sheet.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/home/location_widget.dart';

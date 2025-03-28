@@ -11,7 +11,7 @@ import 'package:picapool/features/assets/assets_controller.dart';
 import 'package:picapool/features/buy_and_sell/product_api.dart';
 import 'package:picapool/features/buy_and_sell/values/enums.dart';
 import 'package:picapool/features/buy_and_sell/values/model.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/vicinity/vicinity_controller.dart';

@@ -224,7 +224,6 @@ class LoginScreenImp extends StatelessWidget {
       var isVerified = await Get.to(
         () => OtpScreen(
           phoneNumber: "91${phoneController.text}",
-          returnValue: true,
         ),
       );
 

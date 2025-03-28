@@ -13,12 +13,10 @@ import 'package:picapool/widgets/login/text_field_pin.dart';
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
-  final bool returnValue;
 
   const OtpScreen({
     super.key,
     required this.phoneNumber,
-    this.returnValue = false,
   });
 
   @override
@@ -325,7 +323,7 @@ class _OtpScreenState extends State<OtpScreen> {
   void initState() {
     super.initState();
     debugPrint(
-      "OTP Screen: ${widget.phoneNumber} with return Value : ${widget.returnValue}",
+      "OTP Screen: ${widget.phoneNumber} ",
     );
     _otpController.addListener(_checkOtpComplete);
 

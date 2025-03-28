@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/product_controller.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/utils/routes.dart';

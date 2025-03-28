@@ -52,16 +52,13 @@ class AuthStateManager extends GetxController {
   void onInit() {
     super.onInit();
 
-    // Listen to changes in auth/user and update state only when needed
-    ever(_storageController.auth, _checkAuthState);
-    ever(_storageController.user, _checkAuthState);
-
-    // Initial check
     _checkAuthState(null);
   }
 
-  // Call this to force an auth state check
-  void refreshAuthState() => _checkAuthState(null);
+  void refreshAuthState() {
+    _checkAuthState(null);
+    update();
+  }
 
   void _checkAuthState(_) {
     final auth = _storageController.auth.value;

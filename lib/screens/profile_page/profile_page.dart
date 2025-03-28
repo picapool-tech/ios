@@ -54,10 +54,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ElevatedButton(
             onPressed: () async {
               if (kDebugMode) {
-                Get.to(() => const OtpScreen(
-                      phoneNumber: "917224052216",
-                      returnValue: false,
-                    ));
+                Get.to(
+                  () => const OtpScreen(
+                    phoneNumber: "917224052216",
+                  ),
+                );
                 return;
               }
 

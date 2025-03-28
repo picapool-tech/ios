@@ -79,6 +79,7 @@ class PicaOutlinedTextField extends StatelessWidget {
   final String? prefixText;
   final String? Function(String?)? validator;
   final AutovalidateMode? autovalidateMode;
+  final bool enabled;
 
   const PicaOutlinedTextField({
     Key? key,
@@ -111,6 +112,7 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.prefixText,
     this.validator,
     this.autovalidateMode,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -133,6 +135,7 @@ class PicaOutlinedTextField extends StatelessWidget {
       onChanged: onChanged,
       onTap: onTap,
       validator: validator,
+      enabled: enabled,
       autovalidateMode: autovalidateMode,
       cursorColor: primaryColor,
       style: theme.textTheme.bodyMedium,
@@ -228,6 +231,7 @@ class PicaPhoneField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Function(String)? onChanged;
   final Widget? suffixIcon;
+  final bool enabled;
 
   const PicaPhoneField({
     Key? key,
@@ -237,6 +241,7 @@ class PicaPhoneField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.suffixIcon,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -252,10 +257,12 @@ class PicaPhoneField extends StatelessWidget {
           Text("+91"),
         ],
       ),
+
       // Icon(
       //   Icons.local_phone_rounded,
       //   color: AppTheme.currentTheme.primaryColor,
       // ),
+      enabled: enabled,
       suffixIcon: suffixIcon,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,

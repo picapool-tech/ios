@@ -20,7 +20,7 @@ import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
-import 'package:picapool/features/location/location_provider.dart';
+import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/network/connection_status_listener.dart';
 import 'package:picapool/features/notification/notification_service.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
