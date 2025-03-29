@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:picapool/utils/theme.dart';
@@ -20,14 +18,13 @@ class ProductTable extends StatefulWidget {
 
 class _ProductTableState extends State<ProductTable>
     with TickerProviderStateMixin {
-  bool _expanded = false;
   late List<String> allKeys;
+  // bool _isExpanded = false;
+  // int get initialFieldCount => _expanded
+  //     ? allKeys.length
+  //     : (widget.priorityFields?.length ?? min(2, allKeys.length));
 
-  int get initialFieldCount => _expanded
-      ? allKeys.length
-      : (widget.priorityFields?.length ?? min(2, allKeys.length));
-
-  bool get showExpandButton => allKeys.length > initialFieldCount && !_expanded;
+  // bool get showExpandButton => allKeys.length > initialFieldCount && !_expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +32,17 @@ class _ProductTableState extends State<ProductTable>
     List<TableRow> allRows = [];
 
     // Add all rows up to initialFieldCount or all if expanded
-    for (int i = 0;
-        i < ((_expanded) ? allKeys.length : initialFieldCount);
-        i++) {
+    // for (int i = 0;
+    //     i < ((_expanded) ? allKeys.length : initialFieldCount);
+    //     i++) {
+    //   if (i < allKeys.length) {
+    //     final key = allKeys[i];
+
+    //     allRows.add(
+    //         _buildRow(_formatKey(key), _formatValue(key, widget.data[key])));
+    //   }
+    // }
+    for (int i = 0; i < allKeys.length; i++) {
       if (i < allKeys.length) {
         final key = allKeys[i];
 
@@ -46,73 +51,73 @@ class _ProductTableState extends State<ProductTable>
       }
     }
 
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Table(
-              border: TableBorder.all(
-                borderRadius: BorderRadius.circular(6),
-                color: AppTheme.currentTheme.disabledColor,
-              ),
-              columnWidths: const {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(2)
-              },
-              children: allRows,
-            ),
-            if (showExpandButton) const SizedBox(height: 30),
-          ],
-        ),
-        if (showExpandButton)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 20,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _expanded = !_expanded;
-                });
-              },
-              child: Container(
-                height: 30,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white,
-                      Colors.white,
-                    ],
-                    stops: const [0, 0.4, 1.0],
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      _expanded ? 'Show Less' : 'Show More',
-                      style: TextStyle(
-                        color: AppTheme.currentTheme.colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Icon(
-                      _expanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      color: AppTheme.currentTheme.colorScheme.secondary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-      ],
+    return Table(
+      border: TableBorder.all(
+        borderRadius: BorderRadius.circular(6),
+        color: AppTheme.currentTheme.disabledColor,
+      ),
+      columnWidths: const {
+        0: FlexColumnWidth(1),
+        1: FlexColumnWidth(2),
+      },
+      children: allRows,
     );
+    // Stack(
+    //   children: [
+    //     Column(
+    //       children: [
+    //         if (showExpandButton) const SizedBox(height: 30),
+    //       ],
+    //     ),
+    //     if (showExpandButton)
+    //       Positioned(
+    //         left: 0,
+    //         right: 0,
+    //         bottom: 20,
+    //         child: InkWell(
+    //           onTap: () {
+    //             setState(() {
+    //               _expanded = !_expanded;
+    //             });
+    //           },
+    //           child: Container(
+    //             height: 30,
+    //             decoration: BoxDecoration(
+    //               gradient: LinearGradient(
+    //                 begin: Alignment.topCenter,
+    //                 end: Alignment.bottomCenter,
+    //                 colors: [
+    //                   Colors.white.withOpacity(0.2),
+    //                   Colors.white,
+    //                   Colors.white,
+    //                 ],
+    //                 stops: const [0, 0.4, 1.0],
+    //               ),
+    //             ),
+    //             child: Row(
+    //               mainAxisAlignment: MainAxisAlignment.center,
+    //               crossAxisAlignment: CrossAxisAlignment.center,
+    //               children: [
+    //                 Text(
+    //                   _expanded ? 'Show Less' : 'Show More',
+    //                   style: TextStyle(
+    //                     color: AppTheme.currentTheme.colorScheme.secondary,
+    //                     fontWeight: FontWeight.bold,
+    //                   ),
+    //                 ),
+    //                 Icon(
+    //                   _expanded
+    //                       ? Icons.keyboard_arrow_up
+    //                       : Icons.keyboard_arrow_down,
+    //                   color: AppTheme.currentTheme.colorScheme.secondary,
+    //                 ),
+    //               ],
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //   ],
+    // );
   }
 
   @override
@@ -149,7 +154,7 @@ class _ProductTableState extends State<ProductTable>
   // Format keys to be more readable
   String _formatKey(String key) {
     // Split by underscores and then insert spaces at camelCase boundaries
-    
+
     final words = key.split('_').expand((part) {
       final camelRegex = RegExp(r'(?<=[a-z])(?=[A-Z])');
       return part.split(camelRegex);

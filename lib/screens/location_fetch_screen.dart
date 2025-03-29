@@ -70,16 +70,19 @@ class _LocationScreenState extends State<LocationScreen>
     });
 
     return Scaffold(
-      body: Stack(
-        children: [
-          _buildMap(),
-          _buildTopBarWithSearch(),
-          if (!_locationEnabled) _buildLocationEnableBar(),
-          _buildView3DToggleButton(),
-          if (!_isPinDragged) _buildDragPinHint(),
-          _buildPredictionsList(),
-          _buildBottomPanel(),
-        ],
+      body: SafeArea(
+        top: false,
+        child: Stack(
+          children: [
+            _buildMap(),
+            _buildTopBarWithSearch(),
+            if (!_locationEnabled) _buildLocationEnableBar(),
+            _buildView3DToggleButton(),
+            if (!_isPinDragged) _buildDragPinHint(),
+            _buildPredictionsList(),
+            _buildBottomPanel(),
+          ],
+        ),
       ),
     );
   }

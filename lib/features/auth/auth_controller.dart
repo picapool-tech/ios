@@ -99,7 +99,8 @@ class AuthController extends GetxController
         }
       },
       (loginModel) async {
-        postLoginAction(loginModel);
+        await postLoginAction(loginModel);
+        debugPrint("Apple Post login completed");
       },
     );
     stopLoading(AuthLoadingEnum.apple);
@@ -123,6 +124,7 @@ class AuthController extends GetxController
       },
       (loginModel) async {
         await postLoginAction(loginModel);
+        debugPrint("Google Post login completed");
       },
     );
     stopLoading(AuthLoadingEnum.google);
@@ -162,6 +164,12 @@ class AuthController extends GetxController
     _authStateManager.refreshAuthState();
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    initializeLoadingStates(AuthLoadingEnum.values);
+  }
+
   Future<bool> postLoginAction(LoginModel loginModel, {String? mobile}) async {
     var accessToken =
         AccessTokenModel.fromJson(JwtDecoder.decode(loginModel.accessToken));
@@ -187,6 +195,8 @@ class AuthController extends GetxController
     errorMessage.value = "";
     isLoading.value = false;
     update();
+
+    await Future.delayed(const Duration(milliseconds: 100));
     _authStateManager.refreshAuthState();
 
     return false;

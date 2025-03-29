@@ -2,17 +2,35 @@ import 'package:intl/intl.dart';
 
 class DateTimeHelper {
   static String durationFormat(Duration dur) {
+    // Calculate years, months, days, etc.
     int days = dur.inDays;
+
+    // Calculate years (approximate)
+    int years = days ~/ 365;
+    days = days % 365;
+
+    // Calculate months (approximate)
+    int months = days ~/ 30;
+    days = days % 30;
+
+    // Calculate remaining time units
     int hours = dur.inHours.remainder(24);
     int minutes = dur.inMinutes.remainder(60);
     int seconds = dur.inSeconds.remainder(60);
 
+    // Build parts list
     List<String> parts = [];
+    if (years > 0) parts.add("${years}y");
+    if (months > 0) parts.add("${months}m");
     if (days > 0) parts.add("${days}d");
     if (hours > 0) parts.add("${hours}h");
-    if (minutes > 0) parts.add("${minutes}m");
+    if (minutes > 0) parts.add("${minutes}min");
     if (seconds > 0) parts.add("${seconds}s");
 
+    // Return empty string if no parts (shouldn't happen, but just in case)
+    if (parts.isEmpty) return "0s";
+
+    // Return first two parts
     return parts.take(2).join(" ");
   }
 

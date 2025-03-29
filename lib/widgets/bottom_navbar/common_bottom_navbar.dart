@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
-import 'package:picapool/screens/alerts/alertsPage.dart';
+import 'package:picapool/screens/alerts/alerts_page.dart';
 import 'package:picapool/screens/chats/chat_homeScreen.dart';
 import 'package:picapool/screens/home/home_screen.dart';
 import 'package:picapool/screens/middle_button/middle_button.dart';
@@ -11,12 +11,32 @@ import 'package:picapool/screens/profile_page/profile_page.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/utils/theme.dart';
 
+class NavbarConfig {
+  static const List<String> iconPaths = [
+    'assets/bottombar/Home1.svg',
+    'assets/bottombar/chats.svg',
+    'assets/bottombar/alert.svg',
+    'assets/bottombar/settings.svg',
+  ];
+
+  static const List<String> activeIconPaths = [
+    'assets/bottombar/Home1_active.svg',
+    'assets/bottombar/chats_active.svg',
+    'assets/bottombar/alert_active.svg',
+    'assets/bottombar/settings_active.svg',
+  ];
+
+  static const List<String> titles = [
+    'Home',
+    'Chats',
+    'Alerts',
+    'Settings',
+  ];
+}
+
 class NewBottomBar extends StatefulWidget {
   final int currentIndex;
-  const NewBottomBar({
-    Key? key,
-    this.currentIndex = 0,
-  }) : super(key: key);
+  const NewBottomBar({Key? key, this.currentIndex = 0}) : super(key: key);
 
   @override
   State<NewBottomBar> createState() => _NewBottomBarState();
@@ -24,64 +44,47 @@ class NewBottomBar extends StatefulWidget {
 
 class _NewBottomBarState extends State<NewBottomBar> {
   int _selectedIndex = 0;
-  // double height = Platform.isAndroid ? 70 : 100;
+
   late TagController _tagController;
 
   final List<Widget> _screens = [
     const HomeScreen(),
     const MyChatsPage(),
-    // ProductsHomepage(currentIndex: 1),
     const AlertsPage(),
     const ProfileScreen(),
-  ];
-
-  final List<String> _iconPaths = [
-    'assets/bottombar/Home1.svg',
-    'assets/bottombar/chats.svg',
-    'assets/bottombar/alert.svg',
-    'assets/bottombar/settings.svg',
-  ];
-
-  final List<String> _activeIconPaths = [
-    'assets/bottombar/Home1_active.svg',
-    'assets/bottombar/chats_active.svg',
-    'assets/bottombar/alert_active.svg',
-    'assets/bottombar/settings_active.svg',
-  ];
-
-  final List<String> _titles = [
-    'Home',
-    'Chats',
-    'Alerts',
-    'Settings',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
-      extendBody: true,
-      floatingActionButton: SizedBox(
-        width: 70,
-        height: 70,
-        child: FittedBox(
-          child: FloatingActionButton(
-            elevation: 0,
-            onPressed: () {
-              Get.to(() => const PoolOffersScreen());
-            },
-            backgroundColor: AppTheme.currentTheme.primaryColor,
-            shape: const CircleBorder(),
-            child: Transform(
-              transform: Matrix4.translationValues(0, 2, 0),
-              child: const SvgIcon(
-                "assets/bottombar/live.svg",
-                // Size of the center icon
-              ),
-            ),
-          ),
-        ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
       ),
+      extendBody: true,
+      floatingActionButton: (_selectedIndex == 0)
+          ? SizedBox(
+              width: 70,
+              height: 70,
+              child: FittedBox(
+                child: FloatingActionButton(
+                  elevation: 0,
+                  onPressed: () {
+                    Get.to(() => const PoolOffersScreen());
+                  },
+                  backgroundColor: AppTheme.currentTheme.primaryColor,
+                  shape: const CircleBorder(),
+                  child: Transform(
+                    transform: Matrix4.translationValues(0, 2, 0),
+                    child: const SvgIcon(
+                      "assets/bottombar/live.svg",
+                      // Size of the center icon
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -92,7 +95,8 @@ class _NewBottomBarState extends State<NewBottomBar> {
           children: [
             _buildNavItem(0),
             _buildNavItem(1),
-            const SizedBox(width: 10), // The space for the center icon
+            if (_selectedIndex == 0)
+              const SizedBox(width: 70), // The space for the center icon
             _buildNavItem(2),
             _buildNavItem(3),
           ],
@@ -104,10 +108,13 @@ class _NewBottomBarState extends State<NewBottomBar> {
   @override
   initState() {
     super.initState();
+
+    _selectedIndex = widget.currentIndex;
+
     listenNotification();
+
     Get.put(TagController());
     _tagController = Get.find<TagController>();
-    _tagController.subscribeToTopics();
   }
 
   listenNotification() {
@@ -231,41 +238,45 @@ class _NewBottomBarState extends State<NewBottomBar> {
   }
 
   Widget _buildNavItem(int index) {
-    bool isActive = index == _selectedIndex;
+    final bool isActive = index == _selectedIndex;
 
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            isActive ? _activeIconPaths[index] : _iconPaths[index],
-            width: 24,
-            height: 24,
-            fit: BoxFit.cover,
-            colorFilter: !isActive
-                ? ColorFilter.mode(
-                    AppTheme.currentTheme.hintColor,
-                    BlendMode.srcIn,
-                  )
-                : null,
-          ),
-          Text(
-            _titles[index],
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: isActive
-                      ? const Color(0xffFF8D41)
-                      : AppTheme.currentTheme.hintColor,
-                ),
-          ),
-        ],
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _handleTabChange(index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              isActive
+                  ? NavbarConfig.activeIconPaths[index]
+                  : NavbarConfig.iconPaths[index],
+              width: 24,
+              height: 24,
+              fit: BoxFit.cover,
+              colorFilter: !isActive
+                  ? ColorFilter.mode(
+                      AppTheme.currentTheme.hintColor,
+                      BlendMode.srcIn,
+                    )
+                  : null,
+            ),
+            Text(
+              NavbarConfig.titles[index],
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: isActive
+                        ? const Color(0xffFF8D41)
+                        : AppTheme.currentTheme.hintColor,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  void _handleTabChange(int index) {
+    if (mounted) {
+      setState(() => _selectedIndex = index);
+    }
   }
 }

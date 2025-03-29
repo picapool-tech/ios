@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/common/values/values.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
@@ -9,9 +8,9 @@ import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/tag_model.dart';
+import 'package:picapool/screens/alerts/widgets/category_button.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/date_time_helper.dart';
-import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/loading/offer_loading.dart';
 
 class AlertsPage extends StatefulWidget {
@@ -21,56 +20,6 @@ class AlertsPage extends StatefulWidget {
 
   @override
   State<AlertsPage> createState() => _AlertsPageState();
-}
-
-class CategoryButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final String image;
-  final String assetImage;
-  final VoidCallback onTap;
-
-  const CategoryButton({
-    super.key,
-    required this.label,
-    required this.image,
-    required this.onTap,
-    this.selected = false,
-    this.assetImage = "",
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: selected ? Colors.white : Colors.black,
-          backgroundColor:
-              selected ? AppTheme.currentTheme.primaryColor : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-        onPressed: onTap,
-        icon: (assetImage.isNotEmpty)
-            ? Image.asset(assetImage, width: 20, height: 20)
-            : CachedNetworkImage(
-                imageUrl: image,
-                width: 20,
-                height: 20,
-                // color: selected ? Colors.white : null,
-                // colorBlendMode: BlendMode.multiply,
-              ),
-        label: Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _AlertsPageState extends State<AlertsPage> {

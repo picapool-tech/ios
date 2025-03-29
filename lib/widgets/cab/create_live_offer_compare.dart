@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/utils/date_time_utils.dart';
 
 
@@ -15,6 +16,74 @@ class CreateLiveOffer extends StatefulWidget {
 
   @override
   State<CreateLiveOffer> createState() => _CreateLiveOfferState();
+}
+
+class LocationSearchDelegate extends SearchDelegate<Prediction> {
+  final GoogleMapsPlaces places;
+
+  LocationSearchDelegate({required this.places});
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, Prediction());
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return buildSuggestions(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return FutureBuilder<PlacesAutocompleteResponse>(
+      future: places.autocomplete(
+        query,
+        components: [Component(Component.country, "IN")],
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final predictions = snapshot.data!.predictions;
+
+        return ListView.builder(
+          itemCount: predictions.length,
+          itemBuilder: (context, index) {
+            final prediction = predictions[index];
+            return ListTile(
+              leading: const Icon(Icons.location_on),
+              title: Text(prediction.description ?? ''),
+              onTap: () {
+                close(context, prediction);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class _CreateLiveOfferState extends State<CreateLiveOffer> {
@@ -28,216 +97,17 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   
   DateTime? _selectedDateTime;
   DateTime? _defaultExpiryDate;
-  String updateDefaultExpiryDate() {
-  if (_selectedDateTime != null) {
-    setState(() {
-    _defaultExpiryDate = _selectedDateTime!.add(const Duration(days: 3));
-    });
-  } else {
-    _defaultExpiryDate = null; // Handle case where _selectedDate is null
-  }
-  return DateTimeUtils.formatDateWithZone(_defaultExpiryDate!);
-}
-
   bool isLoading = false;
+
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
-  
   // Location data
   LatLng? _fromLatLng;
+  
   LatLng? _toLatLng;
   String? _fromAddress;
   String? _toAddress;
   bool _isSearchingFrom = false; // Track which field is being searched
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeLocation();
-  }
-
-  @override
-  void dispose() {
-    _fromController.dispose();
-    _toController.dispose();
-    _mapController?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _searchPlaces(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        _predictions.clear();
-      });
-      return;
-    }
-
-    try {
-      var response = await _places.autocomplete(
-        query,
-        components: [Component(Component.country, "IN")],
-      );
-
-      if (response.isOkay) {
-        setState(() {
-          _predictions = response.predictions;
-        });
-      } else {
-        debugPrint(response.errorMessage);
-      }
-    } catch (e) {
-      debugPrint('Error searching places: $e');
-    }
-  }
-
-  Future<void> _selectPlace(Prediction prediction) async {
-    final placeId = prediction.placeId;
-    if (placeId == null) return;
-
-    setState(() => isLoading = true);
-    try {
-      var details = await _places.getDetailsByPlaceId(placeId);
-      final location = details.result.geometry?.location;
-      if (location != null) {
-        final newPosition = LatLng(location.lat, location.lng);
-        
-        setState(() {
-          if (_isSearchingFrom) {
-            _fromLatLng = newPosition;
-            _fromAddress = prediction.description;
-            _fromController.text = prediction.description ?? "";
-          } else {
-            _toLatLng = newPosition;
-            _toAddress = prediction.description;
-            _toController.text = prediction.description ?? "";
-          }
-          _predictions.clear();
-        });
-
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(newPosition, 15),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error selecting place: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to get location details')),
-      );
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
-
-  Widget _buildLocationField({
-    required TextEditingController controller,
-    required String label,
-    required bool isFromField,
-  }) {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        readOnly: true, // Make it read-only since we're using SearchDelegate
-        decoration: InputDecoration(
-          hintText: 'Search for $label location...',
-          hintStyle: const TextStyle(
-            color: Colors.grey,
-            fontFamily: 'MontserratR',
-            fontSize: 16,
-          ),
-          border: InputBorder.none,
-          prefixIcon: const Icon(Icons.location_on, color: Colors.orange),
-        ),
-        onTap: () async {
-          _isSearchingFrom = isFromField;
-          final Prediction? result = await showSearch<Prediction>(
-            context: context,
-            delegate: LocationSearchDelegate(places: _places),
-          );
-          if (result != null) {
-            _selectPlace(result);
-          }
-        },
-      ),
-    );
-  }
-
-  Future<void> _initializeLocation() async {
-    await locationController.getLocation();
-    if (locationController.state.value.location != null) {
-      setState(() {
-        _currentPosition = LatLng(
-          locationController.state.value.location!.latitude,
-          locationController.state.value.location!.longitude,
-        );
-        _fromLatLng = _currentPosition; // Set initial pickup location
-        _fromController.text = locationController.state.value.locationName?.locality ?? '';
-        _fromAddress = _fromController.text;
-      });
-    }
-  }
-
-  bool _validateInputs() {
-    if (_fromLatLng == null || _toLatLng == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both pickup and drop-off locations')),
-      );
-      return false;
-    }
-    if (_selectedDateTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a date and time')),
-      );
-      return false;
-    }
-    if (_selectedDateTime!.isBefore(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a future date and time')),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  void _handleCreateLiveOffer() {
-    if (!_validateInputs()) return;
-
-    final payload = CreateLiveOfferPayload(
-      createdAt: DateTimeUtils.formatDateWithZone(_selectedDateTime ?? DateTime.now()),
-      expiryAt: updateDefaultExpiryDate(),
-      fromAddress: _fromAddress ?? "empty",
-      seats: 3,
-      toAddress: _toAddress ?? "empty",
-    );
-
-    liveOfferController.createLiveOffer(payload).then((_) {
-      if (liveOfferController.createLiveOfferState == CreateLiveOfferState.created) {
-        // Get the first chat ID from the response
-        final chatId = liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
-        // if (chatId != null) {
-          // Navigator.push(
-          //   context, 
-          //   MaterialPageRoute(
-          //     builder: (context) => ChatPage(),
-          //   ),
-          // );
-        // }
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -397,72 +267,205 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _fromController.dispose();
+    _toController.dispose();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocation();
+  }
+
+  String updateDefaultExpiryDate() {
+  if (_selectedDateTime != null) {
+    setState(() {
+    _defaultExpiryDate = _selectedDateTime!.add(const Duration(days: 3));
+    });
+  } else {
+    _defaultExpiryDate = null; // Handle case where _selectedDate is null
+  }
+  return DateTimeUtils.formatDateWithZone(_defaultExpiryDate!);
 }
 
-class LocationSearchDelegate extends SearchDelegate<Prediction> {
-  final GoogleMapsPlaces places;
-
-  LocationSearchDelegate({required this.places});
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
+  Widget _buildLocationField({
+    required TextEditingController controller,
+    required String label,
+    required bool isFromField,
+  }) {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        readOnly: true, // Make it read-only since we're using SearchDelegate
+        decoration: InputDecoration(
+          hintText: 'Search for $label location...',
+          hintStyle: const TextStyle(
+            color: Colors.grey,
+            fontFamily: 'MontserratR',
+            fontSize: 16,
+          ),
+          border: InputBorder.none,
+          prefixIcon: const Icon(Icons.location_on, color: Colors.orange),
+        ),
+        onTap: () async {
+          _isSearchingFrom = isFromField;
+          final Prediction? result = await showSearch<Prediction>(
+            context: context,
+            delegate: LocationSearchDelegate(places: _places),
+          );
+          if (result != null) {
+            _selectPlace(result);
+          }
         },
       ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, Prediction());
-      },
     );
   }
 
-  @override
-  Widget buildResults(BuildContext context) {
-    return buildSuggestions(context);
+  void _handleCreateLiveOffer() {
+    if (!_validateInputs()) return;
+
+    final payload = CreateLiveOfferPayload(
+      createdAt: DateTimeUtils.formatDateWithZone(_selectedDateTime ?? DateTime.now()),
+      expiryAt: updateDefaultExpiryDate(),
+      fromAddress: _fromAddress ?? "empty",
+      seats: 3,
+      toAddress: _toAddress ?? "empty",
+      from: VicinityLocation(lat: _fromLatLng!.latitude, long: _fromLatLng!.longitude),
+      to: VicinityLocation(lat: _toLatLng!.latitude, long: _toLatLng!.longitude),
+    );
+
+    liveOfferController.createLiveOffer(payload).then((_) {
+      if (liveOfferController.createLiveOfferState == CreateLiveOfferState.created) {
+        // Get the first chat ID from the response
+        final chatId = liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
+        // if (chatId != null) {
+          // Navigator.push(
+          //   context, 
+          //   MaterialPageRoute(
+          //     builder: (context) => ChatPage(),
+          //   ),
+          // );
+        // }
+      }
+    });
   }
 
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return FutureBuilder<PlacesAutocompleteResponse>(
-      future: places.autocomplete(
+  Future<void> _initializeLocation() async {
+    await locationController.getLocation();
+    if (locationController.state.value.location != null) {
+      setState(() {
+        _currentPosition = LatLng(
+          locationController.state.value.location!.latitude,
+          locationController.state.value.location!.longitude,
+        );
+        _fromLatLng = _currentPosition; // Set initial pickup location
+        _fromController.text = locationController.state.value.locationName?.locality ?? '';
+        _fromAddress = _fromController.text;
+      });
+    }
+  }
+
+  Future<void> _searchPlaces(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _predictions.clear();
+      });
+      return;
+    }
+
+    try {
+      var response = await _places.autocomplete(
         query,
         components: [Component(Component.country, "IN")],
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+      );
 
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      if (response.isOkay) {
+        setState(() {
+          _predictions = response.predictions;
+        });
+      } else {
+        debugPrint(response.errorMessage);
+      }
+    } catch (e) {
+      debugPrint('Error searching places: $e');
+    }
+  }
 
-        final predictions = snapshot.data!.predictions;
+  Future<void> _selectPlace(Prediction prediction) async {
+    final placeId = prediction.placeId;
+    if (placeId == null) return;
 
-        return ListView.builder(
-          itemCount: predictions.length,
-          itemBuilder: (context, index) {
-            final prediction = predictions[index];
-            return ListTile(
-              leading: const Icon(Icons.location_on),
-              title: Text(prediction.description ?? ''),
-              onTap: () {
-                close(context, prediction);
-              },
-            );
-          },
+    setState(() => isLoading = true);
+    try {
+      var details = await _places.getDetailsByPlaceId(placeId);
+      final location = details.result.geometry?.location;
+      if (location != null) {
+        final newPosition = LatLng(location.lat, location.lng);
+        
+        setState(() {
+          if (_isSearchingFrom) {
+            _fromLatLng = newPosition;
+            _fromAddress = prediction.description;
+            _fromController.text = prediction.description ?? "";
+          } else {
+            _toLatLng = newPosition;
+            _toAddress = prediction.description;
+            _toController.text = prediction.description ?? "";
+          }
+          _predictions.clear();
+        });
+
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(newPosition, 15),
         );
-      },
-    );
+      }
+    } catch (e) {
+      debugPrint('Error selecting place: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to get location details')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  bool _validateInputs() {
+    if (_fromLatLng == null || _toLatLng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select both pickup and drop-off locations')),
+      );
+      return false;
+    }
+    if (_selectedDateTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a date and time')),
+      );
+      return false;
+    }
+    if (_selectedDateTime!.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a future date and time')),
+      );
+      return false;
+    }
+    return true;
   }
 }

@@ -62,6 +62,10 @@ class Product {
     );
   }
 
+  bool isProductSold() {
+    return attributes?['sold'] ?? false;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -113,10 +113,14 @@ class LoginScreenImp extends StatelessWidget {
             const SizedBox(
               height: PicaValues.largeSpacing,
             ),
-            PicaPrimaryButton(
-              text: "Send Otp",
-              onPressed: _sendOtp,
-              isLoading: authController.getLoadingState(AuthLoadingEnum.phone),
+            SizedBox(
+              width: double.infinity,
+              child: PicaPrimaryButton(
+                text: "Send Otp",
+                onPressed: _sendOtp,
+                isLoading:
+                    authController.getLoadingState(AuthLoadingEnum.phone),
+              ),
             ),
             const SizedBox(
               height: PicaValues.largeSpacing,

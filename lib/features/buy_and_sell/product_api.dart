@@ -9,12 +9,6 @@ import 'package:picapool/models/offer_search_request_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/models/response_model.dart';
 
-List<Product> parseItemFromResponse(dynamic data) {
-  return data.data
-      .map<Product>((product) => Product.fromJson(product))
-      .toList();
-}
-
 class ProductApi with PicapoolApiClass {
   FutureEither<Product> createProduct(
       ProductRequestModel productRequestModel) async {
@@ -73,7 +67,7 @@ class ProductApi with PicapoolApiClass {
         (responseModel) async {
           debugPrint("searchAllProducts: ${responseModel.data}");
           List<Offer> listOfProductsInOffer =
-              await compute(parseItemFromResponse, responseModel);
+              await responseModel.parseDataList<Offer>(Offer.fromJson);
           return right(listOfProductsInOffer);
         },
       );
@@ -87,14 +81,22 @@ class ProductApi with PicapoolApiClass {
     }
   }
 
-  static List<Offer> parseItemFromResponse(ResponseModel data) {
-    try {
-      return data.data
-          .map<Offer>((product) => Offer.fromJson(product))
-          .toList();
-    } catch (e) {
-      debugPrint("GOT ERROR IN parseItemFromResponse : $e");
-      return [];
-    }
+  FutureEither<Product> updateProduct({
+    required Product updatedProduct,
+  }) async {
+    final result = await api.makeRequest(
+      enpoint: APIEndpoints.updateProduct,
+      method: RequestMethod.patch,
+      body: {
+        'id': updatedProduct.id,
+        'userId': updatedProduct.userId,
+        'attributes': updatedProduct.attributes,
+      },
+    );
+
+    return result.fold((error) => left(error), (responseModel) async {
+      var product = await responseModel.parseData<Product>(Product.fromJson);
+      return right(product);
+    });
   }
 }

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/empty_states.dart';
-import 'package:picapool/screens/buy_and_sell/features/product_details/product_details.dart';
-import 'package:picapool/utils/theme.dart';
+import 'package:picapool/screens/buy_and_sell/features/user_listing/widgets/user_item_listing_item.dart';
 
 class UserItemListingDetails extends StatefulWidget {
   const UserItemListingDetails({super.key});
@@ -59,78 +57,8 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
           itemBuilder: (context, index) {
             var offer = buyOffers[index];
             var product = offer.products!.first;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ExpansionTile(
-                  title: Text(offer.name),
-                  subtitle: Text(
-                      '₹${offer.products!.first.offerPrice!.toStringAsFixed(2)}'),
-                  childrenPadding: const EdgeInsets.all(5),
-                  collapsedShape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  backgroundColor:
-                      AppTheme.currentTheme.scaffoldBackgroundColor,
-                  collapsedBackgroundColor:
-                      AppTheme.currentTheme.scaffoldBackgroundColor,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(product.description),
-                          const SizedBox(height: 8.0),
-                          Text(
-                              'Condition: ${product.attributes?['productCondition']}'),
-                          const SizedBox(height: 8.0),
-                          Center(
-                            child: TextButton(
-                              onPressed: () {
-                                Get.to(
-                                  () => ProductDetails(
-                                    product: product,
-                                    offer: offer,
-                                    offersController: controller,
-                                  ),
-                                );
-                              },
-                              child: const Text("More details"),
-                            ),
-                          ),
-                          Center(
-                            child: FilledButton(
-                              onPressed: (!offer.isOfferExpired())
-                                  ? () async {
-                                      showPicaLoadingDialog();
-                                      var updatedOffer =
-                                          await _controller.updateOffer(
-                                              updatedOffer: offer.copyWith(
-                                                  expiryAt: DateTime.now()));
-                                      hidePicaDialog();
-                                      if (updatedOffer != null) {
-                                        await _controller
-                                            .getAllUserCreatedOffer();
-                                      }
-                                    }
-                                  : null,
-                              child: (offer.isOfferExpired())
-                                  ? const Text("PRODUCT SOLD")
-                                  : const Text("Mark product as sold"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12.0), // Added space after each item
-              ],
-            );
+
+            return UserItemListingItem(offer: offer, product: product);
           },
         );
       },

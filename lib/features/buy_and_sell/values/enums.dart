@@ -18,5 +18,6 @@ enum ProductConditionEnums {
 enum ProductLoadingEnums {
   getAllProducts,
   searchProducts,
-  createProduct;
+  createProduct,
+  updateProduct;
 }

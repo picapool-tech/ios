@@ -529,7 +529,7 @@ Please confirm if I can proceed
   }
 
   FutureVoid _sendForCab() async {
-    var dateTime = widget.liveOffer!.createdAt.toUtc();
+    var dateTime = widget.liveOffer!.createdAt;
     final date = DateTimeHelper.formatDateTime(dateTime, "dd/MM/yyyy hh:mm a");
     final formattedString = """
 Hi!

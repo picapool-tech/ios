@@ -1,12 +1,12 @@
 import 'dart:io';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/controllers/brand_controller.dart';
 import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
@@ -41,19 +41,18 @@ void main() async {
     name: "new-picapool",
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  await checkingForDynamicLink();
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   await Env.load();
 
   Get.put(StorageController(), permanent: true);
   Get.put(PicapoolApi(), permanent: true);
-
   Get.put(NetworkController.getInstance(), permanent: true);
   Get.put(AuthStateManager(), permanent: true);
+
   Get.lazyPut(() => UserController(), fenix: true);
   Get.lazyPut(() => AuthController(), fenix: true);
-  Get.lazyPut(() => LocationController(), fenix: true);
+  Get.put(LocationController());
   Get.lazyPut(() => VicinityController(), fenix: true);
   Get.lazyPut(() => OffersController(), fenix: true);
   Get.lazyPut(() => ChatController(), fenix: true);
@@ -66,10 +65,14 @@ void main() async {
   Get.lazyPut(() => FormController(), fenix: true);
   Get.lazyPut(() => CategoryController(), fenix: true);
   Get.lazyPut(() => PartnerController(), fenix: true);
+  Get.lazyPut(() => TagController(), fenix: true);
 
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
   NotificationService().handleTokenGeneration();
+
+  await checkingForDynamicLink();
+
   runApp(const MyApp());
 }
 
@@ -89,15 +92,15 @@ Future<void> checkingForDynamicLink() async {
   });
 }
 
-void handleDynamicLink(PendingDynamicLinkData dynamicLinkData) {
-  showPicaAlertDialog(
-    title: "Dynamicy Link Detected",
-    message: dynamicLinkData.link.toString(),
-    confirmText: "Great",
-    onConfirm: () {
-      Get.back();
-    },
-  );
+void handleDynamicLink(PendingDynamicLinkData? dynamicLinkData) {
+  if (Get.context == null) {
+    debugPrint(
+        "Application has not been started yet but here is link ${dynamicLinkData?.link.toString()}");
+    return;
+  }
+
+  debugPrint(
+      "Application has not been started yet but here is link ${dynamicLinkData?.link.toString()}");
 }
 
 @pragma('vm:entry-point')
@@ -144,8 +147,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final StorageController _storageController = Get.find<StorageController>();
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

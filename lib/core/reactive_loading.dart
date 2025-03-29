@@ -13,6 +13,15 @@ mixin ReactiveLoading<T> {
     return _loadingStates[buttonId]!;
   }
 
+  
+  void initializeLoadingStates(List<T> states) {
+    for (var state in states) {
+      if (!_loadingStates.containsKey(state)) {
+        _loadingStates[state] = false.obs;
+      }
+    }
+  }
+
   bool isloadingStates(T buttonId) {
     return _loadingStates[buttonId]?.value ?? false;
   }

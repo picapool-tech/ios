@@ -12,6 +12,7 @@ class APIEndpoints {
   static const String getAllProducts = "/product";
   static const String searchProducts = "/product/search";
   static const String createProduct = "/product";
+  static const String updateProduct = "/product/update";
   static const String userLogin = "/auth/login/User";
 
   static const String updateAuth = "/auth/update";

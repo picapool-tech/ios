@@ -15,7 +15,6 @@ import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
-import 'package:picapool/utils/date_time_utils.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
 
@@ -55,6 +54,7 @@ Widget _buildEmptyState() {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(Icons.no_transfer, size: 48, color: Colors.grey[400]),
         const SizedBox(height: 16),
@@ -174,7 +174,7 @@ class LocationSearchDelegate extends SearchDelegate<Prediction> {
 
   Widget _buildSearchResults() {
     if (query.length < 3) {
-      return Center(child: Text('Enter at least 3 characters'));
+      return const Center(child: Text('Enter at least 3 characters'));
     }
 
     return FutureBuilder<PlacesAutocompleteResponse>(
@@ -187,7 +187,7 @@ class LocationSearchDelegate extends SearchDelegate<Prediction> {
         if (!snapshot.hasData ||
             !snapshot.data!.isOkay ||
             snapshot.data!.predictions.isEmpty) {
-          return Center(child: Text('No results found'));
+          return const Center(child: Text('No results found'));
         }
 
         final predictions = snapshot.data!.predictions;
@@ -343,35 +343,57 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            "Available Rides",
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: "MontserratSB"),
+          Row(
+            children: [
+              const Text(
+                "Available Rides",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Color(0xffFF8D41)),
+                onPressed: () {
+                  _searchOffers();
+                  // Show a small confirmation
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Refreshing available rides...'),
+                      duration: Duration(seconds: 1),
+                      backgroundColor: Color(0xffFF8D41),
+                    ),
+                  );
+                },
+                tooltip: 'Refresh available rides',
+                splashRadius: 20,
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           GetBuilder<LiveOfferController>(
             builder: (liveOffersController) {
-              return liveOffersController.searchLiveOfferState ==
-                          SearchLiveOfferState.created &&
-                      liveOffersController.searchCabsList != null &&
-                      liveOffersController.searchCabsList!.isNotEmpty
-                  ? Expanded(
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        itemCount:
-                            liveOffersController.searchCabsList?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          final offer =
-                              liveOffersController.searchCabsList![index];
-                          return _buildOfferCard(offer, context);
-                        },
-                      ),
-                    )
-                  : _buildEmptyState();
+              if (liveOffersController.searchLiveOfferState ==
+                      SearchLiveOfferState.created &&
+                  liveOffersController.searchCabsList != null &&
+                  liveOffersController.searchCabsList!.isNotEmpty) {
+                return Expanded(
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    shrinkWrap: true,
+                    itemCount: liveOffersController.searchCabsList?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final offer = liveOffersController.searchCabsList![index];
+                      return _buildOfferCard(offer, context);
+                    },
+                  ),
+                );
+              } else {
+                return Expanded(child: _buildEmptyState());
+              }
             },
           ),
         ],
@@ -725,15 +747,13 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     if (selectedFromLocation == null) return;
 
     // Format the selected date with time to ISO string
-    final startTimeISO = DateTimeUtils.formatDateWithZone(
-      DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        DateTime.now().hour,
-        DateTime.now().minute,
-      ),
-    );
+    final startTimeISO = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      DateTime.now().hour,
+      DateTime.now().minute,
+    ).toUtc().toIso8601String();
 
     final SearchCabsPayload payload = SearchCabsPayload(
       from: From(

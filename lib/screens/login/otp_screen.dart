@@ -165,7 +165,8 @@ class _OtpScreenState extends State<OtpScreen> {
                       builder: (context, value, child) {
                         return Transform.scale(
                           scale: value,
-                          child: Container(
+                          child: 
+                          Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.green.shade50,

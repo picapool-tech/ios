@@ -284,10 +284,13 @@ class _RequestVicinityState extends State<RequestVicinity> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-                child: PicaPrimaryButton(
-                  text: "Start pooling",
-                  onPressed: activeButton ? createVicinity : null,
-                  isLoading: _vicinityController.isLoading,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: PicaPrimaryButton(
+                    text: "Start pooling",
+                    onPressed: activeButton ? createVicinity : null,
+                    isLoading: _vicinityController.isLoading,
+                  ),
                 ),
               ),
             ],

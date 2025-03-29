@@ -156,6 +156,12 @@ class ProductsController extends GetxController
     }
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    initializeLoadingStates(ProductLoadingEnums.values);
+  }
+
   void removeSorting() {
     _currentSortOption.value = null;
     _sortingSearchedProducts.assignAll(_searchedProducts);
@@ -327,6 +333,31 @@ class ProductsController extends GetxController
 
     _sortingSearchedProducts.value = sortedProducts;
     update();
+  }
+
+  Future<Product?> updateProduct({required Product updatedProduct}) async {
+    startLoading(ProductLoadingEnums.updateProduct);
+    update();
+    try {
+      var response =
+          await _productApi.updateProduct(updatedProduct: updatedProduct);
+      return response.fold(
+        (error) {
+          debugPrint(
+              "Some error occured in update product method controller : ${error.message}");
+          return null;
+        },
+        (product) {
+          return product;
+        },
+      );
+    } catch (e) {
+      debugPrint("This is an error in the product update method");
+      return null;
+    } finally {
+      stopLoading(ProductLoadingEnums.updateProduct);
+      update();
+    }
   }
 
   void _applySortOption(SortOption option) {

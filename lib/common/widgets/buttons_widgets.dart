@@ -41,6 +41,8 @@ class PicaPrimaryButton extends StatelessWidget {
   final RxBool isLoading;
   final bool isSmall;
   final Color? color;
+  final Widget? icon; // Add icon parameter
+  final EdgeInsetsGeometry? padding; // Add padding option for more flexibility
 
   const PicaPrimaryButton({
     super.key,
@@ -49,42 +51,30 @@ class PicaPrimaryButton extends StatelessWidget {
     required this.isLoading,
     this.isSmall = false,
     this.color,
+    this.icon, // New parameter
+    this.padding,
   });
-
-  Size get getSize => const Size(320, 100);
 
   @override
   Widget build(BuildContext context) {
     final String uniqueId = 'button_${text.hashCode}';
-    return GetBuilder<ReactiveButtonHelper>(
-      init: ReactiveButtonHelper(isLoading),
-      id: uniqueId,
-      builder: (controller) => AnimatedContainer(
-          duration: const Duration(
-            milliseconds: 100,
-          ),
-          width: !isSmall ? double.infinity : 100,
-          child: controller.getLoading()
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : FilledButton(
-                  onPressed: onPressed,
-                  style: ButtonStyle(
-                    // Apply both size and color styling
-                    fixedSize: isSmall
-                        ? const WidgetStatePropertyAll(Size.fromWidth(100))
-                        : null,
-                    backgroundColor:
-                        color != null ? WidgetStatePropertyAll(color) : null,
-                  ),
-                  child: FittedBox(
-                    child: Text(
-                      text,
-                    ),
-                  ),
-                )),
-    );
+    return Obx(() {
+      if (isLoading.value) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+
+      return FilledButton.icon(
+        onPressed: onPressed,
+        style: ButtonStyle(
+          backgroundColor: color != null ? WidgetStatePropertyAll(color) : null,
+          padding: padding != null ? WidgetStatePropertyAll(padding) : null,
+        ),
+        label: Text(text),
+        icon: icon,
+      );
+    });
   }
 }
 
@@ -93,6 +83,9 @@ class PicaTextButton extends StatelessWidget {
   final void Function()? onPressed;
   final Color? color;
   final RxBool isLoading;
+  final Widget? icon; // Add icon parameter
+  final bool iconAfterText; // Add option to place icon after text
+  final EdgeInsetsGeometry? padding;
 
   const PicaTextButton({
     super.key,
@@ -100,6 +93,9 @@ class PicaTextButton extends StatelessWidget {
     required this.onPressed,
     required this.isLoading,
     this.color,
+    this.icon, // New parameter
+    this.iconAfterText = false, // Default: icon before text
+    this.padding,
   });
 
   @override
@@ -112,25 +108,23 @@ class PicaTextButton extends StatelessWidget {
             child: CircularProgressIndicator(),
           );
         }
-        return buttonContent(context);
-      }),
-    );
-  }
-
-  Widget buttonContent(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: Theme.of(context).textButtonTheme.style?.copyWith(
-            foregroundColor: WidgetStatePropertyAll(
-              AppTheme.currentTheme.colorScheme.onPrimary,
+        return TextButton.icon(
+          onPressed: onPressed,
+          style: Theme.of(context).textButtonTheme.style?.copyWith(
+              foregroundColor: WidgetStatePropertyAll(
+                AppTheme.currentTheme.colorScheme.onPrimary,
+              ),
+              padding:
+                  padding != null ? WidgetStatePropertyAll(padding) : null),
+          label: Text(
+            text,
+            style: TextStyle(
+              color: AppTheme.currentTheme.primaryColor,
             ),
           ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: AppTheme.currentTheme.primaryColor,
-        ),
-      ),
+          icon: icon,
+        );
+      }),
     );
   }
 }

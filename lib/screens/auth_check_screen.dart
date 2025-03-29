@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/features/auth/auth_state_manager.dart';
+import 'package:picapool/screens/splash_screen/splash_screen.dart';
 
 class AuthCheckScreen extends StatelessWidget {
   final AuthStateManager _authStateManager = Get.find<AuthStateManager>();
@@ -9,15 +10,15 @@ class AuthCheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<AuthStateManager>(initState: (state) {
+    return GetBuilder<AuthStateManager>(initState: (state) async {
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      );
       _authStateManager.refreshAuthState();
     }, builder: (controller) {
-      if (!_authStateManager.isInitialized) {
-        return Scaffold(
-          body: Center(
-            child: Image.asset("assets/images/ic_launcher.png"),
-          ),
-        );
+      if (!_authStateManager.isInitialized ||
+          controller.authState == AuthState.unknown) {
+        return const SplashScreen();
       }
 
       return _authStateManager.getAuthStateScreen();

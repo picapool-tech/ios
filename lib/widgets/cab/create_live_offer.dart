@@ -12,6 +12,7 @@ import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer_model.dart';
+import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 
 // Move the polyline decoding function outside of the class so it can be used in the isolate
@@ -290,6 +291,10 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   // Time Selection
   DateTime _selectedDateTime = DateTime.now().add(const Duration(minutes: 30));
   DateTime _defaultExpiryDate = DateTime.now().add(const Duration(days: 3));
+
+  // Active editing state to track which marker we're moving
+  bool _isEditingFromMarker = false;
+  bool _isEditingToMarker = false;
 
   @override
   Widget build(BuildContext context) {
@@ -576,27 +581,133 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   }
 
   Widget _buildMap() {
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: _currentPosition ?? _defaultPosition,
-        zoom: _defaultZoom,
-      ),
-      myLocationEnabled: true,
-      myLocationButtonEnabled: true,
-      compassEnabled: true,
-      zoomControlsEnabled: false,
-      mapToolbarEnabled: false,
-      onMapCreated: (GoogleMapController controller) {
-        _mapController = controller;
-        if (_currentPosition != null) {
-          controller.animateCamera(
-            CameraUpdate.newLatLngZoom(_currentPosition!, _defaultZoom),
-          );
-        }
-      },
-      markers: _buildMarkers(),
-      polylines: _buildPolylines(),
-      circles: _currentLocationCircle != null ? {_currentLocationCircle!} : {},
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: _currentPosition ?? _defaultPosition,
+            zoom: _defaultZoom,
+          ),
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false, // We'll add our own button
+          compassEnabled: true,
+          zoomControlsEnabled: false,
+          mapToolbarEnabled: false,
+          onTap: (LatLng position) {
+            // Show a dialog with location options
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              builder: (context) => Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Set Location',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'MontserratSB',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      leading:
+                          const Icon(Icons.location_on, color: Colors.green),
+                      title: const Text('Set as pickup point'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          _fromLatLng = position;
+                        });
+                        _handleMarkerDragEnd(true, position);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.location_on, color: Colors.red),
+                      title: const Text('Set as drop-off point'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          _toLatLng = position;
+                        });
+                        _handleMarkerDragEnd(false, position);
+                      },
+                    ),
+                    if (_locationController.state.value.location != null)
+                      ListTile(
+                        leading: const Icon(Icons.my_location,
+                            color: Color(0xffFF8D41)),
+                        title: const Text('Use my current location'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _setCurrentLocationAsPickup();
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+          onMapCreated: (GoogleMapController controller) {
+            _mapController = controller;
+            if (_currentPosition != null) {
+              controller.animateCamera(
+                CameraUpdate.newLatLngZoom(_currentPosition!, _defaultZoom),
+              );
+            }
+          },
+          markers: _buildMarkers(),
+          polylines: _buildPolylines(),
+          circles:
+              _currentLocationCircle != null ? {_currentLocationCircle!} : {},
+        ),
+        // Add a positioned my location button
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: FloatingActionButton(
+            backgroundColor: Colors.white,
+            tooltip: 'Use current location as pickup',
+            onPressed: () {
+              _moveToCurrentLocation();
+              _setCurrentLocationAsPickup();
+            },
+            child: const Icon(
+              Icons.my_location,
+              color: Color(0xffFF8D41),
+            ),
+          ),
+        ),
+        if (_fromLatLng != null || _toLatLng != null)
+          Positioned(
+            top: 8,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Text(
+                  'Long press and drag markers to adjust location',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xffFF8D41),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -608,10 +719,29 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
         Marker(
           markerId: const MarkerId('from'),
           position: _fromLatLng!,
+          draggable: true,
           icon:
               BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
           infoWindow:
               InfoWindow(title: _fromAddress?.split(',').first ?? 'Pickup'),
+          onDragStart: (_) {
+            // Show visual feedback when drag starts
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Adjusting pickup location...'),
+                duration: Duration(seconds: 1),
+                backgroundColor: Colors.green,
+              ),
+            );
+          },
+          onDrag: (newPosition) {
+            // Optional: Update position in real-time while dragging
+            // This creates smoother visual feedback during drag
+            setState(() {
+              _fromLatLng = newPosition;
+            });
+          },
+          onDragEnd: (newPosition) => _handleMarkerDragEnd(true, newPosition),
         ),
       );
     }
@@ -621,9 +751,27 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
         Marker(
           markerId: const MarkerId('to'),
           position: _toLatLng!,
+          draggable: true,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           infoWindow:
               InfoWindow(title: _toAddress?.split(',').first ?? 'Destination'),
+          onDragStart: (_) {
+            // Show visual feedback when drag starts
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Adjusting drop-off location...'),
+                duration: Duration(seconds: 1),
+                backgroundColor: Colors.red,
+              ),
+            );
+          },
+          onDrag: (newPosition) {
+            // Optional: Update position in real-time while dragging
+            setState(() {
+              _toLatLng = newPosition;
+            });
+          },
+          onDragEnd: (newPosition) => _handleMarkerDragEnd(false, newPosition),
         ),
       );
     }
@@ -867,6 +1015,14 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       fromAddress: _fromAddress ?? _fromController.text,
       toAddress: _toAddress ?? _toController.text,
       seats: 3, // Consider making this configurable
+      from: VicinityLocation(
+        lat: _fromLatLng!.latitude,
+        long: _fromLatLng!.longitude,
+      ),
+      to: VicinityLocation(
+        lat: _toLatLng!.latitude,
+        long: _toLatLng!.longitude,
+      ),
     );
 
     _liveOfferController.createLiveOffer(payload).then((_) {
@@ -881,13 +1037,13 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   }
 
   void _handleLiveOfferCreated() {
-    final chatId =
-        _liveOfferController.createLiveOfferResponse?.data?.chats?.first;
+    final chat =
+        _liveOfferController.createLiveOfferResponse?.data?.chats?.firstOrNull;
 
-    if (chatId != null && mounted) {
+    if (chat != null && mounted) {
       Get.off(
         () => ChatPage(
-          chat: chatId,
+          chat: chat,
           chatTitle:
               _liveOfferController.createLiveOfferResponse?.data?.fromAddress ??
                   "Chat",
@@ -898,8 +1054,10 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       );
     } else {
       if (mounted) {
-        _showError('Chat Unavailable',
-            'Your cab pool was created successfully, but the chat is not available.');
+        _showError(
+          'Chat Unavailable',
+          'Your cab pool was created successfully, but the chat is not available.',
+        );
       }
     }
   }
@@ -950,6 +1108,25 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     }
   }
 
+  Future<void> _handleMarkerDragEnd(
+      bool isFromMarker, LatLng newPosition) async {
+    setState(() {
+      if (isFromMarker) {
+        _fromLatLng = newPosition;
+      } else {
+        _toLatLng = newPosition;
+      }
+    });
+
+    // Get address for the new position
+    await _reverseGeocode(isFromMarker, newPosition);
+
+    // Recalculate route if both points exist
+    if (_fromLatLng != null && _toLatLng != null) {
+      await _getDirections();
+    }
+  }
+
   // Location methods
   Future<void> _initializeLocation() async {
     setState(() => _isLoading = true);
@@ -975,6 +1152,53 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       _showError('Location Error', 'Failed to get your location: $e');
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  void _moveToCurrentLocation() {
+    if (_currentPosition != null && _mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(_currentPosition!, _defaultZoom),
+      );
+    }
+  }
+
+  Future<void> _reverseGeocode(bool isFromMarker, LatLng position) async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?'
+              'latlng=${position.latitude},${position.longitude}'
+              '&key=AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
+          final formattedAddress = data['results'][0]['formatted_address'];
+
+          setState(() {
+            if (isFromMarker) {
+              _fromAddress = formattedAddress;
+              _fromController.text = formattedAddress;
+            } else {
+              _toAddress = formattedAddress;
+              _toController.text = formattedAddress;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error reverse geocoding: $e');
+      // Still update UI with coordinate-based text if geocoding fails
+      final coordText =
+          '${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}';
+      setState(() {
+        if (isFromMarker) {
+          _fromController.text = 'Custom location ($coordText)';
+        } else {
+          _toController.text = 'Custom location ($coordText)';
+        }
+      });
     }
   }
 

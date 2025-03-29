@@ -18,7 +18,7 @@ void showPicaModelBottomSheet({
       ),
     ),
     builder: (context) {
-      return child.paddingOnly(bottom: 10);
+      return child.marginOnly(bottom: 20);
     },
   );
 }

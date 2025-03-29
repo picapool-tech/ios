@@ -268,6 +268,12 @@ class OffersController extends GetxController
     update();
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    initializeLoadingStates(OfferLoadingEnums.values);
+  }
+
   Future<Offer?> updateOffer({
     required Offer updatedOffer,
   }) async {

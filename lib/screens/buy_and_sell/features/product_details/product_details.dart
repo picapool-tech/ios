@@ -5,13 +5,12 @@ import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/tables.dart';
 import 'package:picapool/screens/buy_and_sell/widgets/image_gallery.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
-import 'package:picapool/utils/theme.dart';
 
 class HeadingText extends StatelessWidget {
   final String headingText;
@@ -45,8 +44,13 @@ class ProductDetails extends StatelessWidget {
     required this.offersController,
   });
 
+  bool get isProductSold =>
+      product.attributes?['sold'] != null && product.attributes?['sold'];
+
   @override
   Widget build(BuildContext context) {
+    UserController? userController = Get.find<UserController>();
+
     return Scaffold(
       appBar: AppBar(
         actions: const [
@@ -78,110 +82,129 @@ class ProductDetails extends StatelessWidget {
           //   ),
         ],
       ),
-      body: Container(
-        color: AppTheme.currentTheme.dividerColor,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ImageGallery(
-                imageUrl: product.images,
-              ),
-              const SizedBox(
-                height: PicaValues.largeSpacing,
-              ),
-              Text(
-                product.name,
-                style: Get.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: PicaValues.mediumSpacing,
-              ),
-              Row(
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      text: "MRP: ",
-                      children: [
-                        TextSpan(
-                          text: "₹${product.mrp}",
-                          style: Get.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                      ],
-                      style: Get.textTheme.bodySmall
-                          ?.copyWith(decoration: TextDecoration.lineThrough),
-                    ),
-                  ),
-                  SizedBox(
-                    width: Get.width * 0.1,
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Selling Price: ",
-                      children: [
-                        TextSpan(
-                          text: "₹${product.offerPrice}",
-                          style: Get.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                      style: Get.textTheme.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: PicaValues.mediumSpacing,
-              ),
-              // product details
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (isProductSold)
               Container(
-                width: double.infinity,
-                decoration: roundedContainer().copyWith(
-                  color: AppTheme.currentTheme.scaffoldBackgroundColor,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade100),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: const Row(
                   children: [
-                    const HeadingText(headingText: "Description"),
-                    Text(product.description),
-
-                    const HeadingText(headingText: "Reason for selling"),
-                    Text(product.attributes?['reasonForSell'] ?? ""),
-                    const HeadingText(headingText: "Details"),
-                    if (product.attributes != null &&
-                        product.attributes!.isNotEmpty)
-                      ProductTable(
-                        data: product.attributes!,
+                    Icon(Icons.shopping_bag, color: Colors.green, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "This product is sold!",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontFamily: "MontserratR",
+                        ),
                       ),
-                    // Wrap(
-                    //   direction: Axis.horizontal,
-                    //   children:
-                    //       List.generate(product.attributes!.length, (index) {
-                    //     var entries = product.attributes!.entries.toList();
-                    //     return TextButton.icon(
-                    //       style: const ButtonStyle(
-                    //         backgroundColor:
-                    //             WidgetStatePropertyAll(Colors.red),
-                    //       ),
-                    //       onPressed: null,
-                    //       label: Text(entries[index].key.toString().trim()),
-                    //     );
-                    //   }),
-                    // ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            const SizedBox(
+              height: PicaValues.largeSpacing,
+            ),
+
+            ImageGallery(
+              imageUrl: product.images,
+            ),
+            const SizedBox(
+              height: PicaValues.largeSpacing,
+            ),
+            Text(
+              product.name,
+              style: Get.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              height: PicaValues.mediumSpacing,
+            ),
+            Row(
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: "MRP: ",
+                    children: [
+                      TextSpan(
+                        text: "₹${product.mrp}",
+                        style: Get.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                    ],
+                    style: Get.textTheme.bodySmall
+                        ?.copyWith(decoration: TextDecoration.lineThrough),
+                  ),
+                ),
+                SizedBox(
+                  width: Get.width * 0.1,
+                ),
+                RichText(
+                  text: TextSpan(
+                    text: "Selling Price: ",
+                    children: [
+                      TextSpan(
+                        text: "₹${product.offerPrice}",
+                        style: Get.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                    style: Get.textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: PicaValues.mediumSpacing,
+            ),
+            // product details
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const HeadingText(headingText: "Description"),
+                Text(product.description),
+
+                const HeadingText(headingText: "Reason for selling"),
+                Text(product.attributes?['reasonForSell'] ?? ""),
+
+                const HeadingText(headingText: "Details"),
+                if (product.attributes != null &&
+                    product.attributes!.isNotEmpty)
+                  ProductTable(
+                    data: product.attributes!,
+                  ),
+                // Wrap(
+                //   direction: Axis.horizontal,
+                //   children:
+                //       List.generate(product.attributes!.length, (index) {
+                //     var entries = product.attributes!.entries.toList();
+                //     return TextButton.icon(
+                //       style: const ButtonStyle(
+                //         backgroundColor:
+                //             WidgetStatePropertyAll(Colors.red),
+                //       ),
+                //       onPressed: null,
+                //       label: Text(entries[index].key.toString().trim()),
+                //     );
+                //   }),
+                // ),
+              ],
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -190,31 +213,35 @@ class ProductDetails extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
           child: PicaPrimaryButton(
             text: "Go to chat",
-            onPressed: () async {
-              var chat = await offersController.getChatFromOfferId(
-                offerId: offer.id,
-              );
-              if (chat == null) {
-                showPicaAlertDialog(
-                  message: "Chat for this product doesn't exits",
-                  confirmText: "Okay",
-                  onConfirm: () {
-                    Get.back();
-                  },
-                );
-                return;
-              }
+            onPressed: (!isProductSold ||
+                    (isProductSold &&
+                        product.userId == userController.user!.id))
+                ? () async {
+                    var chat = await offersController.getChatFromOfferId(
+                      offerId: offer.id,
+                    );
+                    if (chat == null) {
+                      showPicaAlertDialog(
+                        message: "Chat for this product doesn't exits",
+                        confirmText: "Okay",
+                        onConfirm: () {
+                          Get.back();
+                        },
+                      );
+                      return;
+                    }
 
-              Get.to(
-                () => ChatPage(
-                  chat: chat,
-                  offer: offer,
-                  chatTitle: product.name,
-                ),
-              );
-            },
-            isLoading:
-                offersController.getLoadingState(OfferLoadingEnums.fetchingChat),
+                    Get.to(
+                      () => ChatPage(
+                        chat: chat,
+                        offer: offer,
+                        chatTitle: product.name,
+                      ),
+                    );
+                  }
+                : null,
+            isLoading: offersController
+                .getLoadingState(OfferLoadingEnums.fetchingChat),
           ),
         ),
       ),
