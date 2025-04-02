@@ -287,27 +287,20 @@ class AuthApi with PicapoolApiClass {
 
   FutureEither<ResponseModel> updateAuth({
     required Authupdatemodel updateValue,
-    required String accessToken,
   }) async {
     try {
       debugPrint("UPDATE AUTH REQUEST: ${updateValue.toJson()}");
       debugPrint("${APIConstants.apiUrl}${APIEndpoints.updateAuth}");
 
-      var response = await http.patch(
-        Uri.parse("${APIConstants.apiUrl}${APIEndpoints.updateAuth}"),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode(updateValue.toJson()),
+      var response = await api.makeRequest(
+        enpoint: APIEndpoints.updateAuth,
+        method: RequestMethod.patch,
+        body: updateValue.toJson(),
       );
 
-      debugPrint("UPDATE AUTH RESPONSE CODE: ${response.statusCode}");
-
-      debugPrint('UPDATE AUTH RESPONSE: ${response.body}');
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-
-      return right(responseModel);
+      return response.fold((error) => left(error), (responseModel) {
+        return right(responseModel);
+      });
     } catch (e) {
       debugPrint(
           "ERROR IN UPDATE AUTH: $e : with stackTrace : ${StackTrace.current}");

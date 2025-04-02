@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offers/create_offer_payload.dart';
 import 'package:picapool/models/offers/create_offer_response.dart';
@@ -31,7 +32,7 @@ enum IndividualProductsState {
 
 class ProductController extends GetxController {
   final UserController _userController = Get.find<UserController>();
-  final StorageController _storageController = Get.find<StorageController>();
+  final AuthTokenService _storageController = Get.find<AuthTokenService>();
   ProductsState productsState = ProductsState.productsLoaded;
 
   CreateProductState createProductState = CreateProductState.created;

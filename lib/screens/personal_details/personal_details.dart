@@ -10,6 +10,7 @@ import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/user/values/user_data_model_enum.dart';
 import 'package:picapool/features/user/values/user_loading_enums.dart';
+import 'package:picapool/screens/buy_and_sell/features/user_listing/widgets/widget_with_custom_heading.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
 import 'package:picapool/screens/public_profile/public_profile.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
@@ -26,6 +27,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   String? _selectedGender;
+
   final AuthController _authController = Get.find<AuthController>();
   final UserController _userController = Get.find<UserController>();
 
@@ -108,36 +110,50 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ],
               ),
               const SizedBox(height: 30),
-              PicaOutlinedTextField(
-                labelText: 'Full name*',
-                hintText: "Add your fullname here",
-                controller: _nameController,
-              ),
+              if (!isFromAppleAuth)
+                WidgetWithCustomHeading(
+                  title: "Full name",
+                  child: PicaOutlinedTextField(
+                    hintText: "Add your fullname here",
+                    controller: _nameController,
+                  ),
+                ),
               const SizedBox(height: 16),
-              _buildPhoneField(), // Phone field is optional now
+              WidgetWithCustomHeading(
+                title: "Phone number",
+                child: _buildPhoneField(),
+              ), // Phone field is optional now
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: PicaOutlinedTextField(
-                      hintText: 'Add your age*',
-                      controller: _ageController,
-                      labelText: "Your Age",
+                    child: WidgetWithCustomHeading(
+                      title: "Your age",
+                      child: PicaOutlinedTextField(
+                        hintText: 'Add your age*',
+                        controller: _ageController,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildGenderDropdown(),
+                    child: WidgetWithCustomHeading(
+                      title: "Gender",
+                      child: _buildGenderDropdown(),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              PicaPrimaryButton(
-                onPressed: _isFormValid ? _updateUserPersonalDetails : null,
-                text: "Next",
-                isLoading: _userController
-                    .getLoadingState(UserLoadingEnums.updateUser),
+              SizedBox(
+                width: double.infinity,
+                child: PicaPrimaryButton(
+                  onPressed: _isFormValid ? _updateUserPersonalDetails : null,
+                  text: "Next",
+                  isLoading: _userController
+                      .getLoadingState(UserLoadingEnums.updateUser),
+                ),
               ),
             ],
           ),
@@ -157,59 +173,41 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   }
 
   Widget _buildGenderDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        RichText(
-          text: TextSpan(
-            text: 'Your gender',
-            style: textTheme.labelSmall,
-            children: const [
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Colors.red),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 2),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFA3A3A3), width: 1),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              borderRadius: BorderRadius.circular(20),
-              isExpanded: true,
-              hint: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Select',
-                ),
-              ),
-              value: _selectedGender,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedGender = newValue;
-                });
-              },
-              items: <String>['Male', 'Female', 'Other']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    value,
-                    style: textTheme.bodySmall,
-                  ),
-                );
-              }).toList(),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFA3A3A3), width: 1),
+      ),
+      padding: const EdgeInsets.all(2),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          borderRadius: BorderRadius.circular(20),
+          isExpanded: true,
+          hint: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'Select',
             ),
           ),
+          value: _selectedGender,
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedGender = newValue;
+            });
+          },
+          items: <String>['Male', 'Female', 'Other']
+              .map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: textTheme.bodySmall,
+              ),
+            );
+          }).toList(),
         ),
-      ],
+      ),
     );
   }
 
@@ -222,7 +220,6 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(12),
       ],
-      labelText: "Your phone number",
       hintText: "+91XXXXXXXXXX",
       helperText: "Enter 10 digits phone number only",
       suffixIcon: Padding(

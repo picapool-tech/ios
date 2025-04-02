@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/vicinity/vicinity_api.dart';
 import 'package:picapool/models/offer_model.dart';
@@ -98,7 +99,7 @@ class VicinityController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = await _storageController.getAccessToken();
+    var accessToken = await Get.find<AuthTokenService>().getAccessToken();
 
     if (accessToken == null) {
       return false;

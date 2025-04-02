@@ -13,6 +13,7 @@ import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/user/values/user_data_model_enum.dart';
 import 'package:picapool/features/user/values/user_loading_enums.dart';
+import 'package:picapool/screens/buy_and_sell/features/user_listing/widgets/widget_with_custom_heading.dart';
 import 'package:picapool/utils/permission_util.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
@@ -119,36 +120,43 @@ class _PublicProfileState extends State<PublicProfile> {
                 ),
               ),
               const SizedBox(height: 20),
-              PicaOutlinedTextField(
-                hintText: 'Add your username*',
-                labelText: "Username",
-                controller: _usernameController,
-                maxLength: 16,
-                // isUsername: true, // Specific for username field
+              WidgetWithCustomHeading(
+                title: "Username",
+                child: PicaOutlinedTextField(
+                  hintText: 'Add your username*',
+                  controller: _usernameController,
+                  maxLength: 16,
+                  // isUsername: true, // Specific for username field
+                ),
               ),
               validationListWidget(),
               const SizedBox(height: 16),
-              PicaOutlinedTextField(
-                hintText: 'Add bio',
-                controller: _bioController,
-                labelText: "Bio",
-                maxLength: 200,
-                maxLines: 3,
+              WidgetWithCustomHeading(
+                title: "Add bio",
+                child: PicaOutlinedTextField(
+                  hintText: 'Tell about yourself',
+                  controller: _bioController,
+                  maxLength: 200,
+                  maxLines: 3,
+                ),
               ),
               Text(
                 'Users with bio receive up to 152% more pooling matches',
                 style: textTheme.labelSmall,
               ),
               const SizedBox(height: 24),
-              PicaPrimaryButton(
-                onPressed: _isUsernameValid
-                    ? () async {
-                        await createUser();
-                      }
-                    : null,
-                text: "Finish",
-                isLoading: _userController.getLoadingState(
-                  UserLoadingEnums.updateUser,
+              SizedBox(
+                width: double.infinity,
+                child: PicaPrimaryButton(
+                  onPressed: _isUsernameValid
+                      ? () async {
+                          await createUser();
+                        }
+                      : null,
+                  text: "Finish",
+                  isLoading: _userController.getLoadingState(
+                    UserLoadingEnums.updateUser,
+                  ),
                 ),
               ),
             ],
@@ -191,6 +199,7 @@ class _PublicProfileState extends State<PublicProfile> {
     );
 
     if (isUpdated) {
+      Get.back();
       Get.find<AuthStateManager>().refreshAuthState();
     }
   }

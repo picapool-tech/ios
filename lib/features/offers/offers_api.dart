@@ -11,6 +11,19 @@ import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class OffersApi with PicapoolApiClass {
+  FutureEither<Offer> deleteOffer({required int id}) async {
+    var result = await api.makeRequest(
+      enpoint: APIEndpoints.deleteOfferDetails(id),
+      method: RequestMethod.delete,
+    );
+
+    return result.fold((error) => left(error), (responseModel) async {
+      var offer = await responseModel.parseData<Offer>(Offer.fromJson);
+      debugPrint("DELETING OF OFFER IS DONE");
+      return right(offer);
+    });
+  }
+
   FutureEither<List<Offer>> getAllOffers() async {
     try {
       final response = await api.makeRequest(

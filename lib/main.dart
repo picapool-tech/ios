@@ -27,10 +27,14 @@ import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/partners/partner_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/vicinity/vicinity_controller.dart';
 import 'package:picapool/firebase_options_new.dart';
+import 'package:picapool/models/live_offer_model.dart';
+import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/auth_check_screen.dart';
+import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
@@ -46,9 +50,10 @@ void main() async {
   await Env.load();
 
   Get.put(StorageController(), permanent: true);
-  Get.put(PicapoolApi(), permanent: true);
-  Get.put(NetworkController.getInstance(), permanent: true);
   Get.put(AuthStateManager(), permanent: true);
+  Get.put(NetworkController.getInstance(), permanent: true);
+  Get.put(AuthTokenService(), permanent: true);
+  Get.put(PicapoolApi(), permanent: true);
 
   Get.lazyPut(() => UserController(), fenix: true);
   Get.lazyPut(() => AuthController(), fenix: true);
@@ -103,12 +108,8 @@ void handleDynamicLink(PendingDynamicLinkData? dynamicLinkData) {
       "Application has not been started yet but here is link ${dynamicLinkData?.link.toString()}");
 }
 
-@pragma('vm:entry-point')
-Future<void> handleNotification(RemoteMessage message) async {
-  debugPrint('Notification opened the app: ${message.notification?.title}');
-  debugPrint('Notification opened the app: ${message.data.toString()}');
-  debugPrint('Notification opened the app: ${message.notification?.body}');
-
+void handleMessage(RemoteMessage message) async {
+  debugPrint("MESSAGE FOUND: ${message.data}");
   var action = message.data['action'];
   if (action != null) {
     if (action == 'openAlertsPage') {
@@ -120,13 +121,50 @@ Future<void> handleNotification(RemoteMessage message) async {
           ),
         );
       }
-    } else if (action == "openChatPage" ||
-        message.notification!.title!.contains("New Message")) {
-      Get.to(
-        () => const NewBottomBar(
-          currentIndex: 1,
-        ),
-      );
+    } else if (action == "openChatPage") {
+      var chatId = message.data['chatId'];
+      if (chatId == null) {
+        Get.to(
+          () => const NewBottomBar(
+            currentIndex: 1,
+          ),
+        );
+        return;
+      }
+
+      var chat = await Get.find<ChatController>().getChatFromId(chatId: chatId);
+      if (chat == null) {
+        Get.to(
+          () => const NewBottomBar(
+            currentIndex: 1,
+          ),
+        );
+        return;
+      }
+
+      Offer? offer;
+      LiveOffer? liveOffer;
+      if (chat.offerId != null) {
+        offer =
+            await Get.find<OffersController>().getOfferDetails(chat.offerId!);
+      }
+
+      if (chat.liveOfferId != null) {
+        var liveOfferEntity = await Get.find<LiveOfferController>()
+            .getLiveOffer("${chat.liveOfferId!}");
+        try {
+          liveOffer = LiveOffer.fromJson(liveOfferEntity!.toJson());
+        } catch (e) {
+          debugPrint("Got errror in converting live offer");
+        }
+      }
+
+      Get.to(ChatPage(
+        chat: chat,
+        chatTitle: parseChatTitle(offer, liveOffer),
+        offer: offer,
+        liveOffer: liveOffer,
+      ));
     }
   } else {
     if (message.notification!.title!.contains("New Message")) {
@@ -137,6 +175,207 @@ Future<void> handleNotification(RemoteMessage message) async {
       );
     }
   }
+}
+
+@pragma('vm:entry-point')
+Future<void> handleNotification(RemoteMessage message) async {
+  debugPrint('Notification opened the app: ${message.notification?.title}');
+  debugPrint('Notification opened the app: ${message.data.toString()}');
+  debugPrint('Notification opened the app: ${message.notification?.body}');
+
+  handleMessage(message);
+}
+
+listenNotification() {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Message received in foreground: ${message.notification?.title}');
+    // You can show a dialog, toast, or in-app UI here.
+    // if (message.notification == null) {
+    //   return;
+    // }
+
+    // debugPrint(
+    //     'Notification opened the app in home: ${message.notification?.title}');
+    // debugPrint('Notification opened the app: ${message.data.toString()}');
+    // debugPrint('Notification opened the app: ${message.notification?.body}');
+
+    // Get.snackbar(
+    //   message.notification!.title ?? 'Notification',
+    //   message.notification!.body ?? 'Notification',
+    //   snackPosition: SnackPosition.TOP,
+    //   backgroundColor: Colors.orange,
+    //   colorText: Colors.white,
+    //   borderRadius: 10,
+    //   margin: const EdgeInsets.all(10),
+    //   icon: Image.asset(
+    //     "assets/images/ic_launcher.png",
+    //     width: 20,
+    //     height: 20,
+    //   ),
+    //   duration: const Duration(seconds: 5),
+    //   onTap: (snack) {
+    //     // if it has chat id, offer id  action to openAlertPage.
+    //     var action = message.data['action'];
+    //     if (action != null) {
+    //       if (action == 'openAlertsPage') {
+    //         var offerId = message.data['offerId'];
+    //         if (offerId != null) {
+    //           setState(() {
+    //             _selectedIndex = 2;
+    //           });
+    //         }
+    //       } else if (action == "openChatPage" ||
+    //           message.notification!.title!.contains("New Message")) {
+    //         setState(() {
+    //           _selectedIndex = 1;
+    //         });
+    //       }
+    //     } else {
+    //       if (message.notification!.title!.contains("New Message")) {
+    //         setState(() {
+    //           _selectedIndex = 1;
+    //         });
+    //         // }
+    //       }
+    //     }
+    //     debugPrint("Performing click on snack bar : ${_selectedIndex}");
+    //   },
+    // );
+    showInAppNotification(message);
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    // print('Notification clicked while in background: ${message.data}');
+
+    // // Handle navigation or other actions.
+    // var action = message.data['action'];
+    // if (action != null) {
+    //   if (action == 'openAlertsPage') {
+    //     var offerId = message.data['offerId'];
+    //     if (offerId != null) {
+    //       setState(() {
+    //         _selectedIndex = 2;
+    //       });
+    //     }
+    //   } else if (action == "openChatPage" ||
+    //       message.notification!.title!.contains("New Message")) {
+    //     setState(() {
+    //       _selectedIndex = 1;
+    //     });
+    //   }
+    // } else {
+    //   if (message.notification!.title!.contains("New Message")) {
+    //     setState(() {
+    //       _selectedIndex = 1;
+    //     });
+    //     // }
+    //   }
+    // }
+    handleMessage(message);
+  });
+
+  FirebaseMessaging.instance.getInitialMessage().then(
+    (message) {
+      print('---- getInitialMessage called ----');
+      if (message != null) {
+        // var action = message.data['action'];
+        // if (action != null) {
+        //   if (action == 'openAlertsPage') {
+        //     var offerId = message.data['offerId'];
+        //     if (offerId != null) {
+        //       setState(() {
+        //         _selectedIndex = 2;
+        //       });
+        //     }
+        //   } else if (action == "openChatPage" ||
+        //       message.notification!.title!.contains("New Message")) {
+        //     setState(() {
+        //       _selectedIndex = 1;
+        //     });
+        //   }
+        // } else {
+        //   if (message.notification!.title!.contains("New Message")) {
+        //     setState(() {
+        //       _selectedIndex = 1;
+        //     });
+        //     // }
+        //   }
+        // }
+        handleMessage(message);
+      } else {
+        print('---- getInitialMessage is not opened ----');
+      }
+    },
+  );
+}
+
+String parseChatTitle(Offer? offer, LiveOffer? liveOffer) {
+  if (offer != null) {
+    return offer.name;
+  }
+
+  if (liveOffer != null) {
+    return liveOffer.to ?? "";
+  }
+
+  return "";
+}
+
+void showInAppNotification(RemoteMessage message) {
+  // Don't show if notification is empty
+  if (message.notification == null) {
+    return;
+  }
+
+  final title = message.notification!.title ?? 'Notification';
+  final body = message.notification!.body ?? '';
+
+  // Show a compact snackbar
+  Get.snackbar(
+    '',
+    '',
+    titleText: Text(
+      title,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    ),
+    messageText: Text(
+      body,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 12,
+      ),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    ),
+    snackPosition: SnackPosition.TOP,
+    margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+    icon: Padding(
+      padding: const EdgeInsets.only(left: 4, right: 8),
+      child: Image.asset(
+        "assets/images/ic_launcher.png",
+        width: 24,
+        height: 24,
+      ),
+    ),
+    shouldIconPulse: false,
+    maxWidth: 500, // Add max width constraint
+    boxShadows: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.15),
+        blurRadius: 6,
+        offset: const Offset(0, 3),
+      )
+    ],
+    duration: const Duration(seconds: 4),
+    isDismissible: true,
+    onTap: (_) => handleMessage(message),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -230,7 +469,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     ConnectionStatusListener.getInstance().initialize();
-
+    listenNotification();
     if (Platform.isAndroid) {
       checkForUpdate();
     }

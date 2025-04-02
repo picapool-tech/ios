@@ -103,10 +103,13 @@ class PicaAlertDialog extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: PicaValues.mediumSpacing),
-          PicaPrimaryButton(
-            text: confirmText,
-            onPressed: onConfirm,
-            isLoading: false.obs,
+          SizedBox(
+            width: double.infinity,
+            child: PicaPrimaryButton(
+              text: confirmText,
+              onPressed: onConfirm,
+              isLoading: false.obs,
+            ),
           ),
           if (cancelText != null && onCancel != null) ...[
             const SizedBox(height: 4),

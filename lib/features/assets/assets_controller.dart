@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/features/assets/assets_api.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
 
 class AssetsController extends GetxController {
-  final StorageController _storageController = Get.find<StorageController>();
-
   final AssetsApi _assetsApi = AssetsApi();
 
   var isLoading = false.obs;
@@ -18,18 +15,9 @@ class AssetsController extends GetxController {
     isLoading.value = true;
     update();
 
-    var accessToken = await _storageController.getAccessToken();
-
-    if (accessToken == null) {
-      isLoading.value = false;
-      update();
-      return null;
-    }
-
     final result = await _assetsApi.uploadImageToServer(
       pickedFile: pickedFile,
       fileName: fileName,
-      accessToken: accessToken,
     );
 
     isLoading.value = false;
@@ -57,15 +45,6 @@ class AssetsController extends GetxController {
   ) async {
     isLoading.value = true;
     update();
-
-    var accessToken = await _storageController.getAccessToken();
-
-    if (accessToken == null) {
-      isLoading.value = false;
-      update();
-      debugPrint("access Token is null ");
-      return [];
-    }
 
     debugPrint("Uploading image to server");
     final result = await _assetsApi.uploadImagesToServer(

@@ -12,6 +12,7 @@ import 'package:picapool/features/buy_and_sell/product_api.dart';
 import 'package:picapool/features/buy_and_sell/values/enums.dart';
 import 'package:picapool/features/buy_and_sell/values/model.dart';
 import 'package:picapool/features/location/location_controller.dart';
+import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/vicinity/vicinity_controller.dart';
@@ -25,6 +26,7 @@ class ProductsController extends GetxController
     with ReactiveLoading<ProductLoadingEnums> {
   final ProductApi _productApi = ProductApi();
   final VicinityController _offersController = Get.find<VicinityController>();
+  final OffersController _opOffersController = Get.find<OffersController>();
   final LocationController _locationController = Get.find<LocationController>();
   final AssetsController _assetsController = Get.find<AssetsController>();
   final StorageController _storageController = Get.find<StorageController>();
@@ -96,6 +98,7 @@ class ProductsController extends GetxController
       return result.fold(
         (error) {
           debugPrint("[DEBUG] Error creating product: ${error.message}");
+          _opOffersController.deleteOffer(offerId: offerResult.id);
           showPicaAlertDialog(
             message: "Failed to create your listing: ${error.message}",
             confirmText: "OK",

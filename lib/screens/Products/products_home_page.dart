@@ -155,12 +155,24 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       var location = _locationController.state.value.location;
       if (location == null) {
+        debugPrint("Location is null in Pooling categories");
         await _locationController.getLocation();
+      }
+      location = _locationController.state.value.location;
+
+      if (location == null) {
         return;
       }
-      var tags = Get.find<TagController>();
-      var tag = tags.getTagsByTagName(widget.brandName);
+
+      var tagController = Get.find<TagController>();
+
+      if (tagController.tags.isEmpty) {
+        await tagController.getAllTags();
+      }
+
+      var tag = tagController.getTagsByTagName(widget.brandName);
       if (tag == null) {
+        debugPrint("tag is null");
         setState(() {
           showComingSoon = true;
         });

@@ -113,14 +113,21 @@ class _UserItemListingItemState extends State<UserItemListingItem> {
                               !widget.product.isProductSold())
                           ? () async {
                               var product = widget.product;
+                              var updatedOffer = widget.offer
+                                  .copyWith(expiryAt: DateTime.now());
 
                               product.attributes?['sold'] = true;
+                              Offer? updatedOfferResponse =
+                                  await _offersController.updateOffer(
+                                updatedOffer: updatedOffer,
+                              );
                               Product? updatedProduct =
                                   await _productsController.updateProduct(
                                 updatedProduct: product,
                               );
 
-                              if (updatedProduct != null) {
+                              if (updatedProduct != null ||
+                                  updatedOfferResponse != null) {
                                 _offersController.getAllUserCreatedOffer();
                                 showPicaAlertDialog(
                                   title: "Listing marked as sold",

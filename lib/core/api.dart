@@ -11,14 +11,14 @@ import 'package:path/path.dart' as path;
 import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env_constants.dart';
 import 'package:picapool/features/network/connection_status_listener.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/utils/image_utils.dart';
 
 class PicapoolApi {
   static String baseUrl = APIConstants.apiUrl;
   bool _hasRetired = false;
-  final StorageController _storageController = Get.find<StorageController>();
+  final AuthTokenService _tokenService = Get.find<AuthTokenService>();
   late final dio.Dio _dio;
 
   PicapoolApi() {
@@ -60,7 +60,7 @@ class PicapoolApi {
       }
 
       String? accessToken;
-      if (_storageController.isGuest.value) {
+      if (_tokenService.isGuest) {
         return left(
           Failure(
             message: "Guest User",
@@ -71,7 +71,7 @@ class PicapoolApi {
       }
       if (requireAccessToken) {
         log("Getting Access Token from Storage", name: "Network Request");
-        accessToken = await _storageController.getAccessToken();
+        accessToken = await _tokenService.getAccessToken();
       }
 
       log("ACCESS TOKEN : $accessToken", name: 'Network Request');
@@ -134,7 +134,7 @@ class PicapoolApi {
       } on dio.DioException catch (e) {
         if (e.response?.statusCode == 401) {
           debugPrint("GETTING ACCESS TOKEN AGAIN");
-          var newAccessToken = await _storageController.getAccessToken();
+          var newAccessToken = await _tokenService.getAccessToken();
           if (newAccessToken == null || newAccessToken == accessToken) {
             return left(
               Failure(
@@ -298,7 +298,7 @@ class PicapoolApi {
 
       String? accessToken;
       if (requireAccessToken) {
-        if (_storageController.isGuest.value) {
+        if (_tokenService.isGuest) {
           return left(
             Failure(
               message: "Guest User",
@@ -308,7 +308,7 @@ class PicapoolApi {
           );
         }
 
-        accessToken = await _storageController.getAccessToken();
+        accessToken = await _tokenService.getAccessToken();
         if (accessToken == null) {
           return left(
             Failure(
@@ -447,7 +447,7 @@ class PicapoolApi {
       if (requireAccessToken) {
         log("Access token required, checking authentication",
             name: "FileUpload");
-        if (_storageController.isGuest.value) {
+        if (_tokenService.isGuest) {
           log("Upload rejected: Guest user", name: "FileUpload");
           return left(
             Failure(
@@ -458,7 +458,7 @@ class PicapoolApi {
           );
         }
 
-        accessToken = await _storageController.getAccessToken();
+        accessToken = await _tokenService.getAccessToken();
         log("Retrieved access token: ${accessToken != null ? 'Success' : 'Failed'}",
             name: "FileUpload");
         if (accessToken == null) {

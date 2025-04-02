@@ -52,7 +52,7 @@ class TagController extends GetxController {
           tags.addAll(filtered);
 
           _storageController.saveTags(tags);
-
+          tags.sort((a, b) => a.id - b.id);
           if (forceRefresh) {
             tags.value = tagsList;
             tags.sort((a, b) => a.id - b.id);
@@ -63,10 +63,6 @@ class TagController extends GetxController {
 
     isLoading.value = false;
     update();
-  }
-
-  Tag? getTagWithId(int id) {
-    return tags.firstWhereOrNull((tag) => tag.id == id);
   }
 
   Future<Tag?> getTagFromCacheOrNetwork(int tagId) async {
@@ -101,6 +97,10 @@ class TagController extends GetxController {
   Tag? getTagsByTagName(String name) {
     return tags.firstWhereOrNull(
         (element) => element.tag.toLowerCase().contains(name.toLowerCase()));
+  }
+
+  Tag? getTagWithId(int id) {
+    return tags.firstWhereOrNull((tag) => tag.id == id);
   }
 
   initialize() async {

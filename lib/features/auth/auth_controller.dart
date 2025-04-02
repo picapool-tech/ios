@@ -10,6 +10,7 @@ import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/features/auth/values/enums.dart';
 import 'package:picapool/features/notification/notification_service.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/features/user/values/user_data_model_enum.dart';
 import 'package:picapool/models/access_token_model.dart';
@@ -22,6 +23,7 @@ class AuthController extends GetxController
   final StorageController _storageController = Get.find<StorageController>();
   final AuthStateManager _authStateManager = Get.find<AuthStateManager>();
   final UserController _userController = Get.find<UserController>();
+  final AuthTokenService _authTokenService = Get.find<AuthTokenService>();
 
   var isLoading = false.obs;
   var errorMessage = ''.obs;
@@ -53,7 +55,7 @@ class AuthController extends GetxController
     String? name,
   }) async {
     try {
-      var accessToken = await _storageController.getAccessToken();
+      var accessToken = await _authTokenService.getAccessToken();
       var userData = await _userController.getUser(
         userId ?? _userController.user!.id,
         accessToken: accessToken ?? authData.accessToken!,
@@ -262,7 +264,7 @@ class AuthController extends GetxController
     isLoading.value = true;
     update();
 
-    var accessToken = await _storageController.getAccessToken();
+    var accessToken = await _authTokenService.getAccessToken();
     if (accessToken == null) {
       isLoading.value = true;
       update();
@@ -279,7 +281,6 @@ class AuthController extends GetxController
             code: code,
           ),
         ),
-        accessToken: accessToken,
       );
 
       isLoading(false);

@@ -31,7 +31,18 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
           );
         }
 
-        if (_controller.poolingOffers.isEmpty) {
+        var offers = _controller.poolingOffers.value;
+        var tagId = _tagController.getTagsByTagName("buy")?.id;
+        tagId ??= 3;
+
+        var buyOffers = offers
+            .where((offer) =>
+                offer.tags?.firstOrNull?.id == tagId &&
+                offer.products != null &&
+                offer.products!.isNotEmpty)
+            .toList();
+
+        if (buyOffers.isEmpty) {
           return Container(
             height: Get.size.height * 0.5,
             alignment: Alignment.topCenter,
@@ -41,13 +52,7 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
           );
         }
 
-        var offers = _controller.poolingOffers.value;
-        var tagId = _tagController.getTagsByTagName("buy")?.id;
-        tagId ??= 3;
-
-        var buyOffers = offers
-            .where((offer) => offer.tags?.firstOrNull?.id == tagId)
-            .toList();
+        debugPrint("PRODUCT LENGTH: ${buyOffers.length}");
 
         return ListView.builder(
           itemCount: buyOffers.length,

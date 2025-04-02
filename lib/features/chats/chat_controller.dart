@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/core/core.dart';
+import 'package:picapool/core/reactive_loading.dart';
 import 'package:picapool/features/chats/chat_api.dart';
+import 'package:picapool/features/chats/values/enums.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/features/user/user_controller.dart';
+import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/chat_unread_model.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/services/socket.service.dart';
 
-class ChatController extends GetxController {
+class ChatController extends GetxController
+    with ReactiveLoading<ChatLoadingEnums> {
   final ChatApi _chatApi = ChatApi();
   final UserController _userController = Get.find<UserController>();
   final StorageController _storageController = Get.find<StorageController>();
+  final AuthTokenService _authTokenService = Get.find<AuthTokenService>();
   final SocketService socketService = SocketService();
   var readMessages = <int, ChatUnreadModel>{}.obs;
 
@@ -22,7 +28,6 @@ class ChatController extends GetxController {
 
   var messages = <Message>[].obs;
   var usersInChat = <int, User>{}.obs;
-
   // just for scrolling need some rethinking on this.
   final ScrollController scrollController = ScrollController();
 
@@ -35,7 +40,7 @@ class ChatController extends GetxController {
       socketService.socket!.disconnect();
     }
 
-    var accessToken = await _storageController.getAccessToken();
+    var accessToken = await _authTokenService.getAccessToken();
     if (accessToken == null) {
       debugPrint('Access token is null');
       return;
@@ -91,7 +96,7 @@ class ChatController extends GetxController {
     errorMessage.value = '';
     update();
 
-    final result = await _chatApi.getChats();
+    final result = await _chatApi.getUsersChats();
 
     result.fold(
       (failure) {
@@ -181,6 +186,19 @@ class ChatController extends GetxController {
     update();
   }
 
+  Future<Chat?> getChatFromId({required int chatId}) async {
+    startLoading(ChatLoadingEnums.chatWithId);
+
+    var result = await _chatApi.getChatWithId(chatId: chatId);
+
+    stopLoading(ChatLoadingEnums.chatWithId);
+    return result.fold((error) {
+      return null;
+    }, (chat) {
+      return chat;
+    });
+  }
+
   Future<ChatAndOfferModel?> getChatFromLiveOfferId(int liveOfferId) async {
     isLoading.value = true;
     update();
@@ -256,6 +274,7 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    initializeLoadingStates(ChatLoadingEnums.values);
     getReadChatMessages();
   }
 

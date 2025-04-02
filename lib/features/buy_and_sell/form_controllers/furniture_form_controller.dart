@@ -37,20 +37,7 @@ class FurnitureFormController extends GetxController
           formKey.currentState?.reset();
         },
       );
-    } else {
-      showPicaAlertDialog(
-        message: "Your listing has not been created",
-        confirmText: "Try again",
-        onConfirm: () {
-          createProduct(productModel);
-          Get.back();
-        },
-        cancelText: "Cancel",
-        onCancel: () {
-          Get.back();
-        },
-      );
-    }
+    } 
   }
 
   void onSubmit(CommonDetailsModel commonDetails) async {

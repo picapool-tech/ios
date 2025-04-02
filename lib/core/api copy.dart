@@ -8,13 +8,13 @@ import 'package:http/http.dart' as http;
 import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env_constants.dart';
 import 'package:picapool/features/network/connection_status_listener.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/models/response_model.dart';
 
 class PicapoolApi {
   static String baseUrl = APIConstants.apiUrl;
   bool _hasRetired = false;
-  final StorageController _storageController = Get.find<StorageController>();
+  final AuthTokenService _authTokenService = Get.find<AuthTokenService>();
 
   FutureEither<ResponseModel> makeRequest({
     required String enpoint,
@@ -35,7 +35,7 @@ class PicapoolApi {
       }
 
       String? accessToken;
-      if (_storageController.isGuest.value) {
+      if (_authTokenService.isGuest) {
         return left(
           Failure(
             message: "Guest User",
@@ -46,7 +46,7 @@ class PicapoolApi {
       }
       if (requireAccessToken) {
         log("Getting Access Token from Storage", name: "Network Request");
-        accessToken = await _storageController.getAccessToken();
+        accessToken = await _authTokenService.getAccessToken();
       }
 
       log("ACCESS TOKEN : $accessToken", name: 'Network Request');
@@ -121,7 +121,7 @@ class PicapoolApi {
 
       if (response.statusCode == 401) {
         debugPrint("GETTING ACCESS TOKEN AGAIN");
-        var newAccessToken = await _storageController.getAccessToken();
+        var newAccessToken = await _authTokenService.getAccessToken();
         if (newAccessToken == null || newAccessToken == accessToken) {
           return left(
             Failure(
@@ -174,8 +174,7 @@ class PicapoolApi {
       var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
       _hasRetired = false;
       return right(responseModel);
-    }
-     catch (e) {
+    } catch (e) {
       // todo all the errors here
       log("ERROR ON NETWORK REQUEST: $e with Stacktrace : ${StackTrace.current}",
           name: "Network Request");

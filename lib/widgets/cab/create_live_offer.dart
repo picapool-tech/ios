@@ -8,6 +8,7 @@ import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
@@ -291,10 +292,6 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   // Time Selection
   DateTime _selectedDateTime = DateTime.now().add(const Duration(minutes: 30));
   DateTime _defaultExpiryDate = DateTime.now().add(const Duration(days: 3));
-
-  // Active editing state to track which marker we're moving
-  bool _isEditingFromMarker = false;
-  bool _isEditingToMarker = false;
 
   @override
   Widget build(BuildContext context) {
@@ -817,7 +814,6 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   }
 
   Widget _buildRouteInfoCard() {
-    // FIX: Access the 'text' property from the nested map
     final distanceText =
         _routeDetails?['distance']?['text'] ?? 'Unknown distance';
     final durationText = _routeDetails?['duration']?['text'] ?? 'Unknown time';
@@ -826,47 +822,46 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       bottom: 16,
       left: 16,
       right: 16,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          child: Row(
-            children: [
-              const Icon(Icons.directions_car,
-                  color: Color(0xffFF8D41), size: 28),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      distanceText, // Fixed accessor
-                      style: const TextStyle(
-                        fontFamily: 'MontserratSB',
-                        fontSize: 16,
-                      ),
+      child: BlurryContainer(
+        backgroundColor: Colors.white.withOpacity(0.5),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1.5,
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: Row(
+          children: [
+            const Icon(Icons.directions_car,
+                color: Color(0xffFF8D41), size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    distanceText,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text(
-                      'Approx. $durationText by car', // Fixed accessor
-                      style: const TextStyle(
-                        fontFamily: 'MontserratR',
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                  ),
+                  Text(
+                    'Approx. $durationText by car',
+                    style: const TextStyle(
+                      fontSize: 12,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                color: Colors.blue,
-                onPressed: _getDirections,
-                tooltip: 'Refresh route',
-              ),
-            ],
-          ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              // color: Colors.white,
+              onPressed: _getDirections,
+              tooltip: 'Refresh route',
+            ),
+          ],
         ),
       ),
     );

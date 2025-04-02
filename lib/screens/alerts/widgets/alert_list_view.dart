@@ -24,6 +24,7 @@ class AlertsList extends StatefulWidget {
 
 class _AlertsListState extends State<AlertsList> {
   List<bool> expandedStates = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -57,17 +58,29 @@ class _AlertsListState extends State<AlertsList> {
           itemCount: offers.length,
           itemBuilder: (context, index) {
             return AlertListItem(
+              key: ValueKey("offer-${offers[index].id}"),
               offer: offers[index],
               isExpanded: expandedStates[index],
               onTap: () => _toggleExpanded(index),
               onJoinChat: () => _joinChat(offers[index]),
               isLoading:
                   controller.getLoadingState(OfferLoadingEnums.fetchingChat),
+              onExpired: () {
+                setState(() {
+                  controller.offers.removeAt(index);
+                });
+              },
             );
           },
         );
       },
     );
+  }
+
+  @override
+  dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   List<Offer>? _getOffersForCategory(OffersController controller) {

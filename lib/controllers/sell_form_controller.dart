@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
 import 'package:picapool/controllers/product_controller.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offers/location_entity.dart';
 import 'package:picapool/models/response_model.dart';
@@ -28,7 +28,7 @@ class FormController extends GetxController {
   // Second Form Data
   var formTwoData = <String, dynamic>{}.obs;
 
-  final StorageController _storageController = Get.find<StorageController>();
+  final AuthTokenService _storageController = Get.find<AuthTokenService>();
 
   // Function to get the combined data
   CreateProductPayload get combinedFormData {

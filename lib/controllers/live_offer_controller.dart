@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/create_live_offer_response.dart';
 import 'package:picapool/models/live_offer/get_live_offer_payload.dart';
@@ -23,7 +24,7 @@ enum GetLiveOfferState { liveofferLoading, liveofferLoaded, liveofferCantLoad }
 
 class LiveOfferController extends GetxController {
   // final AuthController authController = Get.find<AuthController>();
-  final StorageController storageController = Get.find<StorageController>();
+  final AuthTokenService storageController = Get.find<AuthTokenService>();
   List<LiveOffer> liveOffersList = <LiveOffer>[];
 
   GetLiveOfferState liveofferState = GetLiveOfferState.liveofferLoading;

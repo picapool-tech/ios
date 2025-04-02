@@ -51,20 +51,21 @@ class OthersFormController extends GetxController {
           formKey.currentState?.reset();
         },
       );
-    } else {
-      showPicaAlertDialog(
-        message: "Your listing has not been created",
-        confirmText: "Try again",
-        onConfirm: () {
-          createProduct(productModel);
-          Get.back();
-        },
-        cancelText: "Cancel",
-        onCancel: () {
-          Get.back();
-        },
-      );
-    }
+    } 
+    // else {
+    //   showPicaAlertDialog(
+    //     message: "Your listing has not been created",
+    //     confirmText: "Try again",
+    //     onConfirm: () {
+    //       createProduct(productModel);
+    //       Get.back();
+    //     },
+    //     cancelText: "Cancel",
+    //     onCancel: () {
+    //       Get.back(closeOverlays: true, canPop: false);
+    //     },
+    //   );
+    // }
   }
 
   void onSubmit(CommonDetailsModel commonDetails) {

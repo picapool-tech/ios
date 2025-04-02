@@ -46,15 +46,18 @@ class FeebackSheet extends StatelessWidget {
           const SizedBox(height: 20),
           // Submit Form Button
           Obx(
-            () => PicaPrimaryButton(
-              onPressed: feedbackController.isButtonActive.value
-                  ? () {
-                      _sendFeedback(feedbackController.feedbackTextController
-                          .text); // Add your feedback submission logic here
-                    }
-                  : null,
-              text: "Submit Form",
-              isLoading: feedbackController.isLoading,
+            () => SizedBox(
+              width: double.infinity,
+              child: PicaPrimaryButton(
+                onPressed: feedbackController.isButtonActive.value
+                    ? () {
+                        _sendFeedback(feedbackController.feedbackTextController
+                            .text); // Add your feedback submission logic here
+                      }
+                    : null,
+                text: "Submit Form",
+                isLoading: feedbackController.isLoading,
+              ),
             ),
           ),
           // Rate Us on Play Store Button

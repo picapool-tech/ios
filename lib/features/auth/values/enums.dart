@@ -3,4 +3,5 @@ enum AuthLoadingEnum {
   google,
   apple,
   verifyOtp,
+  updatePhone,
 }

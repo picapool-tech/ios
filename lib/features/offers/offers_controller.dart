@@ -35,6 +35,19 @@ class OffersController extends GetxController
   final LocationController _locationController = Get.find<LocationController>();
   final OffersApi _offersApi = OffersApi();
 
+  Future<Offer?> deleteOffer({required int offerId}) async {
+    try {
+      var response = await _offersApi.deleteOffer(id: offerId);
+      return response.fold(
+        (error) => null,
+        (offer) => offer,
+      );
+    } catch (e) {
+      debugPrint("Error in deleting offer");
+      return null;
+    }
+  }
+
   Future<void> fetchAllOffers() async {
     isLoading.value = true;
     errorMessage.value = '';

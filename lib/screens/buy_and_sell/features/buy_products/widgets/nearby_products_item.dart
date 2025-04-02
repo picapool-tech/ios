@@ -31,7 +31,7 @@ class NearbyProductsItem extends StatelessWidget {
         );
       },
       child: Card(
-        elevation: 1,
+        elevation: product.isProductSold() ? 0 : 1,
         color: AppTheme.currentTheme.scaffoldBackgroundColor,
         child: Padding(
           padding: const EdgeInsets.all(8),
@@ -43,6 +43,7 @@ class NearbyProductsItem extends StatelessWidget {
                 timeSinceAgo: DateTimeHelper.timeAgoSince(
                   product.createdAt.toIso8601String(),
                 ),
+                isSold: product.isProductSold(),
               ),
               const SizedBox(
                 height: 4,
@@ -58,21 +59,22 @@ class NearbyProductsItem extends StatelessWidget {
               ),
               RichText(
                 text: TextSpan(
-                    text: '₹ ${product.mrp ?? "Not Available"}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(decoration: TextDecoration.lineThrough),
-                    children: [
-                      if (product.offerPrice != null)
-                        TextSpan(
-                          text: " ${product.offerPrice}",
-                          style: const TextStyle(
-                            decoration: TextDecoration.none,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  text: '₹ ${product.mrp ?? "Not Available"}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(decoration: TextDecoration.lineThrough),
+                  children: [
+                    if (product.offerPrice != null)
+                      TextSpan(
+                        text: " ${product.offerPrice}",
+                        style: const TextStyle(
+                          decoration: TextDecoration.none,
+                          fontWeight: FontWeight.bold,
                         ),
-                    ]),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),

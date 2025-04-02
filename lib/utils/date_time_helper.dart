@@ -46,8 +46,10 @@ class DateTimeHelper {
 
   static String formatDateTimeExpiry(DateTime expiryDate) {
     DateTime now = DateTime.now();
-    if (now.isAfter(expiryDate)) {
-      return 'Expired';
+    final difference = expiryDate.difference(now);
+
+    if (difference.isNegative) {
+      return "Expired";
     }
 
     return DateTimeHelper.durationFormat(

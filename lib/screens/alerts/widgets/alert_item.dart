@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/alerts/widgets/caption_text_with_icon.dart';
+import 'package:picapool/screens/alerts/widgets/count_down_timer.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
 
@@ -13,6 +14,7 @@ class AlertListItem extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onJoinChat;
   final RxBool isLoading;
+  final VoidCallback? onExpired;
 
   const AlertListItem({
     Key? key,
@@ -21,6 +23,7 @@ class AlertListItem extends StatelessWidget {
     required this.onTap,
     required this.onJoinChat,
     required this.isLoading,
+    this.onExpired,
   }) : super(key: key);
 
   @override
@@ -29,7 +32,7 @@ class AlertListItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.fromLTRB(15, 15, 15, 10),
         decoration: roundedContainer().copyWith(
           color: AppTheme.currentTheme.scaffoldBackgroundColor,
           border: Border.all(
@@ -51,15 +54,18 @@ class AlertListItem extends StatelessWidget {
                       TitleWithAdditionalText(
                         titleText: offer.name.replaceAll("- FROM BRANDS", ""),
                         additionalText: DateTimeHelper.timeAgoSince(
-                            offer.createdAt.toIso8601String()),
+                          offer.createdAt.toIso8601String(),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       _buildTagInfo(),
                       const SizedBox(height: 8),
                       CaptionTextWithIcon(
                         icon: Icons.access_time,
-                        text:
-                            "Expires in ${DateTimeHelper.formatDateTimeExpiry(offer.expiryAt)}",
+                        label: CountdownTimer(
+                          expiryTime: offer.expiryAt,
+                          onExpired: onExpired,
+                        ),
                       ),
                     ],
                   ),

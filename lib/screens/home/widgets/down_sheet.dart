@@ -83,7 +83,7 @@ class _DownSheetState extends State<DownSheet> {
             ),
             const PoolingCategoriesList(),
             const SizedBox(
-              height: kToolbarHeight + 50,
+              height: kToolbarHeight + 100,
             ),
           ],
         ),

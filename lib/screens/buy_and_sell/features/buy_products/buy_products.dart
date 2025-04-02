@@ -48,9 +48,6 @@ class _BuyProductsState extends State<BuyProducts>
                 ),
               ),
             ),
-            // SliverToBoxAdapter(
-            //   child: FilterRow(onSelected: (selectedFilter) {}),
-            // ),
           ];
         },
         body: const Column(

@@ -6,6 +6,7 @@ import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';
 
 class ChatAndOfferModel {
@@ -210,7 +211,21 @@ class ChatApi with PicapoolApiClass {
     }
   }
 
-  FutureEither<List<ChatAndOfferModel>> getChats() async {
+  FutureEither<Chat> getChatWithId({
+    required int chatId,
+  }) async {
+    var response = await api.makeRequest(
+      enpoint: APIEndpoints.getChatById(chatId),
+      method: RequestMethod.getRequest,
+    );
+
+    return response.fold((error) => left(error), (responseModel) async {
+      var chat = await responseModel.parseData<Chat>(Chat.fromJson);
+      return right(chat);
+    });
+  }
+
+  FutureEither<List<ChatAndOfferModel>> getUsersChats() async {
     try {
       final response = await api.makeRequest(
         enpoint: APIEndpoints.getUserChats,

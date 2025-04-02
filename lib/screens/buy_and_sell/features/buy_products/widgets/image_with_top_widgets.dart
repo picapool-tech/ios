@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/floating_top_widgets.dart';
 import 'package:picapool/utils/theme.dart';
 
@@ -9,10 +10,13 @@ class ImageWithTopWidgets extends StatelessWidget {
   final String? imageUrl;
   final String timeSinceAgo;
 
+  final bool isSold;
+
   const ImageWithTopWidgets({
     super.key,
     this.imageUrl,
     required this.timeSinceAgo,
+    required this.isSold,
   });
 
   @override
@@ -37,6 +41,8 @@ class ImageWithTopWidgets extends StatelessWidget {
               width: double.infinity,
               height: MediaQuery.sizeOf(context).width * 0.3,
               fit: BoxFit.cover,
+              color: isSold ? Colors.grey : null,
+              colorBlendMode: isSold ? BlendMode.color : null,
             ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -47,13 +53,17 @@ class ImageWithTopWidgets extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
               ),
-              // const FloatingTopWidgets(
-              //   direction: FloatingTopWidgetDirection.right,
-              //   child: Icon(
-              //     Icons.favorite_border_rounded,
-              //     size: kDefaultFontSize + 2,
-              //   ),
-              // ),
+              if (isSold)
+                FloatingTopWidgets(
+                  direction: FloatingTopWidgetDirection.right,
+                  child: Text(
+                    "SOLD",
+                    style: Get.textTheme.labelSmall?.copyWith(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
             ],
           ),
         ],

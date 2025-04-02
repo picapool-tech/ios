@@ -1,18 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:jwt_decode/jwt_decode.dart';
-import 'package:picapool/core/core.dart';
-import 'package:picapool/features/network/connection_status_listener.dart';
+import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/chat_unread_model.dart';
-import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/user_model.dart';
-import 'package:picapool/screens/login/login_screen_imp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageController extends GetxController {
@@ -35,64 +29,66 @@ class StorageController extends GetxController {
     update();
   }
 
-  Future<String?> getAccessToken() async {
-    if (isGuest.value) {
-      return null;
-    }
-    if (auth.value == null) {
-      await loadAuth();
-    }
-    debugPrint("Storage Auth: ${auth.toJson()}");
-    if (auth.value != null && auth.value!.accessToken != null) {
-      if (Jwt.isExpired(auth.value!.accessToken!)) {
-        if (user.value == null) {
-          debugPrint("User is null");
-          return null;
-        }
+  // Future<String?> getAccessToken() async {
+  //   if (isGuest.value) {
+  //     return null;
+  //   }
 
-        if (!await ConnectionStatusListener.getInstance().checkConnection()) {
-          debugPrint("No internet connection");
-          return null;
-        }
+  //   if (auth.value == null) {
+  //     await loadAuth();
+  //   }
 
-        final result = await updateAccessToken(
-          accessToken: auth.value!.accessToken!,
-          refreshToken: auth.value!.refreshToken!,
-          userId: user.value!.id,
-        );
+  //   debugPrint("Storage Auth: ${auth.toJson()}");
+  //   if (auth.value != null && auth.value!.accessToken != null) {
+  //     if (Jwt.isExpired(auth.value!.accessToken!)) {
+  //       if (user.value == null) {
+  //         debugPrint("User is null");
+  //         return null;
+  //       }
 
-        return result.fold(
-          (fail) {
-            debugPrint(
-                "Error while updating access token: $fail in storage controller.");
-            clearAuth();
-            clearUser();
-            Get.offAll(() => LoginScreenImp());
+  //       if (!await ConnectionStatusListener.getInstance().checkConnection()) {
+  //         debugPrint("No internet connection");
+  //         return null;
+  //       }
 
-            return null;
-          },
-          (newAccessToken) async {
-            var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
-            await saveAuth(newAuth);
-            await saveAccessToken(newAccessToken);
-            auth.value = newAuth;
-            update();
-            debugPrint(
-              "Getting access Token : $newAccessToken : ${auth.value!.accessToken}",
-            );
-            return newAccessToken;
-          },
-        );
-      } else {
-        debugPrint("Access Token is not expired");
-        return auth.value!.accessToken;
-      }
-    }
-    clearAuth();
-    clearUser();
-    Get.offAll(() => LoginScreenImp());
-    return null;
-  }
+  //       final result = await updateAccessToken(
+  //         accessToken: auth.value!.accessToken!,
+  //         refreshToken: auth.value!.refreshToken!,
+  //         userId: user.value!.id,
+  //       );
+
+  //       return result.fold(
+  //         (fail) {
+  //           debugPrint(
+  //               "Error while updating access token: $fail in storage controller.");
+  //           clearAuth();
+  //           clearUser();
+  //           Get.find<AuthStateManager>().refreshAuthState();
+
+  //           return null;
+  //         },
+  //         (newAccessToken) async {
+  //           var newAuth = auth.value!.copyWith(accessToken: newAccessToken);
+  //           await saveAuth(newAuth);
+  //           await saveAccessToken(newAccessToken);
+  //           auth.value = newAuth;
+  //           update();
+  //           debugPrint(
+  //             "Getting access Token : $newAccessToken : ${auth.value!.accessToken}",
+  //           );
+  //           return newAccessToken;
+  //         },
+  //       );
+  //     } else {
+  //       debugPrint("Access Token is not expired");
+  //       return auth.value!.accessToken;
+  //     }
+  //   }
+  //   clearAuth();
+  //   clearUser();
+  //   Get.find<AuthStateManager>().refreshAuthState();
+  //   return null;
+  // }
 
   Future<Map<int, ChatUnreadModel>> getLastReadMessagesWithChatId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -166,9 +162,14 @@ class StorageController extends GetxController {
   Future<void> logout() async {
     await clearAuth();
     await clearUser();
-    if (!Get.currentRoute.contains("login")) {
-      Get.offAll(() => LoginScreenImp());
-    }
+    try {
+      var manager = Get.find<AuthStateManager>();
+      manager.refreshAuthState();
+    } catch (e) {}
+
+    // if (!Get.currentRoute.contains("login")) {
+    //   Get.offAll(() => LoginScreenImp());
+    // }
   }
 
   @override
@@ -251,46 +252,46 @@ class StorageController extends GetxController {
     isGuest.value = boolValue;
   }
 
-  FutureEither<String> updateAccessToken({
-    required String accessToken,
-    required String refreshToken,
-    required int userId,
-  }) async {
-    debugPrint('REQUESTED FOR UPDATE ACCESS TOKEN');
-    debugPrint('Refresh token: $refreshToken');
-    try {
-      final response = await http.post(
-        Uri.parse("https://api.picapool.com/v2/auth/accessToken"),
-        body: jsonEncode({
-          "refreshToken": refreshToken,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-      debugPrint('UPDATE ACCESS TOKEN RESPONSE CODE : ${response.statusCode}');
+  // FutureEither<String> updateAccessToken({
+  //   required String accessToken,
+  //   required String refreshToken,
+  //   required int userId,
+  // }) async {
+  //   debugPrint('REQUESTED FOR UPDATE ACCESS TOKEN');
+  //   debugPrint('Refresh token: $refreshToken');
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse("https://api.picapool.com/v2/auth/accessToken"),
+  //       body: jsonEncode({
+  //         "refreshToken": refreshToken,
+  //       }),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         'Authorization': 'Bearer $accessToken',
+  //       },
+  //     );
+  //     debugPrint('UPDATE ACCESS TOKEN RESPONSE CODE : ${response.statusCode}');
 
-      debugPrint('Response :  ${response.body}');
-      var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
-      if (responseModel.success) {
-        String newAccessToken = responseModel.data['newAccessToken'] as String;
-        debugPrint("New access TOken from server: $newAccessToken");
-        return right(newAccessToken);
-      }
-      return left(
-        Failure(message: responseModel.message, stackTrace: StackTrace.current),
-      );
-    } catch (e) {
-      debugPrint('Error updating access token: $e');
-      return left(
-        Failure(
-          message: "Not able to refresh the access token",
-          stackTrace: StackTrace.fromString(
-            e.toString(),
-          ),
-        ),
-      );
-    }
-  }
+  //     debugPrint('Response :  ${response.body}');
+  //     var responseModel = ResponseModel.fromJson(jsonDecode(response.body));
+  //     if (responseModel.success) {
+  //       String newAccessToken = responseModel.data['newAccessToken'] as String;
+  //       debugPrint("New access TOken from server: $newAccessToken");
+  //       return right(newAccessToken);
+  //     }
+  //     return left(
+  //       Failure(message: responseModel.message, stackTrace: StackTrace.current),
+  //     );
+  //   } catch (e) {
+  //     debugPrint('Error updating access token: $e');
+  //     return left(
+  //       Failure(
+  //         message: "Not able to refresh the access token",
+  //         stackTrace: StackTrace.fromString(
+  //           e.toString(),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
 }

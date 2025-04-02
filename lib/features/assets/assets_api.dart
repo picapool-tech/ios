@@ -35,7 +35,6 @@ class AssetsApi with PicapoolApiClass {
   FutureEither<String> uploadImageToServer({
     XFile? pickedFile,
     required String fileName,
-    required String accessToken,
   }) async {
     if (pickedFile == null) {
       return left(Failure(
