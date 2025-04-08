@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MainHeadingOptionsData {
   final String imagePath;
   final String text;
-  final Widget destinationPage;
+  final String routePath;
   final bool isDisabled;
   final bool showModelSheet;
   final void Function()? customTapAction;
@@ -11,7 +11,7 @@ class MainHeadingOptionsData {
   const MainHeadingOptionsData({
     required this.imagePath,
     required this.text,
-    required this.destinationPage,
+    required this.routePath,
     this.isDisabled = false,
     this.showModelSheet = false,
     this.customTapAction,

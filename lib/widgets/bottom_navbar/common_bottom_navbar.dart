@@ -109,7 +109,9 @@ class _NewBottomBarState extends State<NewBottomBar> {
   initState() {
     super.initState();
 
-    _selectedIndex = widget.currentIndex;
+    // Read from arguments if available
+    final args = Get.arguments;
+    _selectedIndex = args?['currentIndex'] ?? widget.currentIndex;
 
     listenNotification();
 
