@@ -6,6 +6,7 @@ import 'package:picapool/screens/chats/chat_homeScreen.dart';
 import 'package:picapool/screens/home/home_screen.dart';
 import 'package:picapool/screens/middle_button/middle_button.dart';
 import 'package:picapool/screens/profile_page/profile_page.dart';
+import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
@@ -47,7 +48,7 @@ class _MainScreenState extends State<MainScreen>
                 child: FloatingActionButton(
                   elevation: 0,
                   onPressed: () {
-                    Get.to(() => const PoolOffersScreen());
+                    Get.toNamed(GetRoutes.poolOffers);
                   },
                   backgroundColor: AppTheme.currentTheme.primaryColor,
                   shape: const CircleBorder(),

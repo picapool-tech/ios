@@ -19,7 +19,7 @@ class MainHeadingOptionsWidget extends StatelessWidget {
     return GestureDetector(
       onTap: (!mainHeadingOptionData.isDisabled)
           ? () {
-              Get.to(() => mainHeadingOptionData.destinationPage);
+              Get.toNamed(mainHeadingOptionData.routePath);
             }
           : null,
       child: Column(

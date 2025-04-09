@@ -5,21 +5,21 @@ import 'package:picapool/screens/home/values/main_heading_options.dart';
 import 'package:picapool/screens/home/widgets/main_heading_options.dart';
 
 class PoolingCategoriesList extends StatelessWidget {
-  final List<MainHeadingOptionsData> poolingCategories;
+  final List<MainHeadingOptionsData>? poolingCategories;
 
   const PoolingCategoriesList(
-      {super.key,
-      this.poolingCategories = MainHeadingOptions.poolingCategories});
+      {super.key, this.poolingCategories});
 
   @override
   Widget build(BuildContext context) {
+    final poolingCategoriesItems = poolingCategories ?? MainHeadingOptions.poolingCategories;
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(3, (index) {
             return MainHeadingOptionsWidget(
-              mainHeadingOptionData: poolingCategories[index],
+              mainHeadingOptionData: poolingCategoriesItems[index],
               smallIcon: true,
             );
           }),
@@ -31,7 +31,7 @@ class PoolingCategoriesList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(3, (index) {
             return MainHeadingOptionsWidget(
-              mainHeadingOptionData: poolingCategories[index + 3],
+              mainHeadingOptionData: poolingCategoriesItems[index + 3],
               smallIcon: true,
             );
           }),

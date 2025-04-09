@@ -46,7 +46,7 @@ void main() async {
     name: "new-picapool",
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   await Env.load();
 
