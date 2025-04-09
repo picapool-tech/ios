@@ -13,7 +13,7 @@ class SelectedProductPage extends StatefulWidget {
   });
 
   @override
-  _SelectedProductPageState createState() => _SelectedProductPageState();
+  State<SelectedProductPage> createState() => _SelectedProductPageState();
 }
 
 class _SelectedProductPageState extends State<SelectedProductPage> {
@@ -101,11 +101,7 @@ class _SelectedProductPageState extends State<SelectedProductPage> {
                             fit: BoxFit.cover,
                           )
                       ],
-                      // .map((item) => ClipRRect(
-                      //       borderRadius: BorderRadius.circular(10),
-                      //       child: ,
-                      //     ))
-                      // .toList(),
+                      
                     ),
                   ),
                   Row(

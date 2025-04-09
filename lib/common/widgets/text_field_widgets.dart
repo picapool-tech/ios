@@ -13,6 +13,7 @@ class PicaEmailField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Function(String)? onChanged;
   final TextInputAction? textInputAction;
+  final double borderRadius;
 
   const PicaEmailField({
     Key? key,
@@ -22,6 +23,7 @@ class PicaEmailField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.textInputAction = TextInputAction.next,
+    this.borderRadius = kTextFieldBorderRadius,
   }) : super(key: key);
 
   @override
@@ -80,6 +82,8 @@ class PicaOutlinedTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final AutovalidateMode? autovalidateMode;
   final bool enabled;
+  final double borderRadius;
+  final TextStyle? textStyle;
 
   const PicaOutlinedTextField({
     Key? key,
@@ -113,6 +117,8 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.validator,
     this.autovalidateMode,
     this.enabled = true,
+    this.textStyle,
+    this.borderRadius = kTextFieldBorderRadius,
   }) : super(key: key);
 
   @override
@@ -138,7 +144,7 @@ class PicaOutlinedTextField extends StatelessWidget {
       enabled: enabled,
       autovalidateMode: autovalidateMode,
       cursorColor: primaryColor,
-      style: theme.textTheme.bodyMedium,
+      style: textStyle ?? theme.textTheme.bodyMedium,
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
@@ -164,24 +170,24 @@ class PicaOutlinedTextField extends StatelessWidget {
               vertical: 16,
             ), // Adjusted vertical padding
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(kTextFieldBorderRadius),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide(color: theme.colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(kTextFieldBorderRadius),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide:
               BorderSide(color: theme.colorScheme.outline.withOpacity(0.5)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(kTextFieldBorderRadius),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(kTextFieldBorderRadius),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide(color: theme.colorScheme.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(kTextFieldBorderRadius),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
         ),
       ),
@@ -220,7 +226,7 @@ class PicaPasswordField extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _PicaPasswordFieldState createState() => _PicaPasswordFieldState();
+  State<PicaPasswordField> createState() => _PicaPasswordFieldState();
 }
 
 /// Phone number field with formatting

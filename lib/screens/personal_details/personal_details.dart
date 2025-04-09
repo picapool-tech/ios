@@ -121,6 +121,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               const SizedBox(height: 16),
               WidgetWithCustomHeading(
                 title: "Phone number",
+                isRequired: false,
                 child: _buildPhoneField(),
               ), // Phone field is optional now
               const SizedBox(height: 16),

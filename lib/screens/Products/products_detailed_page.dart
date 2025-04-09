@@ -12,8 +12,8 @@ import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
-import 'package:picapool/screens/products/send_to_whatsapp.dart';
 import 'package:picapool/screens/product_buy_page.dart';
+import 'package:picapool/screens/products/send_to_whatsapp.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/loading/chat_loading.dart';
@@ -135,6 +135,8 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     return true;
   }
 
+  // the start time and interval of the offer is:
+  // created at offer's time indicate the start hour of the offer for each day between created day and expriy day.
   bool get isBetweenDates =>
       (now.isAtSameMomentAs(widget.offer.createdAt) ||
           now.isAfter(widget.offer.createdAt)) &&
@@ -150,15 +152,17 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
         widget.offer.expiryAt.hour * 60 + widget.offer.expiryAt.minute;
     final nowTotalMinutes = now.hour * 60 + now.minute;
 
-    debugPrint("Start hour: ${widget.offer.createdAt.hour}\n"
-        "Start minute: ${widget.offer.createdAt.minute}\n"
-        "End hour: ${widget.offer.expiryAt.hour}\n"
-        "End minute: ${widget.offer.expiryAt.minute}\n"
-        "Now hour: ${now.hour}\n"
-        "Now minute: ${now.minute}\n"
-        "Start total minutes: $startTotalMinutes\n"
-        "End total minutes: $endTotalMinutes\n"
-        "Now total minutes: $nowTotalMinutes");
+    debugPrint(
+      "Start hour: ${widget.offer.createdAt.hour}\n"
+      "Start minute: ${widget.offer.createdAt.minute}\n"
+      "End hour: ${widget.offer.expiryAt.hour}\n"
+      "End minute: ${widget.offer.expiryAt.minute}\n"
+      "Now hour: ${now.hour}\n"
+      "Now minute: ${now.minute}\n"
+      "Start total minutes: $startTotalMinutes\n"
+      "End total minutes: $endTotalMinutes\n"
+      "Now total minutes: $nowTotalMinutes",
+    );
 
     return nowTotalMinutes >= startTotalMinutes &&
         nowTotalMinutes <= endTotalMinutes;
@@ -491,6 +495,12 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
   }
 
   getAnimation() {
+    if (_remainingDuration <= Duration.zero) {
+      return const Text(
+        "Activating...",
+      );
+    }
+
     return TweenAnimationBuilder<Duration>(
       tween: Tween<Duration>(begin: _remainingDuration, end: Duration.zero),
       duration: _remainingDuration,
@@ -769,9 +779,10 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       }
 
       if (now.isBefore(widget.offer.createdAt)) {
+        final diff = widget.offer.createdAt.difference(now);
         setState(() {
-          isShowingTimer = true;
-          _remainingDuration = widget.offer.createdAt.difference(now);
+          isShowingTimer = diff > Duration.zero;
+          _remainingDuration = diff;
         });
         return;
       }
@@ -780,13 +791,14 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     }
 
     if (!isWithinTime) {
+      final nextTime = now.copyWith(
+          hour: widget.offer.createdAt.hour,
+          minute: widget.offer.createdAt.minute);
+
+      final diff = nextTime.difference(now);
       setState(() {
-        isShowingTimer = true;
-        _remainingDuration = now
-            .copyWith(
-                hour: widget.offer.createdAt.hour,
-                minute: widget.offer.createdAt.minute)
-            .difference(now);
+        isShowingTimer = diff > Duration.zero;
+        _remainingDuration = diff;
       });
       return;
     }

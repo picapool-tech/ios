@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:get/get.dart';
 import 'package:picapool/core/reactive_loading.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/offers/offers_api.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
+import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/offer_search_request_model.dart';
 import 'package:picapool/models/response_model.dart';
+import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 
 class OffersController extends GetxController
@@ -106,14 +109,38 @@ class OffersController extends GetxController
 
     var location = _locationController.state.value;
 
+    var tagController = Get.find<TagController>();
+    List<Tag> tags = tagController.tags;
+    if (tags.isEmpty) {
+      await tagController.getAllTags();
+      tags = tagController.tags;
+    }
+
+    var tagNames = [
+      "Apparel",
+      "Food",
+      "Electronics",
+      "Medical",
+      "Entertain",
+      "Music"
+    ];
+
+    var tagIds = tagNames
+        .map((tagName) => tagController.getTagsByTagName(tagName))
+        .filter((tag) => tag != null)
+        .map((tag) => tag!.id)
+        .toList();
+
     var result = await _offersApi.searchOffer(OfferSearchRequestModel(
       loc: VicinityLocation(
         lat: location.location!.latitude,
         long: location.location!.longitude,
       ),
-      radius: 5000,
-      top: true,
+      radius: 10000,
+      priority: true,
+      tagIds: tagIds,
     ));
+    
     result.fold(
       (error) {
         if (error.showError) {

@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/controllers/brand_controller.dart';
 import 'package:picapool/controllers/category_controller.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
@@ -97,6 +98,52 @@ Future<void> checkingForDynamicLink() async {
   });
 }
 
+FutureVoid handleChatNavigation(int? chatId) async {
+  if (chatId == null) {
+    hidePicaDialog();
+    Get.to(
+      () => const NewBottomBar(
+        currentIndex: 1,
+      ),
+    );
+    return;
+  }
+
+  var chat = await Get.find<ChatController>().getChatFromId(chatId: chatId);
+  if (chat == null) {
+    hidePicaDialog();
+    Get.to(
+      () => const NewBottomBar(
+        currentIndex: 1,
+      ),
+    );
+    return;
+  }
+
+  Offer? offer;
+  LiveOffer? liveOffer;
+  if (chat.offerId != null) {
+    offer = await Get.find<OffersController>().getOfferDetails(chat.offerId!);
+  }
+
+  if (chat.liveOfferId != null) {
+    var liveOfferEntity = await Get.find<LiveOfferController>()
+        .getLiveOffer("${chat.liveOfferId!}");
+    try {
+      liveOffer = LiveOffer.fromJson(liveOfferEntity!.toJson());
+    } catch (e) {
+      debugPrint("Got errror in converting live offer");
+    }
+  }
+  hidePicaDialog();
+  Get.to(ChatPage(
+    chat: chat,
+    chatTitle: parseChatTitle(offer, liveOffer),
+    offer: offer,
+    liveOffer: liveOffer,
+  ));
+}
+
 void handleDynamicLink(PendingDynamicLinkData? dynamicLinkData) {
   if (Get.context == null) {
     debugPrint(
@@ -110,70 +157,44 @@ void handleDynamicLink(PendingDynamicLinkData? dynamicLinkData) {
 
 void handleMessage(RemoteMessage message) async {
   debugPrint("MESSAGE FOUND: ${message.data}");
-  var action = message.data['action'];
-  if (action != null) {
+
+  showPicaLoadingDialog();
+  try {
+    var action = message.data['action'];
+    if (action == null) {
+      hidePicaDialog();
+      return;
+    }
+
     if (action == 'openAlertsPage') {
       var offerId = message.data['offerId'];
       if (offerId != null) {
+        hidePicaDialog();
         Get.to(
           () => const NewBottomBar(
             currentIndex: 2,
           ),
         );
       }
-    } else if (action == "openChatPage") {
-      var chatId = message.data['chatId'];
+      return;
+    }
+
+    if (message.data['chatId'] != null) {
+      String? chatId = message.data['chatId'];
       if (chatId == null) {
-        Get.to(
-          () => const NewBottomBar(
-            currentIndex: 1,
-          ),
-        );
+        hidePicaDialog();
         return;
       }
-
-      var chat = await Get.find<ChatController>().getChatFromId(chatId: chatId);
-      if (chat == null) {
-        Get.to(
-          () => const NewBottomBar(
-            currentIndex: 1,
-          ),
-        );
+      int? chatIdInt = int.tryParse(chatId);
+      if (chatIdInt == null) {
+        hidePicaDialog();
         return;
       }
-
-      Offer? offer;
-      LiveOffer? liveOffer;
-      if (chat.offerId != null) {
-        offer =
-            await Get.find<OffersController>().getOfferDetails(chat.offerId!);
-      }
-
-      if (chat.liveOfferId != null) {
-        var liveOfferEntity = await Get.find<LiveOfferController>()
-            .getLiveOffer("${chat.liveOfferId!}");
-        try {
-          liveOffer = LiveOffer.fromJson(liveOfferEntity!.toJson());
-        } catch (e) {
-          debugPrint("Got errror in converting live offer");
-        }
-      }
-
-      Get.to(ChatPage(
-        chat: chat,
-        chatTitle: parseChatTitle(offer, liveOffer),
-        offer: offer,
-        liveOffer: liveOffer,
-      ));
+      await handleChatNavigation(chatIdInt);
     }
-  } else {
-    if (message.notification!.title!.contains("New Message")) {
-      Get.to(
-        () => const NewBottomBar(
-          currentIndex: 1,
-        ),
-      );
-    }
+  } catch (e) {
+    debugPrint("Some error occured $e");
+    hidePicaDialog();
   }
 }
 
@@ -189,88 +210,10 @@ Future<void> handleNotification(RemoteMessage message) async {
 listenNotification() {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Message received in foreground: ${message.notification?.title}');
-    // You can show a dialog, toast, or in-app UI here.
-    // if (message.notification == null) {
-    //   return;
-    // }
-
-    // debugPrint(
-    //     'Notification opened the app in home: ${message.notification?.title}');
-    // debugPrint('Notification opened the app: ${message.data.toString()}');
-    // debugPrint('Notification opened the app: ${message.notification?.body}');
-
-    // Get.snackbar(
-    //   message.notification!.title ?? 'Notification',
-    //   message.notification!.body ?? 'Notification',
-    //   snackPosition: SnackPosition.TOP,
-    //   backgroundColor: Colors.orange,
-    //   colorText: Colors.white,
-    //   borderRadius: 10,
-    //   margin: const EdgeInsets.all(10),
-    //   icon: Image.asset(
-    //     "assets/images/ic_launcher.png",
-    //     width: 20,
-    //     height: 20,
-    //   ),
-    //   duration: const Duration(seconds: 5),
-    //   onTap: (snack) {
-    //     // if it has chat id, offer id  action to openAlertPage.
-    //     var action = message.data['action'];
-    //     if (action != null) {
-    //       if (action == 'openAlertsPage') {
-    //         var offerId = message.data['offerId'];
-    //         if (offerId != null) {
-    //           setState(() {
-    //             _selectedIndex = 2;
-    //           });
-    //         }
-    //       } else if (action == "openChatPage" ||
-    //           message.notification!.title!.contains("New Message")) {
-    //         setState(() {
-    //           _selectedIndex = 1;
-    //         });
-    //       }
-    //     } else {
-    //       if (message.notification!.title!.contains("New Message")) {
-    //         setState(() {
-    //           _selectedIndex = 1;
-    //         });
-    //         // }
-    //       }
-    //     }
-    //     debugPrint("Performing click on snack bar : ${_selectedIndex}");
-    //   },
-    // );
     showInAppNotification(message);
   });
 
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    // print('Notification clicked while in background: ${message.data}');
-
-    // // Handle navigation or other actions.
-    // var action = message.data['action'];
-    // if (action != null) {
-    //   if (action == 'openAlertsPage') {
-    //     var offerId = message.data['offerId'];
-    //     if (offerId != null) {
-    //       setState(() {
-    //         _selectedIndex = 2;
-    //       });
-    //     }
-    //   } else if (action == "openChatPage" ||
-    //       message.notification!.title!.contains("New Message")) {
-    //     setState(() {
-    //       _selectedIndex = 1;
-    //     });
-    //   }
-    // } else {
-    //   if (message.notification!.title!.contains("New Message")) {
-    //     setState(() {
-    //       _selectedIndex = 1;
-    //     });
-    //     // }
-    //   }
-    // }
     handleMessage(message);
   });
 
@@ -278,29 +221,6 @@ listenNotification() {
     (message) {
       print('---- getInitialMessage called ----');
       if (message != null) {
-        // var action = message.data['action'];
-        // if (action != null) {
-        //   if (action == 'openAlertsPage') {
-        //     var offerId = message.data['offerId'];
-        //     if (offerId != null) {
-        //       setState(() {
-        //         _selectedIndex = 2;
-        //       });
-        //     }
-        //   } else if (action == "openChatPage" ||
-        //       message.notification!.title!.contains("New Message")) {
-        //     setState(() {
-        //       _selectedIndex = 1;
-        //     });
-        //   }
-        // } else {
-        //   if (message.notification!.title!.contains("New Message")) {
-        //     setState(() {
-        //       _selectedIndex = 1;
-        //     });
-        //     // }
-        //   }
-        // }
         handleMessage(message);
       } else {
         print('---- getInitialMessage is not opened ----');
@@ -394,49 +314,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.light,
-      home: AuthCheckScreen(),
-      // GetBuilder<StorageController>(
-      //     init: _storageController,
-      //     builder: (controller) {
-      //       debugPrint(
-      //           "Main rebuild - Auth: ${_storageController.auth.value != null}, User: ${_storageController.user.value != null}");
-
-      //       final auth = _storageController.auth.value;
-      //       final user = _storageController.user.value;
-
-      //       // Clear state for debugging - optional
-      //       if (auth == null || auth.accessToken == null) {
-      //         debugPrint("No valid auth token - showing login screen");
-      //         return LoginScreenImp();
-      //       }
-
-      //       if (user == null) {
-      //         debugPrint("No user data - showing login screen");
-      //         return LoginScreenImp();
-      //       }
-
-      //       if (user.name == null || user.age == null) {
-      //         debugPrint(
-      //             "Missing user details - showing personal details screen");
-      //         return const PersonalDetails();
-      //       }
-
-      //       if (user.username == null ||
-      //           user.username!.isEmpty ||
-      //           user.username!.contains("PIC@USERNAME") ||
-      //           user.username!.contains(
-      //             RegExp(
-      //               r"^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
-      //               dotAll: true,
-      //             ),
-      //           )) {
-      //         debugPrint("Missing username - showing public profile screen");
-      //         return const PublicProfile();
-      //       }
-
-      //       debugPrint("All conditions met - showing home screen");
-      //       return const NewBottomBar();
-      //     }),
+      home: const AuthCheckScreen(),
     );
   }
 

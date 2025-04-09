@@ -7,6 +7,7 @@ class OfferSearchRequestModel {
   final bool? products;
   final bool? top;
   final List<int>? tagIds;
+  final bool? priority;
 
   OfferSearchRequestModel({
     this.top,
@@ -15,6 +16,7 @@ class OfferSearchRequestModel {
     this.radius,
     this.chats,
     this.products,
+    this.priority,
   });
 
   factory OfferSearchRequestModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class OfferSearchRequestModel {
       products: json['products'],
       top: json['top'],
       tagIds: json['tagIds'] != null ? List<int>.from(json['tagIds']) : null,
+      priority: json['priority'],
     );
   }
 
@@ -36,6 +39,7 @@ class OfferSearchRequestModel {
       if (products != null) 'products': products,
       if (tagIds != null) 'tagIds': tagIds,
       if (top != null) 'top': top,
+      if (priority != null) 'priority': priority,
     };
   }
 }

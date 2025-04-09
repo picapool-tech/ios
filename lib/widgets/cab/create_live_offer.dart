@@ -686,13 +686,13 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
             left: 0,
             right: 0,
             child: Center(
-              child: Container(
+              child: BlurryContainer(
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(16),
-                ),
                 child: const Text(
                   'Long press and drag markers to adjust location',
                   textAlign: TextAlign.center,

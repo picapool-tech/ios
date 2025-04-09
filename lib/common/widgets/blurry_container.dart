@@ -34,6 +34,7 @@ class BlurryContainer extends StatelessWidget {
             borderRadius: borderRadius,
             border: border,
           ),
+          clipBehavior: Clip.hardEdge,
           child: child,
         ),
       ),

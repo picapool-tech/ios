@@ -103,13 +103,16 @@ class ChatApi with PicapoolApiClass {
       //   },
       // );
 
-      return response.fold((error) => left(error), (responseModel) {
+      return response.fold((error) => left(error), (responseModel) async {
         if (responseModel.success) {
-          List<Message> messages = [];
-          var data = responseModel.data['Messages'];
-          for (var chat in data) {
-            messages.add(Message.fromJson(chat));
-          }
+          List<Message> messages = await responseModel.parseFieldList<Message>(
+            "Messages",
+            Message.fromJson,
+          );
+          // var data = responseModel.data['Messages'];
+          // for (var chat in data) {
+          //   messages.add(Message.fromJson(chat));
+          // }
           return right(messages);
         } else {
           return left(

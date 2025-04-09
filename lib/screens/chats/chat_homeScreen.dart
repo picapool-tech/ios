@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:picapool/common/functions/color_function.dart';
 import 'package:picapool/common/values/values.dart';
 import 'package:picapool/common/widgets/search_widget.dart';
 import 'package:picapool/features/chats/chat_api.dart';
@@ -10,7 +11,7 @@ import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/chat_unread_model.dart';
-import 'package:picapool/screens/public_chat/chat_page.dart';
+import 'package:picapool/screens/public_chat/chat_page_impl.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/loading/chat_loading.dart';
@@ -205,17 +206,20 @@ class _MyChatsPageState extends State<MyChatsPage> {
                               fit: BoxFit.cover,
                             )
                           : null,
-                      color: hasImage(chat) ? null : const Color(0xffFFEBDF),
+                      color: hasImage(chat)
+                          ? null
+                          : getColorFromString(getChatTitle(chat))
+                              .withAlpha(100),
                     ),
                     child: hasImage(chat)
                         ? null
                         : Center(
                             child: Text(
                               getChatTitle(chat).characters.first.toUpperCase(),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xffFF8D41),
+                                color: getColorFromString(getChatTitle(chat)),
                               ),
                             ),
                           ),
@@ -299,8 +303,13 @@ class _MyChatsPageState extends State<MyChatsPage> {
       return true;
     }
 
+    debugPrint("Last message: ${lastMessageModel.toJson()}");
+    debugPrint("Last message: ${readLastMessage.user?.toJson()}");
+
+    var currentUserName = _userController.user?.username;
     if (readLastMessage.content == lastMessageModel.content &&
-        (lastMessageModel.user?.username == readLastMessage.user?.username)) {
+        (lastMessageModel.user?.username == readLastMessage.user?.username ||
+            lastMessageModel.user?.username == currentUserName)) {
       return false;
     }
 

@@ -132,31 +132,31 @@ class ChatController extends GetxController
             snackPosition: SnackPosition.TOP);
       },
       (messagesList) {
-        messages.value = messagesList;
-        Future.delayed(
-          const Duration(milliseconds: 500),
-          () {
-            if (scrollController.hasClients) {
-              scrollController.animateTo(
-                scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            }
-          },
-        );
+        messages.value = messagesList.reversed.toList();
+        // Future.delayed(
+        //   const Duration(milliseconds: 500),
+        //   () {
+        //     if (scrollController.hasClients) {
+        //       scrollController.animateTo(
+        //         scrollController.position.maxScrollExtent,
+        //         duration: const Duration(milliseconds: 300),
+        //         curve: Curves.easeOut,
+        //       );
+        //     }
+        //   },
+        // );
       },
     );
 
     isLoading.value = false;
     update();
-    if (scrollController.hasClients) {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent + 100,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    // if (scrollController.hasClients) {
+    //   scrollController.animateTo(
+    //     scrollController.position.maxScrollExtent + 100,
+    //     duration: const Duration(milliseconds: 300),
+    //     curve: Curves.easeOut,
+    //   );
+    // }
   }
 
   Future<void> getAllUsersInChat(int chatId) async {
@@ -242,16 +242,16 @@ class ChatController extends GetxController
     if (!usersInChat.containsKey(userId)) {
       getAllUsersInChat(messageModel.chatId!);
     }
-    messages.add(messageModel);
+    messages.insert(0, messageModel);
     update();
     // await Future.wait([Future.value(const Duration(milliseconds: 300))]);
     if (scrollController.hasClients) {
       debugPrint("Scrolling here");
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent + 100,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      // scrollController.animateTo(
+      //   scrollController.position.maxScrollExtent + 100,
+      //   duration: const Duration(milliseconds: 300),
+      //   curve: Curves.easeInOut,
+      // );
     }
     debugPrint("Receive Message $data with data $message");
   }
@@ -283,6 +283,11 @@ class ChatController extends GetxController
     socketService.sendMessage(
       message,
       replyMessageId: replyMessageId,
+    );
+    scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
     );
     debugPrint("I am in sendMessage Function");
   }
