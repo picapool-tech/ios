@@ -579,7 +579,6 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
           hintText: 'Search for location...',
           hintStyle: const TextStyle(
             color: Colors.grey,
-            fontFamily: 'MontserratR',
             fontSize: 16,
           ),
           border: InputBorder.none,
@@ -845,54 +844,54 @@ class _ShareCabScreenState extends State<ShareCabScreen> {
     }
 
     // // Add markers for search results
-    final searchResults = liveOfferController.searchCabsList;
-    if (searchResults != null) {
-      for (var i = 0; i < searchResults.length; i++) {
-        final offer = searchResults[i];
-        if (offer.fromAddress == null || offer.fromAddress!.isEmpty) {
-          debugPrint("Skipping marker: Empty address for offer ${offer.id}");
-          continue;
-        }
-        try {
-          debugPrint("Geocoding address: ${offer.fromAddress}");
-          var locations = await locationFromAddress(offer.fromAddress!);
+    // final searchResults = liveOfferController.searchCabsList;
+    // if (searchResults != null) {
+    //   for (var i = 0; i < searchResults.length; i++) {
+    //     final offer = searchResults[i];
+    //     if (offer.fromAddress == null || offer.fromAddress!.isEmpty) {
+    //       debugPrint("Skipping marker: Empty address for offer ${offer.id}");
+    //       continue;
+    //     }
+    //     try {
+    //       debugPrint("Geocoding address: ${offer.fromAddress}");
+    //       var locations = await locationFromAddress(offer.fromAddress!);
 
-          if (locations.isNotEmpty) {
-            final location = locations.first;
-            debugPrint(
-                "Location found: ${location.latitude}, ${location.longitude}");
+    //       if (locations.isNotEmpty) {
+    //         final location = locations.first;
+    //         debugPrint(
+    //             "Location found: ${location.latitude}, ${location.longitude}");
 
-            final marker = Marker(
-              markerId: MarkerId('offer_${offer.id}'),
-              position: LatLng(location.latitude, location.latitude),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                  BitmapDescriptor.hueOrange),
-              infoWindow: InfoWindow(
-                title: 'Ride ${i + 1}',
-                snippet: '${offer.seats ?? 0} seats available',
-              ),
-            );
+    //         final marker = Marker(
+    //           markerId: MarkerId('offer_${offer.id}'),
+    //           position: LatLng(location.latitude, location.latitude),
+    //           icon: BitmapDescriptor.defaultMarkerWithHue(
+    //               BitmapDescriptor.hueOrange),
+    //           infoWindow: InfoWindow(
+    //             title: 'Ride ${i + 1}',
+    //             snippet: '${offer.seats ?? 0} seats available',
+    //           ),
+    //         );
 
-            setState(() {
-              _markers.add(marker);
-              debugPrint(
-                  "Marker added for offer ${offer.id} - Total markers: ${_markers.length}");
-            });
+    //         setState(() {
+    //           _markers.add(marker);
+    //           debugPrint(
+    //               "Marker added for offer ${offer.id} - Total markers: ${_markers.length}");
+    //         });
 
-            if (mapController != null) {
-              mapController!
-                  .showMarkerInfoWindow(MarkerId('offer_${offer.id}'));
-            }
-          } else {
-            debugPrint("No location found for address: ${offer.fromAddress}");
-          }
-        } catch (e) {
-          debugPrint("Error geocoding address: ${offer.fromAddress} - $e");
-        }
-      }
-    }
-    if (_markers.length > 1 && mapController != null) {
-      _fitMarkersToMap();
-    }
+    //         if (mapController != null) {
+    //           mapController!
+    //               .showMarkerInfoWindow(MarkerId('offer_${offer.id}'));
+    //         }
+    //       } else {
+    //         debugPrint("No location found for address: ${offer.fromAddress}");
+    //       }
+    //     } catch (e) {
+    //       debugPrint("Error geocoding address: ${offer.fromAddress} - $e");
+    //     }
+    //   }
+    // }
+    // if (_markers.length > 1 && mapController != null) {
+    //   _fitMarkersToMap();
+    // }
   }
 }

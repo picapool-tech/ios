@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/values/values.dart';
+import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/features/auth/auth_controller.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
@@ -51,7 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           brightness: Brightness.dark,
         ),
         actions: [
-          ElevatedButton(
+          PicaPrimaryButton(
+            isLoading: false.obs,
             onPressed: () async {
               if (kDebugMode) {
                 Get.to(
@@ -67,20 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 debugPrint("Could not launch $url");
               }
             },
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-              backgroundColor: Colors.orange,
-            ),
-            child: const Text(
-              "Help",
-              style: TextStyle(
-                fontFamily: "MontserratSB",
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
+            text: "Help",
           ),
         ],
       ),
@@ -102,93 +93,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
               clipBehavior: Clip.hardEdge,
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.currentTheme.scaffoldBackgroundColor,
-                    border: Border.all(
-                      color: AppTheme.currentTheme.primaryColor,
-                      width: 1.5,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.currentTheme.scaffoldBackgroundColor,
+                        border: Border.all(
+                          color: AppTheme.currentTheme.primaryColor,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      margin: const EdgeInsets.fromLTRB(
+                        16,
+                        20,
+                        16,
+                        20,
+                      ),
+                      child: Column(
+                        children: [
+                          TileButton(
+                            imagePath: "assets/icons/Bell.png",
+                            title: 'Notification Preferences',
+                            onTap: () => Get.to(
+                              () => const NotificationPreferences(),
+                            ),
+                          ),
+                          TileButton(
+                              imagePath: "assets/icons/History.png",
+                              title: 'Pooling History',
+                              onTap: () {
+                                Get.to(() => const PoolingHistory());
+                              }),
+                          TileButton(
+                            imagePath: "assets/icons/Letter Opened.png",
+                            title: 'Feedback Form',
+                            onTap: () {
+                              _showFeedbackModal(context);
+                            },
+                          ),
+                          TileButton(
+                            imagePath: "assets/icons/Frame 157.png",
+                            title: 'Permissions',
+                            onTap: () {
+                              _showPermissionsModal(
+                                  context); // Open permissions modal
+                            },
+                          ),
+                          TileButton(
+                            imagePath: "assets/icons/File Text.png",
+                            title: 'Privacy Policy',
+                            onTap: () async {
+                              // Open privacy policy page
+                              final Uri url = Uri.parse(
+                                'https://www.picapool.com/privacy-policy.html',
+                              );
+                              debugPrint(url.toString());
+                              if (!await launchUrl(url)) {
+                                debugPrint("Could not launch $url");
+                              }
+                            },
+                          ),
+                          TileButton(
+                            imagePath: "assets/icons/Group 59.png",
+                            title: 'App Guide',
+                            isDisabled: true,
+                            onTap: () {},
+                          ),
+                          if (kDebugMode)
+                            TileButton(
+                              imagePath: "assets/icons/Group 59.png",
+                              title: 'Delete Account',
+                              onTap: () {},
+                            ),
+                          TileButton(
+                            imagePath: "assets/icons/Frame 59.png",
+                            title: 'Logout',
+                            onTap: () {
+                              _showLogoutModal(context);
+                              // setState(() {});
+                            },
+                            isLast: true,
+                          ),
+                        ],
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  margin: const EdgeInsets.fromLTRB(
-                    16,
-                    20,
-                    16,
-                    kBottomNavigationBarHeight + 50,
-                  ),
-                  child: Column(
-                    children: [
-                      TileButton(
-                        imagePath: "assets/icons/Bell.png",
-                        title: 'Notification Preferences',
-                        onTap: () => Get.to(
-                          () => const NotificationPreferences(),
-                        ),
+                    Text(
+                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} v3.1.1 (310)",
+                      textAlign: TextAlign.center,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppTheme.currentTheme.disabledColor,
+                        fontSize: 14,
                       ),
-                      TileButton(
-                          imagePath: "assets/icons/History.png",
-                          title: 'Pooling History',
-                          onTap: () {
-                            Get.to(() => const PoolingHistory());
-                          }),
-                      TileButton(
-                        imagePath: "assets/icons/Letter Opened.png",
-                        title: 'Feedback Form',
-                        onTap: () {
-                          _showFeedbackModal(context);
-                        },
-                      ),
-                      TileButton(
-                        imagePath: "assets/icons/Frame 157.png",
-                        title: 'Permissions',
-                        onTap: () {
-                          _showPermissionsModal(
-                              context); // Open permissions modal
-                        },
-                      ),
-                      TileButton(
-                        imagePath: "assets/icons/File Text.png",
-                        title: 'Privacy Policy',
-                        onTap: () async {
-                          // Open privacy policy page
-                          final Uri url = Uri.parse(
-                            'https://www.picapool.com/privacy-policy.html',
-                          );
-                          debugPrint(url.toString());
-                          if (!await launchUrl(url)) {
-                            debugPrint("Could not launch $url");
-                          }
-                        },
-                      ),
-                      TileButton(
-                        imagePath: "assets/icons/Group 59.png",
-                        title: 'App Guide',
-                        isDisabled: true,
-                        onTap: () {},
-                      ),
-                      if (kDebugMode)
-                        TileButton(
-                          imagePath: "assets/icons/Group 59.png",
-                          title: 'Delete Account',
-                          onTap: () {},
-                        ),
-                      TileButton(
-                        imagePath: "assets/icons/Frame 59.png",
-                        title: 'Logout',
-                        onTap: () {
-                          _showLogoutModal(context);
-                          // setState(() {});
-                        },
-                        isLast: true,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
             ),
           ),
+          // Footer section with version number
         ],
       ),
     );

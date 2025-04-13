@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
+import 'package:picapool/features/offers/values/offer_loading_enums.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
@@ -270,7 +271,7 @@ class PoolOffersScreen extends StatefulWidget {
   const PoolOffersScreen({super.key});
 
   @override
-  _PoolOffersScreenState createState() => _PoolOffersScreenState();
+  State<PoolOffersScreen> createState() => _PoolOffersScreenState();
 }
 
 class _PoolOffersScreenState extends State<PoolOffersScreen> {
@@ -337,47 +338,90 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
               ),
             ),
             // Pools found container
-            Positioned(
-              bottom: 350,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.currentTheme.canvasColor,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Pools found',
-                      style: TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Obx(() {
-                      return Text(
-                        _offersController.nearestOffers.length.toString(),
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                          fontFamily: "MontserratM",
-                        ),
-                      );
-                    }),
-                  ],
-                ),
+            // Positioned(
+            //   bottom: 350,
+            //   right: 16,
+            //   child: Container(
+            //     padding: const EdgeInsets.all(12),
+            //     decoration: BoxDecoration(
+            //       color: AppTheme.currentTheme.canvasColor,
+            //       borderRadius: BorderRadius.circular(15),
+            //       boxShadow: [
+            //         BoxShadow(
+            //           color: Colors.black.withOpacity(0.1),
+            //           spreadRadius: 2,
+            //           blurRadius: 4,
+            //         ),
+            //       ],
+            //     ),
+            //     child: Column(
+            //       children: [
+            //         const Text(
+            //           'Pools found',
+            //           style: TextStyle(
+            //             color: Colors.grey,
+            //           ),
+            //         ),
+            //         const SizedBox(height: 4),
+            //         Obx(() {
+            //           return Text(
+            //             _offersController.nearestOffers.length.toString(),
+            //             style: const TextStyle(
+            //               fontSize: 28,
+            //               fontWeight: FontWeight.bold,
+            //               color: Colors.orange,
+            //               fontFamily: "MontserratM",
+            //             ),
+            //           );
+            //         }),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // Top Container with Dividers and 'Pools near me' Text
+          ],
+        ),
+      ),
+      floatingActionButton: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.currentTheme.canvasColor,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Pools found',
+              style: TextStyle(
+                color: Colors.grey,
               ),
             ),
-            // Top Container with Dividers and 'Pools near me' Text
+            const SizedBox(height: 4),
+            Obx(
+              () {
+                if (_offersController
+                    .getLoadingState(OfferLoadingEnums.middleButton)
+                    .value) {
+                  return const CircularProgressIndicator();
+                }
+                return Text(
+                  _offersController.nearestOffers.length.toString(),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

@@ -221,6 +221,15 @@ class ChatController extends GetxController
     );
   }
 
+  Message? getMessageFromId(int? parentId) {
+    if (parentId == null) {
+      return null;
+    }
+    var result =
+        messages.where((message) => message.id == parentId).toList().first;
+    return result;
+  }
+
   FutureVoid getReadChatMessages() async {
     readMessages.value =
         await _storageController.getLastReadMessagesWithChatId();

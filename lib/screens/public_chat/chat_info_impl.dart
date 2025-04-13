@@ -27,6 +27,7 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
   int _currentPage = 0;
   double _titlePaddingLeft = 24.0;
 
+  late Color color = getColorFromString(widget.offer?.name ?? "Chat Info");
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,8 +39,7 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
             expandedHeight: 200.0,
             floating: false,
             pinned: true,
-            backgroundColor:
-                AppTheme.currentTheme.colorScheme.secondary.withAlpha(200),
+            backgroundColor: AppTheme.currentTheme.colorScheme.secondary,
             elevation: 0,
             automaticallyImplyLeading: true,
             flexibleSpace: FlexibleSpaceBar(
@@ -49,7 +49,8 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                 children: [
                   Obx(
                     () => _chatController.usersInChat.isNotEmpty
-                        ? IntrinsicHeight(
+                        ? SizedBox(
+                            height: 30,
                             child: Marquee(
                               blankSpace: 20,
                               text: widget.offer?.name
@@ -105,33 +106,37 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.offer?.images.length ?? 0,
-                    physics: const PageScrollPhysics(),
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPage = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          // Optional: Add behavior when tapping an image
-                        },
-                        child: Image.network(
-                          widget.offer!.images[index],
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                                child: CircularProgressIndicator());
+                  if (widget.offer != null &&
+                      widget.offer!.images.isNotEmpty &&
+                      widget.offer!.images.first.isNotEmpty)
+                    PageView.builder(
+                      controller: _pageController,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.offer?.images.length ?? 0,
+                      physics: const PageScrollPhysics(),
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPage = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            // Optional: Add behavior when tapping an image
                           },
-                        ),
-                      );
-                    },
-                  ),
+                          child: Image.network(
+                            widget.offer!.images[index],
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   Positioned(
                     top: 0,
                     left: 0,
@@ -163,8 +168,7 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: getColorFromString(widget.offer?.name ?? "Chat Info")
-                      .darken(),
+                  color: color.darken(),
                 ),
               ),
             ),
@@ -192,9 +196,9 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                         Tab(text: "Members"),
                         Tab(text: "Info"),
                       ],
-                      labelColor: AppTheme.currentTheme.colorScheme.primary,
+                      labelColor: color.darken(),
                       unselectedLabelColor: Colors.grey,
-                      indicatorColor: AppTheme.currentTheme.colorScheme.primary,
+                      indicatorColor: color.darken(),
                       tabAlignment: TabAlignment.start,
                       isScrollable: true,
                     ),
@@ -205,63 +209,56 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                           // Members tab
                           Obx(
                             () {
-                              return Container(
-                                child: ListView.builder(
-                                  itemCount: _chatController.usersInChat.length,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      leading: CircleAvatar(
-                                        backgroundImage: _chatController
-                                                    .usersInChat.values
-                                                    .elementAt(index)
-                                                    .pic !=
-                                                null
-                                            ? NetworkImage(_chatController
-                                                .usersInChat.values
-                                                .elementAt(index)
-                                                .pic!)
-                                            : null,
-                                        child: _chatController
-                                                    .usersInChat.values
-                                                    .elementAt(index)
-                                                    .pic ==
-                                                null
-                                            ? Text(_chatController
-                                                    .usersInChat.values
-                                                    .elementAt(index)
-                                                    .username
-                                                    ?.substring(0, 1)
-                                                    .toUpperCase() ??
-                                                "")
-                                            : null,
-                                      ),
-                                      title: Text(_chatController
+                              return ListView.builder(
+                                itemCount: _chatController.usersInChat.length,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundImage: _chatController
+                                                  .usersInChat.values
+                                                  .elementAt(index)
+                                                  .pic !=
+                                              null
+                                          ? NetworkImage(_chatController
                                               .usersInChat.values
                                               .elementAt(index)
-                                              .username ??
-                                          ""),
-                                      trailing: Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme
-                                              .currentTheme.colorScheme.primary
-                                              .withAlpha(50),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          "Admin",
-                                          style: TextStyle(
-                                            color: AppTheme.currentTheme
-                                                .colorScheme.primary,
-                                            fontSize: 10,
-                                          ),
+                                              .pic!)
+                                          : null,
+                                      child: _chatController.usersInChat.values
+                                                  .elementAt(index)
+                                                  .pic ==
+                                              null
+                                          ? Text(_chatController
+                                                  .usersInChat.values
+                                                  .elementAt(index)
+                                                  .username
+                                                  ?.substring(0, 1)
+                                                  .toUpperCase() ??
+                                              "")
+                                          : null,
+                                    ),
+                                    title: Text(_chatController
+                                            .usersInChat.values
+                                            .elementAt(index)
+                                            .username ??
+                                        ""),
+                                    trailing: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: color.darken().withAlpha(50),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        "Admin",
+                                        style: TextStyle(
+                                          color: color.darken(),
+                                          fontSize: 10,
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           ),

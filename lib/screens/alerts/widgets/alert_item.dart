@@ -7,6 +7,7 @@ import 'package:picapool/screens/alerts/widgets/caption_text_with_icon.dart';
 import 'package:picapool/screens/alerts/widgets/count_down_timer.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
+import 'package:picapool/widgets/loading/image_loading.dart';
 
 class AlertListItem extends StatelessWidget {
   final Offer offer;
@@ -139,7 +140,10 @@ class AlertListItem extends StatelessWidget {
                 imageUrl: offer.images.first,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(),
+                  child: ImageLoading(
+                    width: 80,
+                    height: 80,
+                  ),
                 ),
                 errorWidget: (context, error, _) => Image.asset(
                   "assets/icons/alert_image.png",

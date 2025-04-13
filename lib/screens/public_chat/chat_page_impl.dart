@@ -211,9 +211,9 @@ class _ChatPageState extends State<ChatPage>
                                     sent: isSender,
                                     delivered: isSender,
                                     tail: isSender ? showTail : showUserName,
-                                    username: showUserName && !isSender
-                                        ? user?.username
-                                        : null,
+                                    username: user?.username,
+                                    replyMessage:
+                                        getReplyMessage(message.parentId),
                                     leading: showUserName
                                         ? CircleAvatar(
                                             backgroundImage: (user == null ||
@@ -334,6 +334,10 @@ class _ChatPageState extends State<ChatPage>
     super.dispose();
   }
 
+  Message? getReplyMessage(int? parentId) {
+    return _chatController.getMessageFromId(parentId);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -409,50 +413,83 @@ class _ChatPageState extends State<ChatPage>
         MediaQuery.of(context).size.width - tapPosition.dx,
         MediaQuery.of(context).size.height - tapPosition.dy,
       ),
+      popUpAnimationStyle: AnimationStyle(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      ),
+      color: Colors.transparent,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       items: <PopupMenuEntry<void>>[
+        // Reactions Section
         PopupMenuItem<void>(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var reaction in ["❤️", "👍", "😂", "🔥", "🎉", "😢"])
-                GestureDetector(
-                  onTap: () {
-                    // setState(() {
-                    //   message.reactions.add(
-                    //     Reaction(emoji: reaction, userId: _userController.user!.id),
-                    //   );
-                    // });
-                    Navigator.of(context).pop();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      reaction,
-                      style: const TextStyle(fontSize: 24),
+          enabled: true, // Disable interaction for this section
+          child: Container(
+            decoration: roundedContainer().copyWith(
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var reaction in ["❤️", "👍", "😂", "🔥", "🎉", "😢"])
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // setState(() {
+                        //   message.reactions.add(
+                        //     Reaction(emoji: reaction, userId: _userController.user!.id),
+                        //   );
+                        // });
+                        Navigator.of(context).pop();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          reaction,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
-        const PopupMenuDivider(),
+
+        // Context Menu Section
         PopupMenuItem<void>(
-          child: ListTile(
-            leading: const Icon(Icons.reply),
-            title: const Text("Reply"),
-            onTap: () {
-              setState(() {
-                isReplying = true;
-                replyingMessage = message;
-              });
-              Navigator.of(context).pop();
-            },
+          child: Container(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: ListTile(
+              leading: const Icon(Icons.reply),
+              title: const Text("Reply"),
+              onTap: () {
+                setState(() {
+                  isReplying = true;
+                  replyingMessage = message;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
           ),
+        ),
+        const PopupMenuDivider(
+          height: 1,
         ),
         PopupMenuItem<void>(
           child: ListTile(
+            tileColor: Colors.white,
             leading: const Icon(Icons.copy),
             title: const Text("Copy"),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10),
             onTap: () {
               Clipboard.setData(ClipboardData(text: message.content));
               Navigator.of(context).pop();
@@ -462,14 +499,27 @@ class _ChatPageState extends State<ChatPage>
             },
           ),
         ),
+        const PopupMenuDivider(
+          height: 1,
+        ),
         PopupMenuItem<void>(
-          child: ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
-            title: const Text("Delete", style: TextStyle(color: Colors.red)),
-            onTap: () {
-              // _chatController.deleteMessage(message.id);
-              Navigator.of(context).pop();
-            },
+          child: Container(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              ),
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text("Delete", style: TextStyle(color: Colors.red)),
+              onTap: () {
+                // _chatController.deleteMessage(message.id);
+                Navigator.of(context).pop();
+              },
+            ),
           ),
         ),
       ],

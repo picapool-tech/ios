@@ -1,7 +1,7 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:picapool/common/functions/color_function.dart';
 import 'package:picapool/models/message_model.dart';
-import 'package:picapool/utils/theme.dart';
 
 // ignore: constant_identifier_names
 const double BUBBLE_RADIUS = 16;
@@ -92,6 +92,7 @@ class BubbleNormal extends StatelessWidget {
   ///chat bubble builder method
   @override
   Widget build(BuildContext context) {
+    Color themeColor = getColorFromString(username ?? "").darken();
     bool stateTick = false;
     Icon? stateIcon;
     if (sent) {
@@ -172,52 +173,16 @@ class BubbleNormal extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (username != null)
+                        if (username != null && !isSender)
                           Text(
                             username!,
                             style: textStyle.copyWith(
-                              color: getUserNameColor(username!),
+                              color: themeColor,
                               fontWeight: FontWeight.w700,
                             ),
                             textAlign: TextAlign.left,
                           ),
-                        if (replyMessage != null)
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: isSender ? Colors.white24 : Colors.black12,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Reply",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSender
-                                        ? Colors.white
-                                        : AppTheme
-                                            .currentTheme.colorScheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  replyMessage!.content,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isSender
-                                        ? Colors.white70
-                                        : Colors.black87,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
+                        if (replyMessage != null) replyingWidget(),
                         SelectableText(
                           text,
                           style: textStyle,
@@ -259,8 +224,55 @@ class BubbleNormal extends StatelessWidget {
     );
   }
 
-  Color getUserNameColor(String username) {
-    // Generate a hash from the username
-    return getColorFromString(username);
+  Widget replyingWidget() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.grey.shade100,
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: Row(
+        children: [
+          // horiztonal container with blue color
+          Container(
+            width: 5,
+            height: 50,
+            color: getColorFromString(username ?? "").darken(),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        isSender ? "You" : username ?? "",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: getColorFromString(username ?? "").darken(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  replyMessage?.content ?? "",
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

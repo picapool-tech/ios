@@ -87,7 +87,7 @@ class MessageBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
