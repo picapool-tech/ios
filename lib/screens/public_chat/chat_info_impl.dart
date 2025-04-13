@@ -1,6 +1,8 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/functions/color_function.dart';
+import 'package:picapool/common/widgets/marquee_widget.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/utils/theme.dart';
@@ -25,25 +27,19 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
   int _currentPage = 0;
   double _titlePaddingLeft = 24.0;
 
-  // Sample images for demonstration - replace with your actual images
-  final List<String> imageUrls = [
-    'https://picsum.photos/800/400?random=1',
-    'https://picsum.photos/800/400?random=2',
-    'https://picsum.photos/800/400?random=3',
-    'https://picsum.photos/800/400?random=4',
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverAppBar(
             expandedHeight: 200.0,
             floating: false,
             pinned: true,
-            backgroundColor: AppTheme.currentTheme.colorScheme.secondary,
+            backgroundColor:
+                AppTheme.currentTheme.colorScheme.secondary.withAlpha(200),
             elevation: 0,
             automaticallyImplyLeading: true,
             flexibleSpace: FlexibleSpaceBar(
@@ -51,19 +47,43 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.offer?.name ?? "Chat Info",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10.0,
-                          color: Colors.black45,
-                          offset: Offset(2.0, 2.0),
-                        ),
-                      ],
-                    ),
+                  Obx(
+                    () => _chatController.usersInChat.isNotEmpty
+                        ? IntrinsicHeight(
+                            child: Marquee(
+                              blankSpace: 20,
+                              text: widget.offer?.name
+                                      .replaceFirst("- FROM BRANDS", "") ??
+                                  "Chat Info",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 10.0,
+                                    color: Colors.black45,
+                                    offset: Offset(2.0, 2.0),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Text(
+                            widget.offer?.name ?? "Chat Info",
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 10.0,
+                                  color: Colors.black45,
+                                  offset: Offset(2.0, 2.0),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                   Obx(
                     () => Text(
@@ -88,7 +108,7 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                   PageView.builder(
                     controller: _pageController,
                     scrollDirection: Axis.horizontal,
-                    itemCount: imageUrls.length,
+                    itemCount: widget.offer?.images.length ?? 0,
                     physics: const PageScrollPhysics(),
                     onPageChanged: (index) {
                       setState(() {
@@ -101,7 +121,7 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                           // Optional: Add behavior when tapping an image
                         },
                         child: Image.network(
-                          imageUrls[index],
+                          widget.offer!.images[index],
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
@@ -120,8 +140,8 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                       height: 3,
                       child: LinearProgressIndicator(
                         value: (_currentPage /
-                            (imageUrls.length - 1 > 0
-                                ? imageUrls.length - 1
+                            (widget.offer!.images.length - 1 > 0
+                                ? widget.offer!.images.length - 1
                                 : 1)),
                         backgroundColor: Colors.grey.withOpacity(0.3),
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -143,7 +163,8 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: getColorFromString(widget.offer?.name ?? "Chat Info"),
+                  color: getColorFromString(widget.offer?.name ?? "Chat Info")
+                      .darken(),
                 ),
               ),
             ),
@@ -152,65 +173,134 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                widget.offer?.desc ?? "No EMpty",
+                widget.offer?.desc ?? "No Empty",
                 style: const TextStyle(fontSize: 16),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 16.0, right: 16, top: 16, bottom: 6),
-              child: Text(
-                "Participants",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: getColorFromString(widget.offer?.name ?? "Chat Info"),
+              padding: const EdgeInsets.only(top: 10.0),
+              child: DefaultTabController(
+                length: 2,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    TabBar(
+                      tabs: const [
+                        Tab(text: "Members"),
+                        Tab(text: "Info"),
+                      ],
+                      labelColor: AppTheme.currentTheme.colorScheme.primary,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: AppTheme.currentTheme.colorScheme.primary,
+                      tabAlignment: TabAlignment.start,
+                      isScrollable: true,
+                    ),
+                    SizedBox(
+                      height: 300,
+                      child: TabBarView(
+                        children: [
+                          // Members tab
+                          Obx(
+                            () {
+                              return Container(
+                                child: ListView.builder(
+                                  itemCount: _chatController.usersInChat.length,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundImage: _chatController
+                                                    .usersInChat.values
+                                                    .elementAt(index)
+                                                    .pic !=
+                                                null
+                                            ? NetworkImage(_chatController
+                                                .usersInChat.values
+                                                .elementAt(index)
+                                                .pic!)
+                                            : null,
+                                        child: _chatController
+                                                    .usersInChat.values
+                                                    .elementAt(index)
+                                                    .pic ==
+                                                null
+                                            ? Text(_chatController
+                                                    .usersInChat.values
+                                                    .elementAt(index)
+                                                    .username
+                                                    ?.substring(0, 1)
+                                                    .toUpperCase() ??
+                                                "")
+                                            : null,
+                                      ),
+                                      title: Text(_chatController
+                                              .usersInChat.values
+                                              .elementAt(index)
+                                              .username ??
+                                          ""),
+                                      trailing: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme
+                                              .currentTheme.colorScheme.primary
+                                              .withAlpha(50),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          "Admin",
+                                          style: TextStyle(
+                                            color: AppTheme.currentTheme
+                                                .colorScheme.primary,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                          // Media tab
+                          GridView.builder(
+                            padding: const EdgeInsets.all(8.0),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 4.0,
+                              mainAxisSpacing: 4.0,
+                            ),
+                            itemCount: widget.offer?.images.length ?? 0,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return widget.offer?.images != null
+                                  ? Container(
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                              widget.offer!.images[index]),
+                                          fit: BoxFit.cover,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                    )
+                                  : Container();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-          Obx(() {
-            if (_chatController.usersInChat.isEmpty) {
-              return const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            } else {
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: _chatController.usersInChat.values
-                                  .elementAt(index)
-                                  .pic !=
-                              null
-                          ? NetworkImage(_chatController.usersInChat.values
-                              .elementAt(index)
-                              .pic!)
-                          : null,
-                      child: _chatController.usersInChat.values
-                                  .elementAt(index)
-                                  .pic ==
-                              null
-                          ? Text(_chatController.usersInChat.values
-                                  .elementAt(index)
-                                  .username
-                                  ?.substring(0, 1)
-                                  .toUpperCase() ??
-                              "")
-                          : null,
-                    ),
-                    title: Text(_chatController.usersInChat.values
-                            .elementAt(index)
-                            .username ??
-                        ""),
-                  ),
-                  childCount: _chatController.usersInChat.length,
-                ),
-              );
-            }
-          }),
         ],
       ),
     );
@@ -254,9 +344,16 @@ class _ChatInfoImplState extends State<ChatInfoImpl> {
     // Calculate left padding based on scroll position
     // From 24 when fully expanded to 60 when collapsed
     const double expandedHeight = 200.0;
+    const double minPadding = 24.0;
+    const double maxPadding = 60.0;
     final double scrollOffset = _scrollController.offset;
-    final double paddingValue =
-        24.0 + (36.0 * (scrollOffset / expandedHeight)).clamp(0.0, 1.0);
+
+    // Calculate a ratio between 0.0 and 1.0 based on scroll position
+    final double ratio =
+        (scrollOffset / (expandedHeight - kToolbarHeight)).clamp(0.0, 1.0);
+
+    // Interpolate between min and max padding
+    final double paddingValue = minPadding + (maxPadding - minPadding) * ratio;
 
     setState(() {
       _titlePaddingLeft = paddingValue;

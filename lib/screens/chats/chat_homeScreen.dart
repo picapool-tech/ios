@@ -237,7 +237,10 @@ class _MyChatsPageState extends State<MyChatsPage> {
                         getChatTitle(chat),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                     ),
                   ),

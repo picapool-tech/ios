@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # android version
-version: 3.1.0+190
+version: 3.1.1+210
 
 # ios version
 # version: 2.9.7+102
@@ -98,6 +98,7 @@ dependencies:
   emoji_picker_flutter: ^4.3.0
   firebase_dynamic_links: ^6.1.4
   firebase_analytics: ^11.4.4
+  crypto: ^3.0.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -125,6 +126,7 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/images/buy_and_sell/
+    - assets/images/chat/
     - assets/bottombar/
     - assets/carousel/
     - assets/categories/

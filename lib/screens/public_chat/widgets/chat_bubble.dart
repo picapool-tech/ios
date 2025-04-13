@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:picapool/common/functions/color_function.dart';
+import 'package:picapool/models/message_model.dart';
+import 'package:picapool/utils/theme.dart';
 
 // ignore: constant_identifier_names
 const double BUBBLE_RADIUS = 16;
@@ -58,6 +60,7 @@ class BubbleNormal extends StatelessWidget {
   final VoidCallback? onLongPress;
   final String time;
   final String? username;
+  final Message? replyMessage;
 
   const BubbleNormal({
     Key? key,
@@ -83,6 +86,7 @@ class BubbleNormal extends StatelessWidget {
     ),
     required this.time,
     this.username,
+    this.replyMessage,
   }) : super(key: key);
 
   ///chat bubble builder method
@@ -126,7 +130,6 @@ class BubbleNormal extends StatelessWidget {
               )
             : leading ?? Container(),
         Container(
-          color: Colors.transparent,
           constraints: constraints ??
               BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .8),
           margin: margin,
@@ -177,6 +180,43 @@ class BubbleNormal extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                             textAlign: TextAlign.left,
+                          ),
+                        if (replyMessage != null)
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: isSender ? Colors.white24 : Colors.black12,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Reply",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSender
+                                        ? Colors.white
+                                        : AppTheme
+                                            .currentTheme.colorScheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  replyMessage!.content,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isSender
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         SelectableText(
                           text,

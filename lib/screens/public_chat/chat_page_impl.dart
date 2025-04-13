@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_offer_model.dart';
+import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/public_chat/chat_info_impl.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble.dart';
@@ -30,19 +32,36 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage>
+    with SingleTickerProviderStateMixin {
   final ChatController _chatController = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
   final TextEditingController _textController = TextEditingController();
 
   bool isEmojiShowing = false;
+  bool isReplying = false;
+  Message? replyingMessage;
+
+  late AnimationController _controller;
+  late Animation<Offset> animation;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.chatTitle,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.chatTitle,
+            ),
+            Obx(() {
+              return Text(
+                "${_chatController.usersInChat.length} members",
+                style: Get.textTheme.bodySmall,
+              );
+            })
+          ],
         ),
         titleTextStyle: Get.textTheme.titleLarge,
         // backgroundColor: AppTheme.currentTheme.colorScheme.secondary,
@@ -127,44 +146,115 @@ class _ChatPageState extends State<ChatPage> {
 
                           var showUserName = shouldShowUserName(index);
 
-                          return BubbleNormal(
-                            text: message.content,
-                            isSender: isSender,
-                            time: DateTimeHelper.formatDateTime(
-                                message.createdAt.toLocal(), "hh:mm a"),
-                            color: isSender
-                                ? AppTheme.currentTheme.colorScheme.secondary
-                                    .withAlpha(180)
-                                : AppTheme.currentTheme.dividerColor,
-                            textStyle: isSender
-                                ? Get.textTheme.bodyLarge?.copyWith(
-                                      color: AppTheme
-                                          .currentTheme.colorScheme.onSecondary,
-                                    ) ??
-                                    const TextStyle()
-                                : Get.textTheme.bodyLarge ?? const TextStyle(),
-                            sent: isSender,
-                            delivered: isSender,
-                            tail: isSender ? showTail : showUserName,
-                            username: showUserName && !isSender
-                                ? user?.username
-                                : null,
-                            leading: showUserName
-                                ? CircleAvatar(
-                                    backgroundImage: (user == null ||
-                                            user.pic == null ||
-                                            user.pic!.isEmpty)
-                                        ? const AssetImage(
-                                            "assets/icons/Frame 64.png",
-                                          ) as ImageProvider
-                                        : CachedNetworkImageProvider(user.pic!),
-                                    radius: 20,
-                                  )
-                                : const CircleAvatar(
-                                    radius: 20,
-                                    foregroundColor: Colors.transparent,
-                                    backgroundColor: Colors.transparent,
+                          return Dismissible(
+                            key: Key(message.id.toString()),
+                            direction: DismissDirection
+                                .startToEnd, // Allow swipe from left to right
+                            dismissThresholds: const {
+                              DismissDirection.startToEnd:
+                                  0.5, // Trigger reply action at 50% swipe
+                            },
+                            movementDuration: const Duration(
+                              milliseconds: 200,
+                            ), // Smooth swipe animation
+                            confirmDismiss: (direction) async {
+                              // Prevent the message from being dismissed
+                              if (direction == DismissDirection.startToEnd) {
+                                setState(() {
+                                  isReplying = true;
+                                  replyingMessage =
+                                      message; // Set the message being replied to
+                                });
+                              }
+                              return false; // Prevent dismissal
+                            },
+                            background: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.only(left: 20),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.reply_rounded,
+                                    color: Colors.blue,
                                   ),
+                                ],
+                              ),
+                            ),
+                            child: GestureDetector(
+                              onLongPressStart: (details) {
+                                _showReactionDialog(
+                                    context, message, details.globalPosition);
+                              },
+                              child: Column(
+                                crossAxisAlignment: isSender
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
+                                children: [
+                                  BubbleNormal(
+                                    text: message.content,
+                                    isSender: isSender,
+                                    time: DateTimeHelper.formatDateTime(
+                                        message.createdAt.toLocal(), "hh:mm a"),
+                                    color: isSender
+                                        ? AppTheme
+                                            .currentTheme.colorScheme.secondary
+                                            .withAlpha(180)
+                                        : Colors.white54,
+                                    textStyle: isSender
+                                        ? Get.textTheme.bodyMedium?.copyWith(
+                                              color: AppTheme.currentTheme
+                                                  .colorScheme.onSecondary,
+                                            ) ??
+                                            const TextStyle()
+                                        : Get.textTheme.bodyLarge ??
+                                            const TextStyle(),
+                                    sent: isSender,
+                                    delivered: isSender,
+                                    tail: isSender ? showTail : showUserName,
+                                    username: showUserName && !isSender
+                                        ? user?.username
+                                        : null,
+                                    leading: showUserName
+                                        ? CircleAvatar(
+                                            backgroundImage: (user == null ||
+                                                    user.pic == null ||
+                                                    user.pic!.isEmpty)
+                                                ? const AssetImage(
+                                                    "assets/icons/Frame 64.png",
+                                                  ) as ImageProvider
+                                                : CachedNetworkImageProvider(
+                                                    user.pic!),
+                                            radius: 20,
+                                          )
+                                        : const CircleAvatar(
+                                            radius: 20,
+                                            foregroundColor: Colors.transparent,
+                                            backgroundColor: Colors.transparent,
+                                          ),
+                                  ),
+                                  // if (message.reactions.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Wrap(
+                                      spacing: 4.0,
+                                      children: [1, 2, 3].map((reaction) {
+                                        return Chip(
+                                          label: const Text("😀"),
+                                          avatar: CircleAvatar(
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                              _chatController
+                                                      .usersInChat[0]?.pic ??
+                                                  "",
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -175,7 +265,16 @@ class _ChatPageState extends State<ChatPage> {
               MessageBar(
                 textController: _textController,
                 onSend: (message) {
-                  _chatController.sendMessage(message);
+                  _chatController.sendMessage(message,
+                      replyMessageId: replyingMessage?.id);
+
+                  // Reset reply state after sending
+                  if (isReplying) {
+                    setState(() {
+                      isReplying = false;
+                      replyingMessage = null;
+                    });
+                  }
                 },
                 prefix: IconButton(
                   onPressed: () {
@@ -189,6 +288,14 @@ class _ChatPageState extends State<ChatPage> {
                     size: 30,
                   ),
                 ),
+                replying: isReplying,
+                replyingMessage: replyingMessage,
+                onCancelReply: () {
+                  setState(() {
+                    isReplying = false;
+                    replyingMessage = null;
+                  });
+                },
                 textFieldTextStyle:
                     Get.textTheme.titleMedium ?? const TextStyle(),
               ),
@@ -221,6 +328,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
+  dispose() {
+    _controller.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -233,6 +347,16 @@ class _ChatPageState extends State<ChatPage> {
 
       // _messageController.addListener(isActive);
 
+      _controller = AnimationController(
+          vsync: this, duration: const Duration(milliseconds: 200));
+
+      animation =
+          Tween(begin: const Offset(0.0, 0.0), end: const Offset(0.3, 0.0))
+              .animate(CurvedAnimation(
+        parent: _controller,
+        curve: Curves.decelerate,
+      ));
+
       _chatController.getAllMessages(widget.chat.id);
       debugPrint("${widget.chat.toJson()}");
     });
@@ -241,12 +365,20 @@ class _ChatPageState extends State<ChatPage> {
   bool shouldShowTail(int index) {
     final int length = _chatController.messages.length;
     int prev = index - 1;
-    if (prev < 0) {
-      return true;
+
+    if (index == 0) {
+      if (prev < 0) {
+        return true;
+      }
+      return false;
     }
 
     if (index == length - 1) {
-      return false;
+      return true;
+    }
+
+    if (prev < 0) {
+      return true;
     }
 
     final messageCurr = _chatController.messages[index];
@@ -265,5 +397,82 @@ class _ChatPageState extends State<ChatPage> {
     final messageCurr = _chatController.messages[index];
     final messagePrev = _chatController.messages[index + 1];
     return messageCurr.userId != messagePrev.userId;
+  }
+
+  void _showReactionDialog(
+      BuildContext context, Message message, Offset tapPosition) {
+    showMenu<void>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        tapPosition.dx,
+        tapPosition.dy,
+        MediaQuery.of(context).size.width - tapPosition.dx,
+        MediaQuery.of(context).size.height - tapPosition.dy,
+      ),
+      items: <PopupMenuEntry<void>>[
+        PopupMenuItem<void>(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var reaction in ["❤️", "👍", "😂", "🔥", "🎉", "😢"])
+                GestureDetector(
+                  onTap: () {
+                    // setState(() {
+                    //   message.reactions.add(
+                    //     Reaction(emoji: reaction, userId: _userController.user!.id),
+                    //   );
+                    // });
+                    Navigator.of(context).pop();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      reaction,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<void>(
+          child: ListTile(
+            leading: const Icon(Icons.reply),
+            title: const Text("Reply"),
+            onTap: () {
+              setState(() {
+                isReplying = true;
+                replyingMessage = message;
+              });
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+        PopupMenuItem<void>(
+          child: ListTile(
+            leading: const Icon(Icons.copy),
+            title: const Text("Copy"),
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: message.content));
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Message copied!")),
+              );
+            },
+          ),
+        ),
+        PopupMenuItem<void>(
+          child: ListTile(
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: const Text("Delete", style: TextStyle(color: Colors.red)),
+            onTap: () {
+              // _chatController.deleteMessage(message.id);
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

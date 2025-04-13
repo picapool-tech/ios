@@ -84,6 +84,7 @@ class PicaOutlinedTextField extends StatelessWidget {
   final bool enabled;
   final double borderRadius;
   final TextStyle? textStyle;
+  final bool transparentBorder; // New parameter
 
   const PicaOutlinedTextField({
     Key? key,
@@ -119,12 +120,34 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.enabled = true,
     this.textStyle,
     this.borderRadius = kTextFieldBorderRadius,
+    this.transparentBorder = false, // Default to false
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
+
+    // Border sides based on transparentBorder parameter
+    final borderSide = transparentBorder
+        ? BorderSide.none
+        : BorderSide(color: theme.colorScheme.outline);
+
+    final enabledBorderSide = transparentBorder
+        ? BorderSide.none
+        : BorderSide(color: theme.colorScheme.outline.withOpacity(0.5));
+
+    final focusedBorderSide = transparentBorder
+        ? BorderSide.none
+        : BorderSide(color: primaryColor, width: 2);
+
+    final errorBorderSide = transparentBorder
+        ? BorderSide.none
+        : BorderSide(color: theme.colorScheme.error, width: 1);
+
+    final focusedErrorBorderSide = transparentBorder
+        ? BorderSide.none
+        : BorderSide(color: theme.colorScheme.error, width: 2);
 
     return TextFormField(
       controller: controller,
@@ -164,6 +187,7 @@ class PicaOutlinedTextField extends StatelessWidget {
         suffixIcon: suffixIcon,
         suffixText: suffixText,
         prefixText: prefixText,
+
         contentPadding: contentPadding ??
             const EdgeInsets.symmetric(
               horizontal: 16,
@@ -171,24 +195,23 @@ class PicaOutlinedTextField extends StatelessWidget {
             ), // Adjusted vertical padding
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: theme.colorScheme.outline),
+          borderSide: borderSide,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide:
-              BorderSide(color: theme.colorScheme.outline.withOpacity(0.5)),
+          borderSide: enabledBorderSide,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: primaryColor, width: 2),
+          borderSide: focusedBorderSide,
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: theme.colorScheme.error, width: 1),
+          borderSide: errorBorderSide,
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
+          borderSide: focusedErrorBorderSide,
         ),
       ),
       onTapOutside: (value) {
