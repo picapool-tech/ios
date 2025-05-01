@@ -55,13 +55,21 @@ class _AlertsListState extends State<AlertsList> {
         // Render offer list
         return ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
+          controller: _scrollController,
           itemCount: offers.length,
           itemBuilder: (context, index) {
             return AlertListItem(
-              key: ValueKey("offer-${offers[index].id}"),
+              key: ValueKey("offer-${offers[0].id}"),
               offer: offers[index],
               isExpanded: expandedStates[index],
-              onTap: () => _toggleExpanded(index),
+              onTap: () {
+                _toggleExpanded(index);
+                // _scrollController.animateTo(
+                //   (160 * 100),
+                //   duration: const Duration(milliseconds: 200),
+                //   curve: Curves.easeInCubic,
+                // );
+              },
               onJoinChat: () => _joinChat(offers[index]),
               isLoading:
                   controller.getLoadingState(OfferLoadingEnums.fetchingChat),

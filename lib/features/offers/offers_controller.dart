@@ -34,6 +34,8 @@ class OffersController extends GetxController
 
   var carouselOffer = <Offer>[].obs;
 
+  Rx<Offer?> offerDetails = Rx<Offer?>(null);
+
   final UserController _userController = Get.find<UserController>();
   final LocationController _locationController = Get.find<LocationController>();
   final OffersApi _offersApi = OffersApi();
@@ -140,7 +142,7 @@ class OffersController extends GetxController
       priority: true,
       tagIds: tagIds,
     ));
-    
+
     result.fold(
       (error) {
         if (error.showError) {
@@ -159,7 +161,6 @@ class OffersController extends GetxController
   Future<Chat?> getChatFromOfferId({
     required int offerId,
   }) async {
-    isLoading.value = true;
     startLoading(OfferLoadingEnums.fetchingChat);
     // update();
 
@@ -167,7 +168,6 @@ class OffersController extends GetxController
       offerId: offerId,
     );
 
-    isLoading.value = false;
     stopLoading(OfferLoadingEnums.fetchingChat);
     // update();
 
@@ -185,20 +185,25 @@ class OffersController extends GetxController
 
   Future<Offer?> getOfferDetails(int id) async {
     isLoading.value = true;
+    startLoading(OfferLoadingEnums.offerDetails);
     update();
 
     var result = await _offersApi.getOfferDetails(id);
 
     isLoading.value = false;
+    stopLoading(OfferLoadingEnums.offerDetails);
     update();
 
     return result.fold(
       (error) {
         Get.snackbar("Error", error.message);
+
+        offerDetails.value = null;
         return null;
       },
       (offer) {
         debugPrint("Offer details: ${offer.toJson()}");
+        offerDetails.value = offer;
         return offer;
       },
     );

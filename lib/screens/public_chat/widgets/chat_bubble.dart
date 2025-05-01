@@ -2,6 +2,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:picapool/common/functions/color_function.dart';
 import 'package:picapool/models/message_model.dart';
+import 'package:picapool/utils/theme.dart';
 
 // ignore: constant_identifier_names
 const double BUBBLE_RADIUS = 16;
@@ -89,12 +90,13 @@ class BubbleNormal extends StatelessWidget {
     this.replyMessage,
   }) : super(key: key);
 
-  ///chat bubble builder method
+  /// Chat bubble builder method
   @override
   Widget build(BuildContext context) {
     Color themeColor = getColorFromString(username ?? "").darken();
     bool stateTick = false;
     Icon? stateIcon;
+
     if (sent) {
       stateTick = true;
       stateIcon = const Icon(
@@ -120,124 +122,109 @@ class BubbleNormal extends StatelessWidget {
       );
     }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        isSender
-            ? const Expanded(
-                child: SizedBox(
-                  width: 5,
-                ),
-              )
-            : leading ?? Container(),
-        Container(
-          constraints: constraints ??
-              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .8),
-          margin: margin,
-          padding: padding,
-          child: GestureDetector(
-            onTap: onTap,
-            onDoubleTap: onDoubleTap,
-            onLongPress: onLongPress,
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(
-                    tail
-                        ? isSender
-                            ? bubbleRadius
-                            : 0
-                        : BUBBLE_RADIUS,
-                  ),
-                  topRight: Radius.circular(bubbleRadius),
-                  bottomLeft: const Radius.circular(
-                    BUBBLE_RADIUS,
-                  ),
-                  bottomRight: Radius.circular(
-                    tail
-                        ? isSender
-                            ? 0
-                            : bubbleRadius
-                        : BUBBLE_RADIUS,
-                  ),
-                ),
-              ),
-              child: Stack(
-                children: <Widget>[
-                  Padding(
-                    padding: isSender
-                        ? EdgeInsets.fromLTRB(
-                            (text.length <= 2) ? 40 : 20, 6, 28, 18)
-                        : const EdgeInsets.fromLTRB(12, 8, 12, 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (username != null && !isSender)
-                          Text(
-                            username!,
-                            style: textStyle.copyWith(
-                              color: themeColor,
-                              fontWeight: FontWeight.w700,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          crossAxisAlignment:
+              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment:
+                  isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+              children: <Widget>[
+                if (!isSender) leading ?? const SizedBox.shrink(),
+                Flexible(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                    ),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: isSender ? customBlue.shade500 : Colors.white,
+                      borderRadius: BorderRadius.circular(bubbleRadius),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                // Real message
+                                TextSpan(
+                                  text: "$text    ",
+                                  style: textStyle.copyWith(
+                                    color: isSender
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+
+                                // Fake additionalInfo as placeholder
+                                TextSpan(
+                                  text: _buildAdditionalInfo(stateIcon),
+                                  style: const TextStyle(
+                                    color: Colors.transparent,
+                                  ),
+                                ),
+                              ],
                             ),
-                            textAlign: TextAlign.left,
                           ),
-                        if (replyMessage != null) replyingWidget(),
-                        SelectableText(
-                          text,
-                          style: textStyle,
-                          textAlign: TextAlign.left,
+                        ),
+
+                        // Real additionalInfo
+                        Positioned(
+                          right: 8.0,
+                          bottom: 4.0,
+                          child: Text(
+                            _buildAdditionalInfo(stateIcon),
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              color: isSender
+                                  ? Colors.white60
+                                  : Colors.grey.shade600,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Positioned(
-                    bottom: 4,
-                    right: isSender ? 30 : 10,
-                    child: Text(
-                      time,
-                      style: TextStyle(
-                        color:
-                            textStyle.color?.withOpacity(0.7) ?? Colors.black54,
-                        fontSize: 11,
-                      ),
-                      // textAlign: TextAlign.right,
-                    ),
-                  ),
-                  stateIcon != null && stateTick
-                      ? Positioned(
-                          bottom: 4,
-                          right: 6,
-                          child: stateIcon,
-                        )
-                      : const SizedBox(
-                          width: 40,
-                          height: 10,
-                        ),
-                ],
-              ),
+                ),
+                if (isSender && trailing != null) trailing!,
+              ],
             ),
-          ),
+          ],
         ),
-        if (isSender && trailing != null) const SizedBox.shrink(),
+        if ([1].isNotEmpty) _buildReactionsOverlay(),
       ],
     );
   }
 
   Widget replyingWidget() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.grey.shade100,
+        color: Colors.white.withAlpha(100),
+        borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.hardEdge,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // horiztonal container with blue color
           Container(
-            width: 5,
-            height: 50,
+            width: 4,
+            height: 40,
             color: getColorFromString(username ?? "").darken(),
           ),
           const SizedBox(width: 8),
@@ -245,33 +232,73 @@ class BubbleNormal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        isSender ? "You" : username ?? "",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: getColorFromString(username ?? "").darken(),
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  isSender ? "You" : username ?? "",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: getColorFromString(username ?? "").darken(),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   replyMessage?.content ?? "",
                   style: const TextStyle(
-                    color: Colors.black54,
                     fontSize: 12,
                   ),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  String _buildAdditionalInfo(Icon? stateIcon) {
+    // Combine time and state icon as additional info
+    return "$time ${stateIcon != null ? "✓" : ""}";
+  }
+
+  Widget _buildReactionsOverlay() {
+    return Positioned(
+      bottom: -30, // Adjusted to position the reactions below the bubble
+      right: isSender ? 8 : null,
+      left: isSender ? null : 8,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [1, 2].map((reaction) {
+            return Row(
+              children: [
+                const Text(
+                  "😀",
+                  style: TextStyle(fontSize: 20),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  2.toString(),
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+                const SizedBox(width: 8),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

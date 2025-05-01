@@ -83,6 +83,19 @@ class SocketService {
     return socket;
   }
 
+  void disconnectSocket() {
+    // socket?.dispose();
+    // if (isConnected()) {
+    socket?.disconnect();
+    socket?.dispose();
+    roomIdG = 0;
+    // socket?.close();
+  }
+
+  bool isConnected() {
+    return socket?.connected ?? false;
+  }
+
   void joinRoom(String roomId) {
     socket?.emit('room.join', {
       'roomId': roomId,
@@ -90,8 +103,16 @@ class SocketService {
     debugPrint("room joined");
   }
 
-  void leaveRoom(String roomId) {
-    // debugPrint("Leaving room $roomId");
+  void kickUser(int userId) {
+    if (!isConnected()) {
+      debugPrint('Socket is not connected, user not kicked.');
+      return;
+    }
+
+    socket!.emit('kick', {'userId': userId});
+  }
+
+  void leaveRoom() {
     socket?.emit('room.leave', {});
   }
 
@@ -121,27 +142,5 @@ class SocketService {
     };
 
     socket!.emit('reaction', reactionData);
-  }
-
-  void kickUser(int userId) {
-    if (!isConnected()) {
-      debugPrint('Socket is not connected, user not kicked.');
-      return;
-    }
-
-    socket!.emit('kick', {'userId': userId});
-  }
-
-  void disconnectSocket() {
-    // socket?.dispose();
-    // if (isConnected()) {
-    socket?.disconnect();
-    socket?.dispose();
-    roomIdG = 0;
-    // socket?.close();
-  }
-
-  bool isConnected() {
-    return socket?.connected ?? false;
   }
 }

@@ -55,3 +55,42 @@ Could you please check if there are any additional discounts available? 😊
 
   return baseUrl + encodedMessage;
 }
+
+
+
+String generateWhatsAppLinkWithAddress({
+  required String username,
+  required int userId,
+  required Map<Product, int> products,
+  required String address,
+  required int offerId,
+}) {
+  const String baseUrl = "https://wa.me/918330935063?text=";
+  String orderText = "";
+  int index = 1;
+  products.forEach((product, quantity) {
+    log("Product: ${product.toJson()}");
+    orderText +=
+        "$index. *${product.name}* (P_ID: ${product.id}) x $quantity\n";
+    index++;
+  });
+
+  String message = """
+Hi!
+This is *$username* (ID: $userId).
+
+I’d like to proceed with the following order:
+
+$orderText
+
+Offer Id: $offerId
+Address: $address
+
+Could you please check if there are any additional discounts available? 😊
+""";
+
+  // Encode the message for URL
+  String encodedMessage = Uri.encodeComponent(message);
+
+  return baseUrl + encodedMessage;
+}

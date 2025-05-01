@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/common/widgets/photo_gallery_viewer.dart';
 import 'package:picapool/utils/theme.dart';
 
 class ImageGallery extends StatefulWidget {
@@ -28,24 +29,39 @@ class _ImageGalleryState extends State<ImageGallery> {
               children: [
                 Expanded(
                   flex: 5,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: roundedContainer().copyWith(
-                      color: AppTheme.currentTheme.cardColor,
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: CachedNetworkImage(
-                      imageUrl: widget.imageUrl[_selectedIndex],
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => Center(
-                        child: CircularProgressIndicator(
-                          color: AppTheme.currentTheme.colorScheme.secondary,
+                  child: GestureDetector(
+                    onTap: () {
+                      Get.to(
+                        fullscreenDialog: true,
+                        () => PhotoGalleryViewer(
+                          imageUrls: widget.imageUrl,
+                          loadFromNetwork: true,
+                          initialIndex: _selectedIndex,
+                          showIndicator: true,
                         ),
+                        transition: Transition.zoom,
+                        popGesture: true,
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      decoration: roundedContainer().copyWith(
+                        color: AppTheme.currentTheme.cardColor,
                       ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.error,
-                        color: Colors.red,
-                        size: 40,
+                      clipBehavior: Clip.hardEdge,
+                      child: CachedNetworkImage(
+                        imageUrl: widget.imageUrl[_selectedIndex],
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.currentTheme.colorScheme.secondary,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.error,
+                          color: Colors.red,
+                          size: 40,
+                        ),
                       ),
                     ),
                   ),

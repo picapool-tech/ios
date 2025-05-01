@@ -87,8 +87,8 @@ class ChatController extends GetxController
     debugPrint('Disconnecting socket...');
     socketService.disconnectSocket();
 
-    messages.value = [];
-    usersInChat.value = {};
+    messages.clear();
+    usersInChat.clear();
   }
 
   Future<void> getAllChats() async {
@@ -133,30 +133,11 @@ class ChatController extends GetxController
       },
       (messagesList) {
         messages.value = messagesList.reversed.toList();
-        // Future.delayed(
-        //   const Duration(milliseconds: 500),
-        //   () {
-        //     if (scrollController.hasClients) {
-        //       scrollController.animateTo(
-        //         scrollController.position.maxScrollExtent,
-        //         duration: const Duration(milliseconds: 300),
-        //         curve: Curves.easeOut,
-        //       );
-        //     }
-        //   },
-        // );
       },
     );
 
     isLoading.value = false;
     update();
-    // if (scrollController.hasClients) {
-    //   scrollController.animateTo(
-    //     scrollController.position.maxScrollExtent + 100,
-    //     duration: const Duration(milliseconds: 300),
-    //     curve: Curves.easeOut,
-    //   );
-    // }
   }
 
   Future<void> getAllUsersInChat(int chatId) async {
@@ -256,11 +237,11 @@ class ChatController extends GetxController
     // await Future.wait([Future.value(const Duration(milliseconds: 300))]);
     if (scrollController.hasClients) {
       debugPrint("Scrolling here");
-      // scrollController.animateTo(
-      //   scrollController.position.maxScrollExtent + 100,
-      //   duration: const Duration(milliseconds: 300),
-      //   curve: Curves.easeInOut,
-      // );
+      scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
     debugPrint("Receive Message $data with data $message");
   }
@@ -271,6 +252,11 @@ class ChatController extends GetxController
 
   void kickUser(int userId) {
     socketService.kickUser(userId);
+  }
+
+  void leaveChat() {
+    socketService.leaveRoom();
+    debugPrint("I am in leaveChat Function");
   }
 
   @override
@@ -296,12 +282,16 @@ class ChatController extends GetxController
     scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+      curve: Curves.elasticOut,
     );
     debugPrint("I am in sendMessage Function");
   }
 
-  void sendReaction(String content, int reactionMessageId) {
-    socketService.sendReaction(content, reactionMessageId);
+  void sendReaction({
+    required String content,
+    required int messageId,
+  }) {
+    socketService.sendReaction(content, messageId);
+    debugPrint("Sending reaction $content to message $messageId");
   }
 }

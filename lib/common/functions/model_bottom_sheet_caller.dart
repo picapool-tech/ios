@@ -4,11 +4,12 @@ import 'package:get/get.dart';
 void showPicaModelBottomSheet({
   required BuildContext context,
   required Widget child,
+  bool isScrollController = true,
   bool hideDragHandle = false,
 }) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true, // This makes modal full screen
+    isScrollControlled: isScrollController, // This makes modal full screen
     useSafeArea: true,
     showDragHandle: !hideDragHandle,
     sheetAnimationStyle: AnimationStyle(

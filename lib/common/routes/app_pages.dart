@@ -7,8 +7,9 @@ import 'package:picapool/screens/login/login_screen_imp.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
 import 'package:picapool/screens/splash_screen/splash_screen.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
+// import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
+import 'package:picapool/widgets/main_screen.dart';
 
 class AppPages {
   static final pages = [
@@ -31,7 +32,7 @@ class AppPages {
         return OtpScreen(phoneNumber: args['phoneNumber']);
       },
     ),
-    GetPage(name: AppRoutes.home, page: () => const NewBottomBar()),
+    GetPage(name: AppRoutes.home, page: () => const MainScreen()),
     GetPage(
         name: AppRoutes.requestVicinity, page: () => const RequestVicinity()),
     GetPage(name: AppRoutes.cabListing, page: () => const ShareCabScreen()),

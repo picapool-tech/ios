@@ -181,14 +181,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} v3.1.1 (310)",
+                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.3 (31001052025)",
                       textAlign: TextAlign.center,
                       style: textTheme.bodySmall?.copyWith(
                         color: AppTheme.currentTheme.disabledColor,
-                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 50),
                   ],
                 ),
               ),

@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:picapool/core/api_impl.dart';
@@ -30,6 +33,56 @@ class ChatAndOfferModel {
             ? LiveOffer.fromJson(json['LiveOffer'])
             : null,
       );
+
+  String get chatTitle =>
+      chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
+      'To:  ${chat.liveOffer?.to}';
+
+  bool get hasImage {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (chat.liveOffer != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  String get getImage {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return offer.images.first;
+      } else {
+        return "assets/icons/Frame 64.png";
+      }
+    } else if (chat.liveOffer != null) {
+      return "assets/images/share_a_cab.png";
+    } else {
+      return "assets/icons/Frame 64.png";
+    }
+  }
+
+  ImageProvider get getImageProvider {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return CachedNetworkImageProvider(offer.images.first);
+      } else {
+        return const AssetImage("assets/icons/Frame 64.png");
+      }
+    } else if (chat.liveOffer != null) {
+      return const AssetImage("assets/images/share_a_cab.png");
+    } else {
+      return const AssetImage("assets/icons/Frame 64.png");
+    }
+  }
+
 }
 
 class ChatApi with PicapoolApiClass {
@@ -104,6 +157,7 @@ class ChatApi with PicapoolApiClass {
       // );
 
       return response.fold((error) => left(error), (responseModel) async {
+        log("${responseModel.toJson()}");
         if (responseModel.success) {
           List<Message> messages = await responseModel.parseFieldList<Message>(
             "Messages",
@@ -237,7 +291,7 @@ class ChatApi with PicapoolApiClass {
       );
 
       return response.fold((error) {
-        debugPrint("Error on getChats: $error");
+        debugPrint("Error on getChats: ${error.message}");
         return left(error);
       }, (responseModel) {
         if (responseModel.success) {

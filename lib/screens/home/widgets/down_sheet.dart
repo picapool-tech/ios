@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/common/values/values.dart';
 import 'package:picapool/features/notification/notification_service.dart';
@@ -9,7 +8,6 @@ import 'package:picapool/screens/home/widgets/main_heading_bottom_sheet_content.
 import 'package:picapool/screens/home/widgets/main_heading_options.dart';
 import 'package:picapool/screens/home/widgets/pooling_categories.dart';
 import 'package:picapool/screens/home/widgets/view_more_tinted_option.dart';
-import 'package:picapool/screens/personal_details/personal_details.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/home/divider.dart';
 
@@ -77,12 +75,7 @@ class _DownSheetState extends State<DownSheet> {
             ViewMoreTintedOption(onPressed: () {
               showAllMainHeadingOptions();
             }),
-            InkWell(
-              onTap: () {
-                Get.to(() => const PersonalDetails());
-              },
-              child: const CustomDivider(text: " Amazing offers near you "),
-            ),
+            const CustomDivider(text: " Amazing offers near you "),
             const CarouselWidget(),
             const CustomDivider(text: " Pooling Categories "),
             const SizedBox(

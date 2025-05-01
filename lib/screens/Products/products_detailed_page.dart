@@ -13,6 +13,7 @@ import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/product_buy_page.dart';
+import 'package:picapool/screens/products/location_selection/location_screen.dart';
 import 'package:picapool/screens/products/send_to_whatsapp.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/theme.dart';
@@ -190,7 +191,8 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                   ? () async {
                       // Handle pooling action
                       if (widget.offer.top) {
-                        _sendToWhatsApp();
+                        // _sendToWhatsApp();
+                        handleTopClick();
                         return;
                       }
                       var model = BrandOfferModel(
@@ -334,13 +336,11 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                       children: [
                         Flexible(
                           child: PicaTextButton(
-                            // icon: const Icon(Icons.sort),
+                            icon: Icon(
+                              Icons.sort,
+                              color: Get.theme.primaryColor,
+                            ),
                             text: "Sort $_sortOrderIndicator",
-                            // style: ElevatedButton.styleFrom(
-                            //   shape: RoundedRectangleBorder(
-                            //     borderRadius: BorderRadius.circular(20),
-                            //   ),
-                            // ),
                             onPressed: _showSortingOptions,
                             isLoading: false.obs,
                           ),
@@ -527,6 +527,14 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
 
   Future<Offer?> getOfferDetails(int id) async {
     return await _offersController.getOfferDetails(id);
+  }
+
+  void handleTopClick() {
+    Get.to(() => LocationScreen(
+          onLocationSelected: (address) {
+            _sendToWhatsApp(address);
+          },
+        ));
   }
 
   @override
@@ -886,7 +894,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     );
   }
 
-  void _sendToWhatsApp() async {
+  void _sendToWhatsApp(String address) async {
     var products = await offerDetails;
     if (products?.products == null) {
       Get.snackbar(
@@ -896,19 +904,22 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       );
       return;
     }
-    var listOfProducts = <Product>[];
-    var selectedProducts = this
-        .selectedProducts
-        .entries
-        .where((product) => product.value > 0)
-        .toList();
+    var listOfProducts = <Product, int>{};
+    // Create a map of product IDs to their counts (filtered to only include products with count > 0)
+    var productCountMap = Map.fromEntries(
+        selectedProducts.entries.where((entry) => entry.value > 0));
 
-    for (var product in selectedProducts) {
-      for (var i = 0; i < product.value; i++) {
-        listOfProducts.add(products!.products!.firstWhere(
-          (element) => element.id == product.key,
-        ));
-      }
+    // Use the filtered map to populate listOfProducts
+    for (var entry in productCountMap.entries) {
+      var productId = entry.key;
+      var quantity = entry.value;
+
+      var product = products!.products!.firstWhere(
+        (element) => element.id == productId,
+      );
+
+      // Add the product to listOfProducts 'quantity' times
+      listOfProducts[product] = quantity;
     }
 
     if (listOfProducts.isEmpty) {
@@ -920,10 +931,12 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       return;
     }
 
-    var waLink = generateWhatsAppLink(
-      _userController.user!.name!,
-      _userController.user!.id,
-      listOfProducts,
+    var waLink = generateWhatsAppLinkWithAddress(
+      username: _userController.user!.username!,
+      userId: _userController.user!.id,
+      products: listOfProducts,
+      address: address,
+      offerId: widget.offer.id,
     );
 
     log(waLink);

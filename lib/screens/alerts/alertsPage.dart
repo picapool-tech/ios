@@ -39,7 +39,7 @@ class _AlertsPageState extends State<AlertsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Alerts',
+          'Alerts1',
           style: TextStyle(
             fontSize: 24,
             color: Colors.white,

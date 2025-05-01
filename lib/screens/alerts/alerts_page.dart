@@ -7,16 +7,22 @@ import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/screens/alerts/widgets/alert_list_view.dart';
 import 'package:picapool/screens/alerts/widgets/category_selector.dart';
+import 'package:picapool/screens/alerts/widgets/show_offer_details.dart';
 
 class AlertsPage extends StatefulWidget {
-  const AlertsPage({super.key});
+  final int? showOfferDetails;
+
+  const AlertsPage({
+    super.key,
+    this.showOfferDetails,
+  });
 
   @override
   State<AlertsPage> createState() => _AlertsPageState();
 }
 
 class _AlertsPageState extends State<AlertsPage> {
-  int selectedCategory = 0;
+  int selectedCategory = 1;
   final ScrollController _tagsScrollController = ScrollController();
 
   final OffersController _offersController = Get.find<OffersController>();
@@ -27,9 +33,12 @@ class _AlertsPageState extends State<AlertsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Alerts',
-          style: TextStyle(fontSize: 24, color: Colors.white),
+        title: GestureDetector(
+          onTap: () {},
+          child: const Text(
+            'Alerts',
+            style: TextStyle(fontSize: 24, color: Colors.white),
+          ),
         ),
         systemOverlayStyle: uiOverlayStyle(
           context,
@@ -79,6 +88,11 @@ class _AlertsPageState extends State<AlertsPage> {
           : const Center(
               child: Text("You don't have an account to show alerts"),
             ),
+      // bottomSheet: (widget.showOfferDetails != null)
+      //     ? ShowOfferDetails(
+      //         offerId: widget.showOfferDetails!,
+      //       )
+      //     : null,
     );
   }
 
@@ -87,6 +101,8 @@ class _AlertsPageState extends State<AlertsPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeDefaultCategory(_);
+      // Move this out of the persistent callback since it only needs to run once
+      _checkForShowOfferDetails();
     });
   }
 
@@ -110,7 +126,19 @@ class _AlertsPageState extends State<AlertsPage> {
     });
   }
 
+  void _checkForShowOfferDetails() async {
+    if (widget.showOfferDetails != null) {
+      _showOfferDetails();
+      if (Get.arguments != null && Get.arguments.containsKey('offerId')) {
+        // Clear just this key, not all arguments
+        debugPrint("ARGUMENT: ${Get.arguments}");
+        Get.arguments.remove('offerId');
+      }
+    }
+  }
+
   void _initializeDefaultCategory(_) async {
+    debugPrint("default category initialization");
     if (_tagController.tags.isEmpty) {
       await _tagController.initialize();
     }
@@ -123,9 +151,9 @@ class _AlertsPageState extends State<AlertsPage> {
     }
 
     var tagsIndex = _tagController.tags.indexWhere((tagN) => tagN.id == tag.id);
+    await _offersController.getOffersByTagId(tag.id);
     setState(() {
       selectedCategory = tagsIndex + 1;
-      _offersController.getOffersByTagId(tag.id);
     });
   }
 
@@ -146,5 +174,28 @@ class _AlertsPageState extends State<AlertsPage> {
     } else {
       await _offersController.getOffersByTagId(selectedCategory);
     }
+  }
+
+  void _showOfferDetails() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: false, // This makes modal full screen
+      useSafeArea: true,
+      showDragHandle: true,
+      sheetAnimationStyle: AnimationStyle(
+        curve: const ElasticInOutCurve(),
+        duration: const Duration(
+          milliseconds: 500,
+        ),
+      ),
+      builder: (context) {
+        return ShowOfferDetails(offerId: widget.showOfferDetails!)
+            .marginOnly(bottom: 20);
+      },
+    );
+    // showPicaModelBottomSheet(
+    //   context: context,
+    //   child: ShowOfferDetails(offerId: widget.showOfferDetails!),
+    // );
   }
 }

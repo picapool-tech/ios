@@ -11,11 +11,10 @@ import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/features/auth/auth_controller.dart';
 import 'package:picapool/features/auth/values/enums.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
 import 'package:picapool/screens/login/values/login_enums.dart';
 import 'package:picapool/utils/theme.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
+// import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/home/divider.dart';
 
 class LoginScreenImp extends StatelessWidget {
@@ -39,16 +38,16 @@ class LoginScreenImp extends StatelessWidget {
         ),
         elevation: 0,
         actions: [
-          PicaTextButton(
-            text: "Sign in as guest",
-            onPressed: () {
-              Get.find<StorageController>().setIsGuest(true);
-              Get.offAll(
-                () => const NewBottomBar(),
-              );
-            },
-            isLoading: false.obs,
-          )
+          // PicaTextButton(
+          //   text: "Sign in as guest",
+          //   onPressed: () {
+          //     Get.find<StorageController>().setIsGuest(true);
+          //     Get.offAll(
+          //       () => const MainScreen(),
+          //     );
+          //   },
+          //   isLoading: false.obs,
+          // )
         ],
       ),
       resizeToAvoidBottomInset: false,

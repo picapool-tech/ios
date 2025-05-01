@@ -55,10 +55,7 @@ class MessageBar extends StatelessWidget {
   final void Function()? onTapCloseReply;
   final Message? replyingMessage;
   final VoidCallback? onCancelReply;
-
-  /// [MessageBar] constructor
-  ///
-  ///
+  final FocusNode? focusNode;
   const MessageBar({
     super.key,
     this.replying = false,
@@ -79,15 +76,14 @@ class MessageBar extends StatelessWidget {
     required this.textController,
     this.replyingMessage,
     this.onCancelReply,
+    this.focusNode,
   });
 
-  /// [MessageBar] builder method
-  ///
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 8),
+        padding: const EdgeInsets.all(8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
@@ -129,12 +125,15 @@ class MessageBar extends StatelessWidget {
                       hintText: messageBarHintText,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 15,
-                        vertical: 15,
+                        vertical: 7,
                       ),
                       borderRadius: 30,
                       transparentBorder: true,
                       prefixIcon: prefix,
                       textStyle: textFieldTextStyle,
+                      autoFocus: true,
+                      onTapOutside: () {},
+                      focusNode: focusNode,
                     ),
                   ],
                 ),
@@ -145,22 +144,22 @@ class MessageBar extends StatelessWidget {
             ),
             IconButton.filled(
               onPressed: () {
-                if (textController.text.trim() != '') {
+                if (textController.text.trim().isNotEmpty) {
                   if (onSend != null) {
                     onSend!(textController.text.trim());
+                    textController.clear(); // Clear text here directly
                   }
-                  textController.text = '';
                 }
               },
               icon: const Padding(
-                padding: EdgeInsets.all(7),
+                padding: EdgeInsets.all(5),
                 child: Icon(
-                  Icons.send_rounded,
+                  Icons.send,
                 ),
               ),
               style: ButtonStyle(
                   backgroundColor: WidgetStatePropertyAll(
-                    AppTheme.currentTheme.colorScheme.secondary,
+                    customBlue.shade400,
                   ),
                   iconColor: const WidgetStatePropertyAll(Colors.white)),
             ),
@@ -171,22 +170,21 @@ class MessageBar extends StatelessWidget {
   }
 
   Widget replyingWidget() {
+    var customColor = getColorFromString(replyingTo).darken();
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.grey.shade100,
-      ),
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey.shade100,
+          border: Border(
+              left: BorderSide(
+            width: 5,
+            color: customColor,
+          ))),
       clipBehavior: Clip.hardEdge,
       child: Row(
         children: [
-          // horiztonal container with blue color
-          Container(
-            width: 5,
-            height: 50,
-            color: getColorFromString("Krishna_Suryavan").darken(),
-          ),
-          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,11 +193,10 @@ class MessageBar extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        "Krishna_Suryavan",
+                        replyingTo,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color:
-                              getColorFromString("Krishna_Suryavan").darken(),
+                          color: customColor,
                         ),
                       ),
                     ),

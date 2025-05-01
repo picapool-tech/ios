@@ -2,20 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:picapool/screens/alerts/alerts_page.dart';
-import 'package:picapool/screens/chats/chat_homeScreen.dart';
+import 'package:picapool/screens/chats/chat_home_screen.dart';
 import 'package:picapool/screens/home/home_screen.dart';
-import 'package:picapool/screens/middle_button/middle_button.dart';
 import 'package:picapool/screens/profile_page/profile_page.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/svg_icon.dart';
 import 'package:picapool/utils/theme.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int goToIndex;
+  const MainScreen({
+    super.key,
+    this.goToIndex = 0,
+  });
 
   @override
   State<MainScreen> createState() => _MainScreenState();
+}
+
+class NavbarConfig {
+  static const List<String> iconPaths = [
+    'assets/bottombar/Home1.svg',
+    'assets/bottombar/chats.svg',
+    'assets/bottombar/alert.svg',
+    'assets/bottombar/settings.svg',
+  ];
+
+  static const List<String> activeIconPaths = [
+    'assets/bottombar/Home1_active.svg',
+    'assets/bottombar/chats_active.svg',
+    'assets/bottombar/alert_active.svg',
+    'assets/bottombar/settings_active.svg',
+  ];
+
+  static const List<String> titles = [
+    'Home',
+    'Chats',
+    'Alerts',
+    'Settings',
+  ];
 }
 
 class _MainScreenState extends State<MainScreen>
@@ -26,8 +51,10 @@ class _MainScreenState extends State<MainScreen>
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const MyChatsPage(),
-    const AlertsPage(),
+    const ChatHomeScreen(),
+    AlertsPage(
+      showOfferDetails: Get.arguments?['offerId'],
+    ),
     const ProfileScreen(),
   ];
 
@@ -67,6 +94,8 @@ class _MainScreenState extends State<MainScreen>
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         color: AppTheme.currentTheme.scaffoldBackgroundColor,
+        padding: EdgeInsets.zero,
+        clipBehavior: Clip.hardEdge,
         child: Row(
           children: [
             Expanded(child: _buildTabItem(0)),
@@ -92,6 +121,10 @@ class _MainScreenState extends State<MainScreen>
   void initState() {
     super.initState();
 
+    setState(() {
+      _selectedIndex = widget.goToIndex;
+    });
+
     _tabController = TabController(
       length: NavbarConfig.titles.length,
       vsync: this,
@@ -105,6 +138,87 @@ class _MainScreenState extends State<MainScreen>
     });
   }
 
+  // listenNotification() {
+  //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //     print('Message received in foreground: ${message.notification?.title}');
+  //     showInAppNotification(message);
+  //   });
+
+  //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //     Get.showOverlay(asyncFunction: () => handleMessage(message));
+  //   });
+
+  //   FirebaseMessaging.instance.getInitialMessage().then(
+  //     (message) {
+  //       print('---- getInitialMessage called ----');
+  //       if (message != null) {
+  //         Get.showOverlay(asyncFunction: () => handleMessage(message));
+  //       } else {
+  //         print('---- getInitialMessage is not opened ----');
+  //       }
+  //     },
+  //   );
+  // }
+
+  // void showInAppNotification(RemoteMessage message) {
+  //   // Don't show if notification is empty
+  //   if (message.notification == null) {
+  //     return;
+  //   }
+
+  //   final title = message.notification!.title ?? 'Notification';
+  //   final body = message.notification!.body ?? '';
+
+  //   // Show a compact snackbar
+  //   Get.snackbar(
+  //     '',
+  //     '',
+  //     titleText: Text(
+  //       title,
+  //       style: const TextStyle(
+  //         color: Colors.white,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //       maxLines: 1,
+  //       overflow: TextOverflow.ellipsis,
+  //     ),
+  //     messageText: Text(
+  //       body,
+  //       style: const TextStyle(
+  //         color: Colors.white,
+  //         fontSize: 12,
+  //       ),
+  //       maxLines: 2,
+  //       overflow: TextOverflow.ellipsis,
+  //     ),
+  //     snackPosition: SnackPosition.TOP,
+  //     margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+  //     padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+  //     icon: Padding(
+  //       padding: const EdgeInsets.only(left: 4, right: 8),
+  //       child: Image.asset(
+  //         "assets/images/ic_launcher.png",
+  //         width: 24,
+  //         height: 24,
+  //       ),
+  //     ),
+  //     shouldIconPulse: false,
+  //     maxWidth: 500, // Add max width constraint
+  //     boxShadows: [
+  //       BoxShadow(
+  //         color: Colors.black.withOpacity(0.15),
+  //         blurRadius: 6,
+  //         offset: const Offset(0, 3),
+  //       )
+  //     ],
+  //     duration: const Duration(seconds: 4),
+  //     isDismissible: true,
+  //     onTap: (_) {
+  //       Get.showOverlay(asyncFunction: () => handleMessage(message));
+  //     },
+  //   );
+  // }
+
   Widget _buildTabItem(int index) {
     final bool isActive = index == _selectedIndex;
 
@@ -115,34 +229,82 @@ class _MainScreenState extends State<MainScreen>
           _tabController.animateTo(index);
         });
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            isActive
-                ? NavbarConfig.activeIconPaths[index]
-                : NavbarConfig.iconPaths[index],
-            width: 24,
-            height: 24,
-            colorFilter: !isActive
-                ? ColorFilter.mode(
-                    AppTheme.currentTheme.hintColor,
-                    BlendMode.srcIn,
-                  )
-                : null,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            NavbarConfig.titles[index],
-            style: TextStyle(
-              fontSize: 12,
-              color: isActive
-                  ? const Color(0xffFF8D41)
-                  : AppTheme.currentTheme.hintColor,
+      child: Container(
+        height: double.infinity,
+        color: Colors.white,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              isActive
+                  ? NavbarConfig.activeIconPaths[index]
+                  : NavbarConfig.iconPaths[index],
+              width: 24,
+              height: 24,
+              colorFilter: !isActive
+                  ? ColorFilter.mode(
+                      AppTheme.currentTheme.hintColor,
+                      BlendMode.srcIn,
+                    )
+                  : null,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              NavbarConfig.titles[index],
+              style: TextStyle(
+                fontSize: 12,
+                color: isActive
+                    ? const Color(0xffFF8D41)
+                    : AppTheme.currentTheme.hintColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+// Future<void> handleMessage(RemoteMessage message) async {
+//     debugPrint("MESSAGE FOUND: ${message.data}");
+
+//     try {
+//       var action = message.data['action'];
+//       if (action == null) {
+//         return;
+//       }
+
+//       if (action == 'openAlertsPage') {
+//         int? offerId = int.tryParse(message.data['offerId']);
+//         if (offerId != null) {
+//           Get.to(
+//               () => const MainScreen(
+//                     goToIndex: 2,
+//                   ),
+//               arguments: {
+//                 'offerId': offerId,
+//               });
+//         }
+//         return;
+//       }
+
+//       if (message.data['chatId'] != null) {
+//         String? chatId = message.data['chatId'];
+//         if (chatId == null) {
+//           return;
+//         }
+//         int? chatIdInt = int.tryParse(chatId);
+//         if (chatIdInt == null) {
+//           return;
+//         }
+//         await handleChatNavigation(chatIdInt);
+//       }
+//     } catch (e) {
+//       debugPrint("Some error occured $e");
+//     }
+//   }
+
+  // void handleMessageWithOverlay(RemoteMessage message) {
+  //   Get.showOverlay(asyncFunction: () => handleMessage(message));
+  // }
 }

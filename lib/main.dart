@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/controllers/brand_controller.dart';
 import 'package:picapool/controllers/category_controller.dart';
@@ -34,11 +35,13 @@ import 'package:picapool/features/vicinity/vicinity_controller.dart';
 import 'package:picapool/firebase_options_new.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/offer_model.dart';
+import 'package:picapool/screens/alerts/widgets/show_offer_details.dart';
 import 'package:picapool/screens/auth_check_screen.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/routes.dart';
 import 'package:picapool/utils/theme.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
+// import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
+import 'package:picapool/widgets/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -100,23 +103,47 @@ Future<void> checkingForDynamicLink() async {
 
 FutureVoid handleChatNavigation(int? chatId) async {
   if (chatId == null) {
-    hidePicaDialog();
-    Get.to(
-      () => const NewBottomBar(
-        currentIndex: 1,
-      ),
-    );
+    if (Get.context != null) {
+      showDialog(
+        context: Get.context!,
+        builder: (context) => PicaAlertDialog(
+          message: "Chat not found",
+          confirmText: 'OK',
+          onConfirm: () {
+            Get.back();
+          },
+        ),
+      );
+    } else {
+      Get.to(
+        () => const MainScreen(
+          goToIndex: 1,
+        ),
+      );
+    }
     return;
   }
 
   var chat = await Get.find<ChatController>().getChatFromId(chatId: chatId);
   if (chat == null) {
-    hidePicaDialog();
-    Get.to(
-      () => const NewBottomBar(
-        currentIndex: 1,
-      ),
-    );
+    if (Get.context != null) {
+      showDialog(
+        context: Get.context!,
+        builder: (context) => PicaAlertDialog(
+          message: "Chat not found",
+          confirmText: 'OK',
+          onConfirm: () {
+            Get.back();
+          },
+        ),
+      );
+    } else {
+      Get.to(
+        () => const MainScreen(
+          goToIndex: 1,
+        ),
+      );
+    }
     return;
   }
 
@@ -135,13 +162,15 @@ FutureVoid handleChatNavigation(int? chatId) async {
       debugPrint("Got errror in converting live offer");
     }
   }
-  hidePicaDialog();
-  Get.to(ChatPage(
-    chat: chat,
-    chatTitle: parseChatTitle(offer, liveOffer),
-    offer: offer,
-    liveOffer: liveOffer,
-  ));
+
+  Get.to(
+    () => ChatPage(
+      chat: chat,
+      chatTitle: parseChatTitle(offer, liveOffer),
+      offer: offer,
+      liveOffer: liveOffer,
+    ),
+  );
 }
 
 void handleDynamicLink(PendingDynamicLinkData? dynamicLinkData) {
@@ -155,26 +184,26 @@ void handleDynamicLink(PendingDynamicLinkData? dynamicLinkData) {
       "Application has not been started yet but here is link ${dynamicLinkData?.link.toString()}");
 }
 
-void handleMessage(RemoteMessage message) async {
+Future<void> handleMessage(RemoteMessage message) async {
   debugPrint("MESSAGE FOUND: ${message.data}");
 
-  showPicaLoadingDialog();
   try {
     var action = message.data['action'];
     if (action == null) {
-      hidePicaDialog();
       return;
     }
 
     if (action == 'openAlertsPage') {
-      var offerId = message.data['offerId'];
+      int? offerId = int.tryParse(message.data['offerId']);
       if (offerId != null) {
-        hidePicaDialog();
-        Get.to(
-          () => const NewBottomBar(
-            currentIndex: 2,
-          ),
-        );
+        _showOfferDetails(offerId);
+        // Get.to(
+        //     () => const MainScreen(
+        //           goToIndex: 2,
+        //         ),
+        //     arguments: {
+        //       'offerId': offerId,
+        //     });
       }
       return;
     }
@@ -182,20 +211,73 @@ void handleMessage(RemoteMessage message) async {
     if (message.data['chatId'] != null) {
       String? chatId = message.data['chatId'];
       if (chatId == null) {
-        hidePicaDialog();
         return;
       }
       int? chatIdInt = int.tryParse(chatId);
       if (chatIdInt == null) {
-        hidePicaDialog();
         return;
       }
       await handleChatNavigation(chatIdInt);
     }
   } catch (e) {
     debugPrint("Some error occured $e");
-    hidePicaDialog();
   }
+}
+
+void handleMessageWithOverlay(RemoteMessage message) {
+  Get.showOverlay(
+    asyncFunction: () => handleMessage(message),
+    opacityColor: Colors.black.withOpacity(0.5),
+    loadingWidget: TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeIn,
+      builder: (context, opacity, child) {
+        return Material(
+          type: MaterialType.transparency,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.blue,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        "Loading...",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 @pragma('vm:entry-point')
@@ -203,30 +285,7 @@ Future<void> handleNotification(RemoteMessage message) async {
   debugPrint('Notification opened the app: ${message.notification?.title}');
   debugPrint('Notification opened the app: ${message.data.toString()}');
   debugPrint('Notification opened the app: ${message.notification?.body}');
-
-  handleMessage(message);
-}
-
-listenNotification() {
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Message received in foreground: ${message.notification?.title}');
-    showInAppNotification(message);
-  });
-
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    handleMessage(message);
-  });
-
-  FirebaseMessaging.instance.getInitialMessage().then(
-    (message) {
-      print('---- getInitialMessage called ----');
-      if (message != null) {
-        handleMessage(message);
-      } else {
-        print('---- getInitialMessage is not opened ----');
-      }
-    },
-  );
+  handleMessageWithOverlay(message);
 }
 
 String parseChatTitle(Offer? offer, LiveOffer? liveOffer) {
@@ -241,61 +300,24 @@ String parseChatTitle(Offer? offer, LiveOffer? liveOffer) {
   return "";
 }
 
-void showInAppNotification(RemoteMessage message) {
-  // Don't show if notification is empty
-  if (message.notification == null) {
-    return;
+void _showOfferDetails(int offerId) {
+  if (Get.context == null) {
+    Get.bottomSheet(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 15),
+        child: ShowOfferDetails(offerId: offerId),
+      ),
+      isScrollControlled: false,
+      persistent: false,
+      backgroundColor: AppTheme.currentTheme.bottomSheetTheme.backgroundColor,
+    );
+  } else {
+    showPicaModelBottomSheet(
+      context: Get.context!,
+      isScrollController: false,
+      child: ShowOfferDetails(offerId: offerId),
+    );
   }
-
-  final title = message.notification!.title ?? 'Notification';
-  final body = message.notification!.body ?? '';
-
-  // Show a compact snackbar
-  Get.snackbar(
-    '',
-    '',
-    titleText: Text(
-      title,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    ),
-    messageText: Text(
-      body,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 12,
-      ),
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-    ),
-    snackPosition: SnackPosition.TOP,
-    margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-    icon: Padding(
-      padding: const EdgeInsets.only(left: 4, right: 8),
-      child: Image.asset(
-        "assets/images/ic_launcher.png",
-        width: 24,
-        height: 24,
-      ),
-    ),
-    shouldIconPulse: false,
-    maxWidth: 500, // Add max width constraint
-    boxShadows: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.15),
-        blurRadius: 6,
-        offset: const Offset(0, 3),
-      )
-    ],
-    duration: const Duration(seconds: 4),
-    isDismissible: true,
-    onTap: (_) => handleMessage(message),
-  );
 }
 
 class MyApp extends StatefulWidget {
@@ -351,5 +373,86 @@ class _MyAppState extends State<MyApp> {
     if (Platform.isAndroid) {
       checkForUpdate();
     }
+  }
+
+  listenNotification() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Message received in foreground: ${message.notification?.title}');
+      showInAppNotification(message);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      handleMessageWithOverlay(message);
+    });
+
+    FirebaseMessaging.instance.getInitialMessage().then(
+      (message) {
+        print('---- getInitialMessage called ----');
+        if (message != null) {
+          handleMessageWithOverlay(message);
+        } else {
+          print('---- getInitialMessage is not opened ----');
+        }
+      },
+    );
+  }
+
+  void showInAppNotification(RemoteMessage message) {
+    // Don't show if notification is empty
+    if (message.notification == null) {
+      return;
+    }
+
+    final title = message.notification!.title ?? 'Notification';
+    final body = message.notification!.body ?? '';
+
+    // Show a compact snackbar
+    Get.snackbar(
+      '',
+      '',
+      titleText: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      messageText: Text(
+        body,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      snackPosition: SnackPosition.TOP,
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      icon: Padding(
+        padding: const EdgeInsets.only(left: 4, right: 8),
+        child: Image.asset(
+          "assets/images/ic_launcher.png",
+          width: 24,
+          height: 24,
+        ),
+      ),
+      shouldIconPulse: false,
+      maxWidth: 500, // Add max width constraint
+      boxShadows: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.15),
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        )
+      ],
+      duration: const Duration(seconds: 4),
+      isDismissible: true,
+      onTap: (_) {
+        handleMessageWithOverlay(message);
+      },
+    );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:picapool/utils/theme.dart';
 
 class CustomDivider extends StatelessWidget {
@@ -31,12 +30,11 @@ class CustomDivider extends StatelessWidget {
           divider(),
           if (child == null)
             Text(
-              text,
+              text.toUpperCase(),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: textColor,
-                    letterSpacing: 0.5,
-                    fontFamily: GoogleFonts.montserrat().fontFamily,
+                    letterSpacing: 1.5,
                   ),
             )
           else

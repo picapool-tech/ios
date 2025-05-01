@@ -85,6 +85,7 @@ class PicaOutlinedTextField extends StatelessWidget {
   final double borderRadius;
   final TextStyle? textStyle;
   final bool transparentBorder; // New parameter
+  final VoidCallback? onTapOutside;
 
   const PicaOutlinedTextField({
     Key? key,
@@ -121,6 +122,7 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.textStyle,
     this.borderRadius = kTextFieldBorderRadius,
     this.transparentBorder = false, // Default to false
+    this.onTapOutside,
   }) : super(key: key);
 
   @override
@@ -215,7 +217,7 @@ class PicaOutlinedTextField extends StatelessWidget {
         ),
       ),
       onTapOutside: (value) {
-        FocusManager.instance.primaryFocus?.unfocus();
+        onTapOutside ?? FocusManager.instance.primaryFocus?.unfocus();
       },
     );
   }

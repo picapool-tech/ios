@@ -57,7 +57,6 @@ class PicaPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String uniqueId = 'button_${text.hashCode}';
     return Obx(() {
       if (isLoading.value) {
         return const Center(

@@ -14,12 +14,14 @@ import 'package:picapool/screens/create_cab.dart';
 import 'package:picapool/screens/create_pool.dart';
 import 'package:picapool/screens/middle_button/middle_button.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
+import 'package:picapool/screens/splash_screen/splash_screen.dart';
 import 'package:picapool/screens/trekking/trekking_page.dart';
 import 'package:picapool/screens/turf/turf_first_page.dart';
 import 'package:picapool/screens/vicinity/request_vicinity.dart';
-import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
+// import 'package:picapool/widgets/bottom_navbar/common_bottom_navbar.dart';
 import 'package:picapool/widgets/brands/brand_listing.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
+import 'package:picapool/widgets/main_screen.dart';
 import 'package:picapool/widgets/product_lists/product_lists.dart';
 import 'package:picapool/widgets/sell/sell_confirmation_page.dart';
 import 'package:picapool/widgets/sell/sell_form.dart';
@@ -67,7 +69,7 @@ class GetRoutes {
   static final List<GetPage<dynamic>> routes = [
     _buildRoute(
       name: splash,
-      page: () => const NewBottomBar(),
+      page: () => const SplashScreen(),
       checkWithNetwork: false,
     ),
     // _buildRoute(

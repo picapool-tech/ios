@@ -3,6 +3,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+const MaterialColor customBlue = MaterialColor(
+  0xFF02005D,
+  <int, Color>{
+    50: Color(0xFFE0E0EC),
+    100: Color(0xFFB3B3CC),
+    200: Color(0xFF8080AD),
+    300: Color(0xFF4D4D8E),
+    400: Color(0xFF262673),
+    500: Color(0xFF02005D), // Base
+    600: Color(0xFF010048),
+    700: Color(0xFF01003A),
+    800: Color(0xFF00002E),
+    900: Color(0xFF000021),
+  },
+);
+
 BoxDecoration roundedContainer({double radius = 15}) {
   return BoxDecoration(
     borderRadius: BorderRadius.circular(radius),
@@ -25,7 +41,7 @@ abstract final class AppTheme {
     primary: Color(0xFFFF8D41),
     primaryContainer: Color(0xFFFFFEFE),
     primaryLightRef: Color(0xFFFF8D41),
-    secondary: Color(0xFF02005D),
+    secondary: customBlue,
     secondaryContainer: Color(0xFFFFDBCF),
     secondaryLightRef: Color(0xFF02005D),
     tertiary: Color(0xFF006875),
@@ -190,7 +206,8 @@ abstract final class AppTheme {
         .higherContrastFixed(),
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
-    fontFamily: _fontFamily,
+    // fontFamily: GoogleFonts.questrial().fontFamily,
+    // textTheme: GoogleFonts.questrialTextTheme(),
   );
 
   // The defined dark theme.
@@ -208,7 +225,8 @@ abstract final class AppTheme {
         FlexSchemeVariant.candyPop.tones(Brightness.dark).higherContrastFixed(),
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
-    fontFamily: _fontFamily,
+    // fontFamily: GoogleFonts.questrial().fontFamily,
+    // textTheme: GoogleFonts.questrialTextTheme(),
   );
 
   static ThemeData get currentTheme {
