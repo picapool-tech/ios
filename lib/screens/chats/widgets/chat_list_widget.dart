@@ -51,7 +51,7 @@ class ChatListWidget extends StatelessWidget {
           },
           child: ListTile(
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             leading: Container(
               width: 50,
               height: 50,
@@ -102,7 +102,9 @@ class ChatListWidget extends StatelessWidget {
                   DateTimeHelper.timeAgoSince(
                     chat.chat.updatedAt.toIso8601String(),
                   ),
-                  style: Theme.of(context).textTheme.labelSmall,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Get.theme.hintColor,
+                      ),
                 ),
               ],
             ),

@@ -112,9 +112,14 @@ class LiveOffersService {
         final responseData = response.data as Map<String, dynamic>;
         final liveOfferResponse = responseData['data'];
         debugPrint('Live Offer Response: $liveOfferResponse');
-        return liveOfferResponse
-            .map((liveOffer) => GetLiveOfferResponse.fromJson(liveOffer))
-            .toList();
+        // final LiveOffer liveOffer =
+        //     LiveOffer.fromJson(liveOfferResponse as Map<String, dynamic>);
+        return GetLiveOfferResponse.fromJson(responseData);
+        // GetLiveOfferResponse(
+        //   success: responseData['success'] as bool,
+        //   liveOffer: liveOffer,
+        //   message: responseData['message'] as String?,
+        // );
       } else {
         // Handle non-successful status codes
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;

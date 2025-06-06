@@ -40,7 +40,8 @@ class AlertListItem extends StatelessWidget {
             color: AppTheme.currentTheme.dividerColor,
           ),
         ),
-        child: Column(
+        child: 
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top row with image and basic info

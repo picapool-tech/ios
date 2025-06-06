@@ -45,7 +45,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
   bool _isMapInitialized = false; // New flag to check if the map is initialized
   List<NearUserModel> _nearestUsers = [];
   int _userFoundCount = 0;
-  int _maxUsersToShow = 100;
+  final int _maxUsersToShow = 100;
   bool _isLoadingNearbyUser = false;
 
   bool fromBrands = false;
@@ -64,7 +64,7 @@ class _RequestVicinityState extends State<RequestVicinity> {
 
   double _lastFetchedRadius = 0;
 
-  Map<int, List<NearUserModel>> _radiusCache = {};
+  final Map<int, List<NearUserModel>> _radiusCache = {};
 
   bool get activeButton =>
       (_userController.user?.id != null && _currentPosition != null);

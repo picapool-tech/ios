@@ -19,24 +19,6 @@ class _AddOfferImageState extends State<AddOfferImage> {
   PickedFile? _imageFile;
   bool isImageSelected = false;
 
-  Future<void> _pickImage(ImageSource source, double width) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: CropAspectRatio(ratioX: width - 24 - 54, ratioY: 224),
-        maxHeight: 400,
-        maxWidth: 400,
-      );
-      if (croppedFile != null) {
-        setState(() {
-          _imageFile = PickedFile(croppedFile.path);
-          isImageSelected = true;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -139,7 +121,7 @@ class _AddOfferImageState extends State<AddOfferImage> {
                                                           ImageSource.camera,
                                                           size.width);
                                                       setState(() {});
-                                                      if (mounted) {
+                                                      if (context.mounted) {
                                                         Navigator.pop(context);
                                                       }
                                                     },
@@ -154,7 +136,7 @@ class _AddOfferImageState extends State<AddOfferImage> {
                                                           ImageSource.gallery,
                                                           size.width);
                                                       setState(() {});
-                                                      if (mounted) {
+                                                      if (context.mounted) {
                                                         Navigator.pop(context);
                                                       }
                                                     },
@@ -180,5 +162,23 @@ class _AddOfferImageState extends State<AddOfferImage> {
               ),
               LargeButton(text: "Next", onPressed: () {})
             ]))));
+  }
+
+  Future<void> _pickImage(ImageSource source, double width) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: CropAspectRatio(ratioX: width - 24 - 54, ratioY: 224),
+        maxHeight: 400,
+        maxWidth: 400,
+      );
+      if (croppedFile != null) {
+        setState(() {
+          _imageFile = PickedFile(croppedFile.path);
+          isImageSelected = true;
+        });
+      }
+    }
   }
 }

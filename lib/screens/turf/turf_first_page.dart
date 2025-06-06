@@ -6,7 +6,7 @@ class TurfPage1 extends StatefulWidget {
   const TurfPage1({super.key});
 
   @override
-  _TurfPage1State createState() => _TurfPage1State();
+  State<TurfPage1> createState() => _TurfPage1State();
 }
 
 class _TurfPage1State extends State<TurfPage1> {
@@ -118,7 +118,8 @@ class _TurfPage1State extends State<TurfPage1> {
                 ),
                 const SizedBox(height: 20),
                 _buildDateTimePicker(),
-                const SizedBox(height: 40), // Add some spacing before the button
+                const SizedBox(
+                    height: 40), // Add some spacing before the button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -150,48 +151,117 @@ class _TurfPage1State extends State<TurfPage1> {
     );
   }
 
-  Widget _buildOptionChip(Map<String, dynamic> sport) {
-    final isSelected = selectedSports.contains(sport['name']);
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: ChoiceChip(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(sport['icon'],
-                size: 15,
-                color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
-            const SizedBox(width: 3),
-            Text(
-              sport['name'],
-              style: TextStyle(
-                  fontFamily: "MontserratM",
-                  fontSize: 12,
-                  color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
-            ),
-          ],
+  Widget _buildAmPmPicker() {
+    return Container(
+      height: 60,
+      width: 65,
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey),
+          bottom: BorderSide(color: Colors.grey),
         ),
-        selected: isSelected,
-        onSelected: (bool selected) {
+      ),
+      child: ListWheelScrollView.useDelegate(
+        physics: const FixedExtentScrollPhysics(),
+        itemExtent: 60,
+        diameterRatio: 1.5,
+        onSelectedItemChanged: (index) {
           setState(() {
-            if (selected) {
-              selectedSports.add(sport['name']);
-            } else {
-              selectedSports.remove(sport['name']);
-            }
+            timeFormat = amPmOptions[index];
           });
         },
-        backgroundColor: Colors.white,
-        selectedColor: Colors.orange.withOpacity(0.1),
-        labelStyle:
-            TextStyle(color: isSelected ? const Color(0xFFFF8D41) : Colors.black),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-              color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
+        childDelegate: ListWheelChildLoopingListDelegate(
+          children: amPmOptions.map((option) {
+            final isSelected = option == timeFormat;
+            return Center(
+              child: Text(
+                option,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isSelected ? Colors.black : Colors.grey,
+                ),
+              ),
+            );
+          }).toList(),
         ),
-        showCheckmark: false,
       ),
+    );
+  }
+
+  Widget _buildDateTimePicker() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Date Picker
+        GestureDetector(
+          onTap: () => _selectDate(context),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xffFF8D41)),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Text(
+                  _formatDate(selectedDate),
+                  style: const TextStyle(
+                    fontFamily: "MontserratM",
+                    fontSize: 14,
+                    color: Color(0xffFF8D41),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 10, // Adjust these values to position the icon correctly
+                top: -5, // Adjust these values to position the icon correctly
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Color(0xffFF8D41),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                    size: 12, // Adjust the size as needed
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Time Picker
+        Row(
+          children: [
+            _buildNumberPicker(hour, 1, 12, (value) {
+              setState(() {
+                hour = value;
+              });
+            }),
+            const SizedBox(width: 10),
+            const Text(
+              ":",
+              style: TextStyle(
+                fontFamily: "MontserratM",
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(width: 10),
+            _buildNumberPicker(minute, 0, 59, (value) {
+              setState(() {
+                minute = value;
+              });
+            }),
+            const SizedBox(width: 10),
+            _buildAmPmPicker(),
+          ],
+        ),
+      ],
     );
   }
 
@@ -269,87 +339,12 @@ class _TurfPage1State extends State<TurfPage1> {
                 },
                 underline: const SizedBox(),
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: Color(0xff8C8C8C)),
+                icon:
+                    const Icon(Icons.arrow_drop_down, color: Color(0xff8C8C8C)),
                 iconSize: 24,
                 style: const TextStyle(color: Color(0xff8C8C8C)),
               ),
             ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateTimePicker() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Date Picker
-        GestureDetector(
-          onTap: () => _selectDate(context),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xffFF8D41)),
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Text(
-                  _formatDate(selectedDate),
-                  style: const TextStyle(
-                    fontFamily: "MontserratM",
-                    fontSize: 14,
-                    color: Color(0xffFF8D41),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 10, // Adjust these values to position the icon correctly
-                top: -5, // Adjust these values to position the icon correctly
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Color(0xffFF8D41),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: 12, // Adjust the size as needed
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Time Picker
-        Row(
-          children: [
-            _buildNumberPicker(hour, 1, 12, (value) {
-              setState(() {
-                hour = value;
-              });
-            }),
-            const SizedBox(width: 10),
-            const Text(
-              ":",
-              style: TextStyle(
-                fontFamily: "MontserratM",
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(width: 10),
-            _buildNumberPicker(minute, 0, 59, (value) {
-              setState(() {
-                minute = value;
-              });
-            }),
-            const SizedBox(width: 10),
-            _buildAmPmPicker(),
           ],
         ),
       ],
@@ -380,55 +375,55 @@ class _TurfPage1State extends State<TurfPage1> {
     );
   }
 
-  Widget _buildAmPmPicker() {
-    return Container(
-      height: 60,
-      width: 65,
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey),
-          bottom: BorderSide(color: Colors.grey),
+  Widget _buildOptionChip(Map<String, dynamic> sport) {
+    final isSelected = selectedSports.contains(sport['name']);
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: ChoiceChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(sport['icon'],
+                size: 15,
+                color: isSelected
+                    ? const Color(0xFFFF8D41)
+                    : const Color(0xff8C8C8C)),
+            const SizedBox(width: 3),
+            Text(
+              sport['name'],
+              style: TextStyle(
+                  fontFamily: "MontserratM",
+                  fontSize: 12,
+                  color: isSelected
+                      ? const Color(0xFFFF8D41)
+                      : const Color(0xff8C8C8C)),
+            ),
+          ],
         ),
-      ),
-      child: ListWheelScrollView.useDelegate(
-        physics: const FixedExtentScrollPhysics(),
-        itemExtent: 60,
-        diameterRatio: 1.5,
-        onSelectedItemChanged: (index) {
+        selected: isSelected,
+        onSelected: (bool selected) {
           setState(() {
-            timeFormat = amPmOptions[index];
+            if (selected) {
+              selectedSports.add(sport['name']);
+            } else {
+              selectedSports.remove(sport['name']);
+            }
           });
         },
-        childDelegate: ListWheelChildLoopingListDelegate(
-          children: amPmOptions.map((option) {
-            final isSelected = option == timeFormat;
-            return Center(
-              child: Text(
-                option,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isSelected ? Colors.black : Colors.grey,
-                ),
-              ),
-            );
-          }).toList(),
+        backgroundColor: Colors.white,
+        selectedColor: Colors.orange.withOpacity(0.1),
+        labelStyle: TextStyle(
+            color: isSelected ? const Color(0xFFFF8D41) : Colors.black),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+              color: isSelected
+                  ? const Color(0xFFFF8D41)
+                  : const Color(0xff8C8C8C)),
         ),
+        showCheckmark: false,
       ),
     );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
   }
 
   String _formatDate(DateTime date) {
@@ -484,6 +479,20 @@ class _TurfPage1State extends State<TurfPage1> {
         return "Dec";
       default:
         return "";
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
     }
   }
 }

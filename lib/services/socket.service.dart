@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class SocketService {
   // static final SocketService _instance = SocketService._internal();
@@ -10,9 +10,9 @@ class SocketService {
 
   static bool isShownError = false;
 
-  IO.Socket? socket;
+  io.Socket? socket;
 
-  IO.Socket? createSocketConnection({
+  io.Socket? createSocketConnection({
     required int userId,
     required int roomId,
     required String userName,
@@ -22,9 +22,9 @@ class SocketService {
     disconnectSocket();
 
     roomIdG = roomId;
-    socket = IO.io(
+    socket = io.io(
       "http://api.picapool.com:3000",
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({
             'roomId': "$roomId",
@@ -92,6 +92,21 @@ class SocketService {
     // socket?.close();
   }
 
+  void editMessage({
+    required int messageId,
+    required String newContent,
+  }) {
+    if (!isConnected()) {
+      debugPrint('Socket is not connected, message not edited.');
+      return;
+    }
+
+    socket!.emit('message.edit', {
+      'messageId': messageId,
+      'newContent': newContent,
+    });
+  }
+
   bool isConnected() {
     return socket?.connected ?? false;
   }
@@ -144,3 +159,4 @@ class SocketService {
     socket!.emit('reaction', reactionData);
   }
 }
+

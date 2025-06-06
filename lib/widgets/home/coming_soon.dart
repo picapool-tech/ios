@@ -5,7 +5,7 @@ class ComingSoon extends StatefulWidget {
   const ComingSoon({super.key, this.title = "Food"});
 
   @override
-  _ComingSoonState createState() => _ComingSoonState();
+  State<ComingSoon> createState() => _ComingSoonState();
 }
 
 class _ComingSoonState extends State<ComingSoon>

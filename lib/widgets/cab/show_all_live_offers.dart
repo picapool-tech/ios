@@ -190,6 +190,7 @@ class AvailableCabCard extends StatefulWidget {
   int? seats;
   dynamic userId;
   int? livePartnerId;
+  
   AvailableCabCard(
       {this.id,
       this.createdAt,

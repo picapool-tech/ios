@@ -6,7 +6,7 @@ class CreateCabPoolScreen extends StatefulWidget {
   const CreateCabPoolScreen({super.key});
 
   @override
-  _CreateCabPoolScreenState createState() => _CreateCabPoolScreenState();
+  State<CreateCabPoolScreen> createState() => _CreateCabPoolScreenState();
 }
 
 class _CreateCabPoolScreenState extends State<CreateCabPoolScreen> {

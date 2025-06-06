@@ -1,7 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/common/extensions/string_extensions.dart';
+import 'package:picapool/common/functions/url_launch.dart';
 import 'package:picapool/models/message_model.dart';
-import 'package:picapool/screens/public_chat/widgets/chat_bubble_impl.dart';
+import 'package:picapool/screens/public_chat/widgets/reply_widget.dart';
 import 'package:picapool/utils/theme.dart';
 
 class ChatBubbleWidget extends StatelessWidget {
@@ -12,7 +15,6 @@ class ChatBubbleWidget extends StatelessWidget {
   final Message? replyMessage;
   final Widget? leadingWidget;
   final String formattedTime;
-  final Color customTheme;
   const ChatBubbleWidget({
     super.key,
     required this.isSender,
@@ -22,7 +24,6 @@ class ChatBubbleWidget extends StatelessWidget {
     required this.replyMessage,
     required this.leadingWidget,
     required this.formattedTime,
-    required this.customTheme,
   });
 
   @override
@@ -57,7 +58,7 @@ class ChatBubbleWidget extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 14,
-                              color: customTheme,
+                              color: username!.toColor,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -73,17 +74,17 @@ class ChatBubbleWidget extends StatelessWidget {
                           child: RichText(
                             text: TextSpan(
                               children: <TextSpan>[
-                                TextSpan(
-                                  text: message.content,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: isSender
-                                            ? Colors.white
-                                            : Colors.black,
+                                hasURLs(message.content)
+                                    ? urlText()
+                                    : TextSpan(
+                                        text: message.content,
+                                        style:
+                                            Get.textTheme.bodyMedium?.copyWith(
+                                          color: isSender
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
                                       ),
-                                ),
                                 TextSpan(
                                   text: formattedTime,
                                   style: const TextStyle(
@@ -103,7 +104,7 @@ class ChatBubbleWidget extends StatelessWidget {
                     child: Text(
                       formattedTime,
                       style: TextStyle(
-                        fontSize: 12.0,
+                        fontSize: 10.0,
                         color: Colors.grey.shade500,
                       ),
                     ),
@@ -115,5 +116,94 @@ class ChatBubbleWidget extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  bool hasURLs(String text) {
+    const pattern =
+        r"(https?:\/\/(www.)?|www.)([\w-]+.([\w-]+.)?[\w]+)([\w./?=%-]*)";
+    final regExp = RegExp(pattern);
+    return regExp.hasMatch(text);
+  }
+
+  TextSpan urlText() {
+    return TextSpan(
+        style: Get.textTheme.bodyMedium?.copyWith(
+          color: isSender ? Colors.white : Colors.black,
+        ),
+        children: message.content.split('\n').expand((line) {
+          final List<TextSpan> lineSpans = [];
+          final urlPattern = RegExp(
+            r"(https?:\/\/(www\.)?|www\.)([\w-]+\.([\w-]+\.)?[\w]+)([\w.\/?=%&-]*)",
+            caseSensitive: false,
+          );
+
+          int lastMatchEnd = 0;
+          for (final match in urlPattern.allMatches(line)) {
+            // Add text before the URL
+            if (match.start > lastMatchEnd) {
+              lineSpans.add(TextSpan(
+                text: line.substring(lastMatchEnd, match.start),
+                style: TextStyle(
+                  color: isSender ? Colors.white : Colors.black,
+                  fontSize: 13,
+                ),
+              ));
+            }
+
+            // Extract URL and handle trailing punctuation
+            String url = match.group(0)!;
+            String trailing = '';
+            if (',.;:!?)]'.contains(url[url.length - 1])) {
+              trailing = url[url.length - 1];
+              url = url.substring(0, url.length - 1);
+            }
+
+            // Add the URL with styling
+            lineSpans.add(
+              TextSpan(
+                text: url,
+                style: const TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.blue,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    launchUrl(url);
+                  },
+              ),
+            );
+
+            // Add trailing punctuation, if any
+            if (trailing.isNotEmpty) {
+              lineSpans.add(TextSpan(
+                text: trailing,
+                style: TextStyle(
+                  color: isSender ? Colors.white : Colors.black,
+                  fontSize: 13,
+                ),
+              ));
+            }
+
+            lastMatchEnd = match.end;
+          }
+
+          // Add remaining text after the last URL
+          if (lastMatchEnd < line.length) {
+            lineSpans.add(TextSpan(
+              text: line.substring(lastMatchEnd),
+              style: TextStyle(
+                color: isSender ? Colors.white : Colors.black,
+                fontSize: 13,
+              ),
+            ));
+          }
+
+          // Add newline if not the last line
+          lineSpans.add(const TextSpan(text: '\n'));
+
+          return lineSpans;
+        }).toList());
   }
 }

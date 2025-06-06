@@ -9,7 +9,7 @@ class ArchivedPage extends StatefulWidget {
   const ArchivedPage({super.key, required this.archivedChats});
 
   @override
-  _ArchivedPageState createState() => _ArchivedPageState();
+  State<ArchivedPage> createState() => _ArchivedPageState();
 }
 
 class _ArchivedPageState extends State<ArchivedPage> {

@@ -85,9 +85,9 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
   String keyword = "";
 
   SortOrder _sortOrder = SortOrder.none;
-  bool _filterActive = false;
+  final bool _filterActive = false;
 
-  Map<String, dynamic> _filters = {};
+  final Map<String, dynamic> _filters = {};
 
   final now = DateTime.now();
 

@@ -79,13 +79,18 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
                 );
               }
 
-              return ListView.separated(
-                separatorBuilder: (context, index) => const Divider(),
+              return ListView.builder(
+                physics: const ClampingScrollPhysics(),
                 itemCount: tags.length,
                 itemBuilder: (context, index) {
-                  return NotificationPreferencesListItem(
-                    tag: tags[index],
-                    index: index,
+                  return Column(
+                    children: [
+                      NotificationPreferencesListItem(
+                        tag: tags[index],
+                        index: index,
+                      ),
+                      if (index != tags.length - 1) const Divider(),
+                    ],
                   );
                 },
               );

@@ -270,7 +270,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   // UI State
   bool _isLoading = false;
   bool _isSearchingFrom = false;
-  List<Prediction> _predictions = [];
+  final List<Prediction> _predictions = [];
   bool _isLoadingRoute = false;
 
   // New state for collapsible time picker
@@ -1090,6 +1090,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       }
     }
 
+    if (!mounted) return;
     final Prediction? result = await showSearch<Prediction>(
       context: context,
       delegate: LocationSearchDelegate(

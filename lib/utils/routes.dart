@@ -77,17 +77,27 @@ class GetRoutes {
     //     page: const SelectProductsFromOffer(),
     //     checkWithNetwork: false),
     _buildRoute(
-        name: createCabPool,
-        page: () => const CreateCabPoolScreen(),
-        checkWithNetwork: false),
+      name: home,
+      page: () => MainScreen(),
+      middlewares: [
+        AnalyticsMiddleware(),
+      ],
+    ),
     _buildRoute(
-        name: createCabShare,
-        page: () => const CreateCabShareScreen(),
-        checkWithNetwork: false),
+      name: createCabPool,
+      page: () => const CreateCabPoolScreen(),
+      checkWithNetwork: false,
+    ),
     _buildRoute(
-        name: createCabShare,
-        page: () => const CreatePoolScreen(),
-        checkWithNetwork: false),
+      name: createCabShare,
+      page: () => const CreateCabShareScreen(),
+      checkWithNetwork: false,
+    ),
+    _buildRoute(
+      name: createCabShare,
+      page: () => const CreatePoolScreen(),
+      checkWithNetwork: false,
+    ),
 
     // Products
     _buildRoute(
@@ -167,6 +177,19 @@ class GetRoutes {
         return ProductsHomepage(brandName: brandName);
       },
     ),
+    // _buildRoute(
+    //   name: "/offer/:id",
+    //   page: () {
+    //     // final id = int.tryParse(Get.parameters['id'] ?? '') ?? 0;
+    //     return AlertsPage();
+    //   },
+    // ),
+    // _buildRoute(
+    //   name: "/liveOffer/:id",
+    //   page: () {
+    //     return ShareCabScreen();
+    //   },
+    // ),
   ];
 
   static String productsWithBrand(String brandName) => '/products/$brandName';
@@ -177,6 +200,7 @@ class GetRoutes {
     required Widget Function() page,
     Bindings? binding,
     bool checkWithNetwork = true,
+    List<GetMiddleware> middlewares = const [],
   }) {
     return GetPage<dynamic>(
       name: name,
@@ -184,7 +208,7 @@ class GetRoutes {
       page: page,
       // page: () => checkWithNetwork ? CheckInternet(page: page) : page(),
       binding: binding,
-      middlewares: [AnalyticsMiddleware()],
+      middlewares: [AnalyticsMiddleware(), ...middlewares],
     );
   }
 }

@@ -257,6 +257,7 @@ class _MainScreenState extends State<MainScreen>
                 color: isActive
                     ? const Color(0xffFF8D41)
                     : AppTheme.currentTheme.hintColor,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],

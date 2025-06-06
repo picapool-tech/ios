@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/core/core.dart';
@@ -58,6 +60,7 @@ class ChatController extends GetxController
     }
     debugPrint("I am in connectToSocket Function");
     socket.on('receiveMessage', handleIncomingMessage);
+    socket.on('messageEdited', handleEditMessage);
   }
 
   Future<ChatAndOfferModel?> createChatWithOfferId(int offerId) async {
@@ -91,6 +94,17 @@ class ChatController extends GetxController
     usersInChat.clear();
   }
 
+  void editMessage({
+    required int messageId,
+    required String newContent,
+  }) {
+    socketService.editMessage(
+      messageId: messageId,
+      newContent: newContent,
+    );
+    debugPrint("Editing message $messageId with content $newContent");
+  }
+
   Future<void> getAllChats() async {
     isLoading.value = true;
     errorMessage.value = '';
@@ -118,7 +132,7 @@ class ChatController extends GetxController
 
   Future<void> getAllMessages(int chatId) async {
     isLoading.value = true;
-    errorMessage.value = '';
+    startLoading(ChatLoadingEnums.getAllMessages);
     update();
 
     final result = await _chatApi.getAllMessages(
@@ -137,6 +151,7 @@ class ChatController extends GetxController
     );
 
     isLoading.value = false;
+    stopLoading(ChatLoadingEnums.getAllMessages);
     update();
   }
 
@@ -182,6 +197,7 @@ class ChatController extends GetxController
 
   Future<ChatAndOfferModel?> getChatFromLiveOfferId(int liveOfferId) async {
     isLoading.value = true;
+    startLoading(ChatLoadingEnums.getLiveOfferChat);
     update();
 
     var result = await _chatApi.getChatFromLiveOfferId(
@@ -189,6 +205,7 @@ class ChatController extends GetxController
     );
 
     isLoading.value = false;
+    stopLoading(ChatLoadingEnums.getLiveOfferChat);
     update();
 
     return result.fold(
@@ -223,6 +240,19 @@ class ChatController extends GetxController
     }
 
     return usersInChat[userId]?.username;
+  }
+
+  void handleEditMessage(data) {
+    var message = data['updatedMessage'];
+    log("$message");
+    log("$data");
+    var messageModel = Message.fromJson(message);
+    var index = messages.indexWhere((msg) => msg.id == messageModel.id);
+    if (index != -1) {
+      messages[index] = messageModel;
+      update();
+    }
+    debugPrint("Edit Message $data with data $message");
   }
 
   void handleIncomingMessage(data) {

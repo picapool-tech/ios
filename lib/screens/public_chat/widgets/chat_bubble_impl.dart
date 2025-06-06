@@ -6,7 +6,6 @@ import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
 import 'package:picapool/utils/date_time_helper.dart';
-import 'package:picapool/utils/theme.dart';
 
 class ChatBubble extends StatefulWidget {
   final bool isSender;
@@ -17,6 +16,7 @@ class ChatBubble extends StatefulWidget {
   final String? username;
   final Widget? leadingWidget;
   final VoidCallback? onDragToEnd;
+  final bool showDate;
   final void Function(LongPressStartDetails)? onLongPress;
   const ChatBubble({
     super.key,
@@ -29,70 +29,11 @@ class ChatBubble extends StatefulWidget {
     this.onDragToEnd,
     this.onLongPress,
     this.replyUsername,
+    this.showDate = false,
   });
 
   @override
   State<ChatBubble> createState() => _ChatBubbleState();
-}
-
-class ReplyingWidget extends StatelessWidget {
-  final String username;
-  final String message;
-
-  final bool isSender;
-  const ReplyingWidget({
-    super.key,
-    required this.username,
-    required this.message,
-    this.isSender = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Color customTheme = getColorFromString(username).darken();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.only(right: 4),
-      decoration: BoxDecoration(
-        color: isSender ? customBlue.shade300 : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          left: BorderSide(color: customTheme, width: 5),
-        ),
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Row(
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.only(left: 6, bottom: 4, right: 4, top: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  username,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: customTheme,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  message,
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: isSender ? Colors.white : Colors.black),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _ChatBubbleState extends State<ChatBubble>
@@ -150,153 +91,105 @@ class _ChatBubbleState extends State<ChatBubble>
   }
 
   Widget _buildDismissibleBubble() {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragUpdate: (details) {
-        setState(() {
-          // Calculate the drag distance
-          double dragDistance =
-              _controller.value + details.delta.dx / Get.mediaQuery.size.width;
+    // Reference width value for consistent behavior
+    final double referenceWidth = 450.0;
+    double bubbleWidth = referenceWidth;
 
-          // Apply elasticity if the drag exceeds the threshold
-          if (dragDistance > 0.5) {
-            var distance = 0.5;
+    return LayoutBuilder(builder: (context, constraints) {
+      // Get actual bubble width from constraints
+      bubbleWidth = constraints.maxWidth;
 
-            dragDistance =
-                distance + (dragDistance - 0.5) * 0.2; // Elastic effect
-          } else if (dragDistance < 0) {
-            dragDistance =
-                dragDistance * 0.2; // Elastic effect for reverse drag
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragUpdate: (details) {
+          // Calculate absolute drag distance in pixels
+          final double absoluteDragDx = details.delta.dx;
+
+          // Minimum drag requirement to prevent accidental triggers
+          if (absoluteDragDx.abs() < 1.0) return;
+
+          setState(() {
+            // Calculate proportional drag distance with normalization factor
+            // This ensures consistent behavior regardless of bubble width
+            double dragDistance = _controller.value +
+                (absoluteDragDx * referenceWidth) /
+                    (bubbleWidth * Get.mediaQuery.size.width);
+
+            // Apply smoother elasticity with progressive resistance
+            if (dragDistance > 0.5) {
+              double overshoot = dragDistance - 0.5;
+              dragDistance =
+                  0.5 + (overshoot * (1.0 - (overshoot * 1.2))).clamp(0.0, 0.5);
+            } else if (dragDistance < 0) {
+              // Progressive resistance for reverse drag
+              dragDistance = dragDistance * 0.3;
+            }
+
+            // Update the animation value
+            _controller.value = dragDistance.clamp(0.0, 1.0);
+          });
+        },
+        onHorizontalDragEnd: (details) {
+          // Use velocity to determine action threshold
+          final double velocity = details.primaryVelocity ?? 0;
+
+          // Either exceed position threshold or have sufficient velocity
+          if (_controller.value > 0.35 || velocity > 800) {
+            widget.onDragToEnd?.call(); // Trigger the reply action
           }
 
-          // Update the animation value
-          _controller.value = dragDistance.clamp(0.0, 1.0);
-        });
-      },
-      onHorizontalDragEnd: (details) {
-        if (_controller.value > 0.35) {
-          widget.onDragToEnd?.call(); // Trigger the reply action
-        }
-        _controller.reverse(); // Reset the animation
-      },
-      child: SlideTransition(
-        position: _animation,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            _buildReplyIcon(),
-            ChatBubbleWidget(
-              isSender: widget.isSender,
-              message: widget.message,
-              formattedTime: formattedTime,
-              customTheme: customTheme,
-              username: widget.username,
-              replyMessage: widget.replyMessage,
-              replyUsername: widget.replyUsername,
-              leadingWidget: widget.leadingWidget,
-            ),
-            _buildReactionsOverlay(),
-          ],
+          // Reset the animation with spring effect
+          _controller.animateBack(
+            0.0,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
+        },
+        onLongPressStart: (details) {
+          widget.onLongPress?.call(details);
+          // showCupertinoModalPopup(
+          //   context: context,
+          //   builder: (_) {
+          //     return CupertinoActionSheet(
+          //       actions: [
+          //         CupertinoActionSheetAction(
+          //           onPressed: () {
+          //             widget.onLongPress?.call(details);
+          //             Navigator.pop(context);
+          //           },
+          //           child: const Text("Reply"),
+          //         ),
+          //       ],
+          //       cancelButton: CupertinoActionSheetAction(
+          //         onPressed: () => Navigator.pop(context),
+          //         child: const Text("Cancel"),
+          //       ),
+          //     );
+          //   },
+          // );
+        },
+        child: SlideTransition(
+          position: _animation,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _buildReplyIcon(),
+              ChatBubbleWidget(
+                isSender: widget.isSender,
+                message: widget.message,
+                formattedTime: formattedTime,
+                username: widget.username,
+                replyMessage: widget.replyMessage,
+                replyUsername: widget.replyUsername,
+                leadingWidget: widget.leadingWidget,
+              ),
+              _buildReactionsOverlay(),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
-
-  // Widget _buildMessageBubble() {
-  //   var customTheme = getColorFromString(widget.username ?? "").darken();
-  //   var formattedTime =
-  //       DateTimeHelper.formatDateTime(widget.message.updatedAt, "hh:mm a");
-
-  //   return
-  // Row(
-  //   mainAxisAlignment:
-  //       widget.isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
-  //   crossAxisAlignment: CrossAxisAlignment.start,
-  //   children: [
-  //     if (!widget.isSender) widget.leadingWidget ?? const SizedBox.shrink(),
-  //     if (!widget.isSender) const SizedBox(width: 8),
-  //     IntrinsicWidth(
-  //       child: Container(
-  //         key: ValueKey(widget.message.id),
-  //         constraints: BoxConstraints(
-  //           maxWidth: Get.mediaQuery.size.width * 0.7,
-  //         ),
-  //         child: Card(
-  //           color: widget.isSender ? customBlue.shade400 : Colors.white,
-  //           margin: const EdgeInsets.only(bottom: 5),
-  //           child: Stack(
-  //             children: [
-  //               Padding(
-  //                 padding: const EdgeInsets.all(8.0),
-  //                 child: Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.start,
-  //                   children: [
-  //                     if (!widget.isSender && widget.username != null)
-  //                       Text(
-  //                         widget.username!,
-  //                         maxLines: 1,
-  //                         overflow: TextOverflow.ellipsis,
-  //                         style: TextStyle(
-  //                           fontSize: 14,
-  //                           color: customTheme,
-  //                           fontWeight: FontWeight.w800,
-  //                         ),
-  //                       ),
-  //                     if (!widget.isSender) const SizedBox(height: 2),
-  //                     if (widget.replyMessage != null)
-  //                       ReplyingWidget(
-  //                         username: widget.replyUsername!,
-  //                         message: widget.replyMessage!.content,
-  //                         isSender: widget.isSender,
-  //                       ),
-  //                     Padding(
-  //                       padding: const EdgeInsets.only(right: 4.0),
-  //                       child: RichText(
-  //                         text: TextSpan(
-  //                           children: <TextSpan>[
-  //                             TextSpan(
-  //                               text: widget.message.content,
-  //                               style: Theme.of(context)
-  //                                   .textTheme
-  //                                   .bodyMedium
-  //                                   ?.copyWith(
-  //                                     color: widget.isSender
-  //                                         ? Colors.white
-  //                                         : Colors.black,
-  //                                   ),
-  //                             ),
-  //                             TextSpan(
-  //                               text: formattedTime,
-  //                               style: const TextStyle(
-  //                                 color: Colors.transparent,
-  //                               ),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //               Positioned(
-  //                 right: 8.0,
-  //                 bottom: 4.0,
-  //                 child: Text(
-  //                   formattedTime,
-  //                   style: TextStyle(
-  //                     fontSize: 12.0,
-  //                     color: Colors.grey.shade500,
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   ],
-  // );
-  // }
 
   Widget _buildReactionsOverlay() {
     return Positioned(

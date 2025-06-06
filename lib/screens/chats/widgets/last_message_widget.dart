@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:picapool/models/chat_model.dart';
 
 class LastMessageWidget extends StatelessWidget {
   final String username;
@@ -17,22 +16,11 @@ class LastMessageWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: RichText(
+          child: Text(
+            "$username: $message",
             overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              text: username,
-              children: [
-                const TextSpan(text: ": "),
-                TextSpan(
-                  text: message,
-                  style: Get.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-              ],
-              style: Get.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            style: Get.textTheme.bodyMedium?.copyWith(
+              color: Get.theme.hintColor,
             ),
           ),
         ),

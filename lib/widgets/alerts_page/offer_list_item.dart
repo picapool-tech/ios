@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:picapool/common/widgets/image_widget.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/tag_model.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
-import 'package:picapool/common/widgets/image_widget.dart';
 
 class OfferListItem extends StatefulWidget {
   final Offer offer;

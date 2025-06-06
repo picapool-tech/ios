@@ -189,9 +189,8 @@ class AuthApi with PicapoolApiClass {
   }
 
   FutureEither<LoginModel> signInWithGoogle() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn(
+    final GoogleSignIn googleSignIn = GoogleSignIn.standard(
       scopes: ['profile', 'email'],
-      forceCodeForRefreshToken: true,
     );
     try {
       final GoogleSignInAccount? account = await googleSignIn.signIn();

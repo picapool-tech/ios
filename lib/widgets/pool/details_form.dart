@@ -101,7 +101,6 @@ class _OfferDetailsFormState extends State<OfferDetailsForm> {
   }
 
   Widget categoryWidget() {
-    String displayText = selectedCategory ?? "Category";
     return Container(
       height: 54,
       decoration: BoxDecoration(

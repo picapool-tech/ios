@@ -24,8 +24,6 @@ class NewBottomBar extends StatefulWidget {
 class _NewBottomBarState extends State<NewBottomBar> {
   int _selectedIndex = 0;
 
-  late TagController _tagController;
-
   final List<Widget> _screens = [
     const HomeScreen(),
     const ChatHomeScreen(),
@@ -97,7 +95,6 @@ class _NewBottomBarState extends State<NewBottomBar> {
     // listenNotification();
 
     Get.put(TagController());
-    _tagController = Get.find<TagController>();
   }
 
   // listenNotification() {
@@ -221,12 +218,11 @@ class _NewBottomBarState extends State<NewBottomBar> {
   // }
 
   Widget _buildNavItem(int index) {
-    final bool isActive = index == _selectedIndex;
 
     return Expanded(
       child: GestureDetector(
         onTap: () => _handleTabChange(index),
-        child: Column(
+        child: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // SvgPicture.asset(

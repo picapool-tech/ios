@@ -20,24 +20,6 @@ class _AddProfilePicBottomSheetState extends State<AddProfilePicBottomSheet> {
   PickedFile? _imageFile;
   bool isImageSelected = false;
 
-  Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        maxHeight: 300,
-        maxWidth: 300,
-      );
-      if (croppedFile != null) {
-        setState(() {
-          _imageFile = PickedFile(croppedFile.path);
-          isImageSelected = true;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -90,7 +72,7 @@ class _AddProfilePicBottomSheetState extends State<AddProfilePicBottomSheet> {
                                                       await _pickImage(
                                                           ImageSource.camera);
                                                       setState(() {});
-                                                      if (mounted) {
+                                                      if (context.mounted) {
                                                         Navigator.pop(context);
                                                       }
                                                     },
@@ -104,7 +86,7 @@ class _AddProfilePicBottomSheetState extends State<AddProfilePicBottomSheet> {
                                                       await _pickImage(
                                                           ImageSource.gallery);
                                                       setState(() {});
-                                                      if (mounted) {
+                                                      if (context.mounted) {
                                                         Navigator.pop(context);
                                                       }
                                                     },
@@ -167,5 +149,23 @@ class _AddProfilePicBottomSheetState extends State<AddProfilePicBottomSheet> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        maxHeight: 300,
+        maxWidth: 300,
+      );
+      if (croppedFile != null) {
+        setState(() {
+          _imageFile = PickedFile(croppedFile.path);
+          isImageSelected = true;
+        });
+      }
+    }
   }
 }

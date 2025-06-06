@@ -851,7 +851,9 @@ class _LocationScreenState extends State<LocationScreen>
       });
 
       // Hide keyboard
-      FocusScope.of(context).unfocus();
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
     } catch (e) {
       debugPrint("Error selecting place: $e");
     }

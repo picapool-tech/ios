@@ -54,47 +54,44 @@ class _BottomBarState extends State<BottomBarProduct> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    return Container(
-      // margin: const EdgeInsets.only(left: 6, right: 6, bottom: 24),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-              child: Container(
-                width: width,
-                height: 65,
-                decoration: const BoxDecoration(
-                    color: Color(0xffffffff),
-                    ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: listOfItems(),
-                ),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+            child: Container(
+              width: width,
+              height: 65,
+              decoration: const BoxDecoration(
+                  color: Color(0xffffffff),
+                  ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: listOfItems(),
               ),
             ),
           ),
-          Transform.translate(
-            offset: const Offset(0, -32),
-            child: InkWell(
-              onTap: () {
-                Get.to(() => const CategorySelectionPage());
-              },
-              highlightColor: Colors.transparent,
-              splashColor: Colors.transparent,
-              child: const SizedBox(
-                height: 70,
-                width: 70,
-                child: SvgIcon(
-                  "assets/bottombar/sell.svg",
-                ),
+        ),
+        Transform.translate(
+          offset: const Offset(0, -32),
+          child: InkWell(
+            onTap: () {
+              Get.to(() => const CategorySelectionPage());
+            },
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            child: const SizedBox(
+              height: 70,
+              width: 70,
+              child: SvgIcon(
+                "assets/bottombar/sell.svg",
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

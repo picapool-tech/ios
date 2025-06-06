@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LargeButton extends StatefulWidget {
+  final String text;
+  final void Function() onPressed;
+  final bool isEnabled;
+  final Color bgColor;
+  final double size;
   const LargeButton(
       {super.key,
       required this.text,
@@ -9,11 +14,6 @@ class LargeButton extends StatefulWidget {
       this.isEnabled = true,
       this.bgColor = const Color(0xffFF8D41),
       this.size = 16.0});
-  final String text;
-  final void Function() onPressed;
-  final bool isEnabled;
-  final Color bgColor;
-  final double size;
 
   @override
   State<StatefulWidget> createState() {
@@ -31,7 +31,7 @@ class _LargeButtonState extends State<LargeButton> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xff333399).withOpacity(0.15),
+              color: const Color(0xff333399).withValues(alpha: 0.15),
               blurRadius: 10,
               offset: const Offset(0, -4))
         ],

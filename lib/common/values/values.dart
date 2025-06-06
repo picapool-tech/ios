@@ -6,7 +6,7 @@ SystemUiOverlayStyle uiOverlayStyle(
   Brightness? brightness,
 }) {
   brightness ??= Theme.of(context).brightness;
-  debugPrint("${brightness.name}");
+  debugPrint(brightness.name);
 
   return SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,

@@ -5,7 +5,7 @@ class MedicalAttentionPage extends StatefulWidget {
   const MedicalAttentionPage({super.key});
 
   @override
-  _MedicalAttentionPageState createState() => _MedicalAttentionPageState();
+  State<MedicalAttentionPage> createState() => _MedicalAttentionPageState();
 }
 
 class _MedicalAttentionPageState extends State<MedicalAttentionPage> {
@@ -127,14 +127,18 @@ class _MedicalAttentionPageState extends State<MedicalAttentionPage> {
           children: [
             Icon(part['icon'],
                 size: 15,
-                color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
+                color: isSelected
+                    ? const Color(0xFFFF8D41)
+                    : const Color(0xff8C8C8C)),
             const SizedBox(width: 3),
             Text(
               part['name'],
               style: TextStyle(
                   fontFamily: "MontserratM",
                   fontSize: 12,
-                  color: isSelected ? const Color(0xFFFF8D41) : const Color(0xff8C8C8C)),
+                  color: isSelected
+                      ? const Color(0xFFFF8D41)
+                      : const Color(0xff8C8C8C)),
             ),
           ],
         ),

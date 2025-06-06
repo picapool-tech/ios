@@ -16,6 +16,7 @@ import 'package:picapool/controllers/network_controller.dart';
 import 'package:picapool/controllers/sell_form_controller.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/core/env.dart';
+import 'package:picapool/features/app_links/app_links.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
 import 'package:picapool/features/auth/auth_controller.dart';
 import 'package:picapool/features/auth/auth_state_manager.dart';
@@ -49,6 +50,7 @@ void main() async {
     name: "new-picapool",
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   await Env.load();
@@ -81,6 +83,7 @@ void main() async {
   NotificationService().handleTokenGeneration();
 
   await checkingForDynamicLink();
+  await DynamicLinkHandler.instance.initialize();
 
   runApp(const MyApp());
 }
@@ -196,14 +199,7 @@ Future<void> handleMessage(RemoteMessage message) async {
     if (action == 'openAlertsPage') {
       int? offerId = int.tryParse(message.data['offerId']);
       if (offerId != null) {
-        _showOfferDetails(offerId);
-        // Get.to(
-        //     () => const MainScreen(
-        //           goToIndex: 2,
-        //         ),
-        //     arguments: {
-        //       'offerId': offerId,
-        //     });
+        showOfferDetails(offerId);
       }
       return;
     }
@@ -300,21 +296,21 @@ String parseChatTitle(Offer? offer, LiveOffer? liveOffer) {
   return "";
 }
 
-void _showOfferDetails(int offerId) {
+void showOfferDetails(int offerId) {
   if (Get.context == null) {
     Get.bottomSheet(
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 15),
         child: ShowOfferDetails(offerId: offerId),
       ),
-      isScrollControlled: false,
+      isScrollControlled: true,
       persistent: false,
       backgroundColor: AppTheme.currentTheme.bottomSheetTheme.backgroundColor,
     );
   } else {
     showPicaModelBottomSheet(
       context: Get.context!,
-      isScrollController: false,
+      isScrollController: true,
       child: ShowOfferDetails(offerId: offerId),
     );
   }

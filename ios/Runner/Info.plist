@@ -37,6 +37,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>FlutterDeepLinkingEnabled</key>
+	<string>NO</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We need this permission so that you can use camera to click a profile picture instead of choosing one from the gallery.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

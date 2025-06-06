@@ -37,7 +37,11 @@ class _AlertsPageState extends State<AlertsPage> {
           onTap: () {},
           child: const Text(
             'Alerts',
-            style: TextStyle(fontSize: 24, color: Colors.white),
+            style: TextStyle(
+              fontSize: 24,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         systemOverlayStyle: uiOverlayStyle(

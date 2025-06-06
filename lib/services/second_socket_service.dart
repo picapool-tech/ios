@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class SocketService {
   // Singleton pattern implementation
@@ -8,7 +8,7 @@ class SocketService {
   factory SocketService() => _instance;
   SocketService._internal();
 
-  IO.Socket? _socket;
+  io.Socket? _socket;
   String? _currentRoomId;
   final String _serverUrl =
       'https://your-backend-server.com'; // Replace with your server URL
@@ -20,9 +20,9 @@ class SocketService {
       return;
     }
 
-    _socket = IO.io(
+    _socket = io.io(
       _serverUrl,
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket']) // for Flutter or Dart VM
           .disableAutoConnect() // disable auto-connection
           .build(),

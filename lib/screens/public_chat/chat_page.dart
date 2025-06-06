@@ -2,10 +2,9 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:picapool/common/extensions/date_extensions.dart';
 // import 'package:picapool/common/functions/url_launch.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
-import 'package:picapool/common/widgets/buttons_widgets.dart';
-import 'package:picapool/common/widgets/user_profile_picture_widget.dart';
 import 'package:picapool/core/core.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
@@ -14,10 +13,13 @@ import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/public_chat/chat_info_impl.dart';
-import 'package:picapool/screens/public_chat/widgets/chat_bubble_impl.dart';
+import 'package:picapool/screens/public_chat/widgets/additional_action_bar.dart';
+import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
 import 'package:picapool/screens/public_chat/widgets/message_bar.dart';
+import 'package:picapool/screens/public_chat/widgets/message_list.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
@@ -51,6 +53,8 @@ class _ChatPageState extends State<ChatPage>
   Message? replyingMessage;
   late AnimationController _controller;
 
+  Message? editMessage;
+
   late Animation<Offset> animation;
   bool get hasFocus => _focusNode.hasFocus;
   bool get showGoodToGo =>
@@ -83,7 +87,9 @@ class _ChatPageState extends State<ChatPage>
                     Obx(() {
                       return Text(
                         "${_chatController.usersInChat.length} members",
-                        style: Get.textTheme.bodySmall,
+                        style: Get.textTheme.bodySmall?.copyWith(
+                          color: AppTheme.currentTheme.hintColor,
+                        ),
                       );
                     })
                   ],
@@ -93,7 +99,6 @@ class _ChatPageState extends State<ChatPage>
           ),
         ),
         titleTextStyle: Get.textTheme.titleLarge,
-        // backgroundColor: AppTheme.currentTheme.colorScheme.secondary,
         elevation: 1,
         scrolledUnderElevation: 2,
         actions: [
@@ -102,11 +107,19 @@ class _ChatPageState extends State<ChatPage>
             color: AppTheme.currentTheme.colorScheme.surface,
             itemBuilder: (BuildContext context) => [
               _menuItemWithIcons(
-                  onTap: () {
-                    _openChatInfo();
-                  },
-                  text: 'Chat Info',
-                  icon: Icons.chat_bubble_rounded),
+                onTap: () {
+                  _openChatInfo();
+                },
+                text: 'Chat Info',
+                icon: Icons.chat_bubble_rounded,
+              ),
+              _menuItemWithIcons(
+                onTap: () {
+                  _shareOffer();
+                },
+                text: "Share",
+                icon: Icons.share_rounded,
+              ),
               // const PopupMenuDivider(),
               // _menuItemWithIcons(
               //   onTap: () {},
@@ -132,34 +145,19 @@ class _ChatPageState extends State<ChatPage>
         bottom: (showGoodToGo)
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(kToolbarHeight / 1.5),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          "Ready to proceed with the offer?",
-                          maxLines: 1,
-                          overflow: TextOverflow.fade,
-                        ),
-                      ),
-                      PicaPrimaryButton(
-                        text: widget.liveOffer != null
-                            ? "Book a cab"
-                            : "Good to go",
-                        onPressed: () async {
-                          if (widget.liveOffer != null) {
-                            debugPrint("THIS IS LVIE OFFER");
-                            await _sendForCab();
-                            return;
-                          }
+                child: AdditionalActionBar(
+                  additionalInfo: "Ready to proceed with the offer?",
+                  actionButtonText:
+                      widget.liveOffer != null ? "Book a cab" : "Good to go",
+                  onActionButtonPressed: () async {
+                    if (widget.liveOffer != null) {
+                      debugPrint("THIS IS LVIE OFFER");
+                      await _sendForCab();
+                      return;
+                    }
 
-                          await _sendForBrands();
-                        },
-                        isLoading: false.obs,
-                      ),
-                    ],
-                  ),
+                    await _sendForBrands();
+                  },
                 ),
               )
             : null,
@@ -191,108 +189,66 @@ class _ChatPageState extends State<ChatPage>
             Column(
               children: [
                 Expanded(
-                  child: GetBuilder<ChatController>(
-                    builder: (controller) {
-                      if (controller.isLoading.value &&
-                          controller.messages.isEmpty) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (controller.errorMessage.isNotEmpty &&
-                          controller.messages.isEmpty) {
-                        return Center(
-                          child: Text(controller.errorMessage.value),
-                        );
-                      }
-
-                      if (controller.messages.isEmpty) {
-                        return const Center(
-                          child: Text("No messages found"),
-                        );
-                      }
-
-                      debugPrint("${controller.messages.length}");
-
-                      return Align(
-                        alignment: Alignment.topCenter,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          reverse: true,
-                          controller: _chatController.scrollController,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 2.0, vertical: 8.0),
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: controller.messages.length,
-                          itemExtent: null,
-                          clipBehavior: Clip.none,
-                          itemBuilder: (context, index) {
-                            final message = controller.messages[index];
-                            bool isSender =
-                                message.userId == _userController.user!.id;
-
-                            bool showTail = shouldShowTail(index);
-
-                            var user =
-                                _chatController.usersInChat[message.userId];
-
-                            var showUserName = shouldShowUserName(index);
-
-                            return Column(
-                              crossAxisAlignment: isSender
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                ChatBubble(
-                                  onDragToEnd: () {
-                                    setState(() {
-                                      isReplying = true;
-                                      replyingMessage = message;
-                                      _focusNode.requestFocus();
-                                    });
-                                  },
-                                  onLongPress: (details) {
-                                    // _showReactionDialog(context, message,
-                                    //     details.globalPosition);
-                                  },
-                                  isSender: isSender,
-                                  message: message,
-                                  username: (!isSender && showUserName) ||
-                                          message.type == MessageType.system
-                                      ? user?.username
-                                      : null,
-                                  leadingWidget: showUserName
-                                      ? UserProfilePictureWidget(
-                                          username: user?.username ?? "NA",
-                                          imageUrl: user?.pic,
-                                        )
-                                      : const CircleAvatar(
-                                          radius: 20,
-                                          backgroundColor: Colors.transparent,
-                                        ),
-                                  replyMessage:
-                                      getReplyMessage(message.parentId),
-                                  replyUsername:
-                                      getReplyUserName(message.parentId),
-                                ),
-                                if (showTail)
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                if (message.reactions.isNotEmpty)
-                                  const SizedBox(
-                                    height: 30,
-                                  ),
-                              ],
-                            );
-                          },
+                  child: Stack(
+                    children: [
+                      MessageList(
+                        chatId: widget.chat.id,
+                        onSwipeToEnd: (message) {
+                          setState(() {
+                            isReplying = true;
+                            replyingMessage = message;
+                            _focusNode.requestFocus();
+                          });
+                        },
+                        onLongPress: (details, message) {
+                          // _showReactionDialog(
+                          //   context,
+                          //   message,
+                          //   details.globalPosition,
+                          // );
+                        },
+                      ),
+                      if (editMessage != null)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black12.withValues(alpha: 0.15),
+                          ),
+                          padding: EdgeInsets.only(right: 8),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ChatBubbleWidget(
+                                isSender: true,
+                                message: editMessage!,
+                                username: editMessage!.user?.username ?? "",
+                                replyUsername: null,
+                                replyMessage: null,
+                                leadingWidget: null,
+                                formattedTime:
+                                    editMessage!.updatedAt.formattedTime(),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                    },
+                    ],
                   ),
                 ),
                 MessageBar(
                   textController: _textController,
                   onSend: (message) {
+                    if (editMessage != null) {
+                      _chatController.editMessage(
+                        messageId: editMessage!.id,
+                        newContent: _textController.text,
+                      );
+
+                      setState(() {
+                        editMessage = null;
+                        _textController.clear();
+                      });
+                      return;
+                    }
+
                     _chatController.sendMessage(
                       message,
                       replyMessageId: replyingMessage?.id,
@@ -336,6 +292,7 @@ class _ChatPageState extends State<ChatPage>
                       replyingMessage = null;
                     });
                   },
+                  editMessage: editMessage,
                   textFieldTextStyle:
                       Get.textTheme.titleMedium ?? const TextStyle(),
                 ),
@@ -372,7 +329,9 @@ class _ChatPageState extends State<ChatPage>
   void dispose() {
     _controller.dispose();
     _textController.dispose();
-    // _scrollController.dispose();
+    _chatController.messages.clear();
+    _chatController.usersInChat.clear();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -405,10 +364,10 @@ class _ChatPageState extends State<ChatPage>
 
       await _chatController.getAllUsersInChat(widget.chat.id);
 
-      // _messageController.addListener(isActive);
-
       _controller = AnimationController(
-          vsync: this, duration: const Duration(milliseconds: 200));
+        vsync: this,
+        duration: const Duration(milliseconds: 200),
+      );
 
       animation =
           Tween(begin: const Offset(0.0, 0.0), end: const Offset(0.3, 0.0))
@@ -416,80 +375,86 @@ class _ChatPageState extends State<ChatPage>
         parent: _controller,
         curve: Curves.decelerate,
       ));
+    });
 
-      _chatController.getAllMessages(widget.chat.id);
-      debugPrint("${widget.chat.toJson()}");
+    _chatController.getAllMessages(widget.chat.id).then((_) {
+      _chatController.getAllUsersInChat(widget.chat.id);
     });
   }
 
-  Color lighten(Color color, [double amount = .1]) {
-    assert(amount >= 0 && amount <= 1);
-
-    final hsl = HSLColor.fromColor(color);
-    final hslLight =
-        hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
-
-    return hslLight.toColor();
-  }
-
-  bool shouldShowTail(int index) {
-    final int length = _chatController.messages.length;
-
-    // First message in the list
-    if (index == 0) {
-      return true;
-    }
-
-    // Last message in the list
-    if (index == length - 1) {
-      return true;
-    }
-
-    final Message messageCurr = _chatController.messages[index];
-    final Message messageNext = _chatController.messages[index - 1];
-
-    // Always show tail for system messages
-    if (messageCurr.type == MessageType.system ||
-        messageNext.type == MessageType.system) {
-      return true;
-    }
-
-    // Show tail if next message is from a different user
-    return messageCurr.userId != messageNext.userId;
-  }
-
-  bool shouldShowUserName(int index) {
-    int length = _chatController.messages.length;
-    final messageCurr = _chatController.messages[index];
-
-    if (messageCurr.type == MessageType.system) {
-      return false;
-    }
-
-    if (index == length - 1) {
-      return true;
-    }
-
-    final messagePrev = _chatController.messages[index + 1];
-
-    if (messagePrev.type == MessageType.system) {
-      int prevUserMessageIndex = index + 1;
-      while (prevUserMessageIndex < length) {
-        if (_chatController.messages[prevUserMessageIndex].type !=
-            MessageType.system) {
-          break;
-        }
-        prevUserMessageIndex++;
-      }
-      if (prevUserMessageIndex == length) {
-        return true;
+  String _formatOfferName() {
+    if (widget.offer != null) {
+      return widget.offer!.name.replaceAll("- FROM BRANDS", "");
+    } else if (widget.liveOffer != null) {
+      if (widget.liveOffer!.from == null || widget.liveOffer!.to == null) {
+        return "Cab Booking";
       }
 
-      final messagePrev = _chatController.messages[prevUserMessageIndex];
-      return messageCurr.userId != messagePrev.userId;
+      String from = widget.liveOffer!.from ?? "Cab Booking";
+      String to = widget.liveOffer!.to ?? "Cab Booking";
+      String dateTime = widget.liveOffer!.createdAt.formattedTime();
+      return "$from to $to on $dateTime";
     }
+    return "";
+  }
 
-    return messageCurr.userId != messagePrev.userId;
+  String _getOfferDetail() {
+    if (widget.offer != null) {
+      return """
+${_getOfferingTitle()}
+
+Title: ${_formatOfferName()}
+Details: ${widget.offer?.desc}
+
+Check it out: ${_getOfferLink()}
+""";
+    } else if (widget.liveOffer != null) {
+      return """
+${_getOfferingTitle()}
+
+📍 Pickup: ${widget.liveOffer?.from ?? "N/A"}
+📍 Drop: ${widget.liveOffer?.to ?? "N/A"}
+
+Join here : ${_getOfferLink()}
+""";
+    }
+    return "";
+  }
+
+  int _getOfferId() {
+    if (widget.offer != null) {
+      return widget.offer!.id;
+    } else if (widget.liveOffer != null) {
+      return widget.liveOffer!.id;
+    }
+    return -1;
+  }
+
+  String _getOfferingTitle() {
+    if (widget.offer != null) {
+      return "Spotted this deal on Picapool -- might be just what you need!";
+    } else if (widget.liveOffer != null) {
+      return "Spotted a cab on Picapool -- cheaper together!";
+    }
+    return "Spotted this deal on Picapool -- might be just what you need!";
+  }
+
+  String _getOfferLink() {
+    if (widget.offer != null) {
+      return "https://offer.picapool.com/offer/${widget.offer!.id}";
+    } else if (widget.liveOffer != null) {
+      return "https://offer.picapool.com/liveOffer/${widget.liveOffer!.id}";
+    }
+    return "";
+  }
+
+  String _getOfferName() {
+    if (widget.offer != null) {
+      return widget.offer!.name.replaceAll("- FROM BRANDS", "");
+    } else if (widget.liveOffer != null) {
+      return widget.liveOffer!.from ?? "Cab Booking";
+    }
+    return "";
   }
 
   PopupMenuItem _menuItemWithIcons({
@@ -499,7 +464,7 @@ class _ChatPageState extends State<ChatPage>
     Color color = Colors.black,
   }) {
     return PopupMenuItem(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       onTap: onTap,
       enabled: onTap != null,
       child: Row(
@@ -587,6 +552,39 @@ Could you please check for any discounts and share the final fare? 😊
         "Something went wrong processing your requeset.",
       );
     }
+  }
+
+  FutureVoid _shareOffer() async {
+//     final String formattedString = """
+// Hey! I found this offer on Picapool and thought you might be interested. Here are the details:
+
+// ${_formatOfferName()}
+// ${_getOfferLink()}
+// """;
+    // String filePath = "";
+    // if (widget.offer?.images.isEmpty ?? false) {
+    //   filePath = (await ImageUtils.imageToFile(
+    //     assetName: "assets/images/request_vicinity.png",
+    //   ))
+    //       .path;
+    // } else {
+    //   var file = await CachedNetworkImageProvider.defaultCacheManager
+    //       .downloadFile(widget.offer!.images.first);
+    //   filePath = file.file.path;
+    // }
+
+    // ImageUtils.imageToFile(
+    //   assetName: "assets/images/request_vicinity.png",
+    // );
+
+    SharePlus.instance.share(
+      ShareParams(
+        text: _getOfferDetail(),
+        // uri: Uri.parse("https://offer.picapool.com/offers/${widget.offer?.id}"),
+        subject: "Check out this offer on Picapool!",
+        // previewThumbnail: XFile(filePath),
+      ),
+    );
   }
 
   void _showReactionDialog(
@@ -691,6 +689,34 @@ Could you please check for any discounts and share the final fare? 😊
             ),
           ),
         ),
+
+        if (message.userId == _userController.user?.id) ...[
+          const PopupMenuDivider(
+            height: 1,
+          ),
+          PopupMenuItem<void>(
+            padding: EdgeInsets.zero,
+            child: BlurryContainer(
+              borderRadius: BorderRadius.circular(0),
+              backgroundColor: Colors.white60,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: ListTile(
+                // tileColor: Colors.white,
+                leading: const Icon(Icons.edit),
+                title: const Text("Edit"),
+                // contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                onTap: () {
+                  setState(() {
+                    editMessage = message;
+                    _textController.text = message.content;
+                    _focusNode.requestFocus();
+                    Navigator.of(context).pop();
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
         const PopupMenuDivider(
           height: 1,
         ),

@@ -35,7 +35,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "My Chats (Need to make unread dot here)",
+          "My Chats", // (Need to make unread dot here)",
           style: TextStyle(
             color: AppTheme.currentTheme.colorScheme.onSecondary,
             fontWeight: FontWeight.bold,

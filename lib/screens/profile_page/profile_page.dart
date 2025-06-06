@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/values/values.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
-import 'package:picapool/features/auth/auth_controller.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
@@ -29,7 +28,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final StorageController _storageController = Get.find<StorageController>();
-  final AuthController _authController = Get.find<AuthController>();
   final FeedbackController _feedbackController = Get.find<FeedbackController>();
   bool imageError = false;
 
@@ -86,9 +84,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppTheme.currentTheme.dialogBackgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(30)),
+                color: AppTheme.currentTheme.dialogTheme.backgroundColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
               ),
               clipBehavior: Clip.hardEdge,
               child: SingleChildScrollView(
@@ -98,13 +97,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
+                      decoration: roundedContainer().copyWith(
                         color: AppTheme.currentTheme.scaffoldBackgroundColor,
                         border: Border.all(
                           color: AppTheme.currentTheme.primaryColor,
                           width: 1.5,
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        // borderRadius: BorderRadius.circular(20),
                       ),
                       margin: const EdgeInsets.fromLTRB(
                         16,
@@ -181,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.3 (31001052025)",
+                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.4 (32023052025)",
                       textAlign: TextAlign.center,
                       style: textTheme.bodySmall?.copyWith(
                         color: AppTheme.currentTheme.disabledColor,

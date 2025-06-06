@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
@@ -9,7 +8,6 @@ import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
 import 'package:picapool/utils/date_time_utils.dart';
-
 
 class CreateLiveOffer extends StatefulWidget {
   const CreateLiveOffer({super.key});
@@ -91,10 +89,11 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   final LiveOfferController liveOfferController = Get.find();
   final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
-  
-  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
+
+  final GoogleMapsPlaces _places =
+      GoogleMapsPlaces(apiKey: 'AIzaSyBoAHaJWyiCrTL4UnoE0I7jEpYja872Psk');
   List<Prediction> _predictions = [];
-  
+
   DateTime? _selectedDateTime;
   DateTime? _defaultExpiryDate;
   bool isLoading = false;
@@ -103,7 +102,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   LatLng? _currentPosition;
   // Location data
   LatLng? _fromLatLng;
-  
+
   LatLng? _toLatLng;
   String? _fromAddress;
   String? _toAddress;
@@ -144,7 +143,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                   ],
                 ),
               ),
-              
+
               // Predictions List
               if (_predictions.isNotEmpty)
                 Container(
@@ -183,7 +182,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
               Expanded(
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
-                  target: _currentPosition ?? const LatLng(92, 92),
+                    target: _currentPosition ?? const LatLng(92, 92),
                     zoom: 15,
                   ),
                   onMapCreated: (controller) => _mapController = controller,
@@ -237,8 +236,8 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
                 padding: const EdgeInsets.all(16.0),
                 child: GetBuilder<LiveOfferController>(
                   builder: (liveOfferInstance) {
-                    return liveOfferInstance.createLiveOfferState == 
-                           CreateLiveOfferState.creating
+                    return liveOfferInstance.createLiveOfferState ==
+                            CreateLiveOfferState.creating
                         ? const LinearProgressIndicator(color: Colors.orange)
                         : ElevatedButton(
                             onPressed: _handleCreateLiveOffer,
@@ -283,15 +282,15 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   }
 
   String updateDefaultExpiryDate() {
-  if (_selectedDateTime != null) {
-    setState(() {
-    _defaultExpiryDate = _selectedDateTime!.add(const Duration(days: 3));
-    });
-  } else {
-    _defaultExpiryDate = null; // Handle case where _selectedDate is null
+    if (_selectedDateTime != null) {
+      setState(() {
+        _defaultExpiryDate = _selectedDateTime!.add(const Duration(days: 3));
+      });
+    } else {
+      _defaultExpiryDate = null; // Handle case where _selectedDate is null
+    }
+    return DateTimeUtils.formatDateWithZone(_defaultExpiryDate!);
   }
-  return DateTimeUtils.formatDateWithZone(_defaultExpiryDate!);
-}
 
   Widget _buildLocationField({
     required TextEditingController controller,
@@ -343,26 +342,31 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
     if (!_validateInputs()) return;
 
     final payload = CreateLiveOfferPayload(
-      createdAt: DateTimeUtils.formatDateWithZone(_selectedDateTime ?? DateTime.now()),
+      createdAt:
+          DateTimeUtils.formatDateWithZone(_selectedDateTime ?? DateTime.now()),
       expiryAt: updateDefaultExpiryDate(),
       fromAddress: _fromAddress ?? "empty",
       seats: 3,
       toAddress: _toAddress ?? "empty",
-      from: VicinityLocation(lat: _fromLatLng!.latitude, long: _fromLatLng!.longitude),
-      to: VicinityLocation(lat: _toLatLng!.latitude, long: _toLatLng!.longitude),
+      from: VicinityLocation(
+          lat: _fromLatLng!.latitude, long: _fromLatLng!.longitude),
+      to: VicinityLocation(
+          lat: _toLatLng!.latitude, long: _toLatLng!.longitude),
     );
 
     liveOfferController.createLiveOffer(payload).then((_) {
-      if (liveOfferController.createLiveOfferState == CreateLiveOfferState.created) {
+      if (liveOfferController.createLiveOfferState ==
+          CreateLiveOfferState.created) {
         // Get the first chat ID from the response
-        final chatId = liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
+        final chatId =
+            liveOfferController.createLiveOfferResponse?.data?.chats?.first.id;
         // if (chatId != null) {
-          // Navigator.push(
-          //   context, 
-          //   MaterialPageRoute(
-          //     builder: (context) => ChatPage(),
-          //   ),
-          // );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => ChatPage(),
+        //   ),
+        // );
         // }
       }
     });
@@ -377,7 +381,8 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
           locationController.state.value.location!.longitude,
         );
         _fromLatLng = _currentPosition; // Set initial pickup location
-        _fromController.text = locationController.state.value.locationName?.locality ?? '';
+        _fromController.text =
+            locationController.state.value.locationName?.locality ?? '';
         _fromAddress = _fromController.text;
       });
     }
@@ -419,7 +424,7 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       final location = details.result.geometry?.location;
       if (location != null) {
         final newPosition = LatLng(location.lat, location.lng);
-        
+
         setState(() {
           if (_isSearchingFrom) {
             _fromLatLng = newPosition;
@@ -439,9 +444,11 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
       }
     } catch (e) {
       debugPrint('Error selecting place: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to get location details')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to get location details')),
+        );
+      }
     } finally {
       setState(() => isLoading = false);
     }
@@ -450,7 +457,8 @@ class _CreateLiveOfferState extends State<CreateLiveOffer> {
   bool _validateInputs() {
     if (_fromLatLng == null || _toLatLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both pickup and drop-off locations')),
+        const SnackBar(
+            content: Text('Please select both pickup and drop-off locations')),
       );
       return false;
     }

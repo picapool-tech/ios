@@ -1,6 +1,5 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:picapool/common/functions/color_function.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/utils/theme.dart';
@@ -56,6 +55,7 @@ class MessageBar extends StatelessWidget {
   final Message? replyingMessage;
   final VoidCallback? onCancelReply;
   final FocusNode? focusNode;
+  final Message? editMessage;
   const MessageBar({
     super.key,
     this.replying = false,
@@ -77,91 +77,112 @@ class MessageBar extends StatelessWidget {
     this.replyingMessage,
     this.onCancelReply,
     this.focusNode,
+    this.editMessage,
   });
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      maintainBottomViewPadding: true,
       child: Container(
+        alignment: Alignment.bottomCenter,
+        color:
+            editMessage != null ? Colors.black12.withValues(alpha: 0.15) : null,
         padding: const EdgeInsets.all(8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: const Radius.circular(30),
-                    bottomRight: const Radius.circular(30),
-                    topLeft: replying
-                        ? const Radius.circular(15)
-                        : const Radius.circular(30),
-                    topRight: replying
-                        ? const Radius.circular(15)
-                        : const Radius.circular(30),
-                  ),
-                  color: Colors.white,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      height: replying ? null : 0,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: const BoxDecoration(),
-                      child:
-                          replying ? replyingWidget() : const SizedBox.shrink(),
-                    ),
-                    PicaOutlinedTextField(
-                      controller: textController,
-                      keyboardType: TextInputType.multiline,
-                      minLines: 1,
-                      maxLines: 3,
-                      onChanged: onTextChanged,
-                      fillColor: Colors.white,
-                      filled: true,
-                      hintText: messageBarHintText,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 7,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // if (editMessage != null)
+            // ChatBubbleWidget(
+            //   isSender: true,
+            //   message: editMessage!,
+            //   username: editMessage!.user?.username ?? "",
+            //   replyUsername: null,
+            //   replyMessage: null,
+            //   leadingWidget: null,
+            //   formattedTime: editMessage!.updatedAt.formattedTime(),
+            // ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: const Radius.circular(30),
+                        bottomRight: const Radius.circular(30),
+                        topLeft: replying
+                            ? const Radius.circular(15)
+                            : const Radius.circular(30),
+                        topRight: replying
+                            ? const Radius.circular(15)
+                            : const Radius.circular(30),
                       ),
-                      borderRadius: 30,
-                      transparentBorder: true,
-                      prefixIcon: prefix,
-                      textStyle: textFieldTextStyle,
-                      autoFocus: true,
-                      onTapOutside: () {},
-                      focusNode: focusNode,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(
-              width: 8,
-            ),
-            IconButton.filled(
-              onPressed: () {
-                if (textController.text.trim().isNotEmpty) {
-                  if (onSend != null) {
-                    onSend!(textController.text.trim());
-                    textController.clear(); // Clear text here directly
-                  }
-                }
-              },
-              icon: const Padding(
-                padding: EdgeInsets.all(5),
-                child: Icon(
-                  Icons.send,
-                ),
-              ),
-              style: ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll(
-                    customBlue.shade400,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          height: replying ? null : 0,
+                          clipBehavior: Clip.hardEdge,
+                          decoration: const BoxDecoration(),
+                          child: replying
+                              ? replyingWidget()
+                              : const SizedBox.shrink(),
+                        ),
+                        PicaOutlinedTextField(
+                          controller: textController,
+                          keyboardType: TextInputType.multiline,
+                          minLines: 1,
+                          maxLines: 3,
+                          onChanged: onTextChanged,
+                          fillColor: Colors.white,
+                          filled: true,
+                          hintText: messageBarHintText,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 7,
+                          ),
+                          borderRadius: 30,
+                          transparentBorder: true,
+                          prefixIcon: prefix,
+                          textStyle: textFieldTextStyle,
+                          autoFocus: false,
+                          onTapOutside: () {},
+                          focusNode: focusNode,
+                        ),
+                      ],
+                    ),
                   ),
-                  iconColor: const WidgetStatePropertyAll(Colors.white)),
+                ),
+                const SizedBox(
+                  width: 8,
+                ),
+                IconButton.filled(
+                  onPressed: () {
+                    if (textController.text.trim().isNotEmpty) {
+                      if (onSend != null) {
+                        onSend!(textController.text.trim());
+                        textController.clear(); // Clear text here directly
+                      }
+                    }
+                  },
+                  icon: const Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Icon(
+                      Icons.send,
+                    ),
+                  ),
+                  style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                        customBlue.shade400,
+                      ),
+                      iconColor: const WidgetStatePropertyAll(Colors.white)),
+                ),
+              ],
             ),
           ],
         ),
@@ -170,7 +191,7 @@ class MessageBar extends StatelessWidget {
   }
 
   Widget replyingWidget() {
-    var customColor = getColorFromString(replyingTo).darken();
+    var customColor = replyingTo.toColor;
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
       padding: const EdgeInsets.all(6),

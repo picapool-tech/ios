@@ -1,7 +1,15 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+
 void main() => runApp(const RadarChartApp());
+
+class RadarChartAnimation extends StatefulWidget {
+  const RadarChartAnimation({super.key});
+
+  @override
+  State<RadarChartAnimation> createState() => _RadarChartAnimationState();
+}
 
 class RadarChartApp extends StatelessWidget {
   const RadarChartApp({super.key});
@@ -13,66 +21,6 @@ class RadarChartApp extends StatelessWidget {
         appBar: AppBar(title: const Text('Radar Chart Animation')),
         body: const Center(child: RadarChartAnimation()),
       ),
-    );
-  }
-}
-
-class RadarChartAnimation extends StatefulWidget {
-  const RadarChartAnimation({super.key});
-
-  @override
-  _RadarChartAnimationState createState() => _RadarChartAnimationState();
-}
-
-class _RadarChartAnimationState extends State<RadarChartAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  double _radius = 100.0; // Initial radius value
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 10), // Slow, continuous animation
-    )..repeat(); // Loop continuously without reversing
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Slider(
-          value: _radius,
-          min: 50.0,
-          max: 150.0,
-          divisions: 20,
-          label: _radius.round().toString(),
-          onChanged: (double value) {
-            setState(() {
-              _radius = value;
-            });
-          },
-        ),
-        Expanded(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return CustomPaint(
-                painter: RadarChartPainter(_controller.value, _radius),
-                size: const Size(300, 300),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 }
@@ -118,5 +66,58 @@ class RadarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+class _RadarChartAnimationState extends State<RadarChartAnimation>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  double _radius = 100.0; // Initial radius value
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Slider(
+          value: _radius,
+          min: 50.0,
+          max: 150.0,
+          divisions: 20,
+          label: _radius.round().toString(),
+          onChanged: (double value) {
+            setState(() {
+              _radius = value;
+            });
+          },
+        ),
+        Expanded(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return CustomPaint(
+                painter: RadarChartPainter(_controller.value, _radius),
+                size: const Size(300, 300),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10), // Slow, continuous animation
+    )..repeat(); // Loop continuously without reversing
   }
 }

@@ -25,17 +25,18 @@ class CustomDivider extends StatelessWidget {
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           divider(),
           if (child == null)
             Text(
               text.toUpperCase(),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                    letterSpacing: 1.5,
-                  ),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+                // letterSpacing: 1,
+              ),
             )
           else
             child!,

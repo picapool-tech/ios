@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/tokens/token_service.dart';
 import 'package:picapool/models/live_offer/create_live_offer_payload.dart';
 import 'package:picapool/models/live_offer/create_live_offer_response.dart';
@@ -26,7 +26,7 @@ class LiveOfferController extends GetxController {
   // final AuthController authController = Get.find<AuthController>();
   final AuthTokenService storageController = Get.find<AuthTokenService>();
   List<LiveOffer> liveOffersList = <LiveOffer>[];
-
+  Rx<LiveOffer?> liveOffer = Rx<LiveOffer?>(null);
   GetLiveOfferState liveofferState = GetLiveOfferState.liveofferLoading;
 
   GetAllLiveOfferState allLiveofferState =
@@ -84,18 +84,31 @@ class LiveOfferController extends GetxController {
     try {
       final GetLiveOfferResponse response =
           await LiveOffersService.getLiveOffer(
-              liveOfferId, await accessToken ?? "");
+        liveOfferId,
+        await accessToken ?? "",
+      );
 
-      if (response.success! || response.liveOffer != []) {
+      log(
+        "Response: ${response.liveOffer?.toJson()}",
+        name: 'LiveOfferController',
+        error: response.message,
+      );
+
+      if (response.success! || response.liveOffer != null) {
         liveofferState = GetLiveOfferState.liveofferLoaded;
+        liveOffer.value = response.liveOffer;
+        log('Live offer loaded: ${response.liveOffer}',
+            name: 'LiveOfferController');
         return response.liveOffer;
         // liveofferList = response.data ?? [];
       } else {
         liveofferState = GetLiveOfferState.liveofferCantLoad;
+        liveOffer.value = null;
         return null;
       }
     } catch (e) {
       liveofferState = GetLiveOfferState.liveofferCantLoad;
+      liveOffer.value = null;
       print('Error getting liveoffer list: $e');
       return null;
     } finally {

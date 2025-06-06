@@ -15,10 +15,10 @@ class DownSheet extends StatefulWidget {
   final String searchQuery;
   final ScrollController scrollController;
   const DownSheet({
-    Key? key,
+    super.key,
     required this.searchQuery,
     required this.scrollController,
-  }) : super(key: key);
+  });
 
   @override
   State<DownSheet> createState() => _DownSheetState();
@@ -40,13 +40,6 @@ class _DownSheetState extends State<DownSheet> {
       decoration: roundedContainer().copyWith(
         color: AppTheme.currentTheme.colorScheme.surfaceContainer,
       ),
-      // decoration: BoxDecoration(
-      //   color: AppTheme.currentTheme.colorScheme.surfaceContainer,
-      //   borderRadius: const BorderRadius.only(
-      //     topLeft: Radius.circular(29),
-      //     topRight: Radius.circular(29),
-      //   ),
-      // ),
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -140,7 +133,9 @@ class _DownSheetState extends State<DownSheet> {
         return const MainHeadingBottomSheetContent();
       },
       sheetAnimationStyle: AnimationStyle(
-        curve: const ElasticInCurve(),
+        curve: Curves.elasticIn,
+        reverseCurve: Curves.elasticOut,
+        reverseDuration: const Duration(milliseconds: 200),
         duration: const Duration(milliseconds: 500),
       ),
     );

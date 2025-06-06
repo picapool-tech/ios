@@ -18,7 +18,7 @@ class SellFormTwo extends StatefulWidget {
 
 class _SellFormTwoState extends State<SellFormTwo> {
   LatLng? selectedCoordinates;
-  LocationController _locationController = Get.find<LocationController>();
+  final LocationController _locationController = Get.find<LocationController>();
   bool isLessThanMonth = false; // To track the state of the checkbox
   TextEditingController yearsController = TextEditingController();
   TextEditingController monthsController = TextEditingController();
@@ -257,7 +257,9 @@ class _SellFormTwoState extends State<SellFormTwo> {
         );
 
         // Hide loading indicator
-        Navigator.pop(context);
+        if (mounted) {
+          Navigator.pop(context);
+        }
 
         if (success) {
           // Navigate to success page only if product creation was successful
@@ -265,7 +267,7 @@ class _SellFormTwoState extends State<SellFormTwo> {
         }
       } catch (e) {
         // Hide loading indicator if it's showing
-        if (Navigator.canPop(context)) {
+        if (mounted && Navigator.canPop(context)) {
           Navigator.pop(context);
         }
 
@@ -317,5 +319,4 @@ class _SellFormTwoState extends State<SellFormTwo> {
       debugPrint("Location is null");
     }
   }
-
 }

@@ -11,7 +11,7 @@ class ChatPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ChatPageState createState() => _ChatPageState();
+  State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin {
@@ -52,7 +52,7 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
           ],
         ),
         actions: [IconButton(onPressed: (){
-          Get.offAllNamed(GetRoutes.home );
+          Get.offAllNamed(GetRoutes.home);
         } , icon: const Icon(Icons.home) )],
       ),
       body: Container(
