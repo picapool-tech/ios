@@ -195,9 +195,16 @@ class ChatController extends GetxController
     });
   }
 
-  Future<ChatAndOfferModel?> getChatFromLiveOfferId(int liveOfferId) async {
+  Future<ChatAndOfferModel?> getChatFromLiveOfferId(int liveOfferId,
+      {ChatLoadingEnums defaultLoading =
+          ChatLoadingEnums.getLiveOfferChat}) async {
     isLoading.value = true;
-    startLoading(ChatLoadingEnums.getLiveOfferChat);
+    if (defaultLoading != ChatLoadingEnums.getLiveOfferChat) {
+      startLoading(defaultLoading);
+    } else {
+      startLoading(ChatLoadingEnums.getLiveOfferChat);
+    }
+
     update();
 
     var result = await _chatApi.getChatFromLiveOfferId(
@@ -205,7 +212,11 @@ class ChatController extends GetxController
     );
 
     isLoading.value = false;
-    stopLoading(ChatLoadingEnums.getLiveOfferChat);
+    if (defaultLoading != ChatLoadingEnums.getLiveOfferChat) {
+      stopLoading(defaultLoading);
+    } else {
+      stopLoading(ChatLoadingEnums.getLiveOfferChat);
+    }
     update();
 
     return result.fold(

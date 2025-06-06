@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:picapool/common/functions/custom_map_pointer.dart';
+import 'package:picapool/common/functions/markergenerator.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/offers/values/offer_loading_enums.dart';
@@ -11,7 +13,6 @@ import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/screens/vicinity/values/map_style.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
-import 'package:picapool/widgets/home/divider.dart';
 import 'package:picapool/widgets/loading/offer_loading.dart';
 
 // OfferContainer widget
@@ -286,18 +287,19 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        bottom: const PreferredSize(
-          preferredSize: Size(double.infinity, kBottomNavigationBarHeight),
-          child: ClipRRect(
-            borderRadius: BorderRadius.all(
-              Radius.circular(15),
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: CustomDivider(
-              text: "Pools near me",
-            ),
-          ),
-        ),
+        title: const Text("Pools near me"),
+        // bottom: const PreferredSize(
+        //   preferredSize: Size(double.infinity, kBottomNavigationBarHeight),
+        //   child: ClipRRect(
+        //     borderRadius: BorderRadius.all(
+        //       Radius.circular(15),
+        //     ),
+        //     clipBehavior: Clip.hardEdge,
+        //     child: CustomDivider(
+        //       text: "Pools near me",
+        //     ),
+        //   ),
+        // ),
       ),
       body: SafeArea(
         child: Stack(
@@ -326,14 +328,14 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
                   ...markers,
                 },
                 circles: {
-                  Circle(
-                    circleId: const CircleId('1'),
-                    center: _center,
-                    radius: 1000,
-                    fillColor: Colors.blue.withOpacity(0.1),
-                    strokeColor: Colors.blue,
-                    strokeWidth: 2,
-                  ),
+                  // Circle(
+                  //   circleId: const CircleId('1'),
+                  //   center: _center,
+                  //   radius: 5000,
+                  //   fillColor: Colors.blue.withOpacity(0.1),
+                  //   strokeColor: Colors.blue,
+                  //   strokeWidth: 2,
+                  // ),
                 },
               ),
             ),
@@ -558,24 +560,50 @@ class _PoolOffersScreenState extends State<PoolOffersScreen> {
 
   void createMarkersWithOffer() {
     // Create markers with offers
-    for (var offer in _offersController.nearestOffers) {
-      markers.add(
-        Marker(
-          markerId: MarkerId(offer.id.toString()),
-          position: LatLng(
-            offer.location!.lat,
-            offer.location!.long,
+
+    var listOfGenerator = _offersController.nearestOffers
+        .map(
+          (off) => MapMarker(
+            name: off.name,
           ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueOrange,
-          ),
-          infoWindow: InfoWindow(
-            title: offer.name,
-            snippet: offer.desc,
-          ),
-        ),
-      );
-    }
+        )
+        .toList();
+    MarkerGenerator(
+      listOfGenerator,
+      (bitmaps) {
+        bitmaps.asMap().forEach((i, bmp) {
+          markers.add(Marker(
+            markerId: MarkerId("$i"),
+            position: _offersController.nearestOffers[i].location != null
+                ? LatLng(
+                    _offersController.nearestOffers[i].location!.lat,
+                    _offersController.nearestOffers[i].location!.long,
+                  )
+                : _center,
+            icon: BitmapDescriptor.bytes(bmp),
+          ));
+        });
+      },
+    ).generate(context);
+
+    // for (var offer in _offersController.nearestOffers) {
+    //   markers.add(
+    //     Marker(
+    //       markerId: MarkerId(offer.id.toString()),
+    //       position: LatLng(
+    //         offer.location!.lat,
+    //         offer.location!.long,
+    //       ),
+    //       icon: BitmapDescriptor.defaultMarkerWithHue(
+    //         BitmapDescriptor.hueOrange,
+    //       ),
+    //       infoWindow: InfoWindow(
+    //         title: offer.name,
+    //         snippet: offer.desc,
+    //       ),
+    //     ),
+    //   );
+    // }
 
     setState(() {
       markers;

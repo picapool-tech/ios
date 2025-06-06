@@ -18,21 +18,21 @@ class MainHeadingOptions {
       text: "Entertain",
       routePath: GetRoutes.productsWithBrand("Entertain"),
     ),
-    MainHeadingOptionsData(
-      imagePath: "assets/homepagebottomassets/image 43.png",
-      text: "Medical",
-      routePath: GetRoutes.productsWithBrand("Medical"),
-    ),
+    // MainHeadingOptionsData(
+    //   imagePath: "assets/homepagebottomassets/image 43.png",
+    //   text: "Medical",
+    //   routePath: GetRoutes.productsWithBrand("Medical"),
+    // ),
     MainHeadingOptionsData(
       imagePath: "assets/homepagebottomassets/image 42.png",
       text: "Electronics",
       routePath: GetRoutes.productsWithBrand("Electronics"),
     ),
-    MainHeadingOptionsData(
-      imagePath: "assets/homepagebottomassets/image 46.png",
-      text: "Music",
-      routePath: GetRoutes.productsWithBrand("Music"),
-    ),
+    // MainHeadingOptionsData(
+    //   imagePath: "assets/homepagebottomassets/image 46.png",
+    //   text: "Music",
+    //   routePath: GetRoutes.productsWithBrand("Music"),
+    // ),
   ];
 
   static const List<MainHeadingOptionsData> headingOptions = [

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:picapool/common/values/values.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
@@ -49,6 +50,10 @@ class _EditProfileState extends State<EditProfile> {
             Get.back();
           },
           icon: const Icon(Icons.close),
+        ),
+        systemOverlayStyle: uiOverlayStyle(
+          context,
+          brightness: Brightness.light,
         ),
       ),
       body: SingleChildScrollView(
@@ -150,64 +155,61 @@ class _EditProfileState extends State<EditProfile> {
             ),
             const SizedBox(height: 30),
             // Submit Button
-            SizedBox(
-              width: double.infinity,
-              child: PicaPrimaryButton(
-                isLoading: _userController.getLoadingState(
-                  UserLoadingEnums.updateUser,
-                ),
-                onPressed: () async {
-                  var backupUser = _storageController.user.value;
-                  List<UserField> userFieldsToBeUpdated = [];
+            PicaPrimaryButton(
+              isLoading: _userController.getLoadingState(
+                UserLoadingEnums.updateUser,
+              ),
+              onPressed: () async {
+                var backupUser = _storageController.user.value;
+                List<UserField> userFieldsToBeUpdated = [];
 
+                _storageController.user.update((user) {
+                  if (_nameController.text.isNotEmpty &&
+                      _nameController.text != user!.name) {
+                    user.name = _nameController.text;
+                    userFieldsToBeUpdated.add(UserField.name);
+                  }
+                  if (_usernameController.text.isNotEmpty &&
+                      _usernameController.text != user!.username) {
+                    user.username = _usernameController.text;
+                    userFieldsToBeUpdated.add(UserField.username);
+                  }
+                });
+
+                var userPic = user.pic;
+
+                if (pickedImage != null) {
+                  userPic = await Get.find<AssetsController>().uploadImage(
+                      pickedImage, "${DateTime.now()}${user.username}");
                   _storageController.user.update((user) {
-                    if (_nameController.text.isNotEmpty &&
-                        _nameController.text != user!.name) {
-                      user.name = _nameController.text;
-                      userFieldsToBeUpdated.add(UserField.name);
-                    }
-                    if (_usernameController.text.isNotEmpty &&
-                        _usernameController.text != user!.username) {
-                      user.username = _usernameController.text;
-                      userFieldsToBeUpdated.add(UserField.username);
+                    if (userPic != null) {
+                      user!.pic = userPic;
+                      userFieldsToBeUpdated.add(UserField.pic);
                     }
                   });
+                }
 
-                  var userPic = user.pic;
+                if (context.mounted && userFieldsToBeUpdated.isNotEmpty) {
+                  await _userController.updateUser(
+                    userFieldsToBeUpdated,
+                    previousUser: backupUser,
+                  );
 
-                  if (pickedImage != null) {
-                    userPic = await Get.find<AssetsController>().uploadImage(
-                        pickedImage, "${DateTime.now()}${user.username}");
-                    _storageController.user.update((user) {
-                      if (userPic != null) {
-                        user!.pic = userPic;
-                        userFieldsToBeUpdated.add(UserField.pic);
-                      }
-                    });
+                  if (context.mounted) {
+                    Navigator.pop(context); // Close the modal
+                    setState(() {});
                   }
-
-                  if (context.mounted && userFieldsToBeUpdated.isNotEmpty) {
-                    await _userController.updateUser(
-                      userFieldsToBeUpdated,
-                      previousUser: backupUser,
-                    );
-
-                    if (context.mounted) {
-                      Navigator.pop(context); // Close the modal
-                      setState(() {});
-                    }
-                  } else {
-                    debugPrint(
-                        "Update user value : ${_storageController.user.value?.toUpdateJson(includeFields: userFieldsToBeUpdated)}");
-                    Get.back();
-                  }
-                },
-                text: "Submit",
-              ),
+                } else {
+                  debugPrint(
+                      "Update user value : ${_storageController.user.value?.toUpdateJson(includeFields: userFieldsToBeUpdated)}");
+                  Get.back();
+                }
+              },
+              text: "Submit",
             ),
-
+            const SizedBox(height: 10),
             // Go Back Button
-            PicaOutlineButton(
+            PicaTextButton(
               onPressed: () {
                 Navigator.pop(context); // Close the modal
               },

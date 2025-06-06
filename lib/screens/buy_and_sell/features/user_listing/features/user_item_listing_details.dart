@@ -47,7 +47,8 @@ class _UserItemListingDetailsState extends State<UserItemListingDetails> {
             height: Get.size.height * 0.5,
             alignment: Alignment.topCenter,
             child: const EmptyStates(
-              customMessage: "You've not listed any products",
+              message: "You've not listed any products",
+              secondaryMessage: "Create your own listing to buy products",
             ),
           );
         }

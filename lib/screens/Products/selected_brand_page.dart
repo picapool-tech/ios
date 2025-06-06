@@ -131,14 +131,16 @@ class _PlayStationPageState extends State<PlayStationPage> {
             else
               Hero(
                 tag: widget.partner.id,
-                child: CachedNetworkImage(
-                  imageUrl: widget.partner.pic!,
-                  width: 30,
-                  height: 30,
-                  errorWidget: (context, url, error) => const Center(
-                    child: Icon(
-                      Icons.error,
-                      color: Colors.red,
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.partner.pic!,
+                    width: 36,
+                    height: 36,
+                    errorWidget: (context, url, error) => const Center(
+                      child: Icon(
+                        Icons.error,
+                        color: Colors.red,
+                      ),
                     ),
                   ),
                 ),

@@ -30,7 +30,7 @@ class UserListingState extends State<UserListing> {
             SizedBox(height: 8),
 
             // Category section header
-            Text("Select your selling category"),
+            CustomDivider(text: "Select your selling category"),
 
             // Sell Category
             SellCategory(),

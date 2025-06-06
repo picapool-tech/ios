@@ -8,6 +8,7 @@ import 'package:picapool/common/values/values.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
+import 'package:picapool/screens/identity_verfication/identity_verfication.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
 import 'package:picapool/screens/pooling_history/pooling_history.dart';
 import 'package:picapool/screens/profile_page/functions/feedback/feedback_sheet.dart';
@@ -54,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           PicaPrimaryButton(
             isLoading: false.obs,
+            isSmall: true,
             onPressed: () async {
               if (kDebugMode) {
                 Get.to(
@@ -74,6 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       backgroundColor: const Color(0xff02005D), // Dark blue background
+
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -91,9 +94,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               clipBehavior: Clip.hardEdge,
               child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
+                // physics: const ClampingScrollPhysics(),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -105,11 +107,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         // borderRadius: BorderRadius.circular(20),
                       ),
-                      margin: const EdgeInsets.fromLTRB(
-                        16,
-                        20,
-                        16,
-                        20,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
                       ),
                       child: Column(
                         children: [
@@ -156,14 +156,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             },
                           ),
                           TileButton(
+                            imagePath: "assets/images/profile/refund.png",
+                            title: 'Refund Policy',
+                            onTap: () async {
+                              // Open privacy policy page
+                              final Uri url = Uri.parse(
+                                'https://www.picapool.com/refund-policy',
+                              );
+                              debugPrint(url.toString());
+                              if (!await launchUrl(url)) {
+                                debugPrint("Could not launch $url");
+                              }
+                            },
+                          ),
+                          TileButton(
+                            imagePath:
+                                "assets/images/profile/terms_and_conditions.png",
+                            title: 'Terms and Conditions',
+                            onTap: () async {
+                              // Open privacy policy page
+                              final Uri url = Uri.parse(
+                                'https://www.picapool.com/terms-and-conditions',
+                              );
+                              debugPrint(url.toString());
+                              if (!await launchUrl(url)) {
+                                debugPrint("Could not launch $url");
+                              }
+                            },
+                          ),
+                          TileButton(
                             imagePath: "assets/icons/Group 59.png",
                             title: 'App Guide',
                             isDisabled: true,
                             onTap: () {},
                           ),
+                          TileButton(
+                            // imagePath: "assets/icons/Group 59.png",
+                            icon: Icons.verified_outlined,
+                            title: 'Request for verfication',
+
+                            onTap: () {
+                              Get.to(
+                                () => const IdentityVerfication(),
+                              );
+                            },
+                          ),
                           if (kDebugMode)
                             TileButton(
-                              imagePath: "assets/icons/Group 59.png",
+                              // imagePath: "assets/icons/Group 59.png",
+                              icon: Icons.delete_outline,
                               title: 'Delete Account',
                               onTap: () {},
                             ),
@@ -180,13 +221,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.4 (32023052025)",
+                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.6 (32229052025)",
                       textAlign: TextAlign.center,
                       style: textTheme.bodySmall?.copyWith(
                         color: AppTheme.currentTheme.disabledColor,
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 120),
                   ],
                 ),
               ),
@@ -206,7 +247,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLogoutModal(BuildContext context) {
-    showPicaModelBottomSheet(context: context, child: const LogoutWidget());
+    showPicaModelBottomSheet(
+      context: context,
+      child: const LogoutWidget(),
+      
+    );
   }
 
   void _showPermissionsModal(BuildContext context) {

@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # android version
-version: 3.1.1+210
+version: 3.1.6+322
 
 # ios version
 # version: 2.9.7+102
@@ -40,7 +40,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   lottie: ^3.1.3
   google_fonts: ^6.1.0
-  country_flags: ^2.2.0
+  country_flags: ^3.2.0
   flutter_svg: ^2.0.10+1
   image_picker: ^1.0.7
   image_cropper: ^9.0.0
@@ -55,7 +55,7 @@ dependencies:
   intl:
   get: ^4.6.6
   step_progress_indicator: ^1.0.2
-  geolocator: ^13.0.1
+  geolocator: ^14.0.0
   geocoding: ^3.0.0
   # flutter_google_places_sdk: ^0.3.2+1
   http: ^1.0.0
@@ -63,13 +63,13 @@ dependencies:
   flutter_material_pickers: ^3.7.0
   numberpicker: ^2.1.2
   flutter_datetime_picker_plus: ^2.2.0
-  permission_handler: ^11.3.1
-  location: ^6.0.2
-  google_sign_in: ^6.2.1
+  permission_handler: ^12.0.0+1
+  location: ^8.0.0
+  google_sign_in: ^6.3.0
   flutter_signin_button: ^2.0.0
-  sign_in_with_apple: ^6.1.1
+  sign_in_with_apple: ^7.0.1
   flutter_sms_inbox: ^1.0.3
-  flutter_slidable: ^3.1.1
+  flutter_slidable: ^4.0.0
   jwt_decoder: ^2.0.1
   fpdart: ^1.1.0
   firebase_core: ^3.9.0
@@ -99,6 +99,9 @@ dependencies:
   firebase_dynamic_links: ^6.1.4
   firebase_analytics: ^11.4.4
   crypto: ^3.0.6
+  app_links: ^6.4.0
+  share_plus: ^11.0.0
+  pull_down_button: ^0.10.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -108,7 +111,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -127,6 +130,7 @@ flutter:
     - assets/images/
     - assets/images/buy_and_sell/
     - assets/images/chat/
+    - assets/images/profile/
     - assets/bottombar/
     - assets/carousel/
     - assets/categories/

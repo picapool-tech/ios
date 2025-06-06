@@ -11,12 +11,14 @@ import 'package:picapool/common/values/map_style.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/controllers/live_offer_controller.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
+import 'package:picapool/features/chats/values/enums.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/models/live_offer/search_cabs_payload.dart';
 import 'package:picapool/models/live_offer/search_cabs_response.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/cab/create_live_offer.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Common address row widget - removed duplicate function inside class
 Widget buildAddressRow(String label, String address) {
@@ -74,6 +76,7 @@ Widget _buildEmptyState() {
 // Common offer card widget - moved outside of class
 Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
   var controller = Get.find<ChatController>();
+
   return Container(
     width: MediaQuery.of(context).size.width * 0.7,
     margin: const EdgeInsets.all(5),
@@ -99,40 +102,81 @@ Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
           "To",
           offer.toAddress ?? "EMPTY",
         ),
-        SizedBox(
-          width: double.infinity,
-          child: PicaPrimaryButton(
-            onPressed: () async {
-              final controller = Get.find<ChatController>();
-              // Show loading within button only
-              controller.isLoading.value = true;
+        Row(
+          spacing: 8,
+          children: [
+            Expanded(
+              flex: 2,
+              child: PicaPrimaryButton(
+                onPressed: () async {
+                  // Show loading within button only
+                  // controller.isLoading.value = true;
 
-              var chatAndOffer =
-                  await controller.getChatFromLiveOfferId(offer.id!);
-              controller.isLoading.value = false;
+                  var chatAndOffer =
+                      await controller.getChatFromLiveOfferId(offer.id!);
+                  // controller.isLoading.value = false;
 
-              if (chatAndOffer == null) {
-                Get.snackbar(
-                  "Oops!",
-                  "Chat of this live offer doesn't exist",
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                );
-                return;
-              }
+                  if (chatAndOffer == null) {
+                    Get.snackbar(
+                      "Oops!",
+                      "Chat of this live offer doesn't exist",
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
+                    );
+                    return;
+                  }
 
-              Get.to(
-                () => ChatPage(
-                  chat: chatAndOffer.chat,
-                  chatTitle: offer.toAddress ?? "Chat",
-                  liveOffer: chatAndOffer.liveOffer,
+                  Get.to(
+                    () => ChatPage(
+                      chat: chatAndOffer.chat,
+                      chatTitle: offer.toAddress ?? "Chat",
+                      liveOffer: chatAndOffer.liveOffer,
+                    ),
+                  );
+                },
+                text: "Join now",
+                isLoading: controller
+                    .getLoadingState(ChatLoadingEnums.getLiveOfferChat),
+              ),
+            ),
+            Expanded(
+              child: PicaOutlineButton(
+                text: "",
+                icon: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: const Icon(Icons.share, color: Colors.orange),
                 ),
-              );
-            },
-            text: "Join now",
-            isLoading: controller.isLoading,
-          ),
+                onPressed: () async {
+                  var chatAndOffer = await controller.getChatFromLiveOfferId(
+                      offer.id!,
+                      defaultLoading: ChatLoadingEnums.chatSharing);
+
+                  if (chatAndOffer == null) {
+                    Get.snackbar(
+                      "Oops!",
+                      "Chat of this live offer doesn't exist",
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
+                    );
+                    return;
+                  }
+
+                  SharePlus.instance.share(
+                    ShareParams(
+                      text: chatAndOffer.liveOffer!.shareOfferString,
+                      // uri: Uri.parse("https://offer.picapool.com/offers/${widget.offer?.id}"),
+                      subject: "Check out this offer on Picapool!",
+                      // previewThumbnail: XFile(filePath),
+                    ),
+                  );
+                },
+                isLoading:
+                    controller.getLoadingState(ChatLoadingEnums.chatSharing),
+              ),
+            )
+          ],
         ),
       ],
     ),

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/screens/alerts/widgets/caption_text_with_icon.dart';
@@ -8,6 +9,7 @@ import 'package:picapool/screens/alerts/widgets/count_down_timer.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/loading/image_loading.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AlertListItem extends StatelessWidget {
   final Offer offer;
@@ -18,14 +20,14 @@ class AlertListItem extends StatelessWidget {
   final VoidCallback? onExpired;
 
   const AlertListItem({
-    Key? key,
+    super.key,
     required this.offer,
     required this.isExpanded,
     required this.onTap,
     required this.onJoinChat,
     required this.isLoading,
     this.onExpired,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +42,7 @@ class AlertListItem extends StatelessWidget {
             color: AppTheme.currentTheme.dividerColor,
           ),
         ),
-        child: 
-        Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top row with image and basic info
@@ -159,6 +160,30 @@ class AlertListItem extends StatelessWidget {
     );
   }
 
+  Widget _buildShareOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xff02005D),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTagInfo() {
     if (offer.tags != null && offer.tags!.isNotEmpty) {
       return Row(
@@ -191,24 +216,119 @@ class AlertListItem extends StatelessWidget {
   }
 
   Widget _expandedView() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            offer.desc,
-            style: const TextStyle(fontSize: 14),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              offer.desc,
+              maxLines: 6,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
+          const SizedBox(height: 12),
+          Row(
+            spacing: 10,
+            children: [
+              Expanded(
+                child: PicaPrimaryButton(
+                  onPressed: onJoinChat,
+                  text: 'Join Chat',
+                  isLoading: isLoading,
+                ),
+              ),
+              Expanded(
+                child: PicaOutlineButton(
+                  text: "Share",
+                  icon: const Icon(Icons.share),
+                  onPressed: () {
+                    // _showShareOptions();
+                    SharePlus.instance.share(
+                      ShareParams(
+                        text: offer.shareOfferString,
+                        subject: "Check out this offer on Picapool!",
+                      ),
+                    );
+                  },
+                  isLoading: isLoading,
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareDefault() {
+    Get.back(); // Close bottom sheet
+
+    SharePlus.instance.share(
+      ShareParams(
+        text: offer.shareOfferString,
+        subject: "Check out this offer on Picapool!",
+      ),
+    );
+  }
+
+  void _shareToWhatsApp() {
+    Get.back(); // Close bottom sheet
+
+    // Format message for WhatsApp with emojis and better structure
+    final String whatsappMessage = """
+🔥 *${offer.name.replaceAll("- FROM BRANDS", "")}*
+
+📝 ${offer.desc}
+
+💬 Join the conversation on Picapool!
+📱 Download: https://picapool.com/download
+
+#Picapool #Offers #Community
+""";
+
+    SharePlus.instance.share(
+      ShareParams(
+        text: whatsappMessage,
+        subject: "Amazing offer on Picapool! 🎉",
+      ),
+    );
+  }
+
+  void _showShareOptions() {
+    showPicaModelBottomSheet(
+      context: Get.context!,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Share via',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildShareOption(
+                  icon: Icons.message,
+                  label: 'WhatsApp',
+                  onTap: () => _shareToWhatsApp(),
+                ),
+                _buildShareOption(
+                  icon: Icons.share,
+                  label: 'Others',
+                  onTap: () => _shareDefault(),
+                ),
+              ],
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        PicaPrimaryButton(
-          onPressed: onJoinChat,
-          text: 'Join Chat',
-          isLoading: isLoading,
-        ),
-      ],
+      ),
     );
   }
 }

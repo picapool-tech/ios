@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picapool/common/extensions/date_extensions.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_product_model.dart';
 import 'package:picapool/models/user_model.dart';
@@ -51,6 +52,19 @@ class LiveOffer {
     );
     debugPrint("OUTSIDE LIVE OFFER JSON: $json");
     return liveOffer;
+  }
+
+  String get shareOfferString {
+    return """
+Spotted a cab on Picapool -- cheaper together! *(This is within your 2km radius!)*
+
+📍 Pickup: _${from ?? "N/A"}_
+📍 Drop: _${to ?? "N/A"}_
+
+on date: _${updatedAt.toLocal().formattedTime(formatString: "dd MMMM yyyy hh:mm a")}_
+
+Join here : https://offer.picapool.com/liveOffer/$id
+""";
   }
 
   Map<String, dynamic> toJson() {

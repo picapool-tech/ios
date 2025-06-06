@@ -61,7 +61,11 @@ class _NearbyProductsState extends State<NearbyProducts> {
                       ],
                     ),
                   )
-                : const EmptyStates(); // Default empty state
+                : EmptyStates(
+                    message: "No products found near you",
+                    secondaryMessage:
+                        "Try searching for a different product or create your own listing.",
+                  ); // Default empty state
           }
 
           return GridView.builder(

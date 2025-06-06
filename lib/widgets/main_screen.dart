@@ -138,87 +138,6 @@ class _MainScreenState extends State<MainScreen>
     });
   }
 
-  // listenNotification() {
-  //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //     print('Message received in foreground: ${message.notification?.title}');
-  //     showInAppNotification(message);
-  //   });
-
-  //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-  //     Get.showOverlay(asyncFunction: () => handleMessage(message));
-  //   });
-
-  //   FirebaseMessaging.instance.getInitialMessage().then(
-  //     (message) {
-  //       print('---- getInitialMessage called ----');
-  //       if (message != null) {
-  //         Get.showOverlay(asyncFunction: () => handleMessage(message));
-  //       } else {
-  //         print('---- getInitialMessage is not opened ----');
-  //       }
-  //     },
-  //   );
-  // }
-
-  // void showInAppNotification(RemoteMessage message) {
-  //   // Don't show if notification is empty
-  //   if (message.notification == null) {
-  //     return;
-  //   }
-
-  //   final title = message.notification!.title ?? 'Notification';
-  //   final body = message.notification!.body ?? '';
-
-  //   // Show a compact snackbar
-  //   Get.snackbar(
-  //     '',
-  //     '',
-  //     titleText: Text(
-  //       title,
-  //       style: const TextStyle(
-  //         color: Colors.white,
-  //         fontWeight: FontWeight.bold,
-  //       ),
-  //       maxLines: 1,
-  //       overflow: TextOverflow.ellipsis,
-  //     ),
-  //     messageText: Text(
-  //       body,
-  //       style: const TextStyle(
-  //         color: Colors.white,
-  //         fontSize: 12,
-  //       ),
-  //       maxLines: 2,
-  //       overflow: TextOverflow.ellipsis,
-  //     ),
-  //     snackPosition: SnackPosition.TOP,
-  //     margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-  //     padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-  //     icon: Padding(
-  //       padding: const EdgeInsets.only(left: 4, right: 8),
-  //       child: Image.asset(
-  //         "assets/images/ic_launcher.png",
-  //         width: 24,
-  //         height: 24,
-  //       ),
-  //     ),
-  //     shouldIconPulse: false,
-  //     maxWidth: 500, // Add max width constraint
-  //     boxShadows: [
-  //       BoxShadow(
-  //         color: Colors.black.withOpacity(0.15),
-  //         blurRadius: 6,
-  //         offset: const Offset(0, 3),
-  //       )
-  //     ],
-  //     duration: const Duration(seconds: 4),
-  //     isDismissible: true,
-  //     onTap: (_) {
-  //       Get.showOverlay(asyncFunction: () => handleMessage(message));
-  //     },
-  //   );
-  // }
-
   Widget _buildTabItem(int index) {
     final bool isActive = index == _selectedIndex;
 
@@ -228,10 +147,10 @@ class _MainScreenState extends State<MainScreen>
           _selectedIndex = index;
           _tabController.animateTo(index);
         });
-      },
+    },
       child: Container(
         height: double.infinity,
-        color: Colors.white,
+        // color: Colors.white,
         alignment: Alignment.center,
         child: Column(
           mainAxisSize: MainAxisSize.min,

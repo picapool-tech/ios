@@ -23,6 +23,7 @@ import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
+import 'package:picapool/features/identity_verification/indentity_verification_controller.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/network/connection_status_listener.dart';
 import 'package:picapool/features/notification/notification_service.dart';
@@ -77,6 +78,7 @@ void main() async {
   Get.lazyPut(() => CategoryController(), fenix: true);
   Get.lazyPut(() => PartnerController(), fenix: true);
   Get.lazyPut(() => TagController(), fenix: true);
+  Get.lazyPut(() => IndentityVerificationController(), fenix: true);
 
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);
@@ -331,7 +333,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       home: const AuthCheckScreen(),
     );
   }

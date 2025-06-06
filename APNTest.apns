@@ -1,0 +1,22 @@
+{
+  "aps": {
+    "alert": {
+      "title": "New Offer Received",
+      "body": "Open the app to grab new discount.",
+      "sound": "default"
+    }
+    
+  },
+      
+  "action" : "openAlertsPage",
+  "offerId" : "1101",
+  "chatId": "1488",
+  "gcm.message_id": "123",
+  "Simulator Target Bundle": "com.picapool",
+  "type": "new_offer",
+  "priority": "high",
+  "content_available": true,
+  "mutable_content": true,
+  "offer_id": "123",
+  "offer_description": "🎉 50% off on selected product.",
+}

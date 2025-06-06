@@ -42,9 +42,11 @@ class PicapoolApi {
   }
 
   FutureEither<ResponseModel> makeRequest({
+    String? altBaseUrl,
     required String enpoint,
     required RequestMethod method,
     bool requireAccessToken = true,
+    bool useAltBaseUrl = false,
     Object? body,
     Map<String, String>? additionalHeaders,
   }) async {
@@ -100,6 +102,11 @@ class PicapoolApi {
       // Configure options
       dio.Options options = dio.Options(headers: headers);
       debugPrint("body: $body");
+      if (useAltBaseUrl) {
+        _dio.options.baseUrl = altBaseUrl ?? baseUrl;
+      } else {
+        _dio.options.baseUrl = baseUrl;
+      }
 
       dio.Response response;
       try {

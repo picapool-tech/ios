@@ -93,6 +93,18 @@ class Offer {
     );
   }
 
+  String get shareOfferString {
+    return """
+Spotted this deal on Picapool -- might be just what you need! *(This is within your 2km radius!)*
+
+Title: _${name.replaceAll("- FROM BRANDS", "")}_
+Details: _${desc.split('\n').take(3).join('\n')}${desc.split('\n').length > 3 ? '...' : ''}_
+
+Check it out: "https://offer.picapool.com/offer/$id"
+
+""";
+  }
+
   /// Creates a copy of this Offer with the given fields replaced with new values.
   Offer copyWith({
     int? id,

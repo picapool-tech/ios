@@ -30,20 +30,18 @@ class LogoutWidget extends StatelessWidget {
 
           const SizedBox(height: 20),
           // Log Out Button
-          SizedBox(
-            width: double.infinity,
-            child: PicaPrimaryButton(
-              onPressed: () async {
-                await Get.find<AuthController>().logout();
+          PicaPrimaryButton(
+            onPressed: () async {
+              await Get.find<AuthController>().logout();
 
-                if (context.mounted) {
-                  Get.back();
-                }
-              },
-              text: "Log Out",
-              isLoading: false.obs,
-            ),
+              if (context.mounted) {
+                Get.back();
+              }
+            },
+            text: "Log Out",
+            isLoading: false.obs,
           ),
+          const SizedBox(height: 10),
           // Go Back Button
           PicaOutlineButton(
             onPressed: () async {

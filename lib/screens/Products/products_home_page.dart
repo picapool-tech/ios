@@ -13,12 +13,13 @@ import 'package:picapool/screens/products/products_detailed_page.dart';
 import 'package:picapool/screens/products/selected_brand_page.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/home/coming_soon.dart';
+import 'package:picapool/widgets/home/divider.dart';
 import 'package:picapool/widgets/loading/circle_list_loading.dart';
 import 'package:picapool/widgets/loading/image_list_loading.dart';
 
 class ProductsHomepage extends StatefulWidget {
   final String brandName;
-  const ProductsHomepage({Key? key, required this.brandName}) : super(key: key);
+  const ProductsHomepage({super.key, required this.brandName});
 
   @override
   State<ProductsHomepage> createState() => _ProductsHomepageState();
@@ -52,29 +53,8 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
-                    const Row(
-                      children: [
-                        Expanded(
-                          child: Divider(
-                            indent: 40,
-                            thickness: 1,
-                            color: Color(0xffFF8D41),
-                          ),
-                        ),
-                        Text(
-                          "  Brands  ",
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "MontserratM"),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            endIndent: 40,
-                            thickness: 1,
-                            color: Color(0xffFF8D41),
-                          ),
-                        ),
-                      ],
+                    CustomDivider(
+                      text: "Brands",
                     ),
                     const SizedBox(height: 20),
                     GetBuilder<PartnerController>(builder: (controller) {
@@ -116,7 +96,7 @@ class _ProductsHomepageState extends State<ProductsHomepage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "View Brands",
+                            "View All Brands",
                             style: TextStyle(
                               color: Color(0xffFF8D41),
                               fontSize: 14,

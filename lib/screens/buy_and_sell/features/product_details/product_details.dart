@@ -11,6 +11,7 @@ import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/buy_products/widgets/tables.dart';
 import 'package:picapool/screens/buy_and_sell/widgets/image_gallery.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HeadingText extends StatelessWidget {
   final String headingText;
@@ -53,7 +54,20 @@ class ProductDetails extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        actions: const [
+        actions: [
+          IconButton(
+            onPressed: () {
+              SharePlus.instance.share(
+                ShareParams(
+                  text: offer.shareOfferString,
+                  // uri: Uri.parse("https://offer.picapool.com/offers/${widget.offer?.id}"),
+                  subject: "Check out this offer on Picapool!",
+                  // previewThumbnail: XFile(filePath),
+                ),
+              );
+            },
+            icon: Icon(Icons.share),
+          ),
           // if (storageController.user.value!.id == product.userId)
           //   IconButton(
           //     onPressed: () {

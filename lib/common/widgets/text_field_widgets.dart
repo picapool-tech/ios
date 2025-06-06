@@ -86,9 +86,10 @@ class PicaOutlinedTextField extends StatelessWidget {
   final TextStyle? textStyle;
   final bool transparentBorder; // New parameter
   final VoidCallback? onTapOutside;
+  final Color? borderColor;
 
   const PicaOutlinedTextField({
-    Key? key,
+    super.key,
     this.controller,
     this.labelText,
     this.hintText,
@@ -111,6 +112,7 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.focusNode,
     this.contentPadding,
     this.fillColor,
+    this.borderColor,
     this.filled = false,
     this.isDense = false,
     this.constraints,
@@ -123,7 +125,7 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.borderRadius = kTextFieldBorderRadius,
     this.transparentBorder = false, // Default to false
     this.onTapOutside,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +180,7 @@ class PicaOutlinedTextField extends StatelessWidget {
           fontStyle: FontStyle.italic,
           color: theme.hintColor,
         ),
+
         errorText: errorText,
         isDense: isDense,
         constraints: constraints,
@@ -195,6 +198,7 @@ class PicaOutlinedTextField extends StatelessWidget {
               horizontal: 16,
               vertical: 16,
             ), // Adjusted vertical padding
+
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
           borderSide: borderSide,
@@ -313,18 +317,19 @@ class PicaSearchField extends StatelessWidget {
   final VoidCallback? onSubmitted;
   final Color? fillColor;
   final bool? filled;
-
+  final bool showBorder;
   final RxBool value = false.obs;
 
   PicaSearchField({
-    Key? key,
+    super.key,
     required this.controller,
     this.hintText = 'Search...',
     this.onChanged,
     this.fillColor,
     this.onSubmitted,
     this.filled,
-  }) : super(key: key);
+    this.showBorder = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -341,6 +346,9 @@ class PicaSearchField extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 10),
       fillColor: fillColor,
       isDense: true,
+      borderColor: showBorder
+          ? Theme.of(context).colorScheme.outline
+          : Colors.transparent,
       constraints: const BoxConstraints(maxHeight: 45),
       filled: filled ?? false,
       prefixIcon: const Icon(

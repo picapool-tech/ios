@@ -19,6 +19,7 @@ import 'package:picapool/screens/public_chat/widgets/message_bar.dart';
 import 'package:picapool/screens/public_chat/widgets/message_list.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -102,44 +103,72 @@ class _ChatPageState extends State<ChatPage>
         elevation: 1,
         scrolledUnderElevation: 2,
         actions: [
-          PopupMenuButton<void>(
-            icon: const Icon(Icons.more_vert_rounded),
-            color: AppTheme.currentTheme.colorScheme.surface,
-            itemBuilder: (BuildContext context) => [
-              _menuItemWithIcons(
-                onTap: () {
-                  _openChatInfo();
-                },
-                text: 'Chat Info',
-                icon: Icons.chat_bubble_rounded,
+          PullDownButton(
+            itemBuilder: (context) => [
+              PullDownMenuItem(
+                onTap: _openChatInfo,
+                title: 'Chat info',
+                icon: Icons.info,
               ),
-              _menuItemWithIcons(
-                onTap: () {
-                  _shareOffer();
-                },
-                text: "Share",
+              PullDownMenuItem(
+                title: 'Share',
+                subtitle: 'Share this to other people',
+                onTap: _shareOffer,
                 icon: Icons.share_rounded,
               ),
-              // const PopupMenuDivider(),
-              // _menuItemWithIcons(
-              //   onTap: () {},
-              //   text: 'Report',
-              //   icon: Icons.report_rounded,
-              // ),
-              // const PopupMenuDivider(),
-              // _menuItemWithIcons(
-              //   onTap: (widget.offer?.userId == _userController.user!.id)
-              //       ? null
-              //       : () {
-              //           _chatController.leaveChat();
-              //           Get.back();
-              //         },
-              //   text: 'Leave Chat',
-              //   icon: Icons.exit_to_app_rounded,
-              //   color: Colors.red,
-              // ),
+              const PullDownMenuDivider.large(),
+              PullDownMenuItem(
+                onTap: () {},
+                title: 'Exit chat',
+                subtitle: 'Leave this chat',
+                isDestructive: true,
+                icon: Icons.exit_to_app,
+              ),
             ],
-          )
+            buttonBuilder: (context, showMenu) => IconButton(
+              icon: const Icon(Icons.more_vert_rounded),
+              onPressed: showMenu,
+              tooltip: "More options",
+            ),
+          ),
+          // PopupMenuButton<void>(
+          //   icon: const Icon(Icons.more_vert_rounded),
+          //   color: AppTheme.currentTheme.colorScheme.surface,
+          //   itemBuilder: (BuildContext context) => [
+          //     _menuItemWithIcons(
+          //       onTap: () {
+          //         _openChatInfo();
+          //       },
+          //       text: 'Chat Info',
+          //       icon: Icons.chat_bubble_rounded,
+          //     ),
+          //     _menuItemWithIcons(
+          //       onTap: () {
+          //         _shareOffer();
+          //       },
+          //       text: "Share",
+          //       icon: Icons.share_rounded,
+          //     ),
+          //     // const PopupMenuDivider(),
+          //     // _menuItemWithIcons(
+          //     //   onTap: () {},
+          //     //   text: 'Report',
+          //     //   icon: Icons.report_rounded,
+          //     // ),
+          //     // const PopupMenuDivider(),
+          //     // _menuItemWithIcons(
+          //     //   onTap: (widget.offer?.userId == _userController.user!.id)
+          //     //       ? null
+          //     //       : () {
+          //     //           _chatController.leaveChat();
+          //     //           Get.back();
+          //     //         },
+          //     //   text: 'Leave Chat',
+          //     //   icon: Icons.exit_to_app_rounded,
+          //     //   color: Colors.red,
+          //     // ),
+          //   ],
+          // )
         ],
         bottomOpacity: 1,
         bottom: (showGoodToGo)
@@ -201,11 +230,67 @@ class _ChatPageState extends State<ChatPage>
                           });
                         },
                         onLongPress: (details, message) {
-                          // _showReactionDialog(
-                          //   context,
-                          //   message,
-                          //   details.globalPosition,
-                          // );
+                          showPullDownMenu(
+                            context: context,
+
+                            items: [
+                              PullDownMenuItem(
+                                title: "Reply",
+                                icon: Icons.reply,
+                                onTap: () {
+                                  setState(() {
+                                    isReplying = true;
+                                    replyingMessage = message;
+                                    _focusNode.requestFocus();
+                                  });
+                                },
+                              ),
+                              PullDownMenuItem(
+                                title: "Copy",
+                                icon: Icons.copy,
+                                onTap: () {
+                                  Clipboard.setData(
+                                      ClipboardData(text: message.content));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text("Message copied!")),
+                                  );
+                                },
+                              ),
+                              if (message.userId ==
+                                  _userController.user?.id) ...[
+                                PullDownMenuItem(
+                                  title: "Edit",
+                                  icon: Icons.edit,
+                                  onTap: () {
+                                    setState(() {
+                                      editMessage = message;
+                                      _textController.text = message.content;
+                                      _focusNode.requestFocus();
+                                    });
+                                  },
+                                ),
+                              ],
+                              PullDownMenuItem(
+                                title: "Delete",
+                                icon: Icons.delete,
+                                isDestructive: true,
+                                onTap: () {
+                                  // _chatController.de;
+                                  // Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                            position: Rect.fromLTWH(
+                              details.globalPosition.dx,
+                              details.globalPosition.dy,
+                              MediaQuery.of(context).size.width +
+                                  details.globalPosition.dx,
+                              MediaQuery.of(context).size.height -
+                                  details.globalPosition.dy,
+                            ),
+                            // position: Rect.fromPoints(details.globalPosition., b)
+                          );
                         },
                       ),
                       if (editMessage != null)
@@ -555,28 +640,6 @@ Could you please check for any discounts and share the final fare? 😊
   }
 
   FutureVoid _shareOffer() async {
-//     final String formattedString = """
-// Hey! I found this offer on Picapool and thought you might be interested. Here are the details:
-
-// ${_formatOfferName()}
-// ${_getOfferLink()}
-// """;
-    // String filePath = "";
-    // if (widget.offer?.images.isEmpty ?? false) {
-    //   filePath = (await ImageUtils.imageToFile(
-    //     assetName: "assets/images/request_vicinity.png",
-    //   ))
-    //       .path;
-    // } else {
-    //   var file = await CachedNetworkImageProvider.defaultCacheManager
-    //       .downloadFile(widget.offer!.images.first);
-    //   filePath = file.file.path;
-    // }
-
-    // ImageUtils.imageToFile(
-    //   assetName: "assets/images/request_vicinity.png",
-    // );
-
     SharePlus.instance.share(
       ShareParams(
         text: _getOfferDetail(),

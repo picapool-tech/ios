@@ -5,6 +5,7 @@ import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/buy_and_sell/values/enums.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
+import 'package:picapool/features/offers/values/offer_loading_enums.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/product_details/product_details.dart';
@@ -93,79 +94,89 @@ class _UserItemListingItemState extends State<UserItemListingItem> {
                   Text(
                       'Condition: ${widget.product.attributes?['productCondition']}'),
                   const SizedBox(height: 8.0),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        Get.to(
-                          () => ProductDetails(
-                            product: widget.product,
-                            offer: widget.offer,
-                            offersController: _offersController,
+                  Row(
+                    spacing: 8,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: PicaPrimaryButton(
+                          onPressed: (!widget.offer.isOfferExpired() &&
+                                  !widget.product.isProductSold())
+                              ? () async {
+                                  var product = widget.product;
+                                  var updatedOffer = widget.offer
+                                      .copyWith(expiryAt: DateTime.now());
+
+                                  product.attributes?['sold'] = true;
+                                  Offer? updatedOfferResponse =
+                                      await _offersController.updateOffer(
+                                    updatedOffer: updatedOffer,
+                                  );
+                                  Product? updatedProduct =
+                                      await _productsController.updateProduct(
+                                    updatedProduct: product,
+                                  );
+
+                                  if (updatedProduct != null ||
+                                      updatedOfferResponse != null) {
+                                    _offersController.getAllUserCreatedOffer();
+                                    showPicaAlertDialog(
+                                      title: "Listing marked as sold",
+                                      message:
+                                          "Your product ${product.name} is successfully marked as solved.",
+                                      confirmText: "Feels good",
+                                      onConfirm: () {
+                                        Get.back();
+                                      },
+                                    );
+                                  }
+
+                                  // var updatedOffer =
+                                  //     await _offersController.u(
+                                  //         updatedOffer: widget.offer
+                                  //             .copyWith(expiryAt: DateTime.now()));
+
+                                  // if (updatedOffer != null) {
+                                  //   await _offersController
+                                  //       .getAllUserCreatedOffer();
+                                  // showPicaAlertDialog(
+                                  //   title: "Listing marked as sold",
+                                  //   message:
+                                  //       "Your product ${updatedOffer.name} is successfully marked as solved.",
+                                  //   confirmText: "Feels good",
+                                  //   onConfirm: () {
+                                  //     Get.back();
+                                  //   },
+                                  // );
+                                  // }
+                                }
+                              : null,
+                          text: (widget.product.isProductSold())
+                              ? "PRODUCT SOLD"
+                              : "Mark as sold",
+                          isLoading: _productsController.getLoadingState(
+                            ProductLoadingEnums.updateProduct,
                           ),
-                        );
-                      },
-                      child: const Text("More details"),
-                    ),
-                  ),
-                  Center(
-                    child: PicaPrimaryButton(
-                      onPressed: (!widget.offer.isOfferExpired() &&
-                              !widget.product.isProductSold())
-                          ? () async {
-                              var product = widget.product;
-                              var updatedOffer = widget.offer
-                                  .copyWith(expiryAt: DateTime.now());
-
-                              product.attributes?['sold'] = true;
-                              Offer? updatedOfferResponse =
-                                  await _offersController.updateOffer(
-                                updatedOffer: updatedOffer,
-                              );
-                              Product? updatedProduct =
-                                  await _productsController.updateProduct(
-                                updatedProduct: product,
-                              );
-
-                              if (updatedProduct != null ||
-                                  updatedOfferResponse != null) {
-                                _offersController.getAllUserCreatedOffer();
-                                showPicaAlertDialog(
-                                  title: "Listing marked as sold",
-                                  message:
-                                      "Your product ${product.name} is successfully marked as solved.",
-                                  confirmText: "Feels good",
-                                  onConfirm: () {
-                                    Get.back();
-                                  },
-                                );
-                              }
-
-                              // var updatedOffer =
-                              //     await _offersController.u(
-                              //         updatedOffer: widget.offer
-                              //             .copyWith(expiryAt: DateTime.now()));
-
-                              // if (updatedOffer != null) {
-                              //   await _offersController
-                              //       .getAllUserCreatedOffer();
-                              // showPicaAlertDialog(
-                              //   title: "Listing marked as sold",
-                              //   message:
-                              //       "Your product ${updatedOffer.name} is successfully marked as solved.",
-                              //   confirmText: "Feels good",
-                              //   onConfirm: () {
-                              //     Get.back();
-                              //   },
-                              // );
-                              // }
-                            }
-                          : null,
-                      text: (widget.product.isProductSold())
-                          ? "PRODUCT SOLD"
-                          : "Mark product as sold",
-                      isLoading: _productsController
-                          .getLoadingState(ProductLoadingEnums.updateProduct),
-                    ),
+                        ),
+                      ),
+                      Expanded(
+                        child: PicaTextButton(
+                          onPressed: () {
+                            Get.to(
+                              () => ProductDetails(
+                                product: widget.product,
+                                offer: widget.offer,
+                                offersController: _offersController,
+                              ),
+                            );
+                          },
+                          text: "More details",
+                          isLoading: _offersController
+                              .getLoadingState(OfferLoadingEnums.offerDetails),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

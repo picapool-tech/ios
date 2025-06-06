@@ -197,10 +197,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   const SizedBox(height: 30),
 
                   // Improved Button
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                  SizedBox(
                     width: double.infinity,
-                    height: 54,
                     child: PicaPrimaryButton(
                       onPressed: _isOtpComplete ? _verifyOtp : null,
                       text: "Verify",

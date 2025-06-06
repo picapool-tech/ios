@@ -19,6 +19,7 @@ import 'package:picapool/screens/vicinity/request_vicinity.dart';
 import 'package:picapool/utils/theme.dart';
 import 'package:picapool/widgets/loading/chat_loading.dart';
 import 'package:picapool/widgets/loading/image_loading.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BrandOfferModel {
@@ -248,6 +249,21 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
           maxLines: 1,
           style: Theme.of(context).textTheme.titleMedium,
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              SharePlus.instance.share(
+                ShareParams(
+                  text: widget.offer.shareOfferString,
+                  // uri: Uri.parse("https://offer.picapool.com/offers/${widget.offer?.id}"),
+                  subject: "Check out this offer on Picapool!",
+                  // previewThumbnail: XFile(filePath),
+                ),
+              );
+            },
+            icon: const Icon(Icons.share, color: Colors.orange),
+          )
+        ],
       ),
       extendBody: true,
       body: Stack(
