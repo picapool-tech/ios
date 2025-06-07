@@ -36,7 +36,31 @@ class IndentityVerificationController extends GetxController
         stopLoading(IdentityLoadingEnum.sendVerificationCode);
         // Handle success, e.g., show a success message
         print('Verification code sent successfully: ${responseModel.data}');
-        return true; // Simulate success
+        return responseModel.success; // Simulate success
+      },
+    );
+  }
+
+  Future<bool> verifyOtp({
+    required String otp,
+  }) async {
+    startLoading(IdentityLoadingEnum.verifyCode);
+    final result = await _identityVerificationApi.verifyOtp(
+      userId: _userController.user!.id,
+      otp: otp,
+    );
+
+    return result.fold(
+      (error) {
+        stopLoading(IdentityLoadingEnum.verifyCode);
+        print('Error verifying OTP: $error');
+        return false; // Simulate failure
+      },
+      (responseModel) {
+        stopLoading(IdentityLoadingEnum.verifyCode);
+        // Handle success, e.g., show a success message
+        print('OTP verified successfully: ${responseModel.data}');
+        return responseModel.success; // Simulate success
       },
     );
   }

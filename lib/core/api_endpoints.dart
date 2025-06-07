@@ -17,6 +17,7 @@ class APIEndpoints {
   static const String updateAccessToken = "/auth/accessToken";
   static const String getOtp = "/otp";
   static const String identityVerificationOtp = "/otp/send-verification-otp";
+  static const String identityVerificationOtpVerify = "/otp/verify-user";
 
   static const String updateAuth = "/auth/update";
   static String deleteOfferDetails(int id) => "/offer/$id";

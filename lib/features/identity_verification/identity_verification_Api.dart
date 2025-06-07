@@ -30,4 +30,29 @@ class IdentityVerificationApi with PicapoolApiClass {
       },
     );
   }
+
+  FutureEither<ResponseModel> verifyOtp({
+    required int userId,
+    required String otp,
+  }) async {
+    final result = await api.makeRequest(
+      useAltBaseUrl: true,
+      altBaseUrl: "http://test-api.picapool.com/api",
+      enpoint: APIEndpoints.identityVerificationOtpVerify,
+      method: RequestMethod.post,
+      body: jsonEncode(
+        {
+          "userId": userId,
+          "otp": otp,
+        },
+      ),
+    );
+
+    return result.fold(
+      (error) => left(error),
+      (responseModel) {
+        return right(responseModel);
+      },
+    );
+  }
 }

@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
+import 'package:picapool/core/core.dart';
+import 'package:picapool/features/identity_verification/enum/identity_loading_enum.dart';
 import 'package:picapool/features/identity_verification/indentity_verification_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
+import 'package:picapool/screens/identity_verfication/otp_verification.dart';
 
 class IdentityVerfication extends StatefulWidget {
   const IdentityVerfication({super.key});
@@ -18,31 +22,22 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
   final TextEditingController _emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   RxBool isLoading = false.obs;
+  final IndentityVerificationController _identityVerificationController =
+      Get.put(IndentityVerificationController());
+  final UserController _userController = Get.find<UserController>();
   bool get isValidated => _formKey.currentState?.validate() ?? false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text(
           'Verify Organization Email',
-          // style: TextStyle(
-          //   color: Color(0xffFFFFFF),
-          // ),
         ),
-        // systemOverlayStyle: uiOverlayStyle(
-        //   context,
-        //   brightness: Brightness.dark,
-        // ),
         automaticallyImplyLeading: true,
         elevation: 0,
-        // backgroundColor: const Color(0xff02005D),
-        // iconTheme: const IconThemeData(
-        //   color: Colors.white,
-        // ),
       ),
-      body: Form(
-        key: _formKey,
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
           child: Column(
@@ -52,7 +47,7 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
               Image.asset(
                 "assets/images/identity_illustration_blue.png",
                 width: double.infinity,
-                height: 400,
+                height: 300,
               ),
               const Text(
                 'We don\'t spam. Your email address is used to verify your organization and will not be shared with anyone.',
@@ -80,29 +75,11 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
                   return null;
                 },
               ),
-              SizedBox(
-                width: double.infinity,
-                child: PicaPrimaryButton(
-                  text: "Verify Email",
-                  onPressed: () {
-                    // var isValidated = _formKey.currentState?.validate();
-                    // if (isValidated != true) {
-                    //   return;
-                    // }
-                    // _controller.sendVerificationCode(
-                    //   email: _emailController.text,
-                    // );
-                    isLoading.value = !isLoading.value;
-                    Future.delayed(const Duration(seconds: 2), () {
-                      isLoading.value = !isLoading.value;
-                      // if (isValidated) {
-                      //   _controller.sendVerificationCode(
-                      //     email: _emailController.text,
-                      //   );
-                      // }
-                    });
-                  },
-                  isLoading: isLoading,
+              PicaPrimaryButton(
+                text: "Verify Email",
+                onPressed: _sendVerificationCode,
+                isLoading: _controller.getLoadingState(
+                  IdentityLoadingEnum.sendVerificationCode,
                 ),
               )
             ],
@@ -110,5 +87,27 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
         ),
       ),
     );
+  }
+
+  FutureVoid _sendVerificationCode() async {
+    bool isSent =
+        await _controller.sendVerificationCode(email: _emailController.text);
+
+    if (isSent) {
+      Get.to(
+        () => OtpVerificationScreen(
+          userId: _userController.user!.id,
+          email: _emailController.text,
+        ),
+      );
+    } else {
+      Get.snackbar(
+        "Error",
+        "Failed to send verification code. Please try again.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    }
   }
 }
