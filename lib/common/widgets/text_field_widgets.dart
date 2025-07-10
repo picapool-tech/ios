@@ -87,6 +87,7 @@ class PicaOutlinedTextField extends StatelessWidget {
   final bool transparentBorder; // New parameter
   final VoidCallback? onTapOutside;
   final Color? borderColor;
+  final bool autoCorrect;
 
   const PicaOutlinedTextField({
     super.key,
@@ -125,6 +126,7 @@ class PicaOutlinedTextField extends StatelessWidget {
     this.borderRadius = kTextFieldBorderRadius,
     this.transparentBorder = false, // Default to false
     this.onTapOutside,
+    this.autoCorrect = false,
   });
 
   @override
@@ -172,6 +174,7 @@ class PicaOutlinedTextField extends StatelessWidget {
       autovalidateMode: autovalidateMode,
       cursorColor: primaryColor,
       style: textStyle ?? theme.textTheme.bodyMedium,
+      autocorrect: autoCorrect,
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,

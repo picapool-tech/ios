@@ -61,7 +61,7 @@ Spotted a cab on Picapool -- cheaper together! *(This is within your 2km radius!
 📍 Pickup: _${from ?? "N/A"}_
 📍 Drop: _${to ?? "N/A"}_
 
-on date: _${updatedAt.toLocal().formattedTime(formatString: "dd MMMM yyyy hh:mm a")}_
+on date: _${createdAt.toLocal().formattedTime(formatString: "dd MMMM yyyy hh:mm a")}_
 
 Join here : https://offer.picapool.com/liveOffer/$id
 """;

@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/functions/color_function.dart';
+import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
@@ -16,6 +19,7 @@ class ChatBubble extends StatefulWidget {
   final String? username;
   final Widget? leadingWidget;
   final VoidCallback? onDragToEnd;
+  final bool isEdited;
   final bool showDate;
   final void Function(LongPressStartDetails)? onLongPress;
   const ChatBubble({
@@ -30,6 +34,7 @@ class ChatBubble extends StatefulWidget {
     this.onLongPress,
     this.replyUsername,
     this.showDate = false,
+    this.isEdited = false,
   });
 
   @override
@@ -44,7 +49,7 @@ class _ChatBubbleState extends State<ChatBubble>
 
   Color get customTheme => getColorFromString(widget.username ?? "").darken();
   String get formattedTime =>
-      DateTimeHelper.formatDateTime(widget.message.updatedAt, "hh:mm a");
+      DateTimeHelper.formatDateTime(widget.message.createdAt, "hh:mm a");
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +187,7 @@ class _ChatBubbleState extends State<ChatBubble>
                 replyMessage: widget.replyMessage,
                 replyUsername: widget.replyUsername,
                 leadingWidget: widget.leadingWidget,
+                isEdited: widget.isEdited,
               ),
               _buildReactionsOverlay(),
             ],
@@ -193,42 +199,56 @@ class _ChatBubbleState extends State<ChatBubble>
 
   Widget _buildReactionsOverlay() {
     return Positioned(
-      bottom: -25,
-      right: widget.isSender ? 8 : null,
-      left: widget.isSender ? null : 45,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+      bottom: -12,
+      right: widget.isSender ? 10 : null,
+      left: widget.isSender ? null : 50,
+      child: GestureDetector(
+        onTap: () {
+          showPicaModelBottomSheet(
+            context: context,
+            child: Column(
+              children: [
+                
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: widget.message.reactions.map((reaction) {
-            return const Padding(
-              padding: EdgeInsets.all(2.0),
-              child: Row(
-                children: [
-                  Text(
-                    "😀",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  SizedBox(width: 2),
-                  Text(
-                    "2", // Replace with actual reaction count
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                ],
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            // border: Border.all(width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-            );
-          }).toList(),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.message.reactions.map((reaction) {
+              log("REACTION: ${reaction.toJson()} \n");
+              return Padding(
+                padding: EdgeInsets.all(2.0),
+                child: Row(
+                  children: [
+                    Text(
+                      reaction.reaction,
+                      style: Get.textTheme.bodySmall,
+                    ),
+                    // SizedBox(width: 2),
+                    // Text(
+                    //   reaction.co, // Replace with actual reaction count
+                    //   style: TextStyle(fontSize: 14, color: Colors.black54),
+                    // ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

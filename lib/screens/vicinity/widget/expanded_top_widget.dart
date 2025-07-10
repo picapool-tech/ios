@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/utils/theme.dart';
-import 'package:picapool/widgets/home/divider.dart';
 
 class VicinityExpandedWidget extends StatefulWidget {
   final TextEditingController titleController;
@@ -41,7 +40,10 @@ class _VicinityExpandedWidgetState extends State<VicinityExpandedWidget> {
           canTapOnHeader: true,
           backgroundColor: AppTheme.currentTheme.scaffoldBackgroundColor,
           headerBuilder: (context, isExpanded) {
-            return const CustomDivider(text: "Ask Around");
+            return AppBar(
+              title: const Text("Ask Around"),
+              centerTitle: true,
+            );
           },
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 4),
@@ -55,56 +57,16 @@ class _VicinityExpandedWidgetState extends State<VicinityExpandedWidget> {
                         children: [
                           PicaOutlinedTextField(
                             controller: widget.titleController,
-                            labelText: "Add Title",
-                            // decoration: InputDecoration(
-                            //   labelText: "Add Title",
-                            //   labelStyle: const TextStyle(
-                            //       fontFamily: "MontserratM",
-                            //       color: Colors.grey),
-                            //   enabledBorder: OutlineInputBorder(
-                            //     borderRadius: BorderRadius.circular(8),
-                            //     borderSide: const BorderSide(
-                            //       color: Colors.grey,
-                            //     ),
-                            //   ),
-                            //   focusedBorder: OutlineInputBorder(
-                            //     borderRadius: BorderRadius.circular(8),
-                            //     borderSide: const BorderSide(
-                            //       color: Color(0xffFF8D41),
-                            //     ),
-                            //   ),
-                            // ),
-                            // showCursor: true,
-                            // onTapOutside: (event) {
-                            //   FocusManager.instance.primaryFocus?.unfocus();
-                            // },
+                            labelText: "What do you need?",
+                            hintText: "e.g. Need bike pump",
                           ),
                           const SizedBox(height: 16),
                           PicaOutlinedTextField(
                             controller: widget.descriptionController,
-                            labelText: "Add description",
-                            // decoration: InputDecoration(
-                            //   labelText: "Add Description",
-                            //   labelStyle: const TextStyle(
-                            //       fontFamily: "MontserratM",
-                            //       color: Colors.grey),
-                            //   enabledBorder: OutlineInputBorder(
-                            //     borderRadius: BorderRadius.circular(8),
-                            //     borderSide: const BorderSide(
-                            //       color: Colors.grey,
-                            //     ),
-                            //   ),
-                            //   focusedBorder: OutlineInputBorder(
-                            //     borderRadius: BorderRadius.circular(8),
-                            //     borderSide: const BorderSide(
-                            //       color: Color(0xffFF8D41),
-                            //     ),
-                            //   ),
-                            // ),
+                            labelText: "Add more details",
                             maxLines: 2,
-                            // onTapOutside: (event) {
-                            //   FocusManager.instance.primaryFocus?.unfocus();
-                            // },
+                            hintText:
+                                "e.g. I need a bike pump to inflate my tires",
                           ),
                         ],
                       ),

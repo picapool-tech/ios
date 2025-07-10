@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/functions/color_function.dart';
 import 'package:picapool/common/values/values.dart';
-import 'package:picapool/common/widgets/marquee_widget.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/offer_model.dart';
@@ -74,23 +73,21 @@ class _ChatInfoImplState extends State<ChatInfoImpl>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if ((widget.chatTitle.length) > 10)
-                    SizedBox(
-                      height: 30,
-                      child: Marquee(
-                        blankSpace: 20,
-                        text:
-                            widget.chatTitle.replaceFirst("- FROM BRANDS", ""),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.black45,
-                              offset: Offset(2.0, 2.0),
-                            ),
-                          ],
-                        ),
+                    Text(
+                      widget.chatTitle.replaceFirst("- FROM BRANDS", ""),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.start,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10.0,
+                            color: Colors.black45,
+                            offset: Offset(2.0, 2.0),
+                          ),
+                        ],
                       ),
                     )
                   else
@@ -127,9 +124,12 @@ class _ChatInfoImplState extends State<ChatInfoImpl>
                 left: _titlePaddingLeft,
               ),
               background: hasImage
-                  ? CachedNetworkImage(
-                      imageUrl: widget.offer!.images.first,
-                      fit: BoxFit.cover,
+                  ? GestureDetector(
+                      onTap: () => _tabController.animateTo(1),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.offer!.images.first,
+                        fit: BoxFit.cover,
+                      ),
                     )
                   : null,
             ),

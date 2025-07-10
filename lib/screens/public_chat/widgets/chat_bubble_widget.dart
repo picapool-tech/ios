@@ -15,6 +15,7 @@ class ChatBubbleWidget extends StatelessWidget {
   final Message? replyMessage;
   final Widget? leadingWidget;
   final String formattedTime;
+  final bool isEdited;
   const ChatBubbleWidget({
     super.key,
     required this.isSender,
@@ -24,6 +25,7 @@ class ChatBubbleWidget extends StatelessWidget {
     required this.replyMessage,
     required this.leadingWidget,
     required this.formattedTime,
+    required this.isEdited,
   });
 
   @override
@@ -47,7 +49,8 @@ class ChatBubbleWidget extends StatelessWidget {
               child: Stack(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.only(
+                        left: 8.0, top: 8, bottom: 8, right: 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -90,6 +93,15 @@ class ChatBubbleWidget extends StatelessWidget {
                                   style: const TextStyle(
                                     color: Colors.transparent,
                                   ),
+                                  children: [
+                                    if (isEdited)
+                                      TextSpan(
+                                        text: ' $formattedTime',
+                                        style: TextStyle(
+                                          fontSize: 10.0,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -101,12 +113,35 @@ class ChatBubbleWidget extends StatelessWidget {
                   Positioned(
                     right: 8.0,
                     bottom: 4.0,
-                    child: Text(
-                      formattedTime,
-                      style: TextStyle(
-                        fontSize: 10.0,
-                        color: Colors.grey.shade500,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isEdited) ...[
+                          Text(
+                            'Edited',
+                            style: TextStyle(
+                              fontSize: 10.0,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '•',
+                            style: TextStyle(
+                              fontSize: 9.0,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          formattedTime,
+                          style: TextStyle(
+                            fontSize: 10.0,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

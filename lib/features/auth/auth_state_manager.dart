@@ -55,7 +55,9 @@ class AuthStateManager extends GetxController {
   void onInit() {
     super.onInit();
     debugPrint("AuthStateManager: initializing");
-    _checkAuthState(null);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      robustAuthCheck();
+    });
   }
 
   void refreshAuthState() {
@@ -65,6 +67,8 @@ class AuthStateManager extends GetxController {
   }
 
   Future<void> robustAuthCheck() async {
+    // Future.delayed(Duration(milliseconds: 500));
+
     final auth = _storageController.auth.value;
     final user = _storageController.user.value;
 

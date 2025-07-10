@@ -20,51 +20,18 @@ class AuthTokenService extends GetxController {
     if (_storageController.auth.value == null) {
       await _storageController.loadAuth();
     }
+
+    // String? accessToken = await _storageController.getAccessToken();
+    // if (accessToken != null) {
+    //   return await validateJWT(accessToken);
+    // }
+
     debugPrint("Storage Auth: ${_storageController.auth.toJson()}");
     if (_storageController.auth.value != null &&
         _storageController.auth.value!.accessToken != null) {
-      if (Jwt.isExpired(_storageController.auth.value!.accessToken!)) {
-        if (_storageController.user.value == null) {
-          debugPrint("User is null");
-          return null;
-        }
-
-        if (!await ConnectionStatusListener.getInstance().checkConnection()) {
-          debugPrint("No internet connection");
-          return null;
-        }
-
-        final result = await _tokenApi.refreshAccessToken(
-          refreshToken: _storageController.auth.value!.refreshToken!,
-          oldAccessToken: _storageController.auth.value!.accessToken!,
-        );
-
-        return result.fold(
-          (fail) {
-            debugPrint(
-                "Error while updating access token: ${fail.message} in storage controller.");
-            _storageController.clearAuth();
-            _storageController.clearUser();
-            _authStateManager.refreshAuthState();
-            return null;
-          },
-          (newAccessToken) async {
-            var newAuth = _storageController.auth.value!
-                .copyWith(accessToken: newAccessToken);
-            await _storageController.saveAuth(newAuth);
-            await _storageController.saveAccessToken(newAccessToken);
-            _storageController.auth.value = newAuth;
-            _storageController.update();
-            debugPrint(
-              "Getting access Token : $newAccessToken : ${_storageController.auth.value!.accessToken}",
-            );
-            return newAccessToken;
-          },
-        );
-      } else {
-        debugPrint("Access Token is not expired");
-        return _storageController.auth.value!.accessToken;
-      }
+      return await validateJWT(
+        _storageController.auth.value!.accessToken!,
+      );
     }
     await _storageController.clearAuth();
     await _storageController.clearUser();
@@ -78,6 +45,51 @@ class AuthTokenService extends GetxController {
     } catch (e) {
       debugPrint('Error checking token expiry: $e');
       return true;
+    }
+  }
+
+  Future<String?> validateJWT(String token) async {
+    if (Jwt.isExpired(_storageController.auth.value!.accessToken!)) {
+      if (_storageController.user.value == null) {
+        debugPrint("User is null");
+        return null;
+      }
+
+      if (!await ConnectionStatusListener.getInstance().checkConnection()) {
+        debugPrint("No internet connection");
+        return null;
+      }
+
+      final result = await _tokenApi.refreshAccessToken(
+        refreshToken: _storageController.auth.value!.refreshToken!,
+        oldAccessToken: _storageController.auth.value!.accessToken!,
+      );
+
+      return result.fold(
+        (fail) {
+          debugPrint(
+              "Error while updating access token: ${fail.message} in storage controller.");
+          _storageController.clearAuth();
+          _storageController.clearUser();
+          _authStateManager.refreshAuthState();
+          return null;
+        },
+        (newAccessToken) async {
+          var newAuth = _storageController.auth.value!
+              .copyWith(accessToken: newAccessToken);
+          await _storageController.saveAuth(newAuth);
+          await _storageController.saveAccessToken(newAccessToken);
+          _storageController.auth.value = newAuth;
+          _storageController.update();
+          debugPrint(
+            "Getting access Token : $newAccessToken : ${_storageController.auth.value!.accessToken}",
+          );
+          return newAccessToken;
+        },
+      );
+    } else {
+      debugPrint("Access Token is not expired");
+      return _storageController.auth.value!.accessToken;
     }
   }
 }

@@ -3,9 +3,9 @@ import 'package:picapool/models/message_model.dart';
 import 'package:picapool/models/user_model.dart';
 
 class Reaction {
-  final int id;
+  final int? id;
   final String reaction;
-  final Message message;
+  final Message? message;
   final int messageId;
   final User? user;
   final int? userId;
@@ -13,9 +13,9 @@ class Reaction {
   final int? adminId;
 
   Reaction({
-    required this.id,
+    this.id,
     required this.reaction,
-    required this.message,
+    this.message,
     required this.messageId,
     this.user,
     this.userId,
@@ -27,7 +27,8 @@ class Reaction {
     return Reaction(
       id: json['id'],
       reaction: json['reaction'],
-      message: Message.fromJson(json['message']),
+      message:
+          json['message'] != null ? Message.fromJson(json['message']) : null,
       messageId: json['messageId'],
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       userId: json['userId'],
@@ -40,7 +41,7 @@ class Reaction {
     return {
       'id': id,
       'reaction': reaction,
-      'message': message.toJson(),
+      'message': message?.toJson(),
       'messageId': messageId,
       'user': user?.toJson(),
       'userId': userId,

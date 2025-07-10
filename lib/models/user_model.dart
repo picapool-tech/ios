@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart' as material;
 import 'package:picapool/models/auth_model.dart';
 import 'package:picapool/models/chat_model.dart';
@@ -30,6 +32,7 @@ class User {
   List<Reaction>? reactions;
   List<Tag>? tags;
   List<LiveOffer>? liveOffers;
+  bool isVerified = false;
 
   User({
     required this.id,
@@ -52,11 +55,12 @@ class User {
     this.reactions,
     this.tags = const [],
     this.liveOffers,
+    this.isVerified = false,
   });
 
   // Example of a factory constructor for converting from JSON
   factory User.fromJson(Map<String, dynamic> json) {
-    material.debugPrint("USER FORM JSON: $json");
+    log("USER FORM JSON: $json");
     return User(
       id: json['id'],
       name: json['name'],
@@ -73,7 +77,9 @@ class User {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : DateTime.now(),
-      auth: json['Auth'] != null ? Auth.fromJson(json['Auth']) : null,
+      auth: json['Auth'] != null
+          ? Auth.fromJson(json['Auth'], customMessage: "FROM USER MODEL")
+          : null,
       authId: json['authId'],
       feedback: (json['feedback'] as List?)
           ?.map((e) => Feedback.fromJson(e))
@@ -89,6 +95,7 @@ class User {
       liveOffers: (json['liveOffers'] as List?)
           ?.map((e) => LiveOffer.fromJson(e))
           .toList(),
+          isVerified: json['isVerified'] ?? false,
     );
   }
 
@@ -113,6 +120,7 @@ class User {
     List<Reaction>? reactions,
     List<Tag>? tags,
     List<LiveOffer>? liveOffers,
+    bool? isVerified,
   }) {
     return User(
       id: id ?? this.id,
@@ -135,6 +143,7 @@ class User {
       reactions: reactions ?? this.reactions,
       tags: tags ?? this.tags,
       liveOffers: liveOffers ?? this.liveOffers,
+      isVerified: isVerified ?? this.isVerified,
     );
   }
 
@@ -161,9 +170,9 @@ class User {
       'reactions': reactions?.map((e) => e.toJson()).toList(),
       'Tags': tags?.map((e) => e.toJson()).toList(),
       'liveOffers': liveOffers?.map((e) => e.toJson()).toList(),
+      'isVerified': isVerified,
     };
   }
-
 
   // Update method to modify certain fields
   void update(Map<String, dynamic> fields) {
@@ -193,13 +202,14 @@ class User {
             .toList()
         : reactions;
     tags = fields['Tags'] != null
-            ? (fields['Tags'] as List).map((e) => Tag.fromJson(e)).toList()
-            : tags;
+        ? (fields['Tags'] as List).map((e) => Tag.fromJson(e)).toList()
+        : tags;
     liveOffers = fields['liveOffers'] != null
         ? (fields['liveOffers'] as List)
             .map((e) => LiveOffer.fromJson(e))
             .toList()
         : liveOffers;
     updatedAt = DateTime.now();
+    isVerified = fields['isVerified'] ?? isVerified;
   }
 }

@@ -12,6 +12,7 @@ import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/chat_unread_model.dart';
 import 'package:picapool/models/message_model.dart';
+import 'package:picapool/models/reaction_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/services/socket.service.dart';
 
@@ -61,6 +62,7 @@ class ChatController extends GetxController
     debugPrint("I am in connectToSocket Function");
     socket.on('receiveMessage', handleIncomingMessage);
     socket.on('messageEdited', handleEditMessage);
+    socket.on('reactionUpdate', handleReaction);
   }
 
   Future<ChatAndOfferModel?> createChatWithOfferId(int offerId) async {
@@ -285,6 +287,25 @@ class ChatController extends GetxController
       );
     }
     debugPrint("Receive Message $data with data $message");
+  }
+
+  void handleReaction(data) {
+    log(" $data this is reaction data for chat");
+    var reactions = data['reactions'];
+    for (var reaction in reactions) {
+      var reactionModel = Reaction(
+        reaction: reaction['reaction'],
+        messageId: data['messageId'],
+        userId: reaction['users'] != null && reaction['users'].isNotEmpty
+            ? reaction['users'][0]
+            : null,
+      );
+      messages
+          .firstWhere((msg) => msg.id == reactionModel.messageId)
+          .reactions
+          .add(reactionModel);
+      update();
+    }
   }
 
   bool isSocketConnected() {

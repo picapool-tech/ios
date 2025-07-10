@@ -17,11 +17,11 @@ class MainHeadingOptionsHorizontalWidget extends StatelessWidget {
     Size size = MediaQuery.sizeOf(context);
 
     return Container(
-      width: smallIcon ? size.width * 0.4 : size.width * 0.45,
+      // width: smallIcon ? size.width * 0.4 : size.width * 0.45,
       height: smallIcon ? size.width * 0.2 : size.width * 0.26,
-      margin: EdgeInsets.symmetric(
-        horizontal: smallIcon ? size.width * 0.02 : size.width * 0.04,
-      ),
+      // margin: EdgeInsets.symmetric(
+      //   horizontal: smallIcon ? size.width * 0.02 : size.width * 0.04,
+      // ),
       padding: EdgeInsets.symmetric(
         horizontal: smallIcon ? size.width * 0.02 : size.width * 0.04,
       ),
@@ -32,6 +32,7 @@ class MainHeadingOptionsHorizontalWidget extends StatelessWidget {
         ),
       ),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: (!mainHeadingOptionData.isDisabled)
             ? () {
                 Get.toNamed(mainHeadingOptionData.routePath);
@@ -58,7 +59,7 @@ class MainHeadingOptionsHorizontalWidget extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
-            Expanded(
+            FittedBox(
               child: Text(
                 mainHeadingOptionData.text,
                 style: Theme.of(context).textTheme.bodyMedium,

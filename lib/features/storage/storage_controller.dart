@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:picapool/features/auth/auth_state_manager.dart';
 import 'package:picapool/models/auth_model.dart';
@@ -11,6 +13,15 @@ import 'package:picapool/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageController extends GetxController {
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
+  );
+
   Rx<Auth?> auth = Rx<Auth?>(null);
   Rx<User?> user = Rx<User?>(null);
   Rx<List<Tag>> tags = Rx<List<Tag>>([]);
@@ -28,6 +39,26 @@ class StorageController extends GetxController {
     await prefs.remove('user');
     user.value = null;
     update();
+  }
+
+  Future<String?> getAccessToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken;
+    if (prefs.containsKey("accessToken")) {
+      accessToken = prefs.getString("accessToken");
+      if (accessToken != null) {
+        // we will migrate the access token to secure storage here
+        await _secureStorage.write(key: "accessToken", value: accessToken);
+
+        await prefs.remove("accessToken");
+      }
+    }
+    accessToken ??= await _secureStorage.read(key: "accessToken");
+    if (accessToken == null) {
+      return null;
+    }
+
+    return accessToken;
   }
 
   Future<Map<int, ChatUnreadModel>> getLastReadMessagesWithChatId() async {
@@ -55,16 +86,44 @@ class StorageController extends GetxController {
 
   Future<Auth?> loadAuth() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     debugPrint("LOAD AUTH");
-    String? authData = prefs.getString('auth');
-    if (authData != null) {
-      Map<String, dynamic> authMap = jsonDecode(authData);
-      Auth auth = Auth.fromJson(authMap);
-      this.auth.value = auth;
-      update();
-      return auth;
+    String? authData;
+
+    if (prefs.containsKey("auth")) {
+      authData = prefs.getString('auth');
+      if (authData != null) {
+        // we will migrate the auth data to secure storage here
+        await _secureStorage.write(key: 'auth', value: authData);
+
+        // and will remove it from shared preferences
+        await prefs.remove('auth');
+      }
     }
-    return null;
+
+    // if not, we will read from secure storage
+    authData ??= await _secureStorage.read(key: 'auth');
+    log("HERE IS THE AUTH DATA -> $authData");
+
+    if (authData == null) {
+      debugPrint("No auth data found in secure storage");
+      return null;
+    }
+
+    Map<String, dynamic> authMap = jsonDecode(authData);
+    log("HERE IS JSON DECODE FOR AUTH DATA -> $authMap");
+    try {
+      auth.value =
+          Auth.fromJson(authMap, customMessage: "FROM STORAGE CONTROLLER");
+      log("HERE CHECK VALUE OF THIS.AUTH HERE -> $auth");
+
+      update();
+      return auth.value;
+    } catch (e) {
+      log("FOUND EXCEPTION IN CONVERTING AUTH FROM JSON -> $e");
+    }
+
+    return auth.value;
   }
 
   Future<List<Tag>> loadTags() async {
@@ -87,16 +146,31 @@ class StorageController extends GetxController {
 
   Future<User?> loadUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    debugPrint("LOADING USER FROM STORAGE CONTROLLER");
-    String? userData = prefs.getString('user');
-    if (userData != null) {
-      Map<String, dynamic> userMap = jsonDecode(userData);
-      User user = User.fromJson(userMap);
-      this.user.value = user;
-      update();
-      return user;
+    String? userData;
+    if (prefs.containsKey('user')) {
+      userData = prefs.getString('user');
+      if (userData != null) {
+        // we will migrate the user data to secure storage here
+        await _secureStorage.write(key: 'user', value: userData);
+
+        // and will remove it from shared preferences
+        await prefs.remove('user');
+      }
     }
-    return null;
+
+    userData ??= await _secureStorage.read(key: 'user');
+
+    debugPrint("LOADING USER FROM STORAGE CONTROLLER");
+    // String? userData = prefs.getString('user');
+    if (userData == null) {
+      return null;
+    }
+
+    Map<String, dynamic> userMap = jsonDecode(userData);
+    User user = User.fromJson(userMap);
+    this.user.value = user;
+    update();
+    return user;
   }
 
   Future<List<UserLocationModel>> loadUserLocations() async {
@@ -135,15 +209,17 @@ class StorageController extends GetxController {
   }
 
   Future<void> saveAccessToken(String accessToken) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('accessToken', accessToken);
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    await _secureStorage.write(key: "accessToken", value: accessToken);
+    // await prefs.setString('accessToken', accessToken);
   }
 
   Future<void> saveAuth(Auth auth) async {
     debugPrint("Saving auth : ${auth.toJson()}");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
     String authData = jsonEncode(auth.toJson());
-    await prefs.setString('auth', authData);
+    // await prefs.setString('auth', authData);
+    await _secureStorage.write(key: 'auth', value: authData);
     await loadAuth();
   }
 

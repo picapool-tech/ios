@@ -333,7 +333,8 @@ class _MyAppState extends State<MyApp> {
       title: 'Picapool',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      darkTheme: AppTheme.light,
+      themeMode: ThemeMode.light,
       home: const AuthCheckScreen(),
     );
   }

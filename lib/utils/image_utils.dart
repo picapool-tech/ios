@@ -11,13 +11,13 @@ class ImageUtils {
   static File compressAndResizeImage(File file) {
     img.Image? image = img.decodeImage(file.readAsBytesSync());
 
-    // Resize the image to have the longer side be 800 pixels
-    int width;
-    int height;
-
     if (image == null) {
       throw Exception('Invalid image');
     }
+
+    // Resize the image to have the longer side be 800 pixels
+    int width;
+    int height;
 
     if (image.width > image.height) {
       width = 800;
@@ -31,12 +31,15 @@ class ImageUtils {
         img.copyResize(image, width: width, height: height);
 
     // Compress the image with JPEG format
-    List<int> compressedBytes =
-        img.encodeJpg(resizedImage, quality: 85); // Adjust quality as needed
+    List<int> compressedBytes = img.encodeJpg(resizedImage, quality: 60);
 
-    // Save the compressed image to a file
-    File compressedFile =
-        File(file.path.replaceFirst('.jpg', '_compressed.jpg'));
+    // Create compressed file with proper extension handling
+    String originalPath = file.path;
+    String directory = file.parent.path;
+    String nameWithoutExtension = file.uri.pathSegments.last.split('.').first;
+    String compressedPath = '$directory/${nameWithoutExtension}_compressed.jpg';
+
+    File compressedFile = File(compressedPath);
     compressedFile.writeAsBytesSync(compressedBytes);
 
     return compressedFile;

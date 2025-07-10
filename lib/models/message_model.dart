@@ -1,13 +1,12 @@
 import 'package:picapool/models/admin_model.dart';
 import 'package:picapool/models/reaction_model.dart';
-import 'package:picapool/models/user_model.dart';
 
 class Message {
   final int id;
   final String content;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final User? user;
+  final MessageUserModel? user;
   final int? userId;
   final Admin? admin;
   final int? adminId;
@@ -39,17 +38,18 @@ class Message {
       content: json['content'],
       createdAt: DateTime.parse(json['createdAt']).toLocal(),
       updatedAt: DateTime.parse(json['updatedAt']).toLocal(),
-      user: json['user'] != null ? User.fromJson(json['user']) : null,
+      user:
+          json['User'] != null ? MessageUserModel.fromJson(json['User']) : null,
       userId: json['userId'],
-      admin: json['admin'] != null ? Admin.fromJson(json['admin']) : null,
+      admin: json['Admin'] != null ? Admin.fromJson(json['Admin']) : null,
       adminId: json['adminId'],
       chatId: json['chatId'],
       parentId: json['parentId'],
       children: json['children'] != null
           ? (json['children'] as List).map((m) => Message.fromJson(m)).toList()
           : null,
-      reactions: json['reactions'] != null
-          ? (json['reactions'] as List)
+      reactions: json['Reactions'] != null
+          ? (json['Reactions'] as List)
               .map((r) => Reaction.fromJson(r))
               .toList()
           : [],
@@ -104,5 +104,26 @@ enum MessageType {
       case MessageType.system:
         return 'system';
     }
+  }
+}
+
+class MessageUserModel {
+  String? pic;
+  String? username;
+
+  MessageUserModel({this.pic, this.username});
+
+  factory MessageUserModel.fromJson(Map<String, dynamic> json) {
+    return MessageUserModel(
+      pic: json['pic'],
+      username: json['username'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pic': pic,
+      'username': username,
+    };
   }
 }

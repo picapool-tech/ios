@@ -21,10 +21,11 @@ import 'package:picapool/widgets/cab/create_live_offer.dart';
 import 'package:share_plus/share_plus.dart';
 
 // Common address row widget - removed duplicate function inside class
-Widget buildAddressRow(String label, String address) {
+Widget buildAddressRow(String label, String address,
+    {Color color = Colors.red}) {
   return Row(
     children: [
-      Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+      Icon(Icons.location_on, size: 14, color: color),
       const SizedBox(width: 8),
       Expanded(
         child: Column(
@@ -98,10 +99,7 @@ Widget _buildOfferCard(SearchCabsResponse offer, BuildContext context) {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         buildAddressRow("From", offer.fromAddress ?? "EMPTY"),
-        buildAddressRow(
-          "To",
-          offer.toAddress ?? "EMPTY",
-        ),
+        buildAddressRow("To", offer.toAddress ?? "EMPTY", color: Colors.green),
         Row(
           spacing: 8,
           children: [

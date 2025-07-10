@@ -32,6 +32,7 @@ class AdditionalActionBar extends StatelessWidget {
               onActionButtonPressed();
             },
             isLoading: false.obs,
+            isSmall: true,
           ),
         ],
       ),

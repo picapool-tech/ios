@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
@@ -55,6 +57,8 @@ class _MessageListState extends State<MessageList> {
           child: ListView.builder(
             shrinkWrap: true,
             reverse: true,
+            cacheExtent: 1000,
+            addRepaintBoundaries: true,
             controller: controller.scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
             physics: const BouncingScrollPhysics(),
@@ -67,83 +71,92 @@ class _MessageListState extends State<MessageList> {
 
               bool showTail = shouldShowTail(index);
 
+              // log("${message.user?.username} -> ${message.userId}");
+
               var user = controller.usersInChat[message.userId];
 
               bool showUserName = shouldShowUserName(index);
               bool showDate = shouldShowDate(index);
               bool isSameYear = message.createdAt.year == DateTime.now().year;
+              // log("${getReplyUserName(message.parentId)}");
 
-              return Column(
-                crossAxisAlignment: isSender
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
-                children: [
-                  if (showDate) ...[
-                    Align(
-                      alignment: Alignment.center,
-                      child: BlurryContainer(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        backgroundColor: Colors.amber.shade100,
-                        borderRadius: BorderRadius.circular(8),
+              return RepaintBoundary(
+                key: ValueKey(message.id),
+                child: Column(
+                  crossAxisAlignment: isSender
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    if (showDate) ...[
+                      Align(
                         alignment: Alignment.center,
-                        child: Text(
-                          DateTimeHelper.formatDateTime(message.createdAt,
-                              'dd MMM${isSameYear ? '' : ' yyyy'}'),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                        child: BlurryContainer(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          backgroundColor: Colors.amber.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          alignment: Alignment.center,
+                          child: Text(
+                            DateTimeHelper.formatDateTime(message.createdAt,
+                                'dd MMM${isSameYear ? '' : ' yyyy'}'),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                  ChatBubble(
-                    onDragToEnd: () => widget.onSwipeToEnd(message),
-                    // () {
+                      const SizedBox(
+                        height: 10,
+                      ),
+                    ],
+                    ChatBubble(
+                      onDragToEnd: () => widget.onSwipeToEnd(message),
+                      // () {
 
-                    // setState(() {
-                    // isReplying = true;
-                    // replyingMessage = message;
-                    // _focusNode.requestFocus();
-                    // });
-                    // },
-                    onLongPress: (details) {
-                      widget.onLongPress?.call(details, message);
-                      // _showReactionDialog(context, message,
-                      //     details.globalPosition);
-                    },
-                    isSender: isSender,
-                    message: message,
-                    showDate: shouldShowDate(index),
-                    username: (!isSender && showUserName) ||
-                            message.type == MessageType.system
-                        ? user?.username
-                        : null,
-                    leadingWidget: showUserName || showDate
-                        ? UserProfilePictureWidget(
-                            username: user?.username ?? "NA",
-                            imageUrl: user?.pic,
-                          )
-                        : const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.transparent,
-                          ),
-                    replyMessage: getReplyMessage(message.parentId),
-                    replyUsername: getReplyUserName(message.parentId),
-                  ),
-                  if (showTail)
-                    const SizedBox(
-                      height: 10,
+                      // setState(() {
+                      // isReplying = true;
+                      // replyingMessage = message;
+                      // _focusNode.requestFocus();
+                      // });
+                      // },
+                      onLongPress: (details) {
+                        widget.onLongPress?.call(details, message);
+                        // _showReactionDialog(context, message,
+                        //     details.globalPosition);
+                      },
+                      isSender: isSender,
+                      message: message,
+                      showDate: shouldShowDate(index),
+                      username: (!isSender && showUserName) ||
+                              message.type == MessageType.system
+                          ? user?.username ?? message.user?.username
+                          : null,
+                      leadingWidget: showUserName || showDate
+                          ? UserProfilePictureWidget(
+                              username: user?.username ??
+                                  message.user?.username ??
+                                  'NA',
+                              imageUrl: user?.pic,
+                            )
+                          : const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.transparent,
+                            ),
+                      replyMessage: getReplyMessage(message.parentId),
+                      replyUsername: getReplyUserName(message.parentId),
+                      isEdited: message.createdAt != message.updatedAt,
                     ),
-                  if (message.reactions.isNotEmpty)
-                    const SizedBox(
-                      height: 30,
-                    ),
-                ],
+                    if (showTail)
+                      const SizedBox(
+                        height: 10,
+                      ),
+                    if (message.reactions.isNotEmpty)
+                      const SizedBox(
+                        height: 30,
+                      ),
+                  ],
+                ),
               );
             },
           ),
@@ -158,8 +171,10 @@ class _MessageListState extends State<MessageList> {
   }
 
   String? getReplyUserName(int? parentId, {Message? replyMessage}) {
+    log("reply username: ${replyMessage?.user?.username}");
     if (replyMessage != null) {
-      return controller.usersInChat[replyMessage.userId]?.username;
+      return controller.usersInChat[replyMessage.userId]?.username ??
+          replyMessage.user?.username;
     }
 
     var message = getReplyMessage(parentId);

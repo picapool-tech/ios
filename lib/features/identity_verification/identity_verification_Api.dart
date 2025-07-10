@@ -12,7 +12,6 @@ class IdentityVerificationApi with PicapoolApiClass {
   }) async {
     final result = await api.makeRequest(
       useAltBaseUrl: true,
-      altBaseUrl: "http://test-api.picapool.com/api",
       enpoint: APIEndpoints.identityVerificationOtp,
       method: RequestMethod.post,
       body: jsonEncode(
@@ -37,7 +36,6 @@ class IdentityVerificationApi with PicapoolApiClass {
   }) async {
     final result = await api.makeRequest(
       useAltBaseUrl: true,
-      altBaseUrl: "http://test-api.picapool.com/api",
       enpoint: APIEndpoints.identityVerificationOtpVerify,
       method: RequestMethod.post,
       body: jsonEncode(

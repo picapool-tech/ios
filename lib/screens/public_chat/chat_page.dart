@@ -104,6 +104,10 @@ class _ChatPageState extends State<ChatPage>
         scrolledUnderElevation: 2,
         actions: [
           PullDownButton(
+            routeTheme: PullDownMenuRouteTheme(
+              borderRadius: BorderRadius.circular(20),
+              backgroundColor: AppTheme.currentTheme.colorScheme.surface,
+            ),
             itemBuilder: (context) => [
               PullDownMenuItem(
                 onTap: _openChatInfo,
@@ -118,7 +122,7 @@ class _ChatPageState extends State<ChatPage>
               ),
               const PullDownMenuDivider.large(),
               PullDownMenuItem(
-                onTap: () {},
+                onTap: _leaveChat,
                 title: 'Exit chat',
                 subtitle: 'Leave this chat',
                 isDestructive: true,
@@ -230,89 +234,101 @@ class _ChatPageState extends State<ChatPage>
                           });
                         },
                         onLongPress: (details, message) {
-                          showPullDownMenu(
-                            context: context,
-
-                            items: [
-                              PullDownMenuItem(
-                                title: "Reply",
-                                icon: Icons.reply,
-                                onTap: () {
-                                  setState(() {
-                                    isReplying = true;
-                                    replyingMessage = message;
-                                    _focusNode.requestFocus();
-                                  });
-                                },
-                              ),
-                              PullDownMenuItem(
-                                title: "Copy",
-                                icon: Icons.copy,
-                                onTap: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: message.content));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text("Message copied!")),
-                                  );
-                                },
-                              ),
-                              if (message.userId ==
-                                  _userController.user?.id) ...[
-                                PullDownMenuItem(
-                                  title: "Edit",
-                                  icon: Icons.edit,
-                                  onTap: () {
-                                    setState(() {
-                                      editMessage = message;
-                                      _textController.text = message.content;
-                                      _focusNode.requestFocus();
-                                    });
-                                  },
-                                ),
-                              ],
-                              PullDownMenuItem(
-                                title: "Delete",
-                                icon: Icons.delete,
-                                isDestructive: true,
-                                onTap: () {
-                                  // _chatController.de;
-                                  // Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                            position: Rect.fromLTWH(
-                              details.globalPosition.dx,
-                              details.globalPosition.dy,
-                              MediaQuery.of(context).size.width +
-                                  details.globalPosition.dx,
-                              MediaQuery.of(context).size.height -
-                                  details.globalPosition.dy,
-                            ),
-                            // position: Rect.fromPoints(details.globalPosition., b)
-                          );
+                          _showReactionDialog(
+                              context, message, details.globalPosition);
+                          // showPullDownMenu(
+                          //   context: context,
+                          //   routeTheme: PullDownMenuRouteTheme(
+                          //     borderRadius: BorderRadius.circular(20),
+                          //     backgroundColor:
+                          //         AppTheme.currentTheme.colorScheme.surface,
+                          //   ),
+                          //   items: [
+                          //     PullDownMenuItem(
+                          //       title: "Reply",
+                          //       icon: Icons.reply,
+                          //       onTap: () {
+                          //         setState(() {
+                          //           isReplying = true;
+                          //           replyingMessage = message;
+                          //           _focusNode.requestFocus();
+                          //         });
+                          //       },
+                          //     ),
+                          //     PullDownMenuItem(
+                          //       title: "Copy",
+                          //       icon: Icons.copy,
+                          //       onTap: () {
+                          //         Clipboard.setData(
+                          //             ClipboardData(text: message.content));
+                          //         ScaffoldMessenger.of(context).showSnackBar(
+                          //           const SnackBar(
+                          //               content: Text("Message copied!")),
+                          //         );
+                          //       },
+                          //     ),
+                          //     if (message.userId ==
+                          //         _userController.user?.id) ...[
+                          //       PullDownMenuItem(
+                          //         title: "Edit",
+                          //         icon: Icons.edit,
+                          //         onTap: () {
+                          //           setState(() {
+                          //             editMessage = message;
+                          //             _textController.text = message.content;
+                          //             _focusNode.requestFocus();
+                          //           });
+                          //         },
+                          //       ),
+                          //     ],
+                          //     // PullDownMenuItem(
+                          //     //   title: "Delete",
+                          //     //   icon: Icons.delete,
+                          //     //   isDestructive: true,
+                          //     //   onTap: () {
+                          //     //     // _chatController.de;
+                          //     //     // Navigator.of(context).pop();
+                          //     //   },
+                          //     // ),
+                          //   ],
+                          //   position: Rect.fromLTWH(
+                          //     details.globalPosition.dx,
+                          //     details.globalPosition.dy,
+                          //     MediaQuery.of(context).size.width +
+                          //         details.globalPosition.dx,
+                          //     MediaQuery.of(context).size.height -
+                          //         details.globalPosition.dy,
+                          //   ),
+                          //   // position: Rect.fromPoints(details.globalPosition., b)
+                          // );
                         },
                       ),
                       if (editMessage != null)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black12.withValues(alpha: 0.15),
-                          ),
-                          padding: EdgeInsets.only(right: 8),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ChatBubbleWidget(
-                                isSender: true,
-                                message: editMessage!,
-                                username: editMessage!.user?.username ?? "",
-                                replyUsername: null,
-                                replyMessage: null,
-                                leadingWidget: null,
-                                formattedTime:
-                                    editMessage!.updatedAt.formattedTime(),
-                              ),
-                            ],
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              editMessage = null;
+                              _textController.clear();
+                            });
+                          },
+                          child: BlurryContainer(
+                            blur: 3,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ChatBubbleWidget(
+                                  isSender: true,
+                                  message: editMessage!,
+                                  username: editMessage!.user?.username ?? "",
+                                  replyUsername: null,
+                                  replyMessage: null,
+                                  leadingWidget: null,
+                                  formattedTime:
+                                      editMessage!.updatedAt.formattedTime(),
+                                  isEdited: false,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                     ],
@@ -427,7 +443,8 @@ class _ChatPageState extends State<ChatPage>
 
   String? getReplyUserName(int? parentId, {Message? replyMessage}) {
     if (replyMessage != null) {
-      return _chatController.usersInChat[replyMessage.userId]?.username;
+      return _chatController.usersInChat[replyMessage.userId]?.username ??
+          replyingMessage!.user?.username;
     }
 
     var message = getReplyMessage(parentId);
@@ -542,6 +559,11 @@ Join here : ${_getOfferLink()}
     return "";
   }
 
+  _leaveChat() {
+    _chatController.leaveChat();
+    Get.back();
+  }
+
   PopupMenuItem _menuItemWithIcons({
     IconData? icon,
     String? text,
@@ -642,7 +664,11 @@ Could you please check for any discounts and share the final fare? 😊
   FutureVoid _shareOffer() async {
     SharePlus.instance.share(
       ShareParams(
-        text: _getOfferDetail(),
+        text: (widget.offer != null)
+            ? widget.offer!.shareOfferString
+            : (widget.liveOffer != null)
+                ? widget.liveOffer!.shareOfferString
+                : "",
         // uri: Uri.parse("https://offer.picapool.com/offers/${widget.offer?.id}"),
         subject: "Check out this offer on Picapool!",
         // previewThumbnail: XFile(filePath),

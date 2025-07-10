@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/features/identity_verification/indentity_verification_controller.dart';
+import 'package:picapool/screens/identity_verfication/verified_profile.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final int userId;
@@ -150,15 +151,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             PicaPrimaryButton(
               onPressed:
                   _otpCode.length == 4 && !_isLoading ? _verifyOtp : null,
-              // style: ElevatedButton.styleFrom(
-              //   backgroundColor:
-              //       _otpCode.length == 4 ? Colors.blue : Colors.grey[300],
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(12),
-              //   ),
-              //   elevation: 0,
-              // ),
-              // color: _otpCode.length == 4 ? Colors.blue : Colors.grey[300]!,
               text: 'Verify',
               isLoading: _isLoading.obs,
             ),
@@ -284,21 +276,40 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     });
 
     try {
-      bool isVerified = await _controller.verifyOtp(
+      var (isVerified, message) = await _controller.verifyOtp(
         otp: _otpCode,
       );
 
       if (isVerified) {
-        // Show success message
+        // Add a small delay before navigation for better UX
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Navigate to verified_profile with a fade transition
         if (mounted) {
-          Get.snackbar(
-            'Success',
-            'OTP verified successfully!',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
+          Get.off(
+            () => VerifiedProfile(
+              title: "Profile Verified",
+              description:
+                  "Your profile has been successfully verified. Enjoy using PicaPool!",
+            ),
+            transition: Transition.fade,
+            fullscreenDialog: true,
+            curve: Curves.easeInOutCubic,
+            duration: const Duration(milliseconds: 800),
           );
         }
+        // if (mounted) {
+        //   Get.snackbar(
+        //     'Success',
+        //     'OTP verified successfully!',
+        //     snackPosition: SnackPosition.TOP,
+        //     backgroundColor: Colors.green,
+        //     colorText: Colors.white,
+        //   );
+        // }
+
+        // Get.back();
+        // Get.back();
 
         // Navigate to the next screen or perform any other action
         // For example, you can navigate to the dashboard or home screen
@@ -308,7 +319,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         if (mounted) {
           Get.snackbar(
             'Oops!',
-            'Failed to verify OTP. Please try again.',
+            message,
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,

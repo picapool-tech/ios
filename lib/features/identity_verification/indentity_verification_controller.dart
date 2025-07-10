@@ -17,7 +17,7 @@ class IndentityVerificationController extends GetxController
     initializeLoadingStates(IdentityLoadingEnum.values);
   }
 
-  Future<bool> sendVerificationCode({
+  Future<(bool, String)> sendVerificationCode({
     required String email,
   }) async {
     startLoading(IdentityLoadingEnum.sendVerificationCode);
@@ -30,18 +30,18 @@ class IndentityVerificationController extends GetxController
       (error) {
         stopLoading(IdentityLoadingEnum.sendVerificationCode);
         print('Error sending verification code: $error');
-        return false; // Simulate failure
+        return (false, error.message); // Simulate failure
       },
       (responseModel) {
         stopLoading(IdentityLoadingEnum.sendVerificationCode);
         // Handle success, e.g., show a success message
         print('Verification code sent successfully: ${responseModel.data}');
-        return responseModel.success; // Simulate success
+        return (responseModel.success, ""); // Simulate success
       },
     );
   }
 
-  Future<bool> verifyOtp({
+  Future<(bool, String)> verifyOtp({
     required String otp,
   }) async {
     startLoading(IdentityLoadingEnum.verifyCode);
@@ -54,13 +54,21 @@ class IndentityVerificationController extends GetxController
       (error) {
         stopLoading(IdentityLoadingEnum.verifyCode);
         print('Error verifying OTP: $error');
-        return false; // Simulate failure
+        return (false, error.message); // Simulate failure
       },
       (responseModel) {
         stopLoading(IdentityLoadingEnum.verifyCode);
         // Handle success, e.g., show a success message
         print('OTP verified successfully: ${responseModel.data}');
-        return responseModel.success; // Simulate success
+        _userController.setUser(
+          _userController.user!.copyWith(
+            isVerified: true,
+          ),
+        );
+        return (
+          responseModel.success,
+          responseModel.message
+        ); // Simulate success
       },
     );
   }

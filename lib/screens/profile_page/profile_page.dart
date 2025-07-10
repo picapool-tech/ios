@@ -9,6 +9,7 @@ import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/features/feedback/feedback_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/screens/identity_verfication/identity_verfication.dart';
+import 'package:picapool/screens/identity_verfication/verified_profile.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
 import 'package:picapool/screens/pooling_history/pooling_history.dart';
 import 'package:picapool/screens/profile_page/functions/feedback/feedback_sheet.dart';
@@ -114,6 +115,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         children: [
                           TileButton(
+                            // imagePath: "assets/icons/Group 59.png",
+                            icon: Icons.verified_outlined,
+                            title: 'Request for verfication',
+
+                            onTap: () {
+                              if (_storageController.user.value?.isVerified ==
+                                  true) {
+                                Get.to(
+                                  () => VerifiedProfile(
+                                    title: "You are verified",
+                                    description:
+                                        "You are verified with Picapool, enjoy the benefits of being a verified user.",
+                                  ),
+                                );
+                                return;
+                              }
+                              Get.to(
+                                () => const IdentityVerfication(),
+                              );
+                            },
+                          ),
+                          TileButton(
                             imagePath: "assets/icons/Bell.png",
                             title: 'Notification Preferences',
                             onTap: () => Get.to(
@@ -190,17 +213,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             isDisabled: true,
                             onTap: () {},
                           ),
-                          TileButton(
-                            // imagePath: "assets/icons/Group 59.png",
-                            icon: Icons.verified_outlined,
-                            title: 'Request for verfication',
-
-                            onTap: () {
-                              Get.to(
-                                () => const IdentityVerfication(),
-                              );
-                            },
-                          ),
                           if (kDebugMode)
                             TileButton(
                               // imagePath: "assets/icons/Group 59.png",
@@ -221,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.6 (32229052025)",
+                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.8 (33010072025) - TEST-API",
                       textAlign: TextAlign.center,
                       style: textTheme.bodySmall?.copyWith(
                         color: AppTheme.currentTheme.disabledColor,
@@ -250,7 +262,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showPicaModelBottomSheet(
       context: context,
       child: const LogoutWidget(),
-      
     );
   }
 

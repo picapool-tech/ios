@@ -92,6 +92,7 @@ class UserController extends GetxController
 
   void setUser(User user) {
     _storageController.user.value = user;
+    _storageController.saveUser(user);
     update();
   }
 
@@ -183,6 +184,18 @@ class UserController extends GetxController
 
   Future<void> _initializeUser() async {
     _storageController.user.value ?? await _storageController.loadUser();
+    if (user != null) {
+      var userUpdated = await getUser(
+        user!.id,
+      );
+      if (userUpdated != null) {
+        user!.update(userUpdated.toJson());
+        setUser(user!);
+      } else {
+        debugPrint("Failed to load user data");
+      }
+    }
+
     update();
   }
 }

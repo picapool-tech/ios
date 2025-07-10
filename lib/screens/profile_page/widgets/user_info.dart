@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,12 +12,14 @@ class UserInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var textTheme = Theme.of(context).textTheme;
     return GetBuilder<StorageController>(
       init: Get.find<StorageController>(),
       builder: (controller) {
         var user = controller.user.value!;
         var auth = controller.auth.value!;
+
+        log("${user.toJson()}");
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0),
           child: Row(
@@ -41,24 +45,37 @@ class UserInfo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FittedBox(
-                      child: Text(
-                        user.name ?? "",
-                        style: textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user.name ?? "",
+                            style: Get.textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        if (user.isVerified)
+                          Image.asset(
+                            "assets/images/profile/pica_verified.png",
+                            width: 28,
+                          )
+                      ],
                     ),
                     Text(
                       "@${user.username ?? "nousername"}",
-                      style: textTheme.labelLarge?.copyWith(
+                      style: Get.textTheme.labelLarge?.copyWith(
                         color: Colors.white,
                       ),
                     ),
                     Text(
                       auth.mobile ?? "",
-                      style: textTheme.labelLarge?.copyWith(
+                      style: Get.textTheme.labelLarge?.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -102,7 +119,7 @@ class UserInfo extends StatelessWidget {
   void _showEditProfileModelSheet(BuildContext context) {
     showPicaModelBottomSheet(
       context: context,
-      hideDragHandle: true,
+      isScrollController: true,
       child: const EditProfile(),
     );
   }

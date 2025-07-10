@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:picapool/models/admin_model.dart';
@@ -35,9 +37,9 @@ class Auth {
     this.accessToken,
   });
 
-  factory Auth.fromJson(Map<String, dynamic> json) {
-    debugPrint("Auth.fromJson: $json");
-    return Auth(
+  factory Auth.fromJson(Map<String, dynamic> json, {String? customMessage}) {
+    log("Auth.fromJson: $json -> $customMessage");
+    var auth = Auth(
       id: json['id'],
       googleSub: json['googleSub'],
       appleSub: json['appleSub'],
@@ -57,6 +59,39 @@ class Auth {
       isNew: json['isNew'],
       isGuest: json['isGuest'],
       accessToken: json['accessToken'],
+    );
+    log("HEER INSIDE THE AUTH FROM JSON -> ${auth.accessToken}");
+    return auth;
+  }
+
+  Auth copyWith({
+    int? id,
+    String? googleSub,
+    String? appleSub,
+    String? mobile,
+    String? refreshToken,
+    String? accessToken,
+    Admin? admin,
+    Partner? partner,
+    User? user,
+    LivePartner? livePartner,
+    List<Role>? roles,
+    bool? isNew,
+    bool? isGuest,
+  }) {
+    return Auth(
+      id: id ?? this.id,
+      googleSub: googleSub ?? this.googleSub,
+      appleSub: appleSub ?? this.appleSub,
+      mobile: mobile ?? this.mobile,
+      refreshToken: refreshToken ?? this.refreshToken,
+      accessToken: accessToken ?? this.accessToken,
+      admin: admin ?? this.admin,
+      partner: partner ?? this.partner,
+      livePartner: livePartner ?? this.livePartner,
+      roles: roles ?? this.roles,
+      isNew: isNew ?? this.isNew,
+      isGuest: isGuest ?? this.isGuest,
     );
   }
 
@@ -90,37 +125,6 @@ class Auth {
       'isGuest': isGuest,
       'accessToken': accessToken,
     };
-  }
-
-  Auth copyWith({
-    int? id,
-    String? googleSub,
-    String? appleSub,
-    String? mobile,
-    String? refreshToken,
-    String? accessToken,
-    Admin? admin,
-    Partner? partner,
-    User? user,
-    LivePartner? livePartner,
-    List<Role>? roles,
-    bool? isNew,
-    bool? isGuest,
-  }) {
-    return Auth(
-      id: id ?? this.id,
-      googleSub: googleSub ?? this.googleSub,
-      appleSub: appleSub ?? this.appleSub,
-      mobile: mobile ?? this.mobile,
-      refreshToken: refreshToken ?? this.refreshToken,
-      accessToken: accessToken ?? this.accessToken,
-      admin: admin ?? this.admin,
-      partner: partner ?? this.partner,
-      livePartner: livePartner ?? this.livePartner,
-      roles: roles ?? this.roles,
-      isNew: isNew ?? this.isNew,
-      isGuest: isGuest ?? this.isGuest,
-    );
   }
 
   // update auth with auth paramteres

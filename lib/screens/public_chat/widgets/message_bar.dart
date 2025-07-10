@@ -1,5 +1,6 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/utils/theme.dart';
@@ -84,17 +85,18 @@ class MessageBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       maintainBottomViewPadding: true,
-      child: Container(
+      child: BlurryContainer(
+        blur: editMessage != null ? 0 : 3,
         alignment: Alignment.bottomCenter,
-        color:
-            editMessage != null ? Colors.black12.withValues(alpha: 0.15) : null,
+        // color:
+        //     editMessage != null ? Colors.black12.withValues(alpha: 0.15) : null,
         padding: const EdgeInsets.all(8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             // if (editMessage != null)
             // ChatBubbleWidget(
-            //   isSender: true,
+            //   isSender: true, 
             //   message: editMessage!,
             //   username: editMessage!.user?.username ?? "",
             //   replyUsername: null,

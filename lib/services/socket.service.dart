@@ -23,7 +23,8 @@ class SocketService {
 
     roomIdG = roomId;
     socket = io.io(
-      "http://api.picapool.com:3000",
+      // "http://api.picapool.com:3000",
+      "https://test-api.picapool.com",
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({
@@ -152,11 +153,10 @@ class SocketService {
     }
 
     final reactionData = {
-      'content': content,
-      'reactionMessageId': reactionMessageId,
+      'reaction': content,
+      'messageId': reactionMessageId,
     };
 
     socket!.emit('reaction', reactionData);
   }
 }
-

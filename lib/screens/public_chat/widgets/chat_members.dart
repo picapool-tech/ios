@@ -28,7 +28,24 @@ class ChatMembersWidget extends StatelessWidget {
                   username: user.username ?? "NA",
                   imageUrl: user.pic,
                 ),
-                title: Text(user.username ?? ""),
+                title: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        user.username ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (user.isVerified)
+                      Image.asset(
+                        "assets/images/profile/pica_verified.png",
+                        width: 28,
+                        
+                      )
+                  ],
+                ),
                 trailing: (creatorId ?? -1) == user.id
                     ? Container(
                         padding: const EdgeInsets.all(6),

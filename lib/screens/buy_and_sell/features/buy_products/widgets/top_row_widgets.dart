@@ -36,6 +36,10 @@ class TopRowWidgets extends StatelessWidget {
           width: 8,
         ),
         PullDownButton(
+          routeTheme: PullDownMenuRouteTheme(
+            backgroundColor: AppTheme.currentTheme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(16),
+          ),
           itemBuilder: (context) => [
             PullDownMenuTitle(
               title: Row(

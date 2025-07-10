@@ -12,6 +12,7 @@ import 'package:picapool/screens/cabs/CreateCab.dart';
 import 'package:picapool/screens/cabs/share_cab_page.dart';
 import 'package:picapool/screens/create_cab.dart';
 import 'package:picapool/screens/create_pool.dart';
+import 'package:picapool/screens/live_pooling/live_pooling.dart';
 import 'package:picapool/screens/middle_button/middle_button.dart';
 import 'package:picapool/screens/sell/select_category_page.dart';
 import 'package:picapool/screens/splash_screen/splash_screen.dart';
@@ -44,6 +45,7 @@ class GetRoutes {
       '/sellProductsConfirmation';
   static const String sellProductsUserFormPage = '/sellProductsUserForm';
   static const String getLiveOffer = '/getLiveOffer';
+  static const String livePooling = '/livePooling';
   static const String createLiveOffer = '/createLiveOffer';
 
   static const String search = '/search';
@@ -97,6 +99,11 @@ class GetRoutes {
       name: createCabShare,
       page: () => const CreatePoolScreen(),
       checkWithNetwork: false,
+    ),
+    _buildRoute(
+      name: livePooling,
+      page: () => const LivePooling(),
+      checkWithNetwork: true,
     ),
 
     // Products

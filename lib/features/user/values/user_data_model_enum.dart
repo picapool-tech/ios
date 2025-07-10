@@ -9,7 +9,8 @@ enum UserField {
   bio('bio'),
   location('location'),
   tag('tagList'),
-  fcmToken('fcmToken');
+  fcmToken('fcmToken'),
+  isVerified('isVerified');
 
   final String apiField;
   const UserField(this.apiField);
@@ -80,6 +81,8 @@ extension GetUpdatedUser on User {
         return fcmToken;
       case UserField.tag:
         return tags ?? [];
+      case UserField.isVerified:
+        return isVerified;
     }
   }
 }

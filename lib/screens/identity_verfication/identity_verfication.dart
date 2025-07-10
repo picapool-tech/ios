@@ -25,7 +25,9 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
   final IndentityVerificationController _identityVerificationController =
       Get.put(IndentityVerificationController());
   final UserController _userController = Get.find<UserController>();
+  String? errorText;
   bool get isValidated => _formKey.currentState?.validate() ?? false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,6 +64,7 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
                 textInputAction: TextInputAction.done,
                 controller: _emailController,
                 autovalidateMode: AutovalidateMode.always,
+                
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Email cannot be left empty";
@@ -74,6 +77,10 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
                   }
                   return null;
                 },
+                errorText: errorText,
+                onChanged: (p0) => setState(() {
+                  errorText = null;
+                })
               ),
               PicaPrimaryButton(
                 text: "Verify Email",
@@ -90,7 +97,11 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
   }
 
   FutureVoid _sendVerificationCode() async {
-    bool isSent =
+    setState(() {
+      errorText = null;
+    });
+
+    var (isSent, error) =
         await _controller.sendVerificationCode(email: _emailController.text);
 
     if (isSent) {
@@ -101,13 +112,16 @@ class _IdentityVerficationState extends State<IdentityVerfication> {
         ),
       );
     } else {
-      Get.snackbar(
-        "Error",
-        "Failed to send verification code. Please try again.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
+      setState(() {
+        errorText = error;
+      });
+      // Get.snackbar(
+      //   "Error",
+      //   "Failed to send verification code. Please try again.",
+      //   snackPosition: SnackPosition.TOP,
+      //   backgroundColor: Colors.red.withOpacity(0.8),
+      //   colorText: Colors.white,
+      // );
     }
   }
 }

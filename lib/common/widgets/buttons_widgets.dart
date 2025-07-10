@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/widgets/loading_widgets.dart';
 import 'package:picapool/utils/theme.dart';
@@ -27,7 +28,13 @@ class PicaOutlineButton extends StatelessWidget {
       }
       return OutlinedButton.icon(
         icon: icon,
-        onPressed: onPressed,
+        onPressed: () {
+          if (onPressed == null) {
+            return;
+          }
+          HapticFeedback.lightImpact();
+          onPressed?.call();
+        },
         label: Text(text),
         style: ButtonStyle(
           fixedSize: !isSmall
@@ -85,7 +92,13 @@ class PicaPrimaryButton extends StatelessWidget {
               )
             : FilledButton.icon(
                 key: ValueKey('primary_button'),
-                onPressed: onPressed,
+                onPressed: () {
+                  if (onPressed == null) {
+                    return;
+                  }
+                  HapticFeedback.lightImpact();
+                  onPressed?.call();
+                },
                 style: ButtonStyle(
                   fixedSize: !isSmall
                       ? WidgetStatePropertyAll(
@@ -153,7 +166,13 @@ class PicaTextButton extends StatelessWidget {
         );
       }
       return TextButton.icon(
-        onPressed: onPressed,
+        onPressed: () {
+          if (onPressed == null) {
+            return;
+          }
+          HapticFeedback.lightImpact();
+          onPressed?.call();
+        },
         style: Theme.of(context).textButtonTheme.style?.copyWith(
             foregroundColor: WidgetStatePropertyAll(
               AppTheme.currentTheme.colorScheme.onPrimary,

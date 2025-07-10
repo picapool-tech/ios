@@ -94,6 +94,7 @@ class _MainScreenState extends State<MainScreen>
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         color: AppTheme.currentTheme.scaffoldBackgroundColor,
+        elevation: 2,
         padding: EdgeInsets.zero,
         clipBehavior: Clip.hardEdge,
         child: Row(
@@ -142,15 +143,15 @@ class _MainScreenState extends State<MainScreen>
     final bool isActive = index == _selectedIndex;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         setState(() {
           _selectedIndex = index;
           _tabController.animateTo(index);
         });
-    },
+      },
       child: Container(
         height: double.infinity,
-        // color: Colors.white,
         alignment: Alignment.center,
         child: Column(
           mainAxisSize: MainAxisSize.min,

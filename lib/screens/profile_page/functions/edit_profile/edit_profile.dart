@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picapool/common/values/values.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
@@ -16,6 +15,7 @@ import 'package:picapool/features/user/values/user_loading_enums.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/screens/login/otp_screen.dart';
 import 'package:picapool/utils/image_utils.dart';
+import 'package:picapool/utils/theme.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -44,18 +44,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton.filledTonal(
-          onPressed: () {
-            Get.back();
-          },
-          icon: const Icon(Icons.close),
-        ),
-        systemOverlayStyle: uiOverlayStyle(
-          context,
-          brightness: Brightness.light,
-        ),
-      ),
+      backgroundColor: AppTheme.currentTheme.cardColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(15),
         child: Column(
