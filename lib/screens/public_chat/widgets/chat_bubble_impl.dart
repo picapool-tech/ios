@@ -1,10 +1,7 @@
-import 'dart:developer';
-
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/functions/color_function.dart';
-import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
@@ -202,53 +199,45 @@ class _ChatBubbleState extends State<ChatBubble>
       bottom: -12,
       right: widget.isSender ? 10 : null,
       left: widget.isSender ? null : 50,
-      child: GestureDetector(
-        onTap: () {
-          showPicaModelBottomSheet(
-            context: context,
-            child: Column(
-              children: [
-                
-              ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          // border: Border.all(width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            // border: Border.all(width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: widget.message.reactions.map((reaction) {
-              log("REACTION: ${reaction.toJson()} \n");
-              return Padding(
-                padding: EdgeInsets.all(2.0),
-                child: Row(
-                  children: [
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: widget.message.groupedReactions().entries.map((entry) {
+            final reaction = entry.key;
+            final count = entry.value;
+
+            return Padding(
+              padding: EdgeInsets.all(2.0),
+              child: Row(
+                children: [
+                  Text(
+                    reaction,
+                    style: Get.textTheme.bodySmall,
+                  ),
+                  if (count > 1) ...[
+                    SizedBox(width: 2),
                     Text(
-                      reaction.reaction,
-                      style: Get.textTheme.bodySmall,
+                      "$count",
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
                     ),
-                    // SizedBox(width: 2),
-                    // Text(
-                    //   reaction.co, // Replace with actual reaction count
-                    //   style: TextStyle(fontSize: 14, color: Colors.black54),
-                    // ),
                   ],
-                ),
-              );
-            }).toList(),
-          ),
+                ],
+              ),
+            );
+          }).toList(),
         ),
       ),
     );

@@ -296,14 +296,23 @@ class ChatController extends GetxController
       var reactionModel = Reaction(
         reaction: reaction['reaction'],
         messageId: data['messageId'],
-        userId: reaction['users'] != null && reaction['users'].isNotEmpty
-            ? reaction['users'][0]
-            : null,
+        userIds:
+            reaction['users'] != null ? List<int>.from(reaction['users']) : [],
+        count: reaction['count'] ?? 0,
       );
-      messages
-          .firstWhere((msg) => msg.id == reactionModel.messageId)
-          .reactions
-          .add(reactionModel);
+
+      var message =
+          messages.firstWhere((msg) => msg.id == reactionModel.messageId);
+      var reactionFound = message.reactions.indexWhere(
+        (r) => r.reaction == reactionModel.reaction,
+      );
+
+      if (reactionFound != -1) {
+        message.reactions[reactionFound] = reactionModel;
+      } else {
+        message.reactions.add(reactionModel);
+      }
+
       update();
     }
   }

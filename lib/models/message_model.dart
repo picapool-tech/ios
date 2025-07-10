@@ -57,6 +57,13 @@ class Message {
     );
   }
 
+  Map<String, int> groupedReactions() {
+    return reactions.fold<Map<String, int>>({}, (acc, reaction) {
+      acc[reaction.reaction] = (acc[reaction.reaction] ?? 0) + 1;
+      return acc;
+    });
+  }
+
   bool isSameDay(DateTime other) {
     return createdAt.year == other.year &&
         createdAt.month == other.month &&

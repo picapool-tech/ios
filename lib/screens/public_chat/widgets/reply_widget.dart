@@ -31,36 +31,33 @@ class ReplyingWidget extends StatelessWidget {
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.7,
       ),
-      child: Row(
-        // mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.only(left: 6, bottom: 4, right: 4, top: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  username,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: customTheme,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  message,
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: isSender ? Colors.white : Colors.black),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.only(left: 6, bottom: 4, right: 4, top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              username,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: customTheme,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                message,
+                style: TextStyle(
+                    fontSize: 12,
+                    color: isSender ? Colors.white : Colors.black),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:picapool/common/extensions/string_extensions.dart';
 import 'package:picapool/common/functions/url_launch.dart';
 import 'package:picapool/models/message_model.dart';
+import 'package:picapool/screens/public_chat/widgets/message_list.dart';
 import 'package:picapool/screens/public_chat/widgets/reply_widget.dart';
 import 'package:picapool/utils/theme.dart';
 
@@ -30,6 +31,8 @@ class ChatBubbleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var hasOnlyEmoji = MessageHelper.isOnlyEmojis(message.content);
+
     return Row(
       mainAxisAlignment:
           isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -37,82 +40,100 @@ class ChatBubbleWidget extends StatelessWidget {
       children: [
         if (!isSender) leadingWidget ?? const SizedBox.shrink(),
         if (!isSender) const SizedBox(width: 8),
-        IntrinsicWidth(
-          child: Container(
-            key: ValueKey(message.id),
-            constraints: BoxConstraints(
-              maxWidth: Get.mediaQuery.size.width * 0.7,
-            ),
-            child: Card(
-              color: isSender ? customBlue.shade400 : Colors.white,
-              margin: const EdgeInsets.only(bottom: 5),
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8.0, top: 8, bottom: 8, right: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (!isSender && username != null)
-                          Text(
-                            username!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: username!.toColor,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        if (!isSender) const SizedBox(height: 2),
-                        if (replyMessage != null)
-                          ReplyingWidget(
-                            username: replyUsername!,
-                            message: replyMessage!.content,
-                            isSender: isSender,
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: RichText(
-                            text: TextSpan(
-                              children: <TextSpan>[
-                                hasURLs(message.content)
-                                    ? urlText()
-                                    : TextSpan(
-                                        text: message.content,
-                                        style:
-                                            Get.textTheme.bodyMedium?.copyWith(
-                                          color: isSender
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                      ),
-                                TextSpan(
-                                  text: formattedTime,
-                                  style: const TextStyle(
-                                    color: Colors.transparent,
-                                  ),
-                                  children: [
-                                    if (isEdited)
-                                      TextSpan(
-                                        text: ' $formattedTime',
-                                        style: TextStyle(
-                                          fontSize: 10.0,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
+        Container(
+          key: ValueKey(message.id),
+          constraints: BoxConstraints(
+            maxWidth: Get.mediaQuery.size.width * 0.7,
+          ),
+          child: Card(
+            shadowColor: Colors.transparent,
+            color: hasOnlyEmoji
+                ? Colors.transparent
+                : isSender
+                    ? customBlue.shade400
+                    : Colors.white,
+            margin: const EdgeInsets.only(bottom: 5),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 8.0,
+                    top: 8,
+                    bottom: 8,
+                    right: 8,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isSender && username != null)
+                        Text(
+                          username!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: username!.toColor,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ],
-                    ),
+                      if (!isSender) const SizedBox(height: 2),
+                      if (replyMessage != null && replyMessage != null)
+                        ReplyingWidget(
+                          username: replyUsername ??
+                              replyMessage?.user?.username ??
+                              '',
+                          message: replyMessage!.content,
+                          isSender: isSender,
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: RichText(
+                          text: TextSpan(
+                            children: <TextSpan>[
+                              hasURLs(message.content)
+                                  ? urlText()
+                                  : TextSpan(
+                                      text: message.content,
+                                      style: Get.textTheme.bodyMedium?.copyWith(
+                                        color: isSender
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontSize: hasOnlyEmoji ? 30 : null,
+                                      ),
+                                    ),
+                              TextSpan(
+                                text: formattedTime,
+                                style: const TextStyle(
+                                  color: Colors.transparent,
+                                ),
+                                children: [
+                                  if (isEdited)
+                                    TextSpan(
+                                      text: ' $formattedTime',
+                                      style: TextStyle(
+                                        fontSize: 10.0,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    right: 8.0,
-                    bottom: 4.0,
+                ),
+                Positioned(
+                  right: 8.0,
+                  bottom: 4.0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    decoration: roundedContainer().copyWith(
+                      color: hasOnlyEmoji
+                          ? customBlue.shade400
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -144,8 +165,8 @@ class ChatBubbleWidget extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -23,6 +23,7 @@ import 'package:pull_down_button/pull_down_button.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
 class ChatPage extends StatefulWidget {
   final Chat chat;
   final String chatTitle;
@@ -405,9 +406,6 @@ class _ChatPageState extends State<ChatPage>
       bottomNavigationBar: (isEmojiShowing)
           ? EmojiPicker(
               textEditingController: _textController,
-              onEmojiSelected: (category, emoji) {
-                _textController.text += emoji.emoji;
-              },
               onBackspacePressed: () {
                 setState(() {
                   isEmojiShowing = false;

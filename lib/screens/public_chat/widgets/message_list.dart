@@ -11,6 +11,28 @@ import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_impl.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 
+class MessageHelper {
+  static bool isOnlyEmojis(String message) {
+    if (message.trim().isEmpty) return false;
+
+    String cleanMessage = message.replaceAll(RegExp(r'\s+'), '');
+
+    final emojiRegex = RegExp(
+      r'^(?:[\u{1F600}-\u{1F64F}]|' // Emoticons
+      r'[\u{1F300}-\u{1F5FF}]|' // Misc Symbols
+      r'[\u{1F680}-\u{1F6FF}]|' // Transport
+      r'[\u{1F1E0}-\u{1F1FF}]|' // Flags
+      r'[\u{2600}-\u{26FF}]|' // Misc symbols
+      r'[\u{2700}-\u{27BF}]|' // Dingbats
+      r'[\u{1F900}-\u{1F9FF}]|' // Supplemental Symbols
+      r'[\u{1F200}-\u{1F2FF}])+$', // Enclosed Ideographic
+      unicode: true,
+    );
+
+    return emojiRegex.hasMatch(cleanMessage);
+  }
+}
+
 class MessageList extends StatefulWidget {
   final int chatId;
   final void Function(Message) onSwipeToEnd;
