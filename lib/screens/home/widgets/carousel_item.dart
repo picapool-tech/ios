@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/models/offer_model.dart';
-import 'package:picapool/screens/products/products_detailed_page.dart';
+import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/utils/theme.dart';
 
 class CarouselItem extends StatelessWidget {
