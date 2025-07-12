@@ -173,13 +173,14 @@ class ChatBubbleWidget extends StatelessWidget {
                         const SizedBox(width: 4),
                         if (isSender)
                           Icon(
-                            message.readData?.isRead ?? false
+                            message.readData?.isRead ?? message.isReadByAll
                                 ? Icons.done_all_rounded
                                 : Icons.done,
                             size: 14,
-                            color: message.readData?.isRead ?? false
-                                ? AppTheme.currentTheme.primaryColor
-                                : Colors.grey.shade500,
+                            color:
+                                message.readData?.isRead ?? message.isReadByAll
+                                    ? AppTheme.currentTheme.primaryColor
+                                    : Colors.grey.shade500,
                           ),
                       ],
                     ),

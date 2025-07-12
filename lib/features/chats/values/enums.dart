@@ -3,4 +3,5 @@ enum ChatLoadingEnums {
   getAllMessages,
   getLiveOfferChat,
   chatSharing,
+  getMessageReadInfo,
 }

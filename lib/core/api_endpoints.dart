@@ -38,8 +38,11 @@ class APIEndpoints {
     required bool offers,
   }) =>
       "/partner/$id?products=$products&offers=$offers";
+  static String getReadMessageInfo(int messageId) =>
+      "/message/$messageId/reads";
   static String getTagById(int tagId) => "/tag/$tagId";
   static String getUser(int id) => "/user/$id";
+  // static String get
 
   static String updateOfferDetails(int id) => "/offer/$id";
 

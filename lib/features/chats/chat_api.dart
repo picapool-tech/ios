@@ -8,6 +8,7 @@ import 'package:picapool/core/core.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/live_offer_model.dart';
 import 'package:picapool/models/message_model.dart';
+import 'package:picapool/models/message_read_model.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/response_model.dart';
 import 'package:picapool/models/user_model.dart';
@@ -37,21 +38,6 @@ class ChatAndOfferModel {
   String get chatTitle =>
       chat.offer?.name.replaceAll("- FROM BRANDS", "") ??
       'To:  ${chat.liveOffer?.to}';
-
-  bool get hasImage {
-    if (chat.offer != null) {
-      var offer = chat.offer;
-      if (offer!.images.isNotEmpty) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if (chat.liveOffer != null) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 
   String get getImage {
     if (chat.offer != null) {
@@ -83,6 +69,20 @@ class ChatAndOfferModel {
     }
   }
 
+  bool get hasImage {
+    if (chat.offer != null) {
+      var offer = chat.offer;
+      if (offer!.images.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (chat.liveOffer != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 class ChatApi with PicapoolApiClass {
@@ -282,6 +282,41 @@ class ChatApi with PicapoolApiClass {
     });
   }
 
+  FutureEither<List<MessageReadModel>> getMessageReadInfo(
+      {required int messageId}) async {
+    try {
+      final response = await api.makeRequest(
+        enpoint: APIEndpoints.getReadMessageInfo(messageId),
+        method: RequestMethod.getRequest,
+      );
+
+      return response.fold(
+        (error) => left(error),
+        (responseModel) async {
+          if (responseModel.success) {
+            List<MessageReadModel> messageReadModels =
+                await responseModel.parseDataList<MessageReadModel>(
+              MessageReadModel.fromJson,
+            );
+            return right(messageReadModels);
+          } else {
+            return left(
+              Failure(
+                message: responseModel.message,
+                stackTrace: StackTrace.current,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint("Error on getMessageReadInfo: $e");
+      return left(
+        Failure(message: e.toString(), stackTrace: StackTrace.current),
+      );
+    }
+  }
+
   FutureEither<List<ChatAndOfferModel>> getUsersChats() async {
     try {
       final response = await api.makeRequest(
@@ -366,6 +401,4 @@ class ChatApi with PicapoolApiClass {
       );
     }
   }
-
-
 }

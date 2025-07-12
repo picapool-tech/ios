@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_impl.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class MessageHelper {
   static bool isOnlyEmojis(String message) {
@@ -51,6 +53,8 @@ class MessageList extends StatefulWidget {
 class _MessageListState extends State<MessageList> {
   final ChatController controller = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
+  final Set<int> _readMessageIds = <int>{};
+  Timer? _readDebounceTimer;
 
   @override
   Widget build(BuildContext context) {
@@ -106,84 +110,109 @@ class _MessageListState extends State<MessageList> {
                       replyMessage.user?.username)
                   : null;
 
-              return RepaintBoundary(
-                key: ValueKey(message.id),
-                child: Column(
-                  crossAxisAlignment: isSender
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    if (showDate) ...[
-                      Align(
-                        alignment: Alignment.center,
-                        child: BlurryContainer(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          backgroundColor: Colors.amber.shade100,
-                          borderRadius: BorderRadius.circular(8),
+              bool shouldMarkAsRead = !isSender &&
+                  !_readMessageIds.contains(message.id) &&
+                  message.type != MessageType.system;
+
+              return VisibilityDetector(
+                key: Key("message_${message.id}"),
+                onVisibilityChanged: (visibilityInfo) {
+                  if (visibilityInfo.visibleFraction > 0.7 &&
+                      shouldMarkAsRead &&
+                      (!message.isReadByAll ||
+                          !(message.readData?.isRead ?? false))) {
+                    _readDebounceTimer?.cancel();
+
+                    _readDebounceTimer = Timer(
+                      const Duration(milliseconds: 300),
+                      () {
+                        if (!_readMessageIds.contains(message.id)) {
+                          _readMessageIds.add(message.id);
+                          controller.markAsRead(messageId: message.id);
+                        }
+                      },
+                    );
+                  }
+                },
+                child: RepaintBoundary(
+                  key: ValueKey(message.id),
+                  child: Column(
+                    crossAxisAlignment: isSender
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: [
+                      if (showDate) ...[
+                        Align(
                           alignment: Alignment.center,
-                          child: Text(
-                            DateTimeHelper.formatDateTime(message.createdAt,
-                                'dd MMM${isSameYear ? '' : ' yyyy'}'),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                          child: BlurryContainer(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            backgroundColor: Colors.amber.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            alignment: Alignment.center,
+                            child: Text(
+                              DateTimeHelper.formatDateTime(message.createdAt,
+                                  'dd MMM${isSameYear ? '' : ' yyyy'}'),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                    ],
-                    ChatBubble(
-                      onDragToEnd: () => widget.onSwipeToEnd(message),
-                      // () {
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                      ChatBubble(
+                        onDragToEnd: () => widget.onSwipeToEnd(message),
+                        // () {
 
-                      // setState(() {
-                      // isReplying = true;
-                      // replyingMessage = message;
-                      // _focusNode.requestFocus();
-                      // });
-                      // },
-                      onLongPress: (details) {
-                        widget.onLongPress?.call(details, message);
-                        // _showReactionDialog(context, message,
-                        //     details.globalPosition);
-                      },
-                      isSender: isSender,
-                      message: message,
-                      showDate: shouldShowDate(index),
-                      username: (!isSender && showUserName) ||
-                              message.type == MessageType.system
-                          ? user?.username ?? message.user?.username
-                          : null,
-                      leadingWidget: showUserName || showDate
-                          ? UserProfilePictureWidget(
-                              username: user?.username ??
-                                  message.user?.username ??
-                                  'NA',
-                              imageUrl: user?.pic,
-                            )
-                          : const CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.transparent,
-                            ),
-                      replyMessage: replyMessage,
-                      // getReplyMessage(message.parentId),
-                      replyUsername: replyUsername,
-                      // getReplyUserName(message.parentId),
-                      isEdited: message.createdAt != message.updatedAt,
-                    ),
-                    if (showTail)
-                      const SizedBox(
-                        height: 10,
+                        // setState(() {
+                        // isReplying = true;
+                        // replyingMessage = message;
+                        // _focusNode.requestFocus();
+                        // });
+                        // },
+                        onLongPress: (details) {
+                          widget.onLongPress?.call(details, message);
+                          // _showReactionDialog(context, message,
+                          //     details.globalPosition);
+                        },
+                        isSender: isSender,
+                        message: message,
+                        showDate: shouldShowDate(index),
+                        username: (!isSender && showUserName) ||
+                                message.type == MessageType.system
+                            ? user?.username ?? message.user?.username
+                            : null,
+                        leadingWidget: showUserName || showDate
+                            ? UserProfilePictureWidget(
+                                username: user?.username ??
+                                    message.user?.username ??
+                                    'NA',
+                                imageUrl: user?.pic,
+                              )
+                            : const CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Colors.transparent,
+                              ),
+                        replyMessage: replyMessage,
+                        // getReplyMessage(message.parentId),
+                        replyUsername: replyUsername,
+                        // getReplyUserName(message.parentId),
+                        isEdited: message.createdAt != message.updatedAt,
                       ),
-                    if (message.reactions.isNotEmpty)
-                      const SizedBox(
-                        height: 30,
-                      ),
-                  ],
+                      if (showTail)
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      if (message.reactions.isNotEmpty)
+                        const SizedBox(
+                          height: 30,
+                        ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -191,6 +220,14 @@ class _MessageListState extends State<MessageList> {
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _readDebounceTimer?.cancel();
+    controller.scrollController.dispose();
+    _readMessageIds.clear();
+    super.dispose();
   }
 
   Message? getReplyMessage(int? parentId) {

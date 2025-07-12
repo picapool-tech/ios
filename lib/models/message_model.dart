@@ -15,7 +15,8 @@ class Message {
   final List<Message>? children;
   final List<Reaction> reactions;
   final MessageType type;
-  ReadMessageData? readData;
+  ReadMessageData? readData; // this is used for socket updates only
+  final bool isReadByAll;
 
   Message({
     required this.id,
@@ -32,6 +33,7 @@ class Message {
     this.reactions = const [],
     required this.type,
     this.readData,
+    this.isReadByAll = false,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
@@ -56,6 +58,7 @@ class Message {
               .toList()
           : [],
       type: MessageType.fromString(json['messageType'] ?? 'user'),
+      isReadByAll: json['readByAll'] ?? false,
     );
   }
 
@@ -87,6 +90,7 @@ class Message {
       'children': children?.map((m) => m.toJson()).toList(),
       'reactions': reactions.map((r) => r.toJson()).toList(),
       'messageType': MessageType.toValue(type).toUpperCase(),
+      'readByAll': isReadByAll,
     };
   }
 }

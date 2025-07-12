@@ -6,6 +6,7 @@ import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
+import 'package:picapool/screens/public_chat/widgets/reacted_user_list.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
 
@@ -296,30 +297,9 @@ class _ChatBubbleState extends State<ChatBubble>
 
   void _showReactionInfo() {
     showPicaModelBottomSheet(
-      
       context: context,
-      child: Container(
-        child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: widget.message.reactions.isEmpty
-                ? [
-                    Text(
-                      "No reactions yet",
-                      style: Get.textTheme.bodySmall,
-                    ),
-                  ]
-                : widget.message.reactions.map((reaction) {
-                    return ListTile(
-                      leading: Text(
-                        reaction.reaction,
-                        style: Get.textTheme.bodyMedium,
-                      ),
-                      title: Text(
-                        "${reaction.count} ${reaction.count > 1 ? 'reactions' : 'reaction'}",
-                        style: Get.textTheme.bodySmall,
-                      ),
-                    );
-                  }).toList()),
+      child: ReactedUserList(
+        message: widget.message,
       ),
     );
   }

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +16,7 @@ import 'package:picapool/screens/public_chat/chat_info_impl.dart';
 import 'package:picapool/screens/public_chat/widgets/additional_action_bar.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
 import 'package:picapool/screens/public_chat/widgets/message_bar.dart';
+import 'package:picapool/screens/public_chat/widgets/message_info.dart';
 import 'package:picapool/screens/public_chat/widgets/message_list.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
@@ -301,6 +300,8 @@ class _ChatPageState extends State<ChatPage>
     _controller.dispose();
     _textController.dispose();
     _focusNode.dispose();
+    _chatController.usersInChat.clear();
+    _chatController.messages.clear();
     super.dispose();
   }
 
@@ -324,11 +325,10 @@ class _ChatPageState extends State<ChatPage>
         parent: _controller,
         curve: Curves.decelerate,
       ));
-    });
 
-    _chatController.getAllMessages(widget.chat.id).then((_) {
-      _chatController.getAllUsersInChat(widget.chat.id);
-      log("Getting all users inside the chat");
+      await _chatController.getAllMessages(widget.chat.id);
+
+      await _chatController.getAllUsersInChat(widget.chat.id);
     });
   }
 
@@ -772,6 +772,28 @@ Could you please check for any discounts and share the final fare? 😊
                     _focusNode.requestFocus();
                     Navigator.of(context).pop();
                   });
+                },
+              ),
+            ),
+          ),
+          const PopupMenuDivider(
+            height: 1,
+          ),
+          PopupMenuItem<void>(
+            padding: EdgeInsets.zero,
+            child: BlurryContainer(
+              borderRadius: BorderRadius.circular(0),
+              backgroundColor: Colors.white60,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: ListTile(
+                // tileColor: Colors.white,
+                leading: const Icon(Icons.info_outline_rounded),
+                title: const Text("Info"),
+                // contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                onTap: () {
+                  Get.to(() => MessageInfo(
+                        message: message,
+                      ));
                 },
               ),
             ),

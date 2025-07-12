@@ -23,7 +23,8 @@ class ChatMembersWidget extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 50),
             itemBuilder: (context, index) {
               var user = _chatController.usersInChat.values.elementAt(index);
-              return ListTile(
+              return 
+              ListTile(
                 leading: UserProfilePictureWidget(
                   username: user.username ?? "NA",
                   imageUrl: user.pic,

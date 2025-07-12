@@ -12,6 +12,7 @@ import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/models/chat_unread_model.dart';
 import 'package:picapool/models/message_model.dart';
+import 'package:picapool/models/message_read_model.dart';
 import 'package:picapool/models/reaction_model.dart';
 import 'package:picapool/models/user_model.dart';
 import 'package:picapool/services/socket.service.dart';
@@ -23,7 +24,9 @@ class ChatController extends GetxController
   final StorageController _storageController = Get.find<StorageController>();
   final AuthTokenService _authTokenService = Get.find<AuthTokenService>();
   final SocketService socketService = SocketService();
-  var readMessages = <int, ChatUnreadModel>{}.obs;
+  var lastReadMessages = <int, ChatUnreadModel>{}.obs;
+
+  var readByUsers = <MessageReadModel>[].obs;
 
   var isLoading = false.obs;
   var errorMessage = ''.obs;
@@ -242,8 +245,28 @@ class ChatController extends GetxController
     return result;
   }
 
+  Future<List<MessageReadModel>> getMessageReadInfo(
+      {required int messageId}) async {
+    startLoading(ChatLoadingEnums.getMessageReadInfo);
+
+    var result = await _chatApi.getMessageReadInfo(messageId: messageId);
+
+    return result.fold(
+      (error) {
+        stopLoading(ChatLoadingEnums.getMessageReadInfo);
+        Get.snackbar("Oops!", error.message);
+        return Future.error(error);
+      },
+      (readData) {
+        readByUsers.assignAll(readData);
+        stopLoading(ChatLoadingEnums.getMessageReadInfo);
+        return readData;
+      },
+    );
+  }
+
   FutureVoid getReadChatMessages() async {
-    readMessages.value =
+    lastReadMessages.value =
         await _storageController.getLastReadMessagesWithChatId();
     update();
   }
@@ -362,6 +385,11 @@ class ChatController extends GetxController
     debugPrint("I am in leaveChat Function");
   }
 
+  void markAsRead({required int messageId}) {
+    socketService.readMessage(messageId, _userController.user!.id);
+    debugPrint("Marking message $messageId as read");
+  }
+
   @override
   void onClose() {
     disconnectSocket();
@@ -398,9 +426,4 @@ class ChatController extends GetxController
     socketService.sendReaction(content, messageId);
     debugPrint("Sending reaction $content to message $messageId");
   }
-
-  FutureVoid getAllReactionsOfMessage({required int messageId}) async {
-
-  }
-
 }

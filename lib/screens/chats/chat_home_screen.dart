@@ -233,7 +233,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
   }
 
   bool isMessageUnread(LastMessageModel lastMessageModel, int chatId) {
-    var lastReadMessage = chatController.readMessages[chatId];
+    var lastReadMessage = chatController.lastReadMessages[chatId];
     if (lastReadMessage == null) {
       return false;
     }
@@ -265,7 +265,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
         lastMessageModel: chat.chat.messages?.lastOrNull,
       );
     }
-    chatController.readMessages.value = readMessages;
+    chatController.lastReadMessages.value = readMessages;
     Get.find<StorageController>().saveLastReadMessagesWithChatId(readMessages);
   }
 
