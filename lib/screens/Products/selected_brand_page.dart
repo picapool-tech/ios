@@ -7,8 +7,8 @@ import 'package:picapool/common/widgets/carousel_widget.dart';
 import 'package:picapool/features/partners/partner_controller.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/partner_model.dart';
-import 'package:picapool/screens/products/products_detailed_page.dart';
-import 'package:picapool/screens/products/view_products_page.dart';
+import 'package:picapool/screens/Products/products_detailed_page.dart';
+import 'package:picapool/screens/Products/view_products_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PlayStationPage extends StatefulWidget {

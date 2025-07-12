@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/models/product_model.dart';
-import 'package:picapool/screens/products/selected_product_page.dart';
+import 'package:picapool/screens/Products/selected_product_page.dart';
 import 'package:picapool/utils/theme.dart';
 
 class ViewProductsPage extends StatelessWidget {
