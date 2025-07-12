@@ -54,9 +54,8 @@ class _MessageListState extends State<MessageList> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ChatController>(
-      init: controller,
-      builder: (controller) {
+    return Obx(
+      () {
         if (controller.getLoadingState(ChatLoadingEnums.getAllMessages).value &&
             controller.messages.isEmpty) {
           return const Center(child: CircularProgressIndicator());
@@ -101,6 +100,11 @@ class _MessageListState extends State<MessageList> {
               bool showDate = shouldShowDate(index);
               bool isSameYear = message.createdAt.year == DateTime.now().year;
               // log("${getReplyUserName(message.parentId)}");
+              final replyMessage = getReplyMessage(message.parentId);
+              final replyUsername = replyMessage != null
+                  ? (controller.usersInChat[replyMessage.userId]?.username ??
+                      replyMessage.user?.username)
+                  : null;
 
               return RepaintBoundary(
                 key: ValueKey(message.id),
@@ -165,8 +169,10 @@ class _MessageListState extends State<MessageList> {
                               radius: 20,
                               backgroundColor: Colors.transparent,
                             ),
-                      replyMessage: getReplyMessage(message.parentId),
-                      replyUsername: getReplyUserName(message.parentId),
+                      replyMessage: replyMessage,
+                      // getReplyMessage(message.parentId),
+                      replyUsername: replyUsername,
+                      // getReplyUserName(message.parentId),
                       isEdited: message.createdAt != message.updatedAt,
                     ),
                     if (showTail)

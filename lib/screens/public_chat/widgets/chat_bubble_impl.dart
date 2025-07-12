@@ -2,10 +2,12 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/functions/color_function.dart';
+import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:picapool/utils/theme.dart';
 
 class ChatBubble extends StatefulWidget {
   final bool isSender;
@@ -195,49 +197,61 @@ class _ChatBubbleState extends State<ChatBubble>
   }
 
   Widget _buildReactionsOverlay() {
+    if (widget.message.reactions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Positioned(
-      bottom: -12,
+      bottom: widget.isSender ? -14 : -12,
       right: widget.isSender ? 10 : null,
       left: widget.isSender ? null : 50,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          // border: Border.all(width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: widget.message.groupedReactions().entries.map((entry) {
-            final reaction = entry.key;
-            final count = entry.value;
-
-            return Padding(
-              padding: EdgeInsets.all(2.0),
-              child: Row(
-                children: [
-                  Text(
-                    reaction,
-                    style: Get.textTheme.bodySmall,
-                  ),
-                  if (count > 1) ...[
-                    SizedBox(width: 2),
-                    Text(
-                      "$count",
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
-                    ),
-                  ],
-                ],
+      child: GestureDetector(
+        behavior: HitTestBehavior.deferToChild,
+        onTap: () {
+          _showReactionInfo();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          decoration: roundedContainer().copyWith(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1.5,
               ),
-            );
-          }).toList(),
+            ),
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: widget.message.reactions.map((reaction) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      reaction.reaction,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    if (reaction.count > 1) ...[
+                      SizedBox(width: 2),
+                      Text(
+                        "${reaction.count}",
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
@@ -276,6 +290,36 @@ class _ChatBubbleState extends State<ChatBubble>
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+    );
+  }
+
+  void _showReactionInfo() {
+    showPicaModelBottomSheet(
+      
+      context: context,
+      child: Container(
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.message.reactions.isEmpty
+                ? [
+                    Text(
+                      "No reactions yet",
+                      style: Get.textTheme.bodySmall,
+                    ),
+                  ]
+                : widget.message.reactions.map((reaction) {
+                    return ListTile(
+                      leading: Text(
+                        reaction.reaction,
+                        style: Get.textTheme.bodyMedium,
+                      ),
+                      title: Text(
+                        "${reaction.count} ${reaction.count > 1 ? 'reactions' : 'reaction'}",
+                        style: Get.textTheme.bodySmall,
+                      ),
+                    );
+                  }).toList()),
       ),
     );
   }

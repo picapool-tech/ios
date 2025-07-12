@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 // import 'dart:math' as math;
 
 class PhotoGalleryViewer extends StatefulWidget {
@@ -21,6 +22,8 @@ class PhotoGalleryViewer extends StatefulWidget {
   /// Custom page change callback
   final Function(int)? onPageChanged;
 
+  final void Function(int)? onDeleteImage;
+
   const PhotoGalleryViewer({
     super.key,
     required this.imageUrls,
@@ -29,6 +32,7 @@ class PhotoGalleryViewer extends StatefulWidget {
     this.showIndicator = true,
     this.loadFromNetwork = true,
     this.onPageChanged,
+    this.onDeleteImage,
   });
 
   @override
@@ -159,6 +163,9 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.imageUrls.isEmpty) {
+      Get.back();
+    }
     return Scaffold(
       backgroundColor: widget.backgroundColor,
       body: Stack(
@@ -168,7 +175,7 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
           PageView.builder(
             controller: _pageController,
             itemCount: widget.imageUrls.length,
-          onPageChanged: (index) {
+            onPageChanged: (index) {
               // Reset zoom when changing pages
               _resetZoom();
 
@@ -204,6 +211,21 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
             child: IconButton(
               icon: const Icon(Icons.close, color: Colors.white, size: 30),
               onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+
+          Positioned(
+            top: 40,
+            right: 80,
+            child: IconButton(
+              icon: Icon(Icons.delete, color: Colors.red, size: 30),
+              onPressed: () {
+                setState(() {
+                  widget.imageUrls.removeAt(currentIndex);
+                });
+
+                widget.onDeleteImage!(currentIndex);
+              },
             ),
           ),
 

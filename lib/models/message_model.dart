@@ -15,6 +15,7 @@ class Message {
   final List<Message>? children;
   final List<Reaction> reactions;
   final MessageType type;
+  ReadMessageData? readData;
 
   Message({
     required this.id,
@@ -30,6 +31,7 @@ class Message {
     this.children,
     this.reactions = const [],
     required this.type,
+    this.readData,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
@@ -57,7 +59,7 @@ class Message {
     );
   }
 
-  Map<String, int> groupedReactions() {
+  Map<String, int> get groupedReactions {
     return reactions.fold<Map<String, int>>({}, (acc, reaction) {
       acc[reaction.reaction] = (acc[reaction.reaction] ?? 0) + 1;
       return acc;
@@ -131,6 +133,34 @@ class MessageUserModel {
     return {
       'pic': pic,
       'username': username,
+    };
+  }
+}
+
+class ReadMessageData {
+  final int messageId;
+  final int userId;
+  final bool isRead;
+
+  ReadMessageData({
+    required this.messageId,
+    required this.userId,
+    this.isRead = false,
+  });
+
+  factory ReadMessageData.fromJson(Map<String, dynamic> json) {
+    return ReadMessageData(
+      messageId: json['messageId'],
+      userId: json['userId'],
+      isRead: json['isReadByAll'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'messageId': messageId,
+      'userId': userId,
+      'isReadByAll': isRead,
     };
   }
 }

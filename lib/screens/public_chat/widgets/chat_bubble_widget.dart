@@ -17,6 +17,7 @@ class ChatBubbleWidget extends StatelessWidget {
   final Widget? leadingWidget;
   final String formattedTime;
   final bool isEdited;
+  final bool showRead = true;
   const ChatBubbleWidget({
     super.key,
     required this.isSender,
@@ -86,7 +87,7 @@ class ChatBubbleWidget extends StatelessWidget {
                           isSender: isSender,
                         ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 4.0),
+                        padding: const EdgeInsets.only(right: 8.0, bottom: 4),
                         child: RichText(
                           text: TextSpan(
                             children: <TextSpan>[
@@ -114,6 +115,13 @@ class ChatBubbleWidget extends StatelessWidget {
                                         fontSize: 10.0,
                                       ),
                                     ),
+                                  TextSpan(
+                                    text: '',
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.transparent,
+                                    ),
+                                  )
                                 ],
                               ),
                             ],
@@ -162,6 +170,17 @@ class ChatBubbleWidget extends StatelessWidget {
                             color: Colors.grey.shade500,
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        if (isSender)
+                          Icon(
+                            message.readData?.isRead ?? false
+                                ? Icons.done_all_rounded
+                                : Icons.done,
+                            size: 14,
+                            color: message.readData?.isRead ?? false
+                                ? AppTheme.currentTheme.primaryColor
+                                : Colors.grey.shade500,
+                          ),
                       ],
                     ),
                   ),

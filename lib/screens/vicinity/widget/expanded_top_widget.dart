@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:picapool/common/widgets/photo_gallery_viewer.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/utils/theme.dart';
 
@@ -46,67 +48,98 @@ class _VicinityExpandedWidgetState extends State<VicinityExpandedWidget> {
             );
           },
           body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 4),
-            child: Column(
+            padding: const EdgeInsets.fromLTRB(15, 4, 15, 15),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          PicaOutlinedTextField(
-                            controller: widget.titleController,
-                            labelText: "What do you need?",
-                            hintText: "e.g. Need bike pump",
-                          ),
-                          const SizedBox(height: 16),
-                          PicaOutlinedTextField(
-                            controller: widget.descriptionController,
-                            labelText: "Add more details",
-                            maxLines: 2,
-                            hintText:
-                                "e.g. I need a bike pump to inflate my tires",
-                          ),
-                        ],
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      PicaOutlinedTextField(
+                        controller: widget.titleController,
+                        labelText: "What do you need?",
+                        hintText: "e.g. Need bike pump",
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: widget.onImagePicker,
-                      child: Container(
-                        width: 104,
-                        height: 104,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: widget.imagesList == null ||
-                                widget.imagesList!.isEmpty
-                            ? const Center(
-                                child: Icon(
-                                  Icons.add_photo_alternate,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            : PageView.builder(
-                                itemCount: widget.imagesList!.length,
-                                itemBuilder: (context, index) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      File(widget.imagesList![index].path),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  );
-                                },
-                              ),
+                      const SizedBox(height: 16),
+                      PicaOutlinedTextField(
+                        controller: widget.descriptionController,
+                        labelText: "Add more details",
+                        maxLines: 2,
+                        hintText: "e.g. I need a bike pump to inflate my tires",
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: widget.onImagePicker,
+                        child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height:
+                                widget.imagesList?.isEmpty ?? false ? 140 : 50,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.add_photo_alternate,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
+                            )),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Get.to(
+                            () => PhotoGalleryViewer(
+                              imageUrls: widget.imagesList!
+                                  .map((e) => e.path)
+                                  .toList(),
+                              loadFromNetwork: false,
+                              showIndicator: true,
+                              initialIndex: 0,
+                              onDeleteImage: (atIndex) {
+                                setState(() {
+                                  widget.imagesList!.removeAt(atIndex);
+                                });
+                              },
+                            ),
+                            fullscreenDialog: true,
+                            transition: Transition.zoom,
+                          );
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          height:
+                              widget.imagesList?.isNotEmpty ?? false ? 95 : 0,
+                          padding: const EdgeInsets.only(top: 8),
+                          child: PageView.builder(
+                            itemCount: widget.imagesList!.length,
+                            itemBuilder: (context, index) {
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Hero(
+                                  tag: widget.imagesList![index],
+                                  child: Image.file(
+                                    File(widget.imagesList![index].path),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),

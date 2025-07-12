@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:picapool/common/extensions/date_extensions.dart';
 // import 'package:picapool/common/functions/url_launch.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
-import 'package:picapool/core/core.dart';
+import 'package:picapool/core/type_defs.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/features/user/user_controller.dart';
 import 'package:picapool/models/chat_model.dart';
@@ -22,7 +24,6 @@ import 'package:picapool/utils/theme.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 
 class ChatPage extends StatefulWidget {
   final Chat chat;
@@ -41,24 +42,39 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
+class MessageListWrapper extends StatefulWidget {
+  final int chatId;
+  final Function(Message) onSwipeToEnd;
+  final Function(LongPressStartDetails, Message) onLongPress;
+
+  const MessageListWrapper({
+    super.key,
+    required this.chatId,
+    required this.onSwipeToEnd,
+    required this.onLongPress,
+  });
+
+  @override
+  State<MessageListWrapper> createState() => _MessageListWrapperState();
+}
+
 class _ChatPageState extends State<ChatPage>
     with SingleTickerProviderStateMixin {
+  // Replace bool variables with ValueNotifiers
+  final ValueNotifier<bool> _isEmojiShowing = ValueNotifier(false);
+  final ValueNotifier<bool> _isReplying = ValueNotifier(false);
+  final ValueNotifier<Message?> _replyingMessage = ValueNotifier(null);
+  final ValueNotifier<Message?> _editMessage = ValueNotifier(null);
+
+  // Keep these as regular variables since they don't affect MessageList
   final ChatController _chatController = Get.find<ChatController>();
   final UserController _userController = Get.find<UserController>();
   final TextEditingController _textController = TextEditingController();
-
   final FocusNode _focusNode = FocusNode();
-  bool isEmojiShowing = false;
-  bool wasPreviouslyFocused = false;
 
-  bool isReplying = false;
-  Message? replyingMessage;
   late AnimationController _controller;
-
-  Message? editMessage;
-
   late Animation<Offset> animation;
-  bool get hasFocus => _focusNode.hasFocus;
+
   bool get showGoodToGo =>
       (widget.offer?.name.toLowerCase().contains("- from brands") ??
           false || widget.liveOffer != null);
@@ -198,259 +214,94 @@ class _ChatPageState extends State<ChatPage>
       ),
       resizeToAvoidBottomInset: true,
       body: GestureDetector(
-        onTap: () {
-          setState(() {
-            _focusNode.unfocus();
-          });
-        },
+        onTap: () => _focusNode.unfocus(),
         child: Stack(
           children: [
-            Opacity(
-              opacity: 0.5,
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  AppTheme.currentTheme.colorScheme.secondary,
-                  BlendMode.hue,
-                ),
-                child: Image.asset(
-                  "assets/images/chat/wallpaper_1.png",
-                  fit: BoxFit.cover,
-                  height: double.infinity,
-                  width: double.infinity,
-                ),
-              ),
-            ),
+            _buildBackground(),
             Column(
               children: [
                 Expanded(
                   child: Stack(
                     children: [
-                      MessageList(
+                      // MessageList won't rebuild when emoji/reply state changes
+                      MessageListWrapper(
                         chatId: widget.chat.id,
-                        onSwipeToEnd: (message) {
-                          setState(() {
-                            isReplying = true;
-                            replyingMessage = message;
-                            _focusNode.requestFocus();
-                          });
-                        },
-                        onLongPress: (details, message) {
-                          _showReactionDialog(
-                              context, message, details.globalPosition);
-                          // showPullDownMenu(
-                          //   context: context,
-                          //   routeTheme: PullDownMenuRouteTheme(
-                          //     borderRadius: BorderRadius.circular(20),
-                          //     backgroundColor:
-                          //         AppTheme.currentTheme.colorScheme.surface,
-                          //   ),
-                          //   items: [
-                          //     PullDownMenuItem(
-                          //       title: "Reply",
-                          //       icon: Icons.reply,
-                          //       onTap: () {
-                          //         setState(() {
-                          //           isReplying = true;
-                          //           replyingMessage = message;
-                          //           _focusNode.requestFocus();
-                          //         });
-                          //       },
-                          //     ),
-                          //     PullDownMenuItem(
-                          //       title: "Copy",
-                          //       icon: Icons.copy,
-                          //       onTap: () {
-                          //         Clipboard.setData(
-                          //             ClipboardData(text: message.content));
-                          //         ScaffoldMessenger.of(context).showSnackBar(
-                          //           const SnackBar(
-                          //               content: Text("Message copied!")),
-                          //         );
-                          //       },
-                          //     ),
-                          //     if (message.userId ==
-                          //         _userController.user?.id) ...[
-                          //       PullDownMenuItem(
-                          //         title: "Edit",
-                          //         icon: Icons.edit,
-                          //         onTap: () {
-                          //           setState(() {
-                          //             editMessage = message;
-                          //             _textController.text = message.content;
-                          //             _focusNode.requestFocus();
-                          //           });
-                          //         },
-                          //       ),
-                          //     ],
-                          //     // PullDownMenuItem(
-                          //     //   title: "Delete",
-                          //     //   icon: Icons.delete,
-                          //     //   isDestructive: true,
-                          //     //   onTap: () {
-                          //     //     // _chatController.de;
-                          //     //     // Navigator.of(context).pop();
-                          //     //   },
-                          //     // ),
-                          //   ],
-                          //   position: Rect.fromLTWH(
-                          //     details.globalPosition.dx,
-                          //     details.globalPosition.dy,
-                          //     MediaQuery.of(context).size.width +
-                          //         details.globalPosition.dx,
-                          //     MediaQuery.of(context).size.height -
-                          //         details.globalPosition.dy,
-                          //   ),
-                          //   // position: Rect.fromPoints(details.globalPosition., b)
-                          // );
+                        onSwipeToEnd: _handleSwipeToReply,
+                        onLongPress: _handleLongPress,
+                      ),
+                      // Edit overlay with ValueListenableBuilder
+                      ValueListenableBuilder<Message?>(
+                        valueListenable: _editMessage,
+                        builder: (context, editMessage, child) {
+                          if (editMessage == null) {
+                            return const SizedBox.shrink();
+                          }
+                          return _buildEditOverlay(editMessage);
                         },
                       ),
-                      if (editMessage != null)
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              editMessage = null;
-                              _textController.clear();
-                            });
-                          },
-                          child: BlurryContainer(
-                            blur: 3,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                ChatBubbleWidget(
-                                  isSender: true,
-                                  message: editMessage!,
-                                  username: editMessage!.user?.username ?? "",
-                                  replyUsername: null,
-                                  replyMessage: null,
-                                  leadingWidget: null,
-                                  formattedTime:
-                                      editMessage!.updatedAt.formattedTime(),
-                                  isEdited: false,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
-                MessageBar(
-                  textController: _textController,
-                  onSend: (message) {
-                    if (editMessage != null) {
-                      _chatController.editMessage(
-                        messageId: editMessage!.id,
-                        newContent: _textController.text,
-                      );
-
-                      setState(() {
-                        editMessage = null;
-                        _textController.clear();
-                      });
-                      return;
-                    }
-
-                    _chatController.sendMessage(
-                      message,
-                      replyMessageId: replyingMessage?.id,
-                    );
-
-                    // Reset reply state after sending
-                    if (isReplying) {
-                      setState(() {
-                        isReplying = false;
-                        replyingMessage = null;
-                      });
-                    }
-                  },
-                  focusNode: _focusNode,
-                  prefix: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isEmojiShowing = !isEmojiShowing;
-                      });
-                      if (isEmojiShowing) {
-                        _focusNode.unfocus();
-                      } else {
-                        _focusNode.requestFocus();
-                      }
-                    },
-                    icon: Icon(
-                      !isEmojiShowing
-                          ? Icons.emoji_emotions_outlined
-                          : Icons.keyboard,
-                      size: 30,
-                    ),
+                // Message bar with ValueListenableBuilder
+                Container(
+                  padding: EdgeInsets.only(
+                    bottom: Get.mediaQuery.padding.bottom,
                   ),
-                  replying: isReplying,
-                  replyingMessage: replyingMessage,
-                  replyingTo:
-                      getReplyUserName(null, replyMessage: replyingMessage) ??
-                          "",
-                  onCancelReply: () {
-                    setState(() {
-                      isReplying = false;
-                      replyingMessage = null;
-                    });
-                  },
-                  editMessage: editMessage,
-                  textFieldTextStyle:
-                      Get.textTheme.titleMedium ?? const TextStyle(),
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _isReplying,
+                    builder: (context, isReplying, child) {
+                      return ValueListenableBuilder<Message?>(
+                        valueListenable: _replyingMessage,
+                        builder: (context, replyingMessage, child) {
+                          return ValueListenableBuilder<Message?>(
+                            valueListenable: _editMessage,
+                            builder: (context, editMessage, child) {
+                              return MessageBar(
+                                textController: _textController,
+                                onSend: _handleSendMessage,
+                                focusNode: _focusNode,
+                                prefix: _buildEmojiToggle(),
+                                replying: isReplying,
+                                replyingMessage: replyingMessage,
+                                replyingTo: _getReplyUserName(replyingMessage),
+                                onCancelReply: _cancelReply,
+                                editMessage: editMessage,
+                                textFieldTextStyle: Get.textTheme.titleMedium ??
+                                    const TextStyle(),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
-      bottomNavigationBar: (isEmojiShowing)
-          ? EmojiPicker(
-              textEditingController: _textController,
-              onBackspacePressed: () {
-                setState(() {
-                  isEmojiShowing = false;
-                });
-              },
-              config: Config(
-                bottomActionBarConfig: const BottomActionBarConfig(
-                  backgroundColor: Color(0xFFEBEFF2),
-                  buttonColor: Colors.transparent,
-                  buttonIconColor: Colors.black26,
-                ),
-                emojiTextStyle: Get.textTheme.headlineLarge,
-              ),
-            )
-          : null,
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: _isEmojiShowing,
+        builder: (context, isEmojiShowing, child) {
+          return isEmojiShowing
+              ? SafeArea(child: _buildEmojiPicker())
+              : SizedBox.shrink();
+        },
+      ),
     );
   }
 
   @override
   void dispose() {
+    _isEmojiShowing.dispose();
+    _isReplying.dispose();
+    _replyingMessage.dispose();
+    _editMessage.dispose();
     _controller.dispose();
     _textController.dispose();
-    _chatController.messages.clear();
-    _chatController.usersInChat.clear();
     _focusNode.dispose();
     super.dispose();
-  }
-
-  Message? getReplyMessage(int? parentId) {
-    var message = _chatController.getMessageFromId(parentId);
-    return message;
-  }
-
-  String? getReplyUserName(int? parentId, {Message? replyMessage}) {
-    if (replyMessage != null) {
-      return _chatController.usersInChat[replyMessage.userId]?.username ??
-          replyingMessage!.user?.username;
-    }
-
-    var message = getReplyMessage(parentId);
-    if (message == null) {
-      return null;
-    }
-    var user = _chatController.usersInChat[message.userId];
-    return user?.username;
   }
 
   @override
@@ -461,8 +312,6 @@ class _ChatPageState extends State<ChatPage>
         _userController.user!.id,
         widget.chat.id,
       );
-
-      await _chatController.getAllUsersInChat(widget.chat.id);
 
       _controller = AnimationController(
         vsync: this,
@@ -479,118 +328,150 @@ class _ChatPageState extends State<ChatPage>
 
     _chatController.getAllMessages(widget.chat.id).then((_) {
       _chatController.getAllUsersInChat(widget.chat.id);
+      log("Getting all users inside the chat");
     });
   }
 
-  String _formatOfferName() {
-    if (widget.offer != null) {
-      return widget.offer!.name.replaceAll("- FROM BRANDS", "");
-    } else if (widget.liveOffer != null) {
-      if (widget.liveOffer!.from == null || widget.liveOffer!.to == null) {
-        return "Cab Booking";
-      }
-
-      String from = widget.liveOffer!.from ?? "Cab Booking";
-      String to = widget.liveOffer!.to ?? "Cab Booking";
-      String dateTime = widget.liveOffer!.createdAt.formattedTime();
-      return "$from to $to on $dateTime";
-    }
-    return "";
-  }
-
-  String _getOfferDetail() {
-    if (widget.offer != null) {
-      return """
-${_getOfferingTitle()}
-
-Title: ${_formatOfferName()}
-Details: ${widget.offer?.desc}
-
-Check it out: ${_getOfferLink()}
-""";
-    } else if (widget.liveOffer != null) {
-      return """
-${_getOfferingTitle()}
-
-📍 Pickup: ${widget.liveOffer?.from ?? "N/A"}
-📍 Drop: ${widget.liveOffer?.to ?? "N/A"}
-
-Join here : ${_getOfferLink()}
-""";
-    }
-    return "";
-  }
-
-  int _getOfferId() {
-    if (widget.offer != null) {
-      return widget.offer!.id;
-    } else if (widget.liveOffer != null) {
-      return widget.liveOffer!.id;
-    }
-    return -1;
-  }
-
-  String _getOfferingTitle() {
-    if (widget.offer != null) {
-      return "Spotted this deal on Picapool -- might be just what you need!";
-    } else if (widget.liveOffer != null) {
-      return "Spotted a cab on Picapool -- cheaper together!";
-    }
-    return "Spotted this deal on Picapool -- might be just what you need!";
-  }
-
-  String _getOfferLink() {
-    if (widget.offer != null) {
-      return "https://offer.picapool.com/offer/${widget.offer!.id}";
-    } else if (widget.liveOffer != null) {
-      return "https://offer.picapool.com/liveOffer/${widget.liveOffer!.id}";
-    }
-    return "";
-  }
-
-  String _getOfferName() {
-    if (widget.offer != null) {
-      return widget.offer!.name.replaceAll("- FROM BRANDS", "");
-    } else if (widget.liveOffer != null) {
-      return widget.liveOffer!.from ?? "Cab Booking";
-    }
-    return "";
-  }
-
-  _leaveChat() {
-    _chatController.leaveChat();
-    Get.back();
-  }
-
-  PopupMenuItem _menuItemWithIcons({
-    IconData? icon,
-    String? text,
-    VoidCallback? onTap,
-    Color color = Colors.black,
-  }) {
-    return PopupMenuItem(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      onTap: onTap,
-      enabled: onTap != null,
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              color: onTap != null ? color : null,
-            ),
-            const SizedBox(width: 8),
-          ],
-          if (text != null)
-            Text(
-              text,
-              style: TextStyle(
-                color: onTap != null ? color : null,
-              ),
-            ),
-        ],
+  Widget _buildBackground() {
+    return Opacity(
+      opacity: 0.5,
+      child: ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          AppTheme.currentTheme.colorScheme.secondary,
+          BlendMode.hue,
+        ),
+        child: Image.asset(
+          "assets/images/chat/wallpaper_1.png",
+          fit: BoxFit.cover,
+          height: double.infinity,
+          width: double.infinity,
+        ),
       ),
     );
+  }
+
+  Widget _buildEditOverlay(Message editMessage) {
+    return GestureDetector(
+      onTap: _cancelEdit,
+      child: BlurryContainer(
+        blur: 8,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ChatBubbleWidget(
+              isSender: true,
+              message: editMessage,
+              username: editMessage.user?.username ?? "",
+              replyUsername: null,
+              replyMessage: null,
+              leadingWidget: null,
+              formattedTime: editMessage.updatedAt.formattedTime(),
+              isEdited: false,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmojiPicker() {
+    return EmojiPicker(
+      textEditingController: _textController,
+      onBackspacePressed: () => _isEmojiShowing.value = false,
+      config: Config(
+        bottomActionBarConfig: const BottomActionBarConfig(
+          backgroundColor: Colors.white,
+          buttonColor: Colors.transparent,
+          buttonIconColor: Colors.black38,
+        ),
+        emojiViewConfig: EmojiViewConfig(
+          backgroundColor: Colors.white,
+          buttonMode: ButtonMode.CUPERTINO,
+        ),
+        categoryViewConfig: CategoryViewConfig(
+          backgroundColor: Colors.white,
+          indicatorColor: Get.theme.colorScheme.secondary,
+          iconColorSelected: Get.theme.colorScheme.secondary,
+        ),
+        emojiTextStyle: Get.textTheme.headlineLarge,
+      ),
+    );
+  }
+
+  Widget _buildEmojiToggle() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isEmojiShowing,
+      builder: (context, isEmojiShowing, child) {
+        return IconButton(
+          onPressed: () {
+            _isEmojiShowing.value = !_isEmojiShowing.value;
+            if (_isEmojiShowing.value) {
+              _focusNode.unfocus();
+            } else {
+              _focusNode.requestFocus();
+            }
+          },
+          icon: Icon(
+            isEmojiShowing ? Icons.keyboard : Icons.emoji_emotions_outlined,
+            size: 30,
+          ),
+        );
+      },
+    );
+  }
+
+  void _cancelEdit() {
+    _editMessage.value = null;
+    _textController.clear();
+  }
+
+  void _cancelReply() {
+    _isReplying.value = false;
+    _replyingMessage.value = null;
+  }
+
+  String _getReplyUserName(Message? replyMessage) {
+    if (replyMessage == null) return "";
+    return _chatController.usersInChat[replyMessage.userId]?.username ??
+        replyMessage.user?.username ??
+        "";
+  }
+
+  void _handleLongPress(LongPressStartDetails details, Message message) {
+    _showReactionDialog(context, message, details.globalPosition);
+  }
+
+  void _handleSendMessage(String message) {
+    if (_editMessage.value != null) {
+      _chatController.editMessage(
+        messageId: _editMessage.value!.id,
+        newContent: _textController.text,
+      );
+      _cancelEdit();
+      return;
+    }
+
+    _chatController.sendMessage(
+      message,
+      replyMessageId: _replyingMessage.value?.id,
+    );
+
+    if (_isReplying.value) {
+      _cancelReply();
+    }
+  }
+
+  // Event handlers - no more setState calls!
+  void _handleSwipeToReply(Message message) {
+    _isReplying.value = true;
+    _replyingMessage.value = message;
+    _focusNode.requestFocus();
+  }
+
+  void _leaveChat() {
+    // Implement leave chat functionality
+    _chatController.leaveChat();
+    Get.back();
   }
 
   void _openChatInfo() {
@@ -660,6 +541,7 @@ Could you please check for any discounts and share the final fare? 😊
   }
 
   FutureVoid _shareOffer() async {
+    // add images or files to share if needed
     SharePlus.instance.share(
       ShareParams(
         text: (widget.offer != null)
@@ -669,10 +551,101 @@ Could you please check for any discounts and share the final fare? 😊
                 : "",
         // uri: Uri.parse("https://offer.picapool.com/offers/${widget.offer?.id}"),
         subject: "Check out this offer on Picapool!",
+
         // previewThumbnail: XFile(filePath),
       ),
     );
   }
+
+  // Update reaction dialog to use ValueNotifier
+  // void _showReactionDialog(
+  //     BuildContext context, Message message, LongPressStartDetails details) {
+  //   showPullDownMenu(
+  //     context: context,
+  //     routeTheme: PullDownMenuRouteTheme(
+  //       borderRadius: BorderRadius.circular(20),
+  //       backgroundColor: AppTheme.currentTheme.colorScheme.surface,
+  //     ),
+  //     items: [
+  //       PullDownMenuItem(
+  //         title: "Reply",
+  //         icon: Icons.reply,
+  //         onTap: () {
+  //           // ✅ No setState - just update ValueNotifier
+  //           _isReplying.value = true;
+  //           _replyingMessage.value = message;
+  //           _focusNode.requestFocus();
+  //         },
+  //       ),
+  //       PullDownMenuItem(
+  //         title: "Copy",
+  //         icon: Icons.copy,
+  //         onTap: () {
+  //           Clipboard.setData(ClipboardData(text: message.content));
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(content: Text("Message copied!")),
+  //           );
+  //         },
+  //       ),
+  //       if (message.userId == _userController.user?.id) ...[
+  //         PullDownMenuItem(
+  //           title: "Edit",
+  //           icon: Icons.edit,
+  //           onTap: () {
+  //             // ✅ No setState - just update ValueNotifier
+  //             _editMessage.value = message;
+  //             _textController.text = message.content;
+  //             _focusNode.requestFocus();
+  //           },
+  //         ),
+  //       ],
+  //     ],
+  //     position: Rect.fromLTWH(
+  //       details.globalPosition.dx,
+  //       details.globalPosition.dy,
+  //       MediaQuery.of(context).size.width + details.globalPosition.dx,
+  //       MediaQuery.of(context).size.height - details.globalPosition.dy,
+  //     ),
+  //   );
+  //   // showMenu<void>(
+  //   //   context: context,
+  //   //   position: RelativeRect.fromLTRB(
+  //   //     tapPosition.dx,
+  //   //     tapPosition.dy,
+  //   //     MediaQuery.of(context).size.width - tapPosition.dx,
+  //   //     MediaQuery.of(context).size.height - tapPosition.dy,
+  //   //   ),
+  //   //   items: [
+  //   //     // ... existing reaction menu items
+  //   //     PopupMenuItem<void>(
+  //   //       child: ListTile(
+  //   //         leading: const Icon(Icons.reply),
+  //   //         title: const Text("Reply"),
+  //   //         onTap: () {
+  //   //           _isReplying.value = true;
+  //   //           _replyingMessage.value = message;
+  //   //           _focusNode.requestFocus();
+  //   //           Navigator.of(context).pop();
+  //   //         },
+  //   //       ),
+  //   //     ),
+  //   //     // ... other menu items
+  //   //     if (message.userId == _userController.user?.id)
+  //   //       PopupMenuItem<void>(
+  //   //         child: ListTile(
+  //   //           leading: const Icon(Icons.edit),
+  //   //           title: const Text("Edit"),
+  //   //           onTap: () {
+  //   //             _editMessage.value = message;
+  //   //             _textController.text = message.content;
+  //   //             _focusNode.requestFocus();
+  //   //             Navigator.of(context).pop();
+  //   //           },
+  //   //         ),
+  //   //       ),
+  //   //   ],
+  //   // );
+  // }
 
   void _showReactionDialog(
       BuildContext context, Message message, Offset tapPosition) {
@@ -743,8 +716,8 @@ Could you please check for any discounts and share the final fare? 😊
               title: const Text("Reply"),
               onTap: () {
                 setState(() {
-                  isReplying = true;
-                  replyingMessage = message;
+                  _isReplying.value = true;
+                  _replyingMessage.value = message;
                   _focusNode.requestFocus();
                 });
                 Navigator.of(context).pop();
@@ -794,7 +767,7 @@ Could you please check for any discounts and share the final fare? 😊
                 // contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                 onTap: () {
                   setState(() {
-                    editMessage = message;
+                    _editMessage.value = message;
                     _textController.text = message.content;
                     _focusNode.requestFocus();
                     Navigator.of(context).pop();
@@ -830,6 +803,17 @@ Could you please check for any discounts and share the final fare? 😊
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MessageListWrapperState extends State<MessageListWrapper> {
+  @override
+  Widget build(BuildContext context) {
+    return MessageList(
+      chatId: widget.chatId,
+      onSwipeToEnd: widget.onSwipeToEnd,
+      onLongPress: widget.onLongPress,
     );
   }
 }

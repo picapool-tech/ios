@@ -132,6 +132,20 @@ class SocketService {
     socket?.emit('room.leave', {});
   }
 
+  void readMessage(int messageId, int userId) {
+    if (!isConnected()) {
+      debugPrint('Socket is not connected, message not read.');
+      return;
+    }
+
+    final readData = {
+      'messageId': messageId,
+      'userId': userId,
+    };
+
+    socket!.emit('readMessage', readData);
+  }
+
   void sendMessage(String content, {int? replyMessageId}) {
     if (!isConnected()) {
       debugPrint('Socket is not connected, message not sent.');

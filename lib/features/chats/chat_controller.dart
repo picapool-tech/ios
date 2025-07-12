@@ -63,6 +63,7 @@ class ChatController extends GetxController
     socket.on('receiveMessage', handleIncomingMessage);
     socket.on('messageEdited', handleEditMessage);
     socket.on('reactionUpdate', handleReaction);
+    socket.on('messageRead', handleReadMessage);
   }
 
   Future<ChatAndOfferModel?> createChatWithOfferId(int offerId) async {
@@ -263,7 +264,7 @@ class ChatController extends GetxController
     var index = messages.indexWhere((msg) => msg.id == messageModel.id);
     if (index != -1) {
       messages[index] = messageModel;
-      update();
+      // update();
     }
     debugPrint("Edit Message $data with data $message");
   }
@@ -276,7 +277,11 @@ class ChatController extends GetxController
       getAllUsersInChat(messageModel.chatId!);
     }
     messages.insert(0, messageModel);
-    update();
+    socketService.readMessage(
+      messageModel.id,
+      _userController.user!.id,
+    );
+    // update();
     // await Future.wait([Future.value(const Duration(milliseconds: 300))]);
     if (scrollController.hasClients) {
       debugPrint("Scrolling here");
@@ -289,32 +294,59 @@ class ChatController extends GetxController
     debugPrint("Receive Message $data with data $message");
   }
 
+  // [TODO:] need to refactor this when varun fixes it from backend
   void handleReaction(data) {
     log(" $data this is reaction data for chat");
-    var reactions = data['reactions'];
-    for (var reaction in reactions) {
-      var reactionModel = Reaction(
-        reaction: reaction['reaction'],
-        messageId: data['messageId'],
-        userIds:
-            reaction['users'] != null ? List<int>.from(reaction['users']) : [],
-        count: reaction['count'] ?? 0,
-      );
-
-      var message =
-          messages.firstWhere((msg) => msg.id == reactionModel.messageId);
-      var reactionFound = message.reactions.indexWhere(
-        (r) => r.reaction == reactionModel.reaction,
-      );
-
-      if (reactionFound != -1) {
-        message.reactions[reactionFound] = reactionModel;
-      } else {
-        message.reactions.add(reactionModel);
+    try {
+      if (data == null ||
+          !data.containsKey('messageId') ||
+          !data.containsKey('reactions')) {
+        log("Invalid reaction data received: $data");
+        return;
       }
 
-      update();
+      final int messageId = data['messageId'];
+      final List<dynamic> reactionsData = data['reactions'] ?? [];
+
+      final index = messages.indexWhere((msg) => msg.id == messageId);
+      if (index == -1) {
+        log("Message with ID $messageId not found when updating reactions");
+        return;
+      }
+
+      final List<Reaction> reactionsModel = reactionsData
+          .map<Reaction>((reaction) => Reaction(
+                reaction: reaction['reaction'] ?? '',
+                messageId: messageId,
+                count: reaction['count'] ?? 0,
+              ))
+          .toList();
+
+      var message = messages[index];
+      message.reactions.assignAll(reactionsModel);
+      messages[index] = message;
+      // update();
+
+      log("Updated reactions for message $messageId: ${reactionsModel.length} reactions");
+    } catch (e) {
+      log("Error handling reaction update: $e");
     }
+  }
+
+  void handleReadMessage(data) {
+    var readMessageData = ReadMessageData.fromJson(data);
+    var messsageIndex = messages.indexWhere(
+      (message) => message.id == readMessageData.messageId,
+    );
+
+    if (messsageIndex == -1) {
+      log("Message with ID ${readMessageData.messageId} not found when updating read status");
+      return;
+    }
+
+    var message = messages[messsageIndex];
+    message.readData = readMessageData;
+    messages[messsageIndex] = message;
   }
 
   bool isSocketConnected() {
@@ -350,6 +382,7 @@ class ChatController extends GetxController
       message,
       replyMessageId: replyMessageId,
     );
+
     scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 300),
@@ -365,4 +398,9 @@ class ChatController extends GetxController
     socketService.sendReaction(content, messageId);
     debugPrint("Sending reaction $content to message $messageId");
   }
+
+  FutureVoid getAllReactionsOfMessage({required int messageId}) async {
+
+  }
+
 }

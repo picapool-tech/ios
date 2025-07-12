@@ -5,7 +5,7 @@ class Reaction {
   final int? id;
   final String reaction;
   final Message? message;
-  final int messageId;
+  final int? messageId;
   final List<int> userIds;
   final Admin? admin;
   final int? adminId;
@@ -15,7 +15,7 @@ class Reaction {
     this.id,
     required this.reaction,
     this.message,
-    required this.messageId,
+    this.messageId,
     this.userIds = const [],
     this.admin,
     this.adminId,

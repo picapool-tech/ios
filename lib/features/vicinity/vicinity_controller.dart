@@ -28,6 +28,7 @@ class VicinityController extends GetxController {
     update();
 
     String? uploadedImage = '';
+
     if (pickedFile != null) {
       uploadedImage = await _assetsController.uploadImage(pickedFile,
           '$uname-$offername-${DateTime.now().toIso8601String()}.jpg');

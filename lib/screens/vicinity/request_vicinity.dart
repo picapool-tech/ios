@@ -590,7 +590,8 @@ class _RequestVicinityState extends State<RequestVicinity> {
     );
     if (pickedFiles.isNotEmpty) {
       setState(() {
-        _imageFiles = pickedFiles.take(3).toList();
+        _imageFiles ??= [];
+        _imageFiles?.addAll(pickedFiles);
       });
     }
   }
