@@ -27,20 +27,24 @@ class MessageReadModel {
 class MessageReadUserModel {
   final String name;
   final int id;
+  final String? pic;
 
   MessageReadUserModel({
     required this.name,
     required this.id,
+    this.pic,
   });
 
   MessageReadUserModel.fromJson(Map<String, dynamic> json)
       : name = json['name'] as String,
+        pic = json['pic'] as String?,
         id = json['id'] as int;
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'id': id,
+      if (pic != null) 'pic': pic,
     };
   }
 }

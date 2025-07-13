@@ -29,6 +29,7 @@ import 'package:picapool/features/network/connection_status_listener.dart';
 import 'package:picapool/features/notification/notification_service.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/partners/partner_controller.dart';
+import 'package:picapool/features/reaction/reaction_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/features/tags/tag_controller.dart';
 import 'package:picapool/features/tokens/token_service.dart';
@@ -79,6 +80,7 @@ void main() async {
   Get.lazyPut(() => PartnerController(), fenix: true);
   Get.lazyPut(() => TagController(), fenix: true);
   Get.lazyPut(() => IndentityVerificationController(), fenix: true);
+  Get.lazyPut(() => ReactionController(), fenix: true);
 
   NotificationService().requestPermission();
   FirebaseMessaging.onBackgroundMessage(handleNotification);

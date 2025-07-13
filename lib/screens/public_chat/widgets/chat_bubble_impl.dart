@@ -7,6 +7,7 @@ import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/models/message_model.dart';
 import 'package:picapool/screens/public_chat/widgets/chat_bubble_widget.dart';
 import 'package:picapool/screens/public_chat/widgets/reacted_user_list.dart';
+import 'package:picapool/screens/public_chat/widgets/reaction_view.dart';
 import 'package:picapool/utils/date_time_helper.dart';
 import 'package:picapool/utils/theme.dart';
 
@@ -150,44 +151,26 @@ class _ChatBubbleState extends State<ChatBubble>
             curve: Curves.easeOutCubic,
           );
         },
-        onLongPressStart: (details) {
-          widget.onLongPress?.call(details);
-          // showCupertinoModalPopup(
-          //   context: context,
-          //   builder: (_) {
-          //     return CupertinoActionSheet(
-          //       actions: [
-          //         CupertinoActionSheetAction(
-          //           onPressed: () {
-          //             widget.onLongPress?.call(details);
-          //             Navigator.pop(context);
-          //           },
-          //           child: const Text("Reply"),
-          //         ),
-          //       ],
-          //       cancelButton: CupertinoActionSheetAction(
-          //         onPressed: () => Navigator.pop(context),
-          //         child: const Text("Cancel"),
-          //       ),
-          //     );
-          //   },
-          // );
-        },
         child: SlideTransition(
           position: _animation,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               _buildReplyIcon(),
-              ChatBubbleWidget(
-                isSender: widget.isSender,
-                message: widget.message,
-                formattedTime: formattedTime,
-                username: widget.username,
-                replyMessage: widget.replyMessage,
-                replyUsername: widget.replyUsername,
-                leadingWidget: widget.leadingWidget,
-                isEdited: widget.isEdited,
+              GestureDetector(
+                onLongPressStart: (details) {
+                  widget.onLongPress?.call(details);
+                },
+                child: ChatBubbleWidget(
+                  isSender: widget.isSender,
+                  message: widget.message,
+                  formattedTime: formattedTime,
+                  username: widget.username,
+                  replyMessage: widget.replyMessage,
+                  replyUsername: widget.replyUsername,
+                  leadingWidget: widget.leadingWidget,
+                  isEdited: widget.isEdited,
+                ),
               ),
               _buildReactionsOverlay(),
             ],
@@ -200,6 +183,16 @@ class _ChatBubbleState extends State<ChatBubble>
   Widget _buildReactionsOverlay() {
     if (widget.message.reactions.isEmpty) {
       return const SizedBox.shrink();
+    }
+
+    var totalCount = 0;
+
+    if (widget.message.reactions.isNotEmpty &&
+        widget.message.reactions.length > 2) {
+      totalCount = widget.message.reactions.fold<int>(
+        0,
+        (sum, reaction) => sum + reaction.count,
+      );
     }
 
     return Positioned(
@@ -226,32 +219,26 @@ class _ChatBubbleState extends State<ChatBubble>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: widget.message.reactions.map((reaction) {
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      reaction.reaction,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.black87,
-                      ),
+            children: (widget.message.reactions.length > 2)
+                ? [
+                    ReactionView(
+                      reaction: widget.message.reactions[0].reaction,
+                      count: widget.message.reactions[0].count,
+                      showCount: false,
                     ),
-                    if (reaction.count > 1) ...[
-                      SizedBox(width: 2),
-                      Text(
-                        "${reaction.count}",
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            }).toList(),
+                    ReactionView(
+                      reaction: widget.message.reactions[1].reaction,
+                      count: totalCount,
+                      showCount: true,
+                    ),
+                  ]
+                : widget.message.reactions.map((reaction) {
+                    return ReactionView(
+                      reaction: reaction.reaction,
+                      count: reaction.count,
+                      showCount: widget.message.reactions.length > 1,
+                    );
+                  }).toList(),
           ),
         ),
       ),
@@ -301,6 +288,7 @@ class _ChatBubbleState extends State<ChatBubble>
       child: ReactedUserList(
         message: widget.message,
       ),
+      isScrollController: true,
     );
   }
 }

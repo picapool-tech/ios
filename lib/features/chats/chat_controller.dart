@@ -385,9 +385,9 @@ class ChatController extends GetxController
     debugPrint("I am in leaveChat Function");
   }
 
-  void markAsRead({required int messageId}) {
+  void markAsRead({required int messageId, String? customMessage}) {
     socketService.readMessage(messageId, _userController.user!.id);
-    debugPrint("Marking message $messageId as read");
+    debugPrint("Marking message $messageId as read with ${customMessage ?? ""}");
   }
 
   @override

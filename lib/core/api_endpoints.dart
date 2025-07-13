@@ -29,6 +29,8 @@ class APIEndpoints {
   static String getChatFromLiveOfferId(int liveOfferId) =>
       "/chat/liveOffer/$liveOfferId";
   static String getChatFromOfferId(int offerId) => "/chat/offer/$offerId";
+  static String getMessageReactions(int messageId) =>
+      "/reaction/message/$messageId";
   static String getOfferDetails(int id) => "/offer/$id";
   static String getOffersByTagId(int tagId) => "/offer/tag/$tagId";
   static String getOffersForUser(int userId) => "/user/$userId/alerts";
@@ -42,6 +44,7 @@ class APIEndpoints {
       "/message/$messageId/reads";
   static String getTagById(int tagId) => "/tag/$tagId";
   static String getUser(int id) => "/user/$id";
+
   // static String get
 
   static String updateOfferDetails(int id) => "/offer/$id";

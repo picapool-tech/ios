@@ -60,6 +60,7 @@ class _MessageListState extends State<MessageList> {
   Widget build(BuildContext context) {
     return Obx(
       () {
+        _cleanupReadIds();
         if (controller.getLoadingState(ChatLoadingEnums.getAllMessages).value &&
             controller.messages.isEmpty) {
           return const Center(child: CircularProgressIndicator());
@@ -110,13 +111,15 @@ class _MessageListState extends State<MessageList> {
                       replyMessage.user?.username)
                   : null;
 
-              bool shouldMarkAsRead = !isSender &&
-                  !_readMessageIds.contains(message.id) &&
-                  message.type != MessageType.system;
+              bool shouldMarkAsRead =
+                  !isSender && !_readMessageIds.contains(message.id);
+
+              // log("${message.type}");
 
               return VisibilityDetector(
                 key: Key("message_${message.id}"),
                 onVisibilityChanged: (visibilityInfo) {
+                  log("[MESSAGE VISIBLE] for ->${message.content} -> $shouldMarkAsRead -> ${!(message.readData?.isRead ?? false)} -> ${message.isReadByAll}");
                   if (visibilityInfo.visibleFraction > 0.7 &&
                       shouldMarkAsRead &&
                       (!message.isReadByAll ||
@@ -127,8 +130,10 @@ class _MessageListState extends State<MessageList> {
                       const Duration(milliseconds: 300),
                       () {
                         if (!_readMessageIds.contains(message.id)) {
+                          controller.markAsRead(
+                              messageId: message.id,
+                              customMessage: "from visibililty ");
                           _readMessageIds.add(message.id);
-                          controller.markAsRead(messageId: message.id);
                         }
                       },
                     );
@@ -225,7 +230,6 @@ class _MessageListState extends State<MessageList> {
   @override
   void dispose() {
     _readDebounceTimer?.cancel();
-    controller.scrollController.dispose();
     _readMessageIds.clear();
     super.dispose();
   }
@@ -254,9 +258,12 @@ class _MessageListState extends State<MessageList> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.getAllMessages(
-        widget.chatId,
-      );
+      controller.getAllMessages(widget.chatId);
+
+      // Add a delayed check for initially visible messages
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _checkInitiallyVisibleMessages();
+      });
     });
   }
 
@@ -349,5 +356,43 @@ class _MessageListState extends State<MessageList> {
     }
 
     return messageCurr.userId != messagePrev.userId;
+  }
+
+  void _checkInitiallyVisibleMessages() {
+    if (!mounted || controller.messages.isEmpty) return;
+
+    // Process the first few messages that would be visible on screen
+    final visibleCount = (MediaQuery.of(context).size.height / 80).ceil();
+    final processCount = controller.messages.length < visibleCount
+        ? controller.messages.length
+        : visibleCount;
+
+    for (int i = 0; i < processCount; i++) {
+      final message = controller.messages[i];
+      final bool isSender = message.userId == _userController.user!.id;
+
+      // Check if this message should be marked as read
+      if (!isSender &&
+          !_readMessageIds.contains(message.id) &&
+          (!message.isReadByAll || !(message.readData?.isRead ?? false))) {
+        // Add to read set to avoid duplicates
+        _readMessageIds.add(message.id);
+
+        // Mark as read in controller
+        controller.markAsRead(
+          messageId: message.id,
+          customMessage: "from initial visibility",
+        );
+
+        log("[INITIAL VISIBLE] Marking message as read: ${message.id} - ${message.content}");
+      }
+    }
+  }
+
+  void _cleanupReadIds() {
+    if (controller.messages.isNotEmpty) {
+      final currentMessageIds = controller.messages.map((m) => m.id).toSet();
+      _readMessageIds.removeWhere((id) => !currentMessageIds.contains(id));
+    }
   }
 }

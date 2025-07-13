@@ -297,11 +297,11 @@ class _ChatPageState extends State<ChatPage>
     _isReplying.dispose();
     _replyingMessage.dispose();
     _editMessage.dispose();
-    _controller.dispose();
     _textController.dispose();
     _focusNode.dispose();
     _chatController.usersInChat.clear();
     _chatController.messages.clear();
+    _chatController.disconnectSocket();
     super.dispose();
   }
 
@@ -438,7 +438,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   void _handleLongPress(LongPressStartDetails details, Message message) {
-    _showReactionDialog(context, message, details.globalPosition);
+    _showReactionDialog(context, message, details);
   }
 
   void _handleSendMessage(String message) {
@@ -558,96 +558,96 @@ Could you please check for any discounts and share the final fare? 😊
   }
 
   // Update reaction dialog to use ValueNotifier
-  // void _showReactionDialog(
-  //     BuildContext context, Message message, LongPressStartDetails details) {
-  //   showPullDownMenu(
-  //     context: context,
-  //     routeTheme: PullDownMenuRouteTheme(
-  //       borderRadius: BorderRadius.circular(20),
-  //       backgroundColor: AppTheme.currentTheme.colorScheme.surface,
-  //     ),
-  //     items: [
-  //       PullDownMenuItem(
-  //         title: "Reply",
-  //         icon: Icons.reply,
-  //         onTap: () {
-  //           // ✅ No setState - just update ValueNotifier
-  //           _isReplying.value = true;
-  //           _replyingMessage.value = message;
-  //           _focusNode.requestFocus();
-  //         },
-  //       ),
-  //       PullDownMenuItem(
-  //         title: "Copy",
-  //         icon: Icons.copy,
-  //         onTap: () {
-  //           Clipboard.setData(ClipboardData(text: message.content));
-  //           ScaffoldMessenger.of(context).showSnackBar(
-  //             const SnackBar(content: Text("Message copied!")),
-  //           );
-  //         },
-  //       ),
-  //       if (message.userId == _userController.user?.id) ...[
-  //         PullDownMenuItem(
-  //           title: "Edit",
-  //           icon: Icons.edit,
-  //           onTap: () {
-  //             // ✅ No setState - just update ValueNotifier
-  //             _editMessage.value = message;
-  //             _textController.text = message.content;
-  //             _focusNode.requestFocus();
-  //           },
-  //         ),
-  //       ],
-  //     ],
-  //     position: Rect.fromLTWH(
-  //       details.globalPosition.dx,
-  //       details.globalPosition.dy,
-  //       MediaQuery.of(context).size.width + details.globalPosition.dx,
-  //       MediaQuery.of(context).size.height - details.globalPosition.dy,
-  //     ),
-  //   );
-  //   // showMenu<void>(
-  //   //   context: context,
-  //   //   position: RelativeRect.fromLTRB(
-  //   //     tapPosition.dx,
-  //   //     tapPosition.dy,
-  //   //     MediaQuery.of(context).size.width - tapPosition.dx,
-  //   //     MediaQuery.of(context).size.height - tapPosition.dy,
-  //   //   ),
-  //   //   items: [
-  //   //     // ... existing reaction menu items
-  //   //     PopupMenuItem<void>(
-  //   //       child: ListTile(
-  //   //         leading: const Icon(Icons.reply),
-  //   //         title: const Text("Reply"),
-  //   //         onTap: () {
-  //   //           _isReplying.value = true;
-  //   //           _replyingMessage.value = message;
-  //   //           _focusNode.requestFocus();
-  //   //           Navigator.of(context).pop();
-  //   //         },
-  //   //       ),
-  //   //     ),
-  //   //     // ... other menu items
-  //   //     if (message.userId == _userController.user?.id)
-  //   //       PopupMenuItem<void>(
-  //   //         child: ListTile(
-  //   //           leading: const Icon(Icons.edit),
-  //   //           title: const Text("Edit"),
-  //   //           onTap: () {
-  //   //             _editMessage.value = message;
-  //   //             _textController.text = message.content;
-  //   //             _focusNode.requestFocus();
-  //   //             Navigator.of(context).pop();
-  //   //           },
-  //   //         ),
-  //   //       ),
-  //   //   ],
-  //   // );
-  // }
-
   void _showReactionDialog(
+      BuildContext context, Message message, LongPressStartDetails details) {
+    showPullDownMenu(
+      context: context,
+      routeTheme: PullDownMenuRouteTheme(
+        borderRadius: BorderRadius.circular(20),
+        backgroundColor: AppTheme.currentTheme.colorScheme.surface,
+      ),
+      items: [
+        PullDownMenuItem(
+          title: "Reply",
+          icon: Icons.reply,
+          onTap: () {
+            // ✅ No setState - just update ValueNotifier
+            _isReplying.value = true;
+            _replyingMessage.value = message;
+            _focusNode.requestFocus();
+          },
+        ),
+        PullDownMenuItem(
+          title: "Copy",
+          icon: Icons.copy,
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: message.content));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Message copied!")),
+            );
+          },
+        ),
+        if (message.userId == _userController.user?.id) ...[
+          PullDownMenuItem(
+            title: "Edit",
+            icon: Icons.edit,
+            onTap: () {
+              // ✅ No setState - just update ValueNotifier
+              _editMessage.value = message;
+              _textController.text = message.content;
+              _focusNode.requestFocus();
+            },
+          ),
+        ],
+      ],
+      position: Rect.fromLTWH(
+        details.globalPosition.dx,
+        details.globalPosition.dy,
+        MediaQuery.of(context).size.width + details.globalPosition.dx,
+        MediaQuery.of(context).size.height - details.globalPosition.dy,
+      ),
+    );
+    // showMenu<void>(
+    //   context: context,
+    //   position: RelativeRect.fromLTRB(
+    //     tapPosition.dx,
+    //     tapPosition.dy,
+    //     MediaQuery.of(context).size.width - tapPosition.dx,
+    //     MediaQuery.of(context).size.height - tapPosition.dy,
+    //   ),
+    //   items: [
+    //     // ... existing reaction menu items
+    //     PopupMenuItem<void>(
+    //       child: ListTile(
+    //         leading: const Icon(Icons.reply),
+    //         title: const Text("Reply"),
+    //         onTap: () {
+    //           _isReplying.value = true;
+    //           _replyingMessage.value = message;
+    //           _focusNode.requestFocus();
+    //           Navigator.of(context).pop();
+    //         },
+    //       ),
+    //     ),
+    //     // ... other menu items
+    //     if (message.userId == _userController.user?.id)
+    //       PopupMenuItem<void>(
+    //         child: ListTile(
+    //           leading: const Icon(Icons.edit),
+    //           title: const Text("Edit"),
+    //           onTap: () {
+    //             _editMessage.value = message;
+    //             _textController.text = message.content;
+    //             _focusNode.requestFocus();
+    //             Navigator.of(context).pop();
+    //           },
+    //         ),
+    //       ),
+    //   ],
+    // );
+  }
+
+  void _showReactionDialogs(
       BuildContext context, Message message, Offset tapPosition) {
     showMenu<void>(
       context: context,
