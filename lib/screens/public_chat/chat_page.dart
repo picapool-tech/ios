@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:picapool/common/extensions/date_extensions.dart';
+import 'package:picapool/common/functions/model_bottom_sheet_caller.dart';
 // import 'package:picapool/common/functions/url_launch.dart';
 import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/core/type_defs.dart';
@@ -291,6 +292,45 @@ class _ChatPageState extends State<ChatPage>
     );
   }
 
+  Widget buildReactionRow(Message message) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var reaction in ["❤️", "👍", "😂", "🔥", "🎉", "😢"])
+          GestureDetector(
+            onTap: () {
+              _chatController.sendReaction(
+                content: reaction,
+                messageId: message.id,
+              );
+              Navigator.of(context).pop();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                reaction,
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        IconButton(
+          onPressed: () {
+            showEmojiPicker(
+              (emoji) => _chatController.sendReaction(
+                content: emoji,
+                messageId: message.id,
+              ),
+            );
+          },
+          icon: Icon(Icons.add),
+        )
+      ],
+    );
+  }
+
   @override
   void dispose() {
     _isEmojiShowing.dispose();
@@ -330,6 +370,40 @@ class _ChatPageState extends State<ChatPage>
 
       await _chatController.getAllUsersInChat(widget.chat.id);
     });
+  }
+
+  void showEmojiPicker(void Function(String emoji) onTapped) {
+    showPicaModelBottomSheet(
+      context: context,
+      isScrollController: false,
+      child: EmojiPicker(
+        customWidget: (config, state, showSearchBar) {
+          return SingleChildScrollView(
+            child: Container(
+              alignment: Alignment.center,
+              width: double.infinity,
+              child: Wrap(
+                children: state.categoryEmoji[1].emoji.map((emoji) {
+                  return GestureDetector(
+                    onTap: () {
+                      onTapped(emoji.emoji);
+                      Navigator.of(context).pop();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        emoji.emoji,
+                        style: const TextStyle(fontSize: 30),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildBackground() {
@@ -567,6 +641,11 @@ Could you please check for any discounts and share the final fare? 😊
         backgroundColor: AppTheme.currentTheme.colorScheme.surface,
       ),
       items: [
+        PullDownMenuTitle(
+            title: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: buildReactionRow(message),
+        )),
         PullDownMenuItem(
           title: "Reply",
           icon: Icons.reply,
@@ -588,14 +667,33 @@ Could you please check for any discounts and share the final fare? 😊
           },
         ),
         if (message.userId == _userController.user?.id) ...[
+          if ((DateTime.now().difference(message.createdAt)) <
+              const Duration(
+                minutes: 20,
+              )) // Allow edit only for 20 minutes
+            PullDownMenuItem(
+              title: "Edit",
+              icon: Icons.edit,
+              onTap: () {
+                // ✅ No setState - just update ValueNotifier
+                _editMessage.value = message;
+                _textController.text = message.content;
+                _focusNode.requestFocus();
+              },
+            ),
           PullDownMenuItem(
-            title: "Edit",
-            icon: Icons.edit,
+            title: "Info",
+            icon: Icons.info_outline_rounded,
             onTap: () {
-              // ✅ No setState - just update ValueNotifier
-              _editMessage.value = message;
-              _textController.text = message.content;
-              _focusNode.requestFocus();
+              Get.to(
+                () => MessageInfo(
+                  message: message,
+                ),
+              );
+              // Clipboard.setData(ClipboardData(text: message.content));
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   const SnackBar(content: Text("Message copied!")),
+              // );
             },
           ),
         ],
@@ -678,21 +776,19 @@ Could you please check for any discounts and share the final fare? 😊
               mainAxisSize: MainAxisSize.min,
               children: [
                 for (var reaction in ["❤️", "👍", "😂", "🔥", "🎉", "😢"])
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        _chatController.sendReaction(
-                          content: reaction,
-                          messageId: message.id,
-                        );
-                        Navigator.of(context).pop();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          reaction,
-                          style: const TextStyle(fontSize: 24),
-                        ),
+                  GestureDetector(
+                    onTap: () {
+                      _chatController.sendReaction(
+                        content: reaction,
+                        messageId: message.id,
+                      );
+                      Navigator.of(context).pop();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        reaction,
+                        style: const TextStyle(fontSize: 24),
                       ),
                     ),
                   ),
@@ -791,9 +887,11 @@ Could you please check for any discounts and share the final fare? 😊
                 title: const Text("Info"),
                 // contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                 onTap: () {
-                  Get.to(() => MessageInfo(
-                        message: message,
-                      ));
+                  Get.to(
+                    () => MessageInfo(
+                      message: message,
+                    ),
+                  );
                 },
               ),
             ),

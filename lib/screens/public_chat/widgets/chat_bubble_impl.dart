@@ -200,7 +200,7 @@ class _ChatBubbleState extends State<ChatBubble>
       right: widget.isSender ? 10 : null,
       left: widget.isSender ? null : 50,
       child: GestureDetector(
-        behavior: HitTestBehavior.deferToChild,
+        behavior: HitTestBehavior.opaque,
         onTap: () {
           _showReactionInfo();
         },
