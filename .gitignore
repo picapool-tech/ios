@@ -53,3 +53,4 @@ android/app/myapp.keystore
 *.lock
 pubspec.lock
 ios/Podfile.lock
+pubspec.lock

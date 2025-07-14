@@ -53,7 +53,11 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: SearchWidget(
-              onSearch: (query) {},
+              onSearch: (query) {
+                setState(() {
+                  _searchQuery = query;
+                });
+              },
               hintColor: AppTheme.light.colorScheme.onSecondary,
               borderColor: const Color(0xff797979),
               textColor: AppTheme.light.colorScheme.onSecondary,
@@ -80,7 +84,9 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
             // Chat list
             Expanded(
               child: (_userController.user != null)
-                  ? const ChatList()
+                  ? ChatList(
+                      searchQuery: _searchQuery,
+                    )
                   // ? GetBuilder<ChatController>(builder: (controller) {
                   //     if (chatController.chats.isEmpty &&
                   //         chatController.isLoading.value) {

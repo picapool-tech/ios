@@ -69,11 +69,18 @@ class _MessageInfoState extends State<MessageInfo> {
                             updatedAt: widget.message.updatedAt,
                             type: MessageType.system,
                           ),
+                          isEdited: widget.message.createdAt !=
+                              widget.message.updatedAt,
                         ),
                         SizedBox(height: 8),
-                        ChatBubble(
-                          isSender: true,
-                          message: widget.message,
+                        Hero(
+                          tag: "message_${widget.message.id}_hero",
+                          child: ChatBubble(
+                            isSender: true,
+                            message: widget.message,
+                            isEdited: widget.message.createdAt !=
+                                widget.message.updatedAt,
+                          ),
                         ),
                         SizedBox(height: 8),
                       ],

@@ -169,44 +169,47 @@ class _MessageListState extends State<MessageList> {
                           height: 10,
                         ),
                       ],
-                      ChatBubble(
-                        onDragToEnd: () => widget.onSwipeToEnd(message),
-                        // () {
+                      Hero(
+                        tag: "message_${message.id}_hero",
+                        child: ChatBubble(
+                          onDragToEnd: () => widget.onSwipeToEnd(message),
+                          // () {
 
-                        // setState(() {
-                        // isReplying = true;
-                        // replyingMessage = message;
-                        // _focusNode.requestFocus();
-                        // });
-                        // },
-                        onLongPress: (details) {
-                          widget.onLongPress?.call(details, message);
-                          // _showReactionDialog(context, message,
-                          //     details.globalPosition);
-                        },
-                        isSender: isSender,
-                        message: message,
-                        showDate: shouldShowDate(index),
-                        username: (!isSender && showUserName) ||
-                                message.type == MessageType.system
-                            ? user?.username ?? message.user?.username
-                            : null,
-                        leadingWidget: showUserName || showDate
-                            ? UserProfilePictureWidget(
-                                username: user?.username ??
-                                    message.user?.username ??
-                                    'NA',
-                                imageUrl: user?.pic,
-                              )
-                            : const CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.transparent,
-                              ),
-                        replyMessage: replyMessage,
-                        // getReplyMessage(message.parentId),
-                        replyUsername: replyUsername,
-                        // getReplyUserName(message.parentId),
-                        isEdited: message.createdAt != message.updatedAt,
+                          // setState(() {
+                          // isReplying = true;
+                          // replyingMessage = message;
+                          // _focusNode.requestFocus();
+                          // });
+                          // },
+                          onLongPress: (details) {
+                            widget.onLongPress?.call(details, message);
+                            // _showReactionDialog(context, message,
+                            //     details.globalPosition);
+                          },
+                          isSender: isSender,
+                          message: message,
+                          showDate: shouldShowDate(index),
+                          username: (!isSender && showUserName) ||
+                                  message.type == MessageType.system
+                              ? user?.username ?? message.user?.username
+                              : null,
+                          leadingWidget: showUserName || showDate
+                              ? UserProfilePictureWidget(
+                                  username: user?.username ??
+                                      message.user?.username ??
+                                      'NA',
+                                  imageUrl: user?.pic,
+                                )
+                              : const CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                          replyMessage: replyMessage,
+                          // getReplyMessage(message.parentId),
+                          replyUsername: replyUsername,
+                          // getReplyUserName(message.parentId),
+                          isEdited: message.createdAt != message.updatedAt,
+                        ),
                       ),
                       if (showTail)
                         const SizedBox(

@@ -25,7 +25,7 @@ class ChatList extends StatelessWidget {
       }
 
       var filteredChats = controller.chats.where((model) {
-        var offername = model.offer?.name ?? model.liveOffer?.from ?? "";
+        var offername = model.offer?.name ?? model.liveOffer?.to ?? "";
         var searchList = searchQuery.toLowerCase().split(" ");
         for (var element in searchList) {
           if (offername.toLowerCase().contains(element)) {

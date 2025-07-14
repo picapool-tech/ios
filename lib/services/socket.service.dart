@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:picapool/core/env_constants.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class SocketService {
@@ -21,10 +22,11 @@ class SocketService {
   }) {
     disconnectSocket();
 
+    // log("SOCKET = ${Env.get(APIConstants.socketUrl)}");
+
     roomIdG = roomId;
     socket = io.io(
-      // "http://api.picapool.com:3000",
-      "https://test-api.picapool.com",
+      APIConstants.socketUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({
