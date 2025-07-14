@@ -38,6 +38,7 @@ class FormController extends GetxController {
       email: formTwoData['email'] ?? '',
       images: List<String>.from(formOneData['images'] ?? []),
       mrp: formOneData['price'].toInt(),
+
       // offerIds: [formOneData['category'] ?? 1],
       // Empty for now since backend has restarted and is not accepting any value
       offerIds: [],

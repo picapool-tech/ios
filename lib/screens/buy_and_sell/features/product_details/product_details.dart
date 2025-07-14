@@ -152,7 +152,7 @@ class ProductDetails extends StatelessWidget {
                     text: "MRP: ",
                     children: [
                       TextSpan(
-                        text: "₹${product.mrp}",
+                        text: "₹${product.price ?? product.mrp ?? "N/A"}",
                         style: Get.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.lineThrough,
@@ -171,7 +171,7 @@ class ProductDetails extends StatelessWidget {
                     text: "Selling Price: ",
                     children: [
                       TextSpan(
-                        text: "₹${product.offerPrice}",
+                        text: "₹${offer.price ?? product.offerPrice ?? 'N/A'},",
                         style: Get.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),

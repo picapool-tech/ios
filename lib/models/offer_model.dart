@@ -29,6 +29,7 @@ class Offer {
   final bool top;
   final int? units;
   final int? maxUnits;
+  final int? price;
 
   Offer({
     required this.id,
@@ -38,6 +39,7 @@ class Offer {
     required this.createdAt,
     required this.expiryAt,
     this.link = "",
+    this.price,
     this.isVerified = false,
     this.priority = 1,
     this.isOnline = false,
@@ -90,6 +92,7 @@ class Offer {
       top: json['top'] ?? false,
       units: json['units'] as int?,
       maxUnits: json['maxUnits'] as int?,
+      price: json['price'],
     );
   }
 
@@ -129,6 +132,7 @@ Check it out: "https://offer.picapool.com/offer/$id"
     bool? top,
     int? units,
     int? maxUnits,
+    int? price,
   }) {
     return Offer(
       id: id ?? this.id,
@@ -153,6 +157,7 @@ Check it out: "https://offer.picapool.com/offer/$id"
       top: top ?? this.top,
       units: units ?? this.units,
       maxUnits: maxUnits ?? this.maxUnits,
+      price: price ?? this.price,
     );
   }
 
@@ -186,6 +191,7 @@ Check it out: "https://offer.picapool.com/offer/$id"
       'top': top,
       'units': units,
       'maxUnits': maxUnits,
+      'price': price,
     };
   }
 
@@ -260,6 +266,7 @@ Check it out: "https://offer.picapool.com/offer/$id"
       top: updates['top'],
       units: updates['units'],
       maxUnits: updates['maxUnits'],
+      price: updates['price'],
     );
   }
 }

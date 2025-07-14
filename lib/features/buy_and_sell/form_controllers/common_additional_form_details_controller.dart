@@ -51,8 +51,8 @@ class CommonAdditionalFormDetailsController extends GetxController
     var commonDetails = CommonDetailsModel(
       images: images,
       productCondition: productCondition.value!,
-      mrp: mrpController.text,
       offerPrice: offerPriceController.text,
+      price: mrpController.text,
       yearsHeld:
           yearsHeldController.text.isEmpty ? "0" : yearsHeldController.text,
       monthsHeld:

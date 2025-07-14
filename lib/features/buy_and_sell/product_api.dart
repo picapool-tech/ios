@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:picapool/core/api_impl.dart';
 import 'package:picapool/core/core.dart';
-import 'package:picapool/features/buy_and_sell/values/model.dart';
+import 'package:picapool/features/buy_and_sell/values/product_request_model.dart';
 import 'package:picapool/features/offers/offers_api.dart';
 import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/offer_search_request_model.dart';
@@ -16,7 +16,7 @@ class ProductApi with PicapoolApiClass {
       var response = await api.makeRequest(
         enpoint: APIEndpoints.createProduct,
         method: RequestMethod.post,
-        body: productRequestModel.toJson(),
+        body: productRequestModel.toNewJson(),
       );
 
       return response.fold((error) => left(error), (responseModel) async {

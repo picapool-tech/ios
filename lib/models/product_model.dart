@@ -9,6 +9,7 @@ class Product {
   final String description;
   final int? mrp;
   final int? offerPrice;
+  final int? price;
   final String? email;
   final String? phone;
   final Map<String, dynamic>? attributes;
@@ -24,6 +25,7 @@ class Product {
     required this.name,
     required this.images,
     required this.description,
+    required this.price,
     this.mrp,
     this.offerPrice,
     this.email,
@@ -45,6 +47,7 @@ class Product {
       images: List<String>.from(json['images']),
       description: json['description'],
       mrp: json['mrp'],
+      price: json['price'],
       offerPrice: json['offerPrice'],
       email: json['email'],
       phone: json['phone'],
@@ -83,6 +86,7 @@ class Product {
       'userId': userId,
       'Offers': offers.map((o) => o.toJson()).toList(),
       'Tags': tags.map((t) => t.toJson()).toList(),
+      'price': price,
     };
   }
 }

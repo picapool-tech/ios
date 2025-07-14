@@ -7,28 +7,32 @@ class ProductRequestModel {
   final List<String> images;
   List<XFile> imagesFile;
   final String description;
-  final double mrp;
+  final double? mrp;
   final double offerPrice;
+  final double? price;
   final String email;
   final String phone;
   final Map<String, dynamic> attributes;
   final int? partnerId;
   final int userId;
   final List<int> offerIds;
+  final int stocks;
 
   ProductRequestModel({
     required this.name,
     required this.images,
     required this.description,
-    required this.mrp,
+    this.mrp,
     required this.offerPrice,
     required this.email,
     required this.phone,
     required this.attributes,
+    required this.price,
     this.partnerId,
     required this.userId,
     required this.offerIds,
     this.imagesFile = const [],
+    this.stocks = 1,
   });
 
   factory ProductRequestModel.fromJson(Map<String, dynamic> json) {
@@ -37,7 +41,6 @@ class ProductRequestModel {
       name: json['name'] as String,
       images: List<String>.from(json['images']),
       description: json['description'] as String,
-      mrp: double.parse(json['mrp']),
       offerPrice: double.parse(json['offerPrice']),
       email: json['email'] as String,
       phone: json['phone'] as String,
@@ -45,6 +48,9 @@ class ProductRequestModel {
       partnerId: json['partnerId'] as int?,
       userId: json['userId'] as int,
       offerIds: List<int>.from(json['offerIds'] ?? []),
+      price:
+          json['price'] != null ? double.parse(json['price'].toString()) : null,
+      stocks: json['stock'] ?? 1,
     );
   }
 
@@ -53,7 +59,6 @@ class ProductRequestModel {
       'name': name,
       'images': images,
       'description': description,
-      'mrp': mrp,
       'offerPrice': offerPrice,
       'email': email,
       'phone': phone,
@@ -61,6 +66,24 @@ class ProductRequestModel {
       if (partnerId != null) 'partnerId': partnerId,
       'userId': userId,
       'offerIds': offerIds,
+      'price': price,
+      'stock': stocks,
+    };
+  }
+
+  Map<String, dynamic> toNewJson() {
+    return {
+      'name': name,
+      'images': images,
+      'description': description,
+      'email': email,
+      'phone': phone,
+      'attributes': attributes,
+      if (partnerId != null) 'partnerId': partnerId,
+      'userId': userId,
+      'offerIds': offerIds,
+      'price': price,
+      'stock': stocks,
     };
   }
 
@@ -80,9 +103,10 @@ class ProductRequestModel {
       ...commonDetails.toJsonRequired(),
       'attributes': {
         ...commonDetails.toJsonForAttributes(),
-        'category' : category,
+        'category': category,
       },
-      'phone' : "9100000000",
+      'phone': "9100000000",
+      'stock': 1,
     };
     return ProductRequestModel.fromJson(model);
   }

@@ -50,8 +50,8 @@ class _ProductContiditonWidgetState<T extends Enum>
                     assetLocation,
                     colorFilter: isSelected(condition)
                         ? ColorFilter.mode(
-                            AppTheme.currentTheme.colorScheme.onSurface,
-                            BlendMode.dstIn,
+                            AppTheme.currentTheme.colorScheme.onSecondary,
+                            BlendMode.srcIn,
                           )
                         : null,
                   ),
@@ -76,7 +76,7 @@ class _ProductContiditonWidgetState<T extends Enum>
             ),
             selected: isSelected(condition),
             backgroundColor: AppTheme.currentTheme.scaffoldBackgroundColor,
-            selectedColor: AppTheme.currentTheme.colorScheme.onPrimary,
+            selectedColor: AppTheme.currentTheme.colorScheme.primary,
             side: BorderSide(
               color: isSelected(condition)
                   ? AppTheme.currentTheme.colorScheme.secondary

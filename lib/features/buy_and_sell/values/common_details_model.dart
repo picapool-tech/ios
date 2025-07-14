@@ -4,9 +4,9 @@ import 'package:picapool/screens/buy_and_sell/values/product_condition_class.dar
 class CommonDetailsModel {
   final List<XFile> images;
   final ProductCondition productCondition;
-  final String mrp;
   final String offerPrice;
   final String yearsHeld;
+  final String price;
   final String monthsHeld;
   final String reasonForSell;
   final String email;
@@ -15,8 +15,8 @@ class CommonDetailsModel {
   CommonDetailsModel({
     required this.images,
     required this.productCondition,
-    required this.mrp,
     required this.offerPrice,
+    required this.price,
     required this.yearsHeld,
     required this.monthsHeld,
     required this.reasonForSell,
@@ -58,8 +58,8 @@ class CommonDetailsModel {
 
   Map<String, dynamic> toJsonRequired() => {
         'images': [],
-        'mrp': mrp.replaceAll(",", ""),
         'offerPrice': offerPrice.replaceAll(",", ""),
+        'price': price.replaceAll(",", ""),
         'email': "notrequired@email.com",
       };
 }

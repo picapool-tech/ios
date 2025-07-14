@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:picapool/common/widgets/dialog_widgets.dart';
 import 'package:picapool/features/buy_and_sell/products_controller.dart';
 import 'package:picapool/features/buy_and_sell/values/common_details_model.dart';
-import 'package:picapool/features/buy_and_sell/values/model.dart';
+import 'package:picapool/features/buy_and_sell/values/product_request_model.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
 import 'package:picapool/screens/buy_and_sell/values/filter_data.dart';
 

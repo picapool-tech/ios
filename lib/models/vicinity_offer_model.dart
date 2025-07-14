@@ -33,6 +33,7 @@ class VicinityOffer {
   final List<int> tagIds;
   final VicinityLocation location;
   final double distance;
+  final int? price;
 
   VicinityOffer({
     required this.name,
@@ -41,6 +42,7 @@ class VicinityOffer {
     required this.expiryAt,
     required this.userId,
     required this.location,
+    this.price,
     this.partnerID,
     this.productIds = const [],
     this.tagIds = const [],
@@ -61,6 +63,7 @@ class VicinityOffer {
       tagIds: (json['tagIds']) ? List<int>.from(json['tags']) : [],
       location: VicinityLocation.fromJson(json['loc']),
       distance: json['dist'] ?? 500,
+      price: json['price'],
     );
   }
 
@@ -75,6 +78,7 @@ class VicinityOffer {
       'tagIds': tagIds,
       'loc': location.toJson(),
       'dist': distance,
+      if(price != null) 'price': price,
     };
   }
 }

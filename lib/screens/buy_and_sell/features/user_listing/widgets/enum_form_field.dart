@@ -5,19 +5,16 @@ import 'package:picapool/utils/theme.dart';
 
 class ProductContitionFormField extends FormField<ProductCondition> {
   ProductContitionFormField({
-    Key? key,
+    super.key,
     required List<ProductCondition> conditions,
     required String Function(ProductCondition) displayNameGetter,
     String? Function(ProductCondition)? assetLocationGetter,
-    required ProductCondition? initialValue,
+    required super.initialValue,
     required Function(ProductCondition) onSelected,
-    required String? Function(ProductCondition?)? validator,
+    required super.validator,
     CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center,
     String? labelText,
   }) : super(
-          key: key,
-          initialValue: initialValue,
-          validator: validator,
           builder: (FormFieldState<ProductCondition> state) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,

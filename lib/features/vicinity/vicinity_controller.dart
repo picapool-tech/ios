@@ -68,6 +68,7 @@ class VicinityController extends GetxController {
       tagIds: [id],
       location: offer.location,
       distance: offer.distance,
+      price: offer.price,
     );
 
     final result = await _vicinityApi.createVicinity(

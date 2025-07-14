@@ -59,20 +59,20 @@ class NearbyProductsItem extends StatelessWidget {
               ),
               RichText(
                 text: TextSpan(
-                  text: '₹ ${product.mrp ?? "Not Available"}',
+                  text: '₹ ${product.price ?? product.mrp ?? "N/A"}',
                   style: Theme.of(context)
                       .textTheme
                       .titleSmall
                       ?.copyWith(decoration: TextDecoration.lineThrough),
                   children: [
-                    if (product.offerPrice != null)
-                      TextSpan(
-                        text: " ${product.offerPrice}",
-                        style: const TextStyle(
-                          decoration: TextDecoration.none,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    // if (product.offerPrice != null)
+                    TextSpan(
+                      text: " ${offer.price ?? product.offerPrice ?? "N/A"}",
+                      style: const TextStyle(
+                        decoration: TextDecoration.none,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
                   ],
                 ),
               ),

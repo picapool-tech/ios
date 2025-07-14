@@ -38,7 +38,7 @@ class _UserItemListingItemState extends State<UserItemListingItem> {
         ExpansionTile(
           title: Text(widget.offer.name),
           subtitle: Text(
-              '₹${widget.offer.products!.first.offerPrice!.toStringAsFixed(2)}'),
+              '₹${widget.offer.price?.toStringAsFixed(2) ?? widget.product.offerPrice?.toStringAsFixed(2) ?? 'N/A'}'),
           childrenPadding: const EdgeInsets.all(5),
           collapsedShape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),

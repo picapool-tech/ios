@@ -10,7 +10,7 @@ import 'package:picapool/core/reactive_loading.dart';
 import 'package:picapool/features/assets/assets_controller.dart';
 import 'package:picapool/features/buy_and_sell/product_api.dart';
 import 'package:picapool/features/buy_and_sell/values/enums.dart';
-import 'package:picapool/features/buy_and_sell/values/model.dart';
+import 'package:picapool/features/buy_and_sell/values/product_request_model.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/features/offers/offers_controller.dart';
 import 'package:picapool/features/storage/storage_controller.dart';
@@ -94,6 +94,7 @@ class ProductsController extends GetxController
 
       // 5. Create the product
       debugPrint("[DEBUG] Creating product in API");
+
       var result = await _productApi.createProduct(productRequestModel);
       return result.fold(
         (error) {
@@ -406,6 +407,7 @@ class ProductsController extends GetxController
           long: location.location!.longitude,
         ),
         distance: 25000,
+        price: model.offerPrice.toInt(),
       ),
       pickedFile: null,
       uname: _storageController.user.value!.name!,
