@@ -15,7 +15,7 @@ import 'package:picapool/features/user/values/user_data_model_enum.dart';
 import 'package:picapool/features/vicinity/vicinity_controller.dart';
 import 'package:picapool/models/near_user_model.dart';
 import 'package:picapool/models/vicinity_offer_model.dart';
-import 'package:picapool/screens/products/products_detailed_page.dart';
+import 'package:picapool/screens/Products/products_detailed_page.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/screens/vicinity/values/map_style.dart';
 import 'package:picapool/screens/vicinity/widget/expanded_top_widget.dart';

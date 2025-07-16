@@ -94,27 +94,9 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
 
   Duration _remainingDuration = Duration.zero;
 
-  final List<String> _allCategories = [
-    "Starter",
-    "Dal Curries",
-    "Veg Curries",
-    "Paneer Curries",
-    "Egg Curries",
-    "Veg Noodles",
-    "Non Veg Noodles",
-    "Roti",
-    "Grill Chicken",
-    "Fish & Prawn",
-    "Chicken Kebab",
-    "Biryani",
-    "Fried Rice",
-    "Roast item",
-    "Chatni",
-    "Shawarma",
-    "Chicken Curry",
-    "Special Chicken Curry",
-  ];
-
+  List<String> _allCategories = [];
+  bool _hasCategories = false;
+  bool _hasVegToggle = false;
   bool isExpanded = false;
 
   String get activeFilterLabel {
@@ -361,7 +343,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                             isLoading: false.obs,
                           ),
                         ),
-                        if (widget.offer.id == 298) ...[
+                        if (_hasVegToggle) ...[
                           const SizedBox(width: 20),
                           Row(
                             children: [
@@ -427,7 +409,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
             ),
         ],
       ),
-      floatingActionButton: (widget.offer.id == 298)
+      floatingActionButton: (_hasCategories)
           ? AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: isExpanded ? MediaQuery.sizeOf(context).width * 0.8 : 70,
@@ -450,14 +432,13 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.restaurant_menu,
-                            color: Colors.white,
-                          ),
-                          Text(
-                            "Menu",
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          Icon(Icons.tune,
+                              size: 26,
+                              color: Colors.white), // cleaner filter icon
+                          SizedBox(height: 2),
+                          Text("Filter",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
                     ),
@@ -510,6 +491,12 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     );
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   getAnimation() {
     if (_remainingDuration <= Duration.zero) {
       return const Text(
@@ -558,9 +545,26 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((duration) {
-      setState(() {
-        offerDetails = _offersController.getOfferDetails(widget.offer.id);
-      });
+      offerDetails = _offersController.getOfferDetails(widget.offer.id)
+        ..then((offer) {
+          if (offer == null) return;
+
+          // -------- Build capabilities --------
+          final catSet = <String>{};
+          bool vegFlag = false;
+          for (final p in (offer.products ?? [])) {
+            final attrs = p.attributes ?? {};
+            final cat = attrs['category'];
+            if (cat is String && cat.trim().isNotEmpty) catSet.add(cat);
+            if (attrs.containsKey('veg')) vegFlag = true;
+          }
+
+          setState(() {
+            _allCategories = catSet.toList()..sort();
+            _hasCategories = _allCategories.isNotEmpty;
+            _hasVegToggle = vegFlag;
+          });
+        });
 
       if (widget.offer.top) {
         _initTimer();
@@ -580,6 +584,14 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
         return false;
       }
     }
+
+    // Defensive: if categories vanished (shouldn’t happen often).
+    if (_hasCategories == false && _filters.containsKey('category')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() => _filters.remove('category'));
+      });
+    }
+
     return true;
   }
 
