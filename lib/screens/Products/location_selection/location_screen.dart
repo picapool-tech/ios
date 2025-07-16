@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:picapool/common/widgets/blurry_container.dart';
 import 'package:picapool/common/widgets/buttons_widgets.dart';
 import 'package:picapool/common/widgets/text_field_widgets.dart';
 import 'package:picapool/features/location/location_controller.dart';
@@ -147,10 +146,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                   selectedLocation =
                                       savedLocations[index].latLng;
 
-                                  addressController.text =
-                                      savedLocations[index].fullAddress;
                                   buildingController.text =
                                       savedLocations[index].buildingName;
+
+                                  addressController.text =
+                                      savedLocations[index].address;
+
                                   selectedType = savedLocations[index].type;
                                 });
                               },
@@ -212,13 +213,29 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ],
             ),
-            const Align(
-              alignment: Alignment.topCenter,
-              child: BlurryContainer(
-                alignment: Alignment.center,
-                padding: EdgeInsets.all(8),
-                child: Text(
-                  "Click on map to set the location",
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Center(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white70, // semi‑transparent
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        child: Text(
+                          "Click on map to set the location",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             )
@@ -267,7 +284,8 @@ class _LocationScreenState extends State<LocationScreen> {
       Get.snackbar("Oops!", "Please fill all fields");
       return;
     }
-    UserLocationModel locationModel = UserLocationModel(
+
+    final locationModel = UserLocationModel(
       address: addressController.text,
       buildingName: buildingController.text,
       type: selectedType,
@@ -275,10 +293,23 @@ class _LocationScreenState extends State<LocationScreen> {
       latLng: selectedLocation,
     );
 
-    List<UserLocationModel> savedLocations =
-        await _storageController.loadUserLocations();
-    savedLocations.add(locationModel);
-    await _storageController.saveUserLocations(savedLocations);
+    final cached = await _storageController.loadUserLocations();
+
+    final duplicateIndex = cached.indexWhere(
+      (loc) =>
+          loc.latLng?.latitude == locationModel.latLng?.latitude &&
+          loc.latLng?.longitude == locationModel.latLng?.longitude &&
+          loc.buildingName.trim().toLowerCase() ==
+              locationModel.buildingName.trim().toLowerCase(),
+    );
+
+    if (duplicateIndex == -1) {
+      cached.add(locationModel);
+    } else {
+      cached[duplicateIndex] = locationModel;
+    }
+
+    await _storageController.saveUserLocations(cached);
     Get.back();
     widget.onLocationSelected(locationModel.fullAddress);
   }
