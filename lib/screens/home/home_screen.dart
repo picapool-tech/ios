@@ -4,6 +4,7 @@ import 'package:picapool/common/values/values.dart';
 import 'package:picapool/features/location/location_controller.dart';
 import 'package:picapool/screens/home/widgets/down_sheet.dart';
 import 'package:picapool/utils/theme.dart';
+import 'package:picapool/utils/version_gate.dart';
 import 'package:picapool/widgets/home/location_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -66,6 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!_locationController.isUserProvidedLocation) {
         _locationController.getLocation();
       }
+
+      // Version gate check on resume
+      runVersionGate(context);
     }
   }
 }
