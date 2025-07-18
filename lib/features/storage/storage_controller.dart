@@ -30,6 +30,7 @@ class StorageController extends GetxController {
   Future<void> clearAuth() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth');
+    await _secureStorage.delete(key: 'auth');
     auth.value = null;
     update();
   }
@@ -37,6 +38,7 @@ class StorageController extends GetxController {
   Future<void> clearUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
+    await _secureStorage.delete(key: 'user');
     user.value = null;
     update();
   }
@@ -44,16 +46,16 @@ class StorageController extends GetxController {
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken;
-    if (prefs.containsKey("accessToken")) {
-      accessToken = prefs.getString("accessToken");
+    if (await _secureStorage.containsKey(key: "accessToken")) {
+      accessToken = await _secureStorage.read(key: "accessToken");
       if (accessToken != null) {
         // we will migrate the access token to secure storage here
-        await _secureStorage.write(key: "accessToken", value: accessToken);
+        await prefs.setString("accessToken", accessToken);
 
-        await prefs.remove("accessToken");
+        await _secureStorage.delete(key: "accessToken");
       }
     }
-    accessToken ??= await _secureStorage.read(key: "accessToken");
+    accessToken ??= prefs.getString("accessToken");
     if (accessToken == null) {
       return null;
     }
@@ -90,19 +92,19 @@ class StorageController extends GetxController {
     debugPrint("LOAD AUTH");
     String? authData;
 
-    if (prefs.containsKey("auth")) {
-      authData = prefs.getString('auth');
+    if (await _secureStorage.containsKey(key: "auth")) {
+      authData = await _secureStorage.read(key: 'auth');
       if (authData != null) {
         // we will migrate the auth data to secure storage here
-        await _secureStorage.write(key: 'auth', value: authData);
+        await prefs.setString('auth', authData);
 
         // and will remove it from shared preferences
-        await prefs.remove('auth');
+        await _secureStorage.delete(key: 'auth');
       }
     }
 
     // if not, we will read from secure storage
-    authData ??= await _secureStorage.read(key: 'auth');
+    authData ??= prefs.getString('auth');
     log("HERE IS THE AUTH DATA -> $authData");
 
     if (authData == null) {
@@ -147,18 +149,18 @@ class StorageController extends GetxController {
   Future<User?> loadUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData;
-    if (prefs.containsKey('user')) {
-      userData = prefs.getString('user');
+    if (await _secureStorage.containsKey(key: 'user')) {
+      userData = await _secureStorage.read(key: 'user');
       if (userData != null) {
         // we will migrate the user data to secure storage here
-        await _secureStorage.write(key: 'user', value: userData);
+        await prefs.setString('user', userData);
 
         // and will remove it from shared preferences
-        await prefs.remove('user');
+        await _secureStorage.delete(key: 'user');
       }
     }
 
-    userData ??= await _secureStorage.read(key: 'user');
+    userData ??= prefs.getString('user');
 
     debugPrint("LOADING USER FROM STORAGE CONTROLLER");
     // String? userData = prefs.getString('user');
@@ -209,17 +211,17 @@ class StorageController extends GetxController {
   }
 
   Future<void> saveAccessToken(String accessToken) async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    await _secureStorage.write(key: "accessToken", value: accessToken);
-    // await prefs.setString('accessToken', accessToken);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // await _secureStorage.write(key: "accessToken", value: accessToken);
+    await prefs.setString('accessToken', accessToken);
   }
 
   Future<void> saveAuth(Auth auth) async {
     debugPrint("Saving auth : ${auth.toJson()}");
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     String authData = jsonEncode(auth.toJson());
-    // await prefs.setString('auth', authData);
-    await _secureStorage.write(key: 'auth', value: authData);
+    await prefs.setString('auth', authData);
+    // await _secureStorage.write(key: 'auth', value: authData);
     await loadAuth();
   }
 
