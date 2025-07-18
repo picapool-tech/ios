@@ -19,6 +19,7 @@ class Product {
   final int? userId;
   final List<Offer> offers;
   final List<Tag> tags;
+  final int stock;
 
   Product({
     required this.id,
@@ -37,6 +38,7 @@ class Product {
     this.userId,
     required this.offers,
     required this.tags,
+    this.stock = 1,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -62,6 +64,7 @@ class Product {
       tags: (json['tags'] != null)
           ? (json['tags'] as List).map((t) => Tag.fromJson(t)).toList()
           : [],
+      stock: json['stock'] ?? 1,
     );
   }
 
@@ -87,6 +90,7 @@ class Product {
       'Offers': offers.map((o) => o.toJson()).toList(),
       'Tags': tags.map((t) => t.toJson()).toList(),
       'price': price,
+      'stock': stock,
     };
   }
 }

@@ -58,6 +58,7 @@ class AuthStateManager extends GetxController {
     Future.delayed(const Duration(milliseconds: 100), () {
       robustAuthCheck();
     });
+    // _checkAuthState(null);
   }
 
   void refreshAuthState() {
@@ -68,7 +69,7 @@ class AuthStateManager extends GetxController {
 
   Future<void> robustAuthCheck() async {
     // Future.delayed(Duration(milliseconds: 500));
-
+    _authState.value = AuthState.unknown;
     final auth = _storageController.auth.value;
     final user = _storageController.user.value;
 

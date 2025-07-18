@@ -109,17 +109,30 @@ class _UserItemListingItemState extends State<UserItemListingItem> {
                                       .copyWith(expiryAt: DateTime.now());
 
                                   product.attributes?['sold'] = true;
+
                                   Offer? updatedOfferResponse =
                                       await _offersController.updateOffer(
                                     updatedOffer: updatedOffer,
                                   );
+
+                                  if (updatedOfferResponse == null) {
+                                    showPicaAlertDialog(
+                                      message:
+                                          "Unable to mark the product as sold.",
+                                      confirmText: "Ok",
+                                      onConfirm: () {
+                                        Get.back();
+                                      },
+                                    );
+                                    return;
+                                  }
+
                                   Product? updatedProduct =
                                       await _productsController.updateProduct(
                                     updatedProduct: product,
                                   );
 
-                                  if (updatedProduct != null ||
-                                      updatedOfferResponse != null) {
+                                  if (updatedProduct != null) {
                                     _offersController.getAllUserCreatedOffer();
                                     showPicaAlertDialog(
                                       title: "Listing marked as sold",
@@ -130,6 +143,14 @@ class _UserItemListingItemState extends State<UserItemListingItem> {
                                         Get.back();
                                       },
                                     );
+                                  } else {
+                                    Offer? updatedOfferResponse =
+                                        await _offersController.updateOffer(
+                                      updatedOffer: updatedOffer.copyWith(
+                                        expiryAt: widget.offer.expiryAt,
+                                      ),
+                                    );
+                                    _offersController.getAllUserCreatedOffer();
                                   }
 
                                   // var updatedOffer =

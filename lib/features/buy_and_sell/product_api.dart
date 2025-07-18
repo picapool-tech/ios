@@ -91,6 +91,7 @@ class ProductApi with PicapoolApiClass {
         'id': updatedProduct.id,
         'userId': updatedProduct.userId,
         'attributes': updatedProduct.attributes,
+        'stock': 1,
       },
     );
 
