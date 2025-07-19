@@ -27,7 +27,12 @@ class _SportsState extends State<Sports> {
     return CreateProductOfferWithCategory(
       additionalFormDetailsController: _commonAdditionalFormDetailsController,
       formKey: _formController.formKey,
-      onSubmit: _formController.validate,
+      onSubmit: () {
+        var data = _commonAdditionalFormDetailsController.getData();
+        if (data != null) {
+          _formController.onSubmit(data);
+        }
+      },
       title: "Sports",
       isLoading: _productsController
           .getLoadingState(ProductLoadingEnums.createProduct),
@@ -82,7 +87,7 @@ class _SportsState extends State<Sports> {
           ),
           TextFieldWithCustomHeading(
             title: "Accessories included:",
-            controller: _formController.deviceTypeController,
+            controller: _formController.accessoriesController,
             hintText: "abc",
             validator: _formController.validateField,
           ),

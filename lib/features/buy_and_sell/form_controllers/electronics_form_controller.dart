@@ -37,6 +37,7 @@ class ElectronicsFormController extends GetxController
 
   void onSubmit(CommonDetailsModel commonDetails) async {
     if (!validate()) {
+      debugPrint("Form validation failed");
       return;
     }
 

@@ -233,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.8 (33010072025)",
+                      "Picapool for ${Platform.isAndroid ? "Android" : "iOS"} BETA v3.1.9 (33518072025)",
                       textAlign: TextAlign.center,
                       style: textTheme.bodySmall?.copyWith(
                         color: AppTheme.currentTheme.disabledColor,
