@@ -366,9 +366,14 @@ class _ChatPageState extends State<ChatPage>
         curve: Curves.decelerate,
       ));
 
-      await _chatController.getAllMessages(widget.chat.id);
+      Future.wait([
+        _chatController.getAllMessages(widget.chat.id),
+        _chatController.getAllUsersInChat(widget.chat.id),
+      ]);
 
-      await _chatController.getAllUsersInChat(widget.chat.id);
+      // await _chatController.getAllMessages(widget.chat.id);
+
+      // await _chatController.getAllUsersInChat(widget.chat.id);
     });
   }
 

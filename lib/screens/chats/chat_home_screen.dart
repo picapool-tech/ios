@@ -292,40 +292,40 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
       Get.find<StorageController>().saveLastReadMessagesWithChatId(readMessages);
     }
 
-    // Widget _getLastMessage(List<LastMessageModel> list, int chatId) {
-    //   if (list.isEmpty) {
-    //     return const SizedBox.shrink();
-    //   }
-    //   var lastMessage = list.last;
+    Widget _getLastMessage(List<LastMessageModel> list, int chatId) {
+      if (list.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      var lastMessage = list.last;
 
-    //   return Row(
-    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //     children: [
-    //       Expanded(
-    //         child: RichText(
-    //           overflow: TextOverflow.ellipsis,
-    //           text: TextSpan(
-    //             text: lastMessage.user?.username ?? "",
-    //             children: [
-    //               if (lastMessage.user != null) const TextSpan(text: ": "),
-    //               TextSpan(
-    //                 text: lastMessage.content,
-    //                 style: Get.textTheme.bodyMedium?.copyWith(
-    //                   fontWeight: FontWeight.normal,
-    //                 ),
-    //               ),
-    //             ],
-    //             style: Get.textTheme.bodyMedium?.copyWith(
-    //               fontWeight: FontWeight.bold,
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //       if (isMessageUnread(lastMessage, chatId))
-    //         const Icon(Icons.circle, color: Colors.red, size: 10)
-    //     ],
-    //   );
-    // }
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: RichText(
+              overflow: TextOverflow.ellipsis,
+              text: TextSpan(
+                text: lastMessage.user?.username ?? "",
+                children: [
+                  if (lastMessage.user != null) const TextSpan(text: ": "),
+                  TextSpan(
+                    text: lastMessage.content,
+                    style: Get.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
+                style: Get.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          if (isMessageUnread(lastMessage, chatId))
+            const Icon(Icons.circle, color: Colors.red, size: 10)
+        ],
+      );
+    }
 
     void _onSearchChanged() {
       setState(() {

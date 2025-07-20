@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:picapool/features/chats/chat_controller.dart';
+import 'package:picapool/features/user/user_controller.dart';
+import 'package:picapool/models/chat_model.dart';
 import 'package:picapool/screens/chats/widgets/chat_list_widget.dart';
 import 'package:picapool/widgets/loading/chat_loading.dart';
 
 class ChatList extends StatelessWidget {
   final String searchQuery;
-  final int    filterTab;          // 0‑All 1‑Group 2‑Private
+  final int filterTab; // 0‑All 1‑Group 2‑Private
   const ChatList({
     super.key,
     this.searchQuery = "",
@@ -26,7 +28,7 @@ class ChatList extends StatelessWidget {
         return const Center(child: Text('No chats found'));
       }
 
-          var filteredChats = controller.chats
+      var filteredChats = controller.chats
           // 1️⃣ TAB FILTER -------------------------------------------
           .where((m) =>
               filterTab == 0 ||
@@ -45,7 +47,35 @@ class ChatList extends StatelessWidget {
       }).toList();
       return ChatListWidget(
         chats: filteredChats,
+        isMessageUnread: (lastMessage, chatId) =>
+            isMessageUnread(lastMessage, chatId, chatController),
       );
     });
+  }
+
+  bool isMessageUnread(LastMessageModel lastMessageModel, int chatId,
+      ChatController chatController) {
+    var lastReadMessage = chatController.lastReadMessages[chatId];
+    if (lastReadMessage == null) {
+      return false;
+    }
+
+    var readLastMessage = lastReadMessage.lastMessageModel;
+
+    if (readLastMessage == null) {
+      return true;
+    }
+
+    debugPrint("Last message: ${lastMessageModel.toJson()}");
+    debugPrint("Last message: ${readLastMessage.user?.toJson()}");
+
+    var currentUserName = Get.find<UserController>().user?.username;
+    if (readLastMessage.content == lastMessageModel.content &&
+        (lastMessageModel.user?.username == readLastMessage.user?.username ||
+            lastMessageModel.user?.username == currentUserName)) {
+      return false;
+    }
+
+    return true;
   }
 }

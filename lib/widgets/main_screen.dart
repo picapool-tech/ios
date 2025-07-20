@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/screens/alerts/alerts_page.dart';
 import 'package:picapool/screens/chats/chat_home_screen.dart';
 import 'package:picapool/screens/home/home_screen.dart';
@@ -122,9 +123,9 @@ class _MainScreenState extends State<MainScreen>
   void initState() {
     super.initState();
 
-    setState(() {
-      _selectedIndex = widget.goToIndex;
-    });
+    // setState(() {
+    _selectedIndex = widget.goToIndex;
+    // });
 
     _tabController = TabController(
       length: NavbarConfig.titles.length,
@@ -134,7 +135,9 @@ class _MainScreenState extends State<MainScreen>
 
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
-        setState(() => _selectedIndex = _tabController.index);
+        setState(() {
+          _selectedIndex = _tabController.index;
+        });
       }
     });
   }
@@ -156,18 +159,27 @@ class _MainScreenState extends State<MainScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.asset(
-              isActive
-                  ? NavbarConfig.activeIconPaths[index]
-                  : NavbarConfig.iconPaths[index],
-              width: 24,
-              height: 24,
-              colorFilter: !isActive
-                  ? ColorFilter.mode(
-                      AppTheme.currentTheme.hintColor,
-                      BlendMode.srcIn,
-                    )
-                  : null,
+            Badge(
+              isLabelVisible: index == 1, // Show badge only for Alerts
+              label: Obx(() {
+                final chatController = Get.find<ChatController>();
+                final unreadCount = chatController.countUnreadMessages.values
+                    .fold(0, (previous, current) => previous + current);
+                return unreadCount > 0 ? Text('$unreadCount') : Text('0');
+              }),
+              child: SvgPicture.asset(
+                isActive
+                    ? NavbarConfig.activeIconPaths[index]
+                    : NavbarConfig.iconPaths[index],
+                width: 24,
+                height: 24,
+                colorFilter: !isActive
+                    ? ColorFilter.mode(
+                        AppTheme.currentTheme.hintColor,
+                        BlendMode.srcIn,
+                      )
+                    : null,
+              ),
             ),
             const SizedBox(height: 4),
             Text(

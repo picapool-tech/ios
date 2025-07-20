@@ -31,6 +31,7 @@ class ChatController extends GetxController
   var isLoading = false.obs;
   var errorMessage = ''.obs;
   var chats = <ChatAndOfferModel>[].obs;
+  var countUnreadMessages = <int, int>{}.obs;
 
   var messages = <Message>[].obs;
   var usersInChat = <int, User>{}.obs;
