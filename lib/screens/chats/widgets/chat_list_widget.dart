@@ -7,6 +7,7 @@ import 'package:picapool/features/chats/chat_controller.dart';
 import 'package:picapool/screens/chats/widgets/last_message_widget.dart';
 import 'package:picapool/screens/public_chat/chat_page.dart';
 import 'package:picapool/utils/date_time_helper.dart';
+import 'package:picapool/features/user/user_controller.dart';
 
 class ChatListWidget extends StatelessWidget {
   final List<ChatAndOfferModel> chats;
@@ -19,13 +20,35 @@ class ChatListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var chatController = Get.find<ChatController>();
+    // returns the display title based on private/group rules
+    String _titleForChat(ChatAndOfferModel chat, int currentUserId) {
+      if (!chat.chat.isMain) {
+        final users = chat.chat.users ?? [];
+        if (users.length >= 2) {
+          final other = users.firstWhere(
+            (u) => u.id != currentUserId,
+            orElse: () => users.first,
+          );
+          return '${other.username} – ${chat.offer?.name ?? chat.liveOffer?.to ?? "Chat"}';
+        }
+        // only current user in list
+        return 'You – ${chat.offer?.name ?? chat.liveOffer?.to ?? "Chat"}';
+      }
+      // group chat
+      return chat.offer?.name ?? chat.liveOffer?.to ?? "Chat";
+    }
 
     return ListView.builder(
       itemCount: chats.length,
       itemBuilder: (context, index) {
         // bool isSelected = selectedIndexes.contains(index);
         var chat = chats[index];
-        var chatTitleColor = chat.chatTitle.toColor;
+        final currentUserId = Get.find<UserController>().user?.id ?? -1;
+        final title = _titleForChat(chat, currentUserId);
+        var chatTitleColor = title.toColor;
+
+        final DateTime latestTime = chat.chat.updatedAt;
+
         return GestureDetector(
           onTap: () {
             // setState(() {
@@ -69,7 +92,7 @@ class ChatListWidget extends StatelessWidget {
                   ? null
                   : Center(
                       child: Text(
-                        chat.chatTitle.characters.first.toUpperCase(),
+                        title.characters.first.toUpperCase(),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -86,7 +109,7 @@ class ChatListWidget extends StatelessWidget {
                   child: Hero(
                     tag: chat.chat.id,
                     child: Text(
-                      chat.chatTitle,
+                      title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -100,7 +123,7 @@ class ChatListWidget extends StatelessWidget {
                 ),
                 Text(
                   DateTimeHelper.timeAgoSince(
-                    chat.chat.updatedAt.toIso8601String(),
+                    latestTime.toIso8601String(),
                   ),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Get.theme.hintColor,

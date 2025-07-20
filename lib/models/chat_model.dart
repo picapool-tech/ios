@@ -46,11 +46,11 @@ class Chat {
               .map((m) => LastMessageModel.fromJson(m))
               .toList()
           : null,
-      users: json['users'] != null
-          ? (json['users'] as List).map((u) => User.fromJson(u)).toList()
+      users: json['Users'] != null
+          ? (json['Users'] as List).map((u) => User.fromJson(u)).toList()
           : null,
-      admins: json['admins'] != null
-          ? (json['admins'] as List).map((a) => Admin.fromJson(a)).toList()
+      admins: json['Admins'] != null
+          ? (json['Admins'] as List).map((a) => Admin.fromJson(a)).toList()
           : null,
       liveOffer: json['LiveOffer'] != null
           ? LiveOffer.fromJson(json['LiveOffer'])
@@ -69,8 +69,8 @@ class Chat {
       'liveOffer': liveOffer?.toJson(),
       'liveOfferId': liveOfferId,
       'messages': messages?.map((m) => m.toJson()).toList(),
-      'users': users?.map((u) => u.toJson()).toList(),
-      'admins': admins?.map((a) => a.toJson()).toList(),
+      'Users': users?.map((u) => u.toJson()).toList(),
+      'Admins': admins?.map((a) => a.toJson()).toList(),
     };
   }
 }

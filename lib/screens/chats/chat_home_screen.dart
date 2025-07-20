@@ -32,7 +32,9 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+      return DefaultTabController(            
+      length: 3,                          
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           "My Chats", // (Need to make unread dot here)",
@@ -48,21 +50,31 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
           brightness: Brightness.dark,
         ),
         backgroundColor: AppTheme.currentTheme.colorScheme.secondary,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(kBottomNavigationBarHeight),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: SearchWidget(
-              onSearch: (query) {
-                setState(() {
-                  _searchQuery = query;
-                });
-              },
-              hintColor: AppTheme.light.colorScheme.onSecondary,
-              borderColor: const Color(0xff797979),
-              textColor: AppTheme.light.colorScheme.onSecondary,
-              trailingIconColor: AppTheme.light.colorScheme.primary,
-            ),
+        bottom: PreferredSize(                               
+          preferredSize: const Size.fromHeight(92),
+          child: Column(
+            children: [
+              TabBar(
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                labelColor: Colors.white,      
+                unselectedLabelColor: Colors.white70, 
+                tabs: const [
+                  Tab(text: 'ALL'),
+                  Tab(text: 'GROUP'),
+                  Tab(text: 'PRIVATE'),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: SearchWidget(
+                  onSearch: (q) => setState(() => _searchQuery = q),
+                  hintColor: AppTheme.light.colorScheme.onSecondary,
+                  borderColor: const Color(0xff797979),
+                  textColor: AppTheme.light.colorScheme.onSecondary,
+                  trailingIconColor: AppTheme.light.colorScheme.primary,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -84,8 +96,12 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
             // Chat list
             Expanded(
               child: (_userController.user != null)
-                  ? ChatList(
-                      searchQuery: _searchQuery,
+                  ? TabBarView(
+                      children: [
+                        ChatList(searchQuery: _searchQuery, filterTab: 0),
+                        ChatList(searchQuery: _searchQuery, filterTab: 1),
+                        ChatList(searchQuery: _searchQuery, filterTab: 2),
+                      ],
                     )
                   // ? GetBuilder<ChatController>(builder: (controller) {
                   //     if (chatController.chats.isEmpty &&
@@ -117,205 +133,207 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                     ),
             ),
           ],
-        ),
-      ),
-    );
-  }
+      ),              // closes Scaffold
+    ),                // closes DefaultTabController
+  ),
+);                  // ^ one semicolon, one parenthesis
+}                     // build ends
 
-  // ListView chatList(List<ChatAndOfferModel> chats) {
-  //   return
-  //   ListView.builder(
-  //     itemCount: chats.length,
-  //     itemBuilder: (context, index) {
-  //       bool isSelected = selectedIndexes.contains(index);
-  //       var chat = chats[index];
-  //       return GestureDetector(
-  //         onTap: () {
-  //           setState(() {
-  //             Get.to(() => ChatPage(
-  //                   chat: chat.chat,
-  //                   offer: chat.offer,
-  //                   liveOffer: chat.liveOffer,
-  //                   chatTitle: chat.liveOffer?.to ?? chat.offer?.name ?? "Chat",
-  //                 ))?.then(
-  //               (onValue) async {
-  //                 await chatController.getAllChats();
-  //                 saveAllLastMessages();
-  //                 debugPrint('ChatPage closed:');
-  //               },
-  //             );
-  //             // if (selectedIndexes.isNotEmpty) {
-  //             //   if (isSelected) {
-  //             //     selectedIndexes.remove(index);
-  //             //   } else {
-  //             //     selectedIndexes.add(index);
-  //             //   }
-  //             // }
-  //           });
-  //         },
-  //         child: Container(
-  //           color: isSelected ? const Color(0xffFFEBDF) : Colors.transparent,
-  //           child: ListTile(
-  //             leading: Stack(
-  //               alignment: Alignment.center,
-  //               children: [
-  // Container(
-  //   width: 50,
-  //   height: 50,
-  //   decoration: BoxDecoration(
-  //     borderRadius: BorderRadius.circular(10),
-  //     image: (hasImage(chat))
-  //         ? DecorationImage(
-  //             image: _handleImage(chat),
-  //             fit: BoxFit.cover,
-  //           )
-  //         : null,
-  //     color: hasImage(chat)
-  //         ? null
-  //         : getColorFromString(getChatTitle(chat))
-  //             .withAlpha(30),
-  //   ),
-  //   child: hasImage(chat)
-  //       ? null
-  //       : Center(
-  //           child: Text(
-  //             getChatTitle(chat).characters.first.toUpperCase(),
-  //             style: TextStyle(
-  //               fontSize: 20,
-  //               fontWeight: FontWeight.bold,
-  //               color: getColorFromString(getChatTitle(chat)),
-  //             ),
-  //           ),
-  //         ),
-  // ),
-  //               ],
-  //             ),
-  //             title: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 // todo : change the title to chat.title
-  //                 Expanded(
-  //                   child: Hero(
-  //                     tag: chat.chat.id,
-  //                     child: Text(
-  //                       getChatTitle(chat),
-  //                       maxLines: 1,
-  //                       overflow: TextOverflow.ellipsis,
-  //                       style:
-  //                           Theme.of(context).textTheme.titleMedium?.copyWith(
-  //                                 fontWeight: FontWeight.bold,
-  //                               ),
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 const SizedBox(
-  //                   width: 4,
-  //                 ),
-  //                 Text(
-  //                   DateTimeHelper.timeAgoSince(
-  //                     chat.chat.updatedAt.toIso8601String(),
-  //                   ),
-  //                   style: Theme.of(context).textTheme.labelSmall,
-  //                 ),
-  //               ],
-  //             ),
-  //             subtitle: (chat.chat.messages != null)
-  //                 ? _getLastMessage(chat.chat.messages!, chat.chat.id)
-  //                 : null,
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
+    // ListView chatList(List<ChatAndOfferModel> chats) {
+    //   return
+    //   ListView.builder(
+    //     itemCount: chats.length,
+    //     itemBuilder: (context, index) {
+    //       bool isSelected = selectedIndexes.contains(index);
+    //       var chat = chats[index];
+    //       return GestureDetector(
+    //         onTap: () {
+    //           setState(() {
+    //             Get.to(() => ChatPage(
+    //                   chat: chat.chat,
+    //                   offer: chat.offer,
+    //                   liveOffer: chat.liveOffer,
+    //                   chatTitle: chat.liveOffer?.to ?? chat.offer?.name ?? "Chat",
+    //                 ))?.then(
+    //               (onValue) async {
+    //                 await chatController.getAllChats();
+    //                 saveAllLastMessages();
+    //                 debugPrint('ChatPage closed:');
+    //               },
+    //             );
+    //             // if (selectedIndexes.isNotEmpty) {
+    //             //   if (isSelected) {
+    //             //     selectedIndexes.remove(index);
+    //             //   } else {
+    //             //     selectedIndexes.add(index);
+    //             //   }
+    //             // }
+    //           });
+    //         },
+    //         child: Container(
+    //           color: isSelected ? const Color(0xffFFEBDF) : Colors.transparent,
+    //           child: ListTile(
+    //             leading: Stack(
+    //               alignment: Alignment.center,
+    //               children: [
+    // Container(
+    //   width: 50,
+    //   height: 50,
+    //   decoration: BoxDecoration(
+    //     borderRadius: BorderRadius.circular(10),
+    //     image: (hasImage(chat))
+    //         ? DecorationImage(
+    //             image: _handleImage(chat),
+    //             fit: BoxFit.cover,
+    //           )
+    //         : null,
+    //     color: hasImage(chat)
+    //         ? null
+    //         : getColorFromString(getChatTitle(chat))
+    //             .withAlpha(30),
+    //   ),
+    //   child: hasImage(chat)
+    //       ? null
+    //       : Center(
+    //           child: Text(
+    //             getChatTitle(chat).characters.first.toUpperCase(),
+    //             style: TextStyle(
+    //               fontSize: 20,
+    //               fontWeight: FontWeight.bold,
+    //               color: getColorFromString(getChatTitle(chat)),
+    //             ),
+    //           ),
+    //         ),
+    // ),
+    //               ],
+    //             ),
+    //             title: Row(
+    //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //               children: [
+    //                 // todo : change the title to chat.title
+    //                 Expanded(
+    //                   child: Hero(
+    //                     tag: chat.chat.id,
+    //                     child: Text(
+    //                       getChatTitle(chat),
+    //                       maxLines: 1,
+    //                       overflow: TextOverflow.ellipsis,
+    //                       style:
+    //                           Theme.of(context).textTheme.titleMedium?.copyWith(
+    //                                 fontWeight: FontWeight.bold,
+    //                               ),
+    //                     ),
+    //                   ),
+    //                 ),
+    //                 const SizedBox(
+    //                   width: 4,
+    //                 ),
+    //                 Text(
+    //                   DateTimeHelper.timeAgoSince(
+    //                     chat.chat.updatedAt.toIso8601String(),
+    //                   ),
+    //                   style: Theme.of(context).textTheme.labelSmall,
+    //                 ),
+    //               ],
+    //             ),
+    //             subtitle: (chat.chat.messages != null)
+    //                 ? _getLastMessage(chat.chat.messages!, chat.chat.id)
+    //                 : null,
+    //           ),
+    //         ),
+    //       );
+    //     },
+    //   );
+    // }
 
-  @override
-  void initState() {
-    super.initState();
-    if (_userController.user != null) {
-      chatController.getAllChats();
-    }
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  bool isMessageUnread(LastMessageModel lastMessageModel, int chatId) {
-    var lastReadMessage = chatController.lastReadMessages[chatId];
-    if (lastReadMessage == null) {
-      return false;
+    @override
+    void initState() {
+      super.initState();
+      if (_userController.user != null) {
+        chatController.getAllChats();
+      }
+      _searchController.addListener(_onSearchChanged);
     }
 
-    var readLastMessage = lastReadMessage.lastMessageModel;
+    bool isMessageUnread(LastMessageModel lastMessageModel, int chatId) {
+      var lastReadMessage = chatController.lastReadMessages[chatId];
+      if (lastReadMessage == null) {
+        return false;
+      }
 
-    if (readLastMessage == null) {
+      var readLastMessage = lastReadMessage.lastMessageModel;
+
+      if (readLastMessage == null) {
+        return true;
+      }
+
+      debugPrint("Last message: ${lastMessageModel.toJson()}");
+      debugPrint("Last message: ${readLastMessage.user?.toJson()}");
+
+      var currentUserName = _userController.user?.username;
+      if (readLastMessage.content == lastMessageModel.content &&
+          (lastMessageModel.user?.username == readLastMessage.user?.username ||
+              lastMessageModel.user?.username == currentUserName)) {
+        return false;
+      }
+
       return true;
     }
 
-    debugPrint("Last message: ${lastMessageModel.toJson()}");
-    debugPrint("Last message: ${readLastMessage.user?.toJson()}");
-
-    var currentUserName = _userController.user?.username;
-    if (readLastMessage.content == lastMessageModel.content &&
-        (lastMessageModel.user?.username == readLastMessage.user?.username ||
-            lastMessageModel.user?.username == currentUserName)) {
-      return false;
+    void saveAllLastMessages() {
+      Map<int, ChatUnreadModel> readMessages = {};
+      for (var chat in chatController.chats) {
+        readMessages[chat.chat.id] = ChatUnreadModel(
+          chatId: chat.chat.id,
+          lastMessageModel: chat.chat.messages?.lastOrNull,
+        );
+      }
+      chatController.lastReadMessages.value = readMessages;
+      Get.find<StorageController>().saveLastReadMessagesWithChatId(readMessages);
     }
 
-    return true;
-  }
+    // Widget _getLastMessage(List<LastMessageModel> list, int chatId) {
+    //   if (list.isEmpty) {
+    //     return const SizedBox.shrink();
+    //   }
+    //   var lastMessage = list.last;
 
-  void saveAllLastMessages() {
-    Map<int, ChatUnreadModel> readMessages = {};
-    for (var chat in chatController.chats) {
-      readMessages[chat.chat.id] = ChatUnreadModel(
-        chatId: chat.chat.id,
-        lastMessageModel: chat.chat.messages?.lastOrNull,
-      );
+    //   return Row(
+    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //     children: [
+    //       Expanded(
+    //         child: RichText(
+    //           overflow: TextOverflow.ellipsis,
+    //           text: TextSpan(
+    //             text: lastMessage.user?.username ?? "",
+    //             children: [
+    //               if (lastMessage.user != null) const TextSpan(text: ": "),
+    //               TextSpan(
+    //                 text: lastMessage.content,
+    //                 style: Get.textTheme.bodyMedium?.copyWith(
+    //                   fontWeight: FontWeight.normal,
+    //                 ),
+    //               ),
+    //             ],
+    //             style: Get.textTheme.bodyMedium?.copyWith(
+    //               fontWeight: FontWeight.bold,
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //       if (isMessageUnread(lastMessage, chatId))
+    //         const Icon(Icons.circle, color: Colors.red, size: 10)
+    //     ],
+    //   );
+    // }
+
+    void _onSearchChanged() {
+      setState(() {
+        // _filteredChats = chatController.chats
+        //     .where((chat) => chat.title.contains(_searchController.text))
+        //     .toList();
+        _searchQuery = _searchController.text;
+      });
+
     }
-    chatController.lastReadMessages.value = readMessages;
-    Get.find<StorageController>().saveLastReadMessagesWithChatId(readMessages);
-  }
-
-  // Widget _getLastMessage(List<LastMessageModel> list, int chatId) {
-  //   if (list.isEmpty) {
-  //     return const SizedBox.shrink();
-  //   }
-  //   var lastMessage = list.last;
-
-  //   return Row(
-  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //     children: [
-  //       Expanded(
-  //         child: RichText(
-  //           overflow: TextOverflow.ellipsis,
-  //           text: TextSpan(
-  //             text: lastMessage.user?.username ?? "",
-  //             children: [
-  //               if (lastMessage.user != null) const TextSpan(text: ": "),
-  //               TextSpan(
-  //                 text: lastMessage.content,
-  //                 style: Get.textTheme.bodyMedium?.copyWith(
-  //                   fontWeight: FontWeight.normal,
-  //                 ),
-  //               ),
-  //             ],
-  //             style: Get.textTheme.bodyMedium?.copyWith(
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //       if (isMessageUnread(lastMessage, chatId))
-  //         const Icon(Icons.circle, color: Colors.red, size: 10)
-  //     ],
-  //   );
-  // }
-
-  void _onSearchChanged() {
-    setState(() {
-      // _filteredChats = chatController.chats
-      //     .where((chat) => chat.title.contains(_searchController.text))
-      //     .toList();
-      _searchQuery = _searchController.text;
-    });
-  }
 }

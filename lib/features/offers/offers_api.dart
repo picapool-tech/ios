@@ -136,6 +136,43 @@ class OffersApi with PicapoolApiClass {
     }
   }
 
+ 
+ Future<Either<Failure, Chat>> createOrGetPvtChat({
+    required int offerId,
+    required int buyerId,
+  }) async {
+    try {
+      final response = await api.makeRequest(
+        enpoint: APIEndpoints.pvtChatBuySell,
+        method: RequestMethod.post,
+        body: {
+          "offerId": offerId,
+          "buyerId": buyerId,
+        },
+      );
+
+      return response.fold((error) => left(error), (responseModel) {
+        if (responseModel.success) {
+          return right(Chat.fromJson(responseModel.data));
+        } else {
+          return left(
+            Failure(
+              message: responseModel.message ?? 'Unknown error',
+              stackTrace: StackTrace.current,
+            ),
+          );
+        }
+      });
+    } catch (e, stack) {
+      return left(
+        Failure(
+          message: e.toString(),
+          stackTrace: stack,
+        ),
+      );
+    }
+  }
+  
   FutureEither<Offer> getOfferDetails(int id) async {
     try {
       var result = await api.makeRequest(

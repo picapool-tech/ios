@@ -183,6 +183,25 @@ class OffersController extends GetxController
     });
   }
 
+  Future<Chat?> createOrGetPvtChat({
+    required int offerId,
+    required int buyerId,
+  }) async {
+    startLoading(OfferLoadingEnums.fetchingChat);
+
+    var result = await _offersApi.createOrGetPvtChat(
+      offerId: offerId,
+      buyerId: buyerId,
+    );
+
+    stopLoading(OfferLoadingEnums.fetchingChat);
+
+    return result.fold((error) {
+      Get.snackbar('Error joining chat', error.message);
+      return null;
+    }, (chat) => chat);
+  }
+
   Future<Offer?> getOfferDetails(int id) async {
     isLoading.value = true;
     startLoading(OfferLoadingEnums.offerDetails);

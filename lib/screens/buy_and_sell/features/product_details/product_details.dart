@@ -231,9 +231,10 @@ class ProductDetails extends StatelessWidget {
                     (isProductSold &&
                         product.userId == userController.user!.id))
                 ? () async {
-                    var chat = await offersController.getChatFromOfferId(
-                      offerId: offer.id,
-                    );
+                    var chat = await offersController.createOrGetPvtChat(
+                        offerId: offer.id,
+                        buyerId: userController.user!.id,
+                      );
                     if (chat == null) {
                       showPicaAlertDialog(
                         message: "Chat for this product doesn't exits",
