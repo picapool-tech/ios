@@ -427,4 +427,14 @@ class ChatController extends GetxController
     socketService.sendReaction(content, messageId);
     debugPrint("Sending reaction $content to message $messageId");
   }
+
+ Future<List<Chat>> getPrivateChatsForOffer(int offerId) async {
+    final either = await _chatApi.getPrivateChatsForOffer(offerId);
+
+    return either.fold(
+      (_) => <Chat>[],
+      (chats) => chats,
+    );
+  }
+
 }

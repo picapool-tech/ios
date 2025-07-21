@@ -41,13 +41,17 @@ class Chat {
       offer: json['Offer'] != null ? Offer.fromJson(json['Offer']) : null,
       offerId: json['offerId'],
       liveOfferId: json['liveOfferId'],
-      messages: json['Messages'] != null
-          ? (json['Messages'] as List)
+      users: (json['Users'] ?? json['users']) != null
+          ? (json['Users'] ?? json['users'] as List)
+              .map((u) => User.fromJson(u))
+              .toList()
+              .cast<User>() 
+          : null,
+      messages: (json['Messages'] ?? json['messages']) != null
+          ? (json['Messages'] ?? json['messages'] as List)
               .map((m) => LastMessageModel.fromJson(m))
               .toList()
-          : null,
-      users: json['Users'] != null
-          ? (json['Users'] as List).map((u) => User.fromJson(u)).toList()
+              .cast<LastMessageModel>()
           : null,
       admins: json['Admins'] != null
           ? (json['Admins'] as List).map((a) => Admin.fromJson(a)).toList()

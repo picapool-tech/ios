@@ -401,4 +401,19 @@ class ChatApi with PicapoolApiClass {
       );
     }
   }
+
+  FutureEither<List<Chat>> getPrivateChatsForOffer(int offerId) async {
+    final res = await api.makeRequest(
+      enpoint: APIEndpoints.getPrivateChatsForOffer(offerId),
+      method: RequestMethod.getRequest,
+    );
+
+    return res.fold((err) => left(err), (model) {
+      final list = (model.data['chats'] as List)
+          .map<Chat>((c) => Chat.fromJson(c))
+          .toList();
+      return right(list);
+    });
+  }
+
 }

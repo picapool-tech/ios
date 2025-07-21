@@ -10,6 +10,12 @@ import 'package:picapool/models/offer_model.dart';
 import 'package:picapool/models/product_model.dart';
 import 'package:picapool/screens/buy_and_sell/features/product_details/product_details.dart';
 import 'package:picapool/utils/theme.dart';
+import 'package:picapool/features/chats/chat_controller.dart';
+import 'package:picapool/models/chat_model.dart';
+import 'package:picapool/features/user/user_controller.dart';
+import 'package:picapool/models/user_model.dart';
+import 'package:collection/collection.dart'; 
+import 'package:picapool/screens/public_chat/chat_page.dart';
 
 class UserItemListingItem extends StatefulWidget {
   final Offer offer;
@@ -199,6 +205,79 @@ class _UserItemListingItemState extends State<UserItemListingItem> {
                       ),
                     ],
                   ),
+                  // ────────────────────────────────────────────────
+                  // NEW – list of users who have private chats
+                  const SizedBox(height: 12),
+
+                  FutureBuilder<List<Chat>>(
+                    future: Get.find<ChatController>()
+                        .getPrivateChatsForOffer(widget.offer.id),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                      }
+                      if (snapshot.hasError) {
+                        return Text(
+                          "Failed to load chats: ${snapshot.error}",
+                          style: TextStyle(
+                            color: Get.theme.colorScheme.error,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        );
+                      }
+
+                      final chats = snapshot.data ?? <Chat>[];
+                      if (chats.isEmpty) {
+                        return const Text(
+                          "No private chats yet.",
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        );
+                      }
+
+                      return Column(
+                        children: chats.map((chat) {
+                          // show the OTHER person’s username only
+                          final me = Get.find<UserController>().user?.id;
+                          final User? buyer = chat.users?.firstWhereOrNull((u) => u.id != me);
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            elevation: 0.5,
+                            child: ListTile(
+                              dense: true,
+                              leading: CircleAvatar(
+                                radius: 18,
+                                child: Text(
+                                  (buyer?.username?.characters.first ?? "?").toUpperCase(),
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              title: Text(
+                                buyer?.username ?? "Unknown",
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              trailing: const Icon(Icons.chat_bubble_outline),
+                              onTap: () async {
+                                final ctrl = Get.find<ChatController>();
+                                final fullChat =
+                                    await ctrl.getChatFromId(chatId: chat.id); // fetch details
+                                if (fullChat != null) {
+                                  // push the existing ChatPage (same screen you use elsewhere)
+                                  Get.to(() => ChatPage(
+                                        chat: fullChat,
+                                        offer: widget.offer,
+                                        liveOffer: null,
+                                        chatTitle: buyer?.username ?? "Chat",
+                                      ));
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                  /////////////////////////////
                 ],
               ),
             ),

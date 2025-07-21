@@ -49,6 +49,8 @@ class APIEndpoints {
   // static String get
 
   static String updateOfferDetails(int id) => "/offer/$id";
+  static String getPrivateChatsForOffer(int offerId) =>
+      '/chat/offer/$offerId/pvt';
 
   static String verifyOtp({required String phoneNumber, required String otp}) =>
       "/otp/verify?otp=$otp&mobile=$phoneNumber";
