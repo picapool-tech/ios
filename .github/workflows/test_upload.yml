@@ -1,7 +1,7 @@
 name: Test Dummy IPA Upload
 
 on:
-  workflow_dispatch:   # manual trigger
+  workflow_dispatch:
   push:
     branches: [ under_dev ]
 
@@ -18,28 +18,39 @@ jobs:
       API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
 
     steps:
+    # 1. Create dummy IPA
     - name: Create dummy IPA
       run: |
         mkdir -p build/ios/ipa
         echo "dummy" > build/ios/ipa/dummy.txt
         zip -r build/ios/ipa/dummy.ipa build/ios/ipa/dummy.txt
 
+    # 2. Import signing certificate
     - name: Import signing certificate
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
+    # 3. Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > ~/profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
+    # 4. Write API Key to file
+    - name: Write API Key (.p8) to file
+      run: |
+        mkdir -p ~/private_keys
+        echo "$API_KEY_P8" | base64 --decode > ~/private_keys/AuthKey_${KEY_ID}.p8
+        ls -lh ~/private_keys
+
+    # 5. Upload to TestFlight
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
       with:
         app-path: build/ios/ipa/dummy.ipa
-        issuer-id:       ${{ secrets.APP_STORE_ISSUER_ID }}
-        api-key-id:      ${{ secrets.APP_STORE_KEY_ID }}
-        api-private-key: ${{ secrets.APP_STORE_KEY_P8 }}
+        issuer-id:       ${{ env.ISSUER_ID }}
+        api-key-id:      ${{ env.KEY_ID }}
+        api-private-key: ~/private_keys/AuthKey_${{ env.KEY_ID }}.p8
