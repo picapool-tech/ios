@@ -1,4 +1,4 @@
-name: Test Dummy IPA Upload (Hardcoded Key)
+name: Test Dummy IPA Upload (Fixed Key)
 
 on:
   workflow_dispatch:
@@ -35,17 +35,17 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    - name: Write Hardcoded API Key
+    - name: Write API Key with Proper Newlines
       run: |
         mkdir -p ~/private_keys
-        cat > ~/private_keys/AuthKey_${KEY_ID}.p8 <<'EOF'
-        -----BEGIN PRIVATE KEY-----
-        MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg/e7TcBqDeQhSbgYv
-        XbwWSGNXRR+IWZJyxJvSWaOCpc2gCgYIKoZIzj0DAQehRANCAARbsiFB3VpxRV45
-        9PTS6h5eg6G0N4UNxRKZGuIwNHZrU3gxAXcREKOWurWGvw6BVJ15ix2xC7pS452e
-        h7G8KDR0
-        -----END PRIVATE KEY-----
-        EOF
+        printf "%s\n" \
+        "-----BEGIN PRIVATE KEY-----" \
+        "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg/e7TcBqDeQhSbgYv" \
+        "XbwWSGNXRR+IWZJyxJvSWaOCpc2gCgYIKoZIzj0DAQehRANCAARbsiFB3VpxRV45" \
+        "9PTS6h5eg6G0N4UNxRKZGuIwNHZrU3gxAXcREKOWurWGvw6BVJ15ix2xC7pS452e" \
+        "h7G8KDR0" \
+        "-----END PRIVATE KEY-----" \
+        > ~/private_keys/AuthKey_${KEY_ID}.p8
 
         echo "=== Debugging Key ==="
         cat ~/private_keys/AuthKey_${KEY_ID}.p8
