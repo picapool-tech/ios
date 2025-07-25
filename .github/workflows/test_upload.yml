@@ -1,7 +1,7 @@
 name: Test Dummy IPA Upload
 
 on:
-  workflow_dispatch:  # manual trigger
+  workflow_dispatch:
   push:
     branches: [ under_dev ]
 
@@ -14,41 +14,36 @@ jobs:
       P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
       MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
       ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
-      KEY_ID:                 6N8VW75J28                     # Your Key ID
-      API_KEY_P8_BASE64:      ${{ secrets.APP_STORE_KEY_P8 }} # Base64 encoded p8 key
+      KEY_ID:                 6N8VW75J28
+      API_KEY_P8_BASE64:      ${{ secrets.APP_STORE_KEY_P8 }}
 
     steps:
-    # 1) Create a dummy IPA
     - name: Create dummy IPA
       run: |
         mkdir -p build/ios/ipa
         echo "dummy" > build/ios/ipa/dummy.txt
         zip -r build/ios/ipa/dummy.ipa build/ios/ipa/dummy.txt
 
-    # 2) Import signing certificate (.p12)
     - name: Import signing certificate
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 3) Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > ~/profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # 4) Decode API Key (.p8) with proper formatting
     - name: Decode API Key
       run: |
         mkdir -p ~/private_keys
         echo "$API_KEY_P8_BASE64" | base64 --decode > ~/private_keys/AuthKey_${KEY_ID}.p8
         echo "=== Debugging Key ==="
-        head -n 5 ~/private_keys/AuthKey_${KEY_ID}.p8 || true
+        cat ~/private_keys/AuthKey_${KEY_ID}.p8
         echo "===================="
 
-    # 5) Upload Dummy IPA to TestFlight
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
       with:
