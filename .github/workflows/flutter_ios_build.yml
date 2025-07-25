@@ -72,7 +72,7 @@ jobs:
         APP_STORE_ISSUER_ID:   ${{ secrets.APP_STORE_ISSUER_ID }}
         APP_STORE_KEY_ID:      ${{ secrets.APP_STORE_KEY_ID }}
         P12_FILE_BASE64:       ${{ secrets.P12_FILE_BASE64 }}
-        MOBILEPROVISION_BASE64:${{ secrets.MOBILEPROVISION_BASE64 }}
+        MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
 
     # 10. Install signing cert & profile
     - name: Install signing assets
