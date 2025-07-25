@@ -1,55 +1,38 @@
 name: Build iOS IPA and Upload to TestFlight
 
-# ──────────────────────────────────────────────────────────────
-# Triggers
-# ──────────────────────────────────────────────────────────────
 on:
-  workflow_dispatch:          # Manual trigger
+  workflow_dispatch:
   push:
-    branches: [ under_dev ]   # Auto‑run on commits to under_dev
-    tags:     [ 'v*' ]        # Auto‑run when pushing a tag like v3.2.1
+    branches: [under_dev]
+    tags:     ['v*']           # v3.2.1, v3.3.0 …
 
 jobs:
   build:
-    runs-on: macos-14         # Stable runner (Xcode 15.x)
+    runs-on: macos-14
 
     steps:
-    # ───────────────────────────
-    # 1. Checkout repo
-    # ───────────────────────────
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    # 1 ─ Checkout
+    - uses: actions/checkout@v3
 
-    # 2. Echo which branch / tag triggered the run
-    - name: Print current ref
-      run: echo "Triggered by $GITHUB_REF"
-
-    # 3. System info (debug)
-    - name: Show macOS & Xcode info
+    # 2 ─ System info (debug)
+    - name: Environment info
       run: |
+        echo "Branch/tag → $GITHUB_REF"
         sw_vers
         xcodebuild -version
 
-    # 4. Install Flutter
-    - name: Install Flutter
-      uses: subosito/flutter-action@v2
+    # 3 ─ Flutter toolchain
+    - uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.32.7'   # Match your local version
+        flutter-version: '3.32.7'
 
-    # 5. Show Flutter + pubspec version
-    - name: Show Flutter & app version
+    - name: Flutter deps
       run: |
-        flutter --version
-        grep '^version:' pubspec.yaml || true
-
-    # 6. Flutter deps
-    - name: Install Dart/Flutter deps
-      run: |
-        flutter clean
         flutter pub get
+        flutter doctor -v
 
-    # 7. CocoaPods (incl. Firebase/Auth update safeguard)
-    - name: Update CocoaPods
+    # 4 ─ CocoaPods sync (handles Firebase/Auth mismatch)
+    - name: CocoaPods update
       run: |
         cd ios
         pod repo update
@@ -57,76 +40,22 @@ jobs:
         pod install --repo-update
         cd ..
 
-    # 8. Debug bundle identifier
-    - name: Show Bundle Identifier
-      run: plutil -p ios/Runner/Info.plist | grep CFBundleIdentifier || true
+    # 5 ─ Import signing certificate & provisioning profile
+    - name: Import codesign assets
+      uses: apple-actions/import-codesign-certs@v2
+      with:
+        p12-file-base64: ${{ secrets.P12_FILE_BASE64 }}
+        p12-password:    ${{ secrets.P12_PASSWORD }}
+        mobileprovision: ${{ secrets.MOBILEPROVISION_BASE64 }}
 
-    # 9. DEBUG — show first 8 chars of each Apple secret
-    - name: Verify Apple secrets (masked)
-      run: |
-        echo "ISSUER_ID : ${APP_STORE_ISSUER_ID:0:8}..."
-        echo "KEY_ID    : ${APP_STORE_KEY_ID:0:8}..."
-        echo "P12_BASE64: $(echo $P12_FILE_BASE64 | head -c 8)..."
-        echo "PROV_BASE : $(echo $MOBILEPROVISION_BASE64 | head -c 8)..."
-        echo "P12_PASSWORD : $(echo $P12_PASSWORD | head -c 8)..."
-        echo "APP_STORE_KEY_P8 : $(echo $APP_STORE_KEY_P8 | head -c 8)..."
-      env:
-        APP_STORE_ISSUER_ID:   ${{ secrets.APP_STORE_ISSUER_ID }}
-        APP_STORE_KEY_ID:      ${{ secrets.APP_STORE_KEY_ID }}
-        P12_FILE_BASE64:       ${{ secrets.P12_FILE_BASE64 }}
-        MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
-        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-        APP_STORE_KEY_P8: ${{ secrets.APP_STORE_KEY_P8 }}
-
-    # 10. Decode cert and provisioning profile first
-    - name: Decode signing files
-      run: |
-        echo "${{ secrets.P12_FILE_BASE64 }}"        | base64 --decode > cert.p12
-        echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > profile.mobileprovision
-        ls -lh cert.p12 profile.mobileprovision
-
-    # 11. Debug P12 password
-    - name: Debug P12 secrets
-      run: |
-        echo "P12 Password starts with: ${P12_PASSWORD:0:1}"
-        echo "P12 Base64 first 20 chars: $(echo $P12_FILE_BASE64 | head -c 20)"
-        openssl pkcs12 -in cert.p12 -nokeys -passin pass:$P12_PASSWORD || echo "Password is wrong"
-      env:
-        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-        P12_FILE_BASE64: ${{ secrets.P12_FILE_BASE64 }}
-
-    # 12. Install signing cert & profile
-    - name: Install signing assets
-      run: |
-        echo "${{ secrets.P12_FILE_BASE64 }}" | base64 --decode > cert.p12
-        echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > profile.mobileprovision
-
-        # Test the P12 password
-        echo "Testing P12 password..."
-        openssl pkcs12 -in cert.p12 -nokeys -passin pass:"${{ secrets.P12_PASSWORD }}"
-
-        # Import into login keychain (default)
-        security unlock-keychain -p "${USER}" ~/Library/Keychains/login.keychain-db
-        security import cert.p12 -k ~/Library/Keychains/login.keychain-db \
-          -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign || \
-          (echo "❌ Keychain import failed" && exit 1)
-
-        # Install provisioning profile
-        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-
-    # 13. Build IPA
-    - name: Build iOS IPA
+    # 6 ─ Build IPA
+    - name: Build release IPA
       run: |
         flutter build ipa --release \
           --export-options-plist=ios/Runner/ExportOptions.plist
 
-    # 14. List IPA
-    - name: List IPA files
-      run: ls -lh build/ios/ipa || true
-
-    # 15. Upload to TestFlight
-    - name: Upload to App Store Connect
+    # 7 ─ Upload to TestFlight
+    - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
       with:
         app-path:        build/ios/ipa/*.ipa
