@@ -1,0 +1,45 @@
+name: Test Dummy IPA Upload
+
+on:
+  workflow_dispatch:   # manual trigger
+  push:
+    branches: [ under_dev ]
+
+jobs:
+  ios-upload:
+    runs-on: macos-14
+
+    env:
+      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
+      P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
+      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
+      ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
+      KEY_ID:                 ${{ secrets.APP_STORE_KEY_ID }}
+      API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
+
+    steps:
+    - name: Create dummy IPA
+      run: |
+        mkdir -p build/ios/ipa
+        echo "dummy" > build/ios/ipa/dummy.txt
+        zip -r build/ios/ipa/dummy.ipa build/ios/ipa/dummy.txt
+
+    - name: Import signing certificate
+      uses: apple-actions/import-codesign-certs@v2
+      with:
+        p12-file-base64: ${{ env.P12_FILE_BASE64 }}
+        p12-password:    ${{ env.P12_PASSWORD }}
+
+    - name: Install provisioning profile
+      run: |
+        echo "$MOBILEPROVISION_BASE64" | base64 --decode > ~/profile.mobileprovision
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+    - name: Upload to TestFlight
+      uses: apple-actions/upload-testflight-build@v1
+      with:
+        app-path: build/ios/ipa/dummy.ipa
+        issuer-id:       ${{ env.ISSUER_ID }}
+        api-key-id:      ${{ env.KEY_ID }}
+        api-private-key: ${{ env.API_KEY_P8 }}

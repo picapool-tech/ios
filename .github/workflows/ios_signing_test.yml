@@ -2,7 +2,7 @@ name: Build & Upload to TestFlight
 
 on:
   workflow_dispatch:
-  push:
+  #push:
     branches: [ under_dev ]
     tags: [ 'v*' ]
 
