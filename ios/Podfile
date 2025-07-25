@@ -39,6 +39,8 @@ target 'Runner' do
   pod 'Firebase/Storage', '11.15.0'
   pod 'Firebase/Core', '11.15.0'
   pod 'Firebase/RemoteConfig', '11.15.0'
+  pod 'Firebase/Analytics',    '11.15.0'   #  ← new line
+
 
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

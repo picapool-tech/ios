@@ -34,7 +34,8 @@ jobs:
     # 4 – CocoaPods (trunk only)
     - run: |
         cd ios
-        pod repo update             # pulls latest trunk specs incl. Firebase 11.15.0
+        rm Podfile.lock || true          # ← throw away the stale lock‑file
+        pod repo update
         pod install --repo-update
         cd ..
 
