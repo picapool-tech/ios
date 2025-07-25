@@ -47,7 +47,7 @@ jobs:
         flutter clean
         flutter pub get
 
-    # 7. CocoaPods (incl. Firebase/Auth update safeguard)
+    # 7. CocoaPods
     - name: Update CocoaPods
       run: |
         cd ios
@@ -77,14 +77,25 @@ jobs:
         P12_PASSWORD:          ${{ secrets.P12_PASSWORD }}
         APP_STORE_KEY_P8:      ${{ secrets.APP_STORE_KEY_P8 }}
 
-    # 10. Import Code Signing Certificate
+    # 10. Decode P12 and Test Password
+    - name: Decode and test P12
+      run: |
+        echo "$P12_FILE_BASE64" | base64 --decode > cert.p12
+        echo "Testing P12 password..."
+        openssl pkcs12 -in cert.p12 -nokeys -passin pass:$P12_PASSWORD \
+        || (echo "❌ P12 password failed. Exiting." && exit 1)
+      env:
+        P12_FILE_BASE64: ${{ secrets.P12_FILE_BASE64 }}
+        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+
+    # 11. Import Code Signing Certificate
     - name: Import codesign cert
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ secrets.P12_FILE_BASE64 }}
         p12-password: ${{ secrets.P12_PASSWORD }}
 
-    # 11. Install provisioning profile
+    # 12. Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > profile.mobileprovision
@@ -92,17 +103,17 @@ jobs:
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
         ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # 12. Build IPA
+    # 13. Build IPA
     - name: Build iOS IPA
       run: |
         flutter build ipa --release \
           --export-options-plist=ios/Runner/ExportOptions.plist
 
-    # 13. List IPA
+    # 14. List IPA
     - name: List IPA files
       run: ls -lh build/ios/ipa || true
 
-    # 14. Upload to TestFlight
+    # 15. Upload to TestFlight
     - name: Upload to App Store Connect
       uses: apple-actions/upload-testflight-build@v1
       with:
