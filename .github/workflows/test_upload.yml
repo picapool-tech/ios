@@ -1,4 +1,4 @@
-name: Test Dummy IPA Upload
+name: Test Dummy IPA Upload (Hardcoded Key)
 
 on:
   workflow_dispatch:
@@ -15,7 +15,6 @@ jobs:
       MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
       ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
       KEY_ID:                 6N8VW75J28
-      API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
 
     steps:
     - name: Create dummy IPA
@@ -36,10 +35,10 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    - name: Write API Key
+    - name: Write Hardcoded API Key
       run: |
         mkdir -p ~/private_keys
-        cat > ~/private_keys/AuthKey_6N8VW75J28.p8 <<'EOF'
+        cat > ~/private_keys/AuthKey_${KEY_ID}.p8 <<'EOF'
         -----BEGIN PRIVATE KEY-----
         MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg/e7TcBqDeQhSbgYv
         XbwWSGNXRR+IWZJyxJvSWaOCpc2gCgYIKoZIzj0DAQehRANCAARbsiFB3VpxRV45
@@ -47,8 +46,10 @@ jobs:
         h7G8KDR0
         -----END PRIVATE KEY-----
         EOF
-        cat ~/private_keys/AuthKey_6N8VW75J28.p8
 
+        echo "=== Debugging Key ==="
+        cat ~/private_keys/AuthKey_${KEY_ID}.p8
+        echo "===================="
 
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
