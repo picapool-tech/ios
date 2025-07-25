@@ -2,13 +2,14 @@ name: Build & Upload to TestFlight
 
 on:
   push:
-    branches: [ under_dev ]
-    tags: [ 'v*' ]
-  workflow_dispatch:
+    branches: [ under_dev ]    # auto-run on under_dev
+    tags: [ 'v*' ]             # auto-run on tags like v3.2.1
+  workflow_dispatch:           # manual trigger
 
 jobs:
   ios-release:
     runs-on: macos-14
+
     env:
       FLUTTER_VERSION: 3.32.7
       P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
@@ -17,8 +18,8 @@ jobs:
       ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
       KEY_ID:                 ${{ secrets.APP_STORE_KEY_ID }}
       API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
-      BUNDLE_ID:              com.picapool
       TEAM_ID:                34R325V59A
+      BUNDLE_ID:              com.picapool
 
     steps:
     # 1. Checkout
@@ -30,24 +31,22 @@ jobs:
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
 
+    # 3. Get Flutter packages
     - name: Flutter pub get
       run: flutter pub get
 
-    # 3. Patch Podfile to fix Firebase Swift issue
-    - name: Patch Podfile for Firebase
+    # 4. Patch Podfile (to fix FirebaseDataEncoder issue)
+    - name: Patch Podfile
       run: |
-        cd ios
-        echo "Patching Podfile for stable Firebase versions..."
-        sed -i '' '/pod "Firebase\/Auth"/d' Podfile || true
-        sed -i '' '/pod "Firebase\/Firestore"/d' Podfile || true
-        sed -i '' '/pod "Firebase\/Storage"/d' Podfile || true
-        echo 'pod "Firebase/Auth", ">= 10.24.0", "< 11.0"' >> Podfile
-        echo 'pod "Firebase/Firestore", ">= 10.24.0", "< 11.0"' >> Podfile
-        echo 'pod "Firebase/Storage", ">= 10.24.0", "< 11.0"' >> Podfile
-        cat Podfile
-        cd ..
+        PODFILE=ios/Podfile
+        echo "Patching Podfile..."
+        sed -i '' '/PhoneNumberKit/a\
+  pod "Firebase/Auth", ">= 10.24.0", "< 11.0"\
+  pod "Firebase/Firestore", ">= 10.24.0", "< 11.0"\
+  pod "Firebase/Storage", ">= 10.24.0", "< 11.0"' $PODFILE
+        cat $PODFILE
 
-    # 4. CocoaPods
+    # 5. Install CocoaPods
     - name: Install CocoaPods
       run: |
         cd ios
@@ -55,29 +54,29 @@ jobs:
         pod install --repo-update
         cd ..
 
-    # 5. Import signing certificate
+    # 6. Import signing certificate
     - name: Import signing certificate
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 6. Install provisioning profile
+    # 7. Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
         echo "Provisioning profile installed"
-        security cms -D -i profile.mobileprovision | grep -A1 ApplicationIdentifierPrefix
+        security cms -D -i profile.mobileprovision | grep -A1 ApplicationIdentifierPrefix || true
 
-    # 7. Build IPA
+    # 8. Build release IPA
     - name: Build IPA
       run: |
         flutter build ipa --release \
           --export-options-plist=ios/Runner/ExportOptions.plist
 
-    # 8. Upload to TestFlight
+    # 9. Upload to TestFlight
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
       with:
