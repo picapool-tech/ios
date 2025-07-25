@@ -2,14 +2,13 @@ name: Build & Upload to TestFlight
 
 on:
   push:
-    branches: [ under_dev ]    # auto-run on under_dev
-    tags: [ 'v*' ]             # auto-run on tags like v3.2.1
-  workflow_dispatch:           # manual trigger
+    branches: [ under_dev ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
 
 jobs:
   ios-release:
     runs-on: macos-14
-
     env:
       FLUTTER_VERSION: 3.32.7
       P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
@@ -18,8 +17,8 @@ jobs:
       ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
       KEY_ID:                 ${{ secrets.APP_STORE_KEY_ID }}
       API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
-      TEAM_ID:                34R325V59A
       BUNDLE_ID:              com.picapool
+      TEAM_ID:                34R325V59A
 
     steps:
     # 1. Checkout
@@ -31,52 +30,54 @@ jobs:
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
 
-    # 3. Get Flutter packages
     - name: Flutter pub get
       run: flutter pub get
 
-    # 4. Patch Podfile (to fix FirebaseDataEncoder issue)
-    - name: Patch Podfile
-      run: |
-        PODFILE=ios/Podfile
-        echo "Patching Podfile..."
-        sed -i '' '/PhoneNumberKit/a\
-  pod "Firebase/Auth", ">= 10.24.0", "< 11.0"\
-  pod "Firebase/Firestore", ">= 10.24.0", "< 11.0"\
-  pod "Firebase/Storage", ">= 10.24.0", "< 11.0"' $PODFILE
-        cat $PODFILE
-
-    # 5. Install CocoaPods
-    - name: Install CocoaPods
-      run: |
+    # 3. CocoaPods
+    - run: |
         cd ios
         pod repo update
+        pod update Firebase/Auth || true
         pod install --repo-update
         cd ..
 
-    # 6. Import signing certificate
+    # 4. Import signing certificate
     - name: Import signing certificate
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 7. Install provisioning profile
+    # 5. Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
         echo "Provisioning profile installed"
-        security cms -D -i profile.mobileprovision | grep -A1 ApplicationIdentifierPrefix || true
 
-    # 8. Build release IPA
-    - name: Build IPA
+    - name: Debug provisioning profile
       run: |
-        flutter build ipa --release \
-          --export-options-plist=ios/Runner/ExportOptions.plist
+        security cms -D -i profile.mobileprovision | grep -A1 ApplicationIdentifierPrefix
 
-    # 9. Upload to TestFlight
+
+    # 6. Build IPA without codesign
+    - name: Build IPA (no-codesign)
+      run: |
+        flutter build ipa --release --no-codesign
+
+    # 7. Export signed IPA
+    - name: Sign & Export IPA
+      run: |
+        xcodebuild -exportArchive \
+          -archivePath build/ios/archive/Runner.xcarchive \
+          -exportOptionsPlist ios/Runner/ExportOptions.plist \
+          -exportPath build/ios/ipa \
+          DEVELOPMENT_TEAM=$TEAM_ID \
+          PROVISIONING_PROFILE_SPECIFIER="" \
+          CODE_SIGN_STYLE=Manual
+
+    # 8. Upload to TestFlight
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
       with:

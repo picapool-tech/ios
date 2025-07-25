@@ -32,6 +32,9 @@ target 'Runner' do
   use_modular_headers!
 
   pod 'PhoneNumberKit', '~> 3.7.6'
+  pod 'Firebase/Auth', '>= 10.24.0', '< 11.0'
+  pod 'Firebase/Firestore', '>= 10.24.0', '< 11.0'
+  pod 'Firebase/Storage', '>= 10.24.0', '< 11.0'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
