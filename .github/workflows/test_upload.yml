@@ -49,4 +49,4 @@ jobs:
         app-path: build/ios/ipa/dummy.ipa
         issuer-id:       ${{ env.ISSUER_ID }}
         api-key-id:      ${{ env.KEY_ID }}
-        api-private-key: ~/private_keys/AuthKey_${{ env.KEY_ID }}.p8
+        api-private-key: ios/AuthKey_6N8VW75J28.p8
