@@ -2,11 +2,11 @@ name: Build iOS IPA and Upload to TestFlight
 
 on:
   workflow_dispatch:        # Manual trigger
-    branches:
-      - under_dev           # Enable manual runs for under_dev branch
   push:
+    branches:
+      - under_dev
     tags:
-      - 'v*'                # Trigger on version tags (v3.1.9 etc.)
+      - 'v*'               # Trigger on version tags (v3.1.9 etc.)
 
 jobs:
   build:
