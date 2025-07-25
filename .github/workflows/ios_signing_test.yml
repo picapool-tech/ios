@@ -37,6 +37,7 @@ jobs:
     - run: |
         cd ios
         pod repo update
+        pod update Firebase/Auth || true
         pod install --repo-update
         cd ..
 
