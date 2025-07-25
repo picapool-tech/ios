@@ -1,91 +1,84 @@
 name: Build iOS IPA and Upload to TestFlight
 
+# Triggers for this workflow
 on:
-  workflow_dispatch:          # Manual trigger
+  workflow_dispatch:          # Allows manual runs from GitHub Actions UI
   push:
     branches:
-      - under_dev             # Only trigger for under_dev
+      - under_dev             # Runs automatically on push to "under_dev" branch
     tags:
-      - 'v*'                  # e.g., v3.2.1
+      - 'v*'                  # Runs when a tag like v3.2.1 is pushed
 
 jobs:
   build:
-    runs-on: macos-14          # Use stable macOS 14 runner
+    runs-on: macos-14         # Use macOS 14 runner (stable and Xcode 15.x)
 
     steps:
-      # Checkout repo
+      # STEP 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Print current branch to confirm trigger
+      # STEP 2: Print which branch triggered this workflow (debugging)
       - name: Print current branch
         run: |
           echo "Triggered from branch: $GITHUB_REF"
 
-      # Show system info
+      # STEP 3: Show system information (macOS version, Xcode version)
       - name: Show System Info
         run: |
           echo "==== SYSTEM INFO ===="
           sw_vers
           xcodebuild -version
 
-      # Install Flutter
+      # STEP 4: Install Flutter (specific version to match your local setup)
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.7'  # Match your local Flutter version
+          flutter-version: '3.32.7'  # Ensure this matches your local version
 
-      # Show Flutter and app version
+      # STEP 5: Show Flutter version and app version from pubspec.yaml
       - name: Show Flutter Version & App Version
         run: |
           flutter --version
           echo "App version from pubspec.yaml:"
           grep "version:" pubspec.yaml || true
 
-      # Install dependencies
+      # STEP 6: Install dependencies (clean + fetch)
       - name: Install Dependencies
         run: |
           flutter clean
           flutter pub get
 
-      # Fix CocoaPods conflicts (Firebase/Auth issue)
+      # STEP 7: Fix CocoaPods conflicts (important for Firebase/Auth version mismatch)
       - name: Update CocoaPods
         run: |
           cd ios
-          pod repo update
-          pod update Firebase/Auth
-          pod install --repo-update
+          pod repo update                  # Update local pod specs
+          pod update Firebase/Auth         # Update specific Firebase/Auth dependency
+          pod install --repo-update        # Install pods with repo update
           cd ..
 
-      # Debug bundle identifier
+      # STEP 8: Show Bundle Identifier (debugging)
       - name: Show Bundle Identifier
         run: |
           plutil -p ios/Runner/Info.plist | grep CFBundleIdentifier || echo "Bundle ID not found"
-      
-      # Setup code signing using Apple API key
-      - name: Set up App Store Connect API Key
-        uses: apple-actions/import-codesign-certs@v1
-        with:
-          p8-file-base64: ${{ secrets.APP_STORE_KEY_P8 }}
-          api-key-id: ${{ secrets.APP_STORE_KEY_ID }}
-          issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}
 
-      # Build iOS IPA
+      # STEP 9: Build iOS IPA (release build)
       - name: Build iOS IPA
         run: |
           flutter build ipa \
             --release \
             --export-options-plist=ios/Runner/ExportOptions.plist
 
-      # List IPA files
+      # STEP 10: List generated IPA files (for debugging)
       - name: List IPA Files
         run: ls -lh build/ios/ipa || true
 
-      # Upload to App Store Connect
+      # STEP 11: Upload IPA to App Store Connect (TestFlight)
       - name: Upload to App Store Connect
         uses: apple-actions/upload-testflight-build@v1
         with:
           app-path: build/ios/ipa/*.ipa
-          issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_KEY_P8 }}
+          issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}     # From Apple Developer API key
+          api-key-id: ${{ secrets.APP_STORE_KEY_ID }}       # From Apple Developer API key
+          api-private-key: ${{ secrets.APP_STORE_KEY_P8 }}  # Base64 of your .p8 key
