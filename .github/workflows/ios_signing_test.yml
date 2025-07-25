@@ -2,51 +2,35 @@ name: signing‑sanity
 
 on:
   push:
-    branches: [ under_dev ]      # change/remove as you like
+    branches: [ under_dev ]   # remove if you only want manual runs
   workflow_dispatch:
 
 jobs:
-  test-signing:
+  sign-test:
     runs-on: macos-14
+    env:
+      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
+      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
+      P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
 
     steps:
-    # 0. Quick fingerprints so you see the secrets are loaded
-    - run: |
-        echo "ISSUER : ${APP_STORE_ISSUER_ID:0:8}…"
-        echo "P12 b64 : $(echo $P12_FILE_BASE64 | head -c 8)…"
-      shell: bash
-      env:
-        APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
-        P12_FILE_BASE64:     ${{ secrets.P12_FILE_BASE64 }}
-
-    # 1. Decode the two blobs
-    - name: Decode P12 / profile
+    - name: Decode P12 & profile
       run: |
-        echo "$P12_FILE_BASE64" | base64 --decode > cert.p12
+        echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
         ls -lh cert.p12 profile.mobileprovision
-      env:
-        P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
-        MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
 
-    # 2. OpenSSL sanity (should succeed)
-    - name: Test with OpenSSL
+    - name: OpenSSL password check
       run: |
         openssl pkcs12 -in cert.p12 -nokeys -passin pass:"$P12_PASSWORD"
-      env:
-        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
 
-    # 3. Keychain import (should now succeed!)
-    - name: security import
+    - name: Keychain import
       run: |
-        security create-keychain -p temp_pw signing_temp.keychain
-        security unlock-keychain -p temp_pw signing_temp.keychain
+        security create-keychain -p tmp_pw signing.keychain
+        security unlock-keychain  -p tmp_pw signing.keychain
         security import cert.p12 \
-          -k signing_temp.keychain \
+          -k signing.keychain \
           -P "$P12_PASSWORD" \
-          -T /usr/bin/codesign \
-          -T /usr/bin/security \
-          || (echo "❌ keychain import FAILED" && exit 1)
-        echo "✅  keychain import OK"
-      env:
-        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          -T /usr/bin/codesign -T /usr/bin/security \
+          || (echo "⛔️ import failed" && exit 1)
+        echo "✅ keychain import OK"
