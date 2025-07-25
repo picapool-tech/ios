@@ -1,13 +1,14 @@
-name: Build & Upload to TestFlight
+name: Build & Upload to TestFlight
 
 on:
-workflow_dispatch:  
+  workflow_dispatch:
+  push:
     branches: [ under_dev ]
-    tags:    [ 'v*' ]
+    tags: [ 'v*' ]
 
 jobs:
   ios-release:
-    runs-on: macos-14   # Xcode 15.4 runner
+    runs-on: macos-14
 
     env:
       FLUTTER_VERSION: 3.32.7
@@ -17,49 +18,64 @@ jobs:
       ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
       KEY_ID:                 ${{ secrets.APP_STORE_KEY_ID }}
       API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
+      TEAM_ID:                34R325V59A
+      BUNDLE_ID:              com.picapool
 
     steps:
-    # 1 – Checkout
+    # 1. Checkout
     - uses: actions/checkout@v3
 
-    # 2 – Flutter toolchain
+    # 2. Flutter
     - uses: subosito/flutter-action@v2
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
 
-    # 3 – Packages
     - run: flutter pub get
 
-    # 4 – CocoaPods (trunk only)
+    # 3. CocoaPods
     - run: |
         cd ios
-        rm Podfile.lock || true          # ← throw away the stale lock‑file
+        rm Podfile.lock || true
         pod repo update
         pod install --repo-update
         cd ..
 
-    # 5 – Import .p12
+    # 4. Import p12
     - uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 6 – Install provisioning profile
+    # 5. Install provisioning profile
     - run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > ~/profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # 7 – Build & archive (codesigned)
-    - run: |
-        flutter build ipa \
-          --release \
-          --export-options-plist=ios/Runner/ExportOptions.plist
+    # 6. Patch Runner signing
+    - name: Patch Xcode project
+      run: |
+        sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/" ios/Runner.xcodeproj/project.pbxproj
+        sed -i '' "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = ${TEAM_ID};/" ios/Runner.xcodeproj/project.pbxproj
+        sed -i '' "s/PRODUCT_BUNDLE_IDENTIFIER = .*/PRODUCT_BUNDLE_IDENTIFIER = ${BUNDLE_ID};/" ios/Runner.xcodeproj/project.pbxproj
 
-    # 8 – Upload
+    # 7. Build without signing
+    - run: |
+        flutter build ipa --release --no-codesign
+
+    # 8. Manual signing
+    - run: |
+        xcodebuild -exportArchive \
+          -archivePath build/ios/archive/Runner.xcarchive \
+          -exportOptionsPlist ios/Runner/ExportOptions.plist \
+          -exportPath build/ios/ipa \
+          DEVELOPMENT_TEAM=${{ env.TEAM_ID }} \
+          CODE_SIGN_STYLE=Manual
+
+    # 9. Upload
     - uses: apple-actions/upload-testflight-build@v1
       with:
         app-path: build/ios/ipa/*.ipa
-        issuer-id:       ${{ env.ISSUER_ID }}
-        api-key-id:      ${{ env.KEY_ID }}
-        api-private-key: ${{ env.API_KEY_P8 }}
+        issuer-id:       ${{ secrets.APP_STORE_ISSUER_ID }}
+        api-key-id:      ${{ secrets.APP_STORE_KEY_ID }}
+        api-private-key: ${{ secrets.APP_STORE_KEY_P8 }}
