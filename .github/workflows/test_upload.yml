@@ -39,9 +39,10 @@ jobs:
     - name: Write API Key
       run: |
         mkdir -p ~/private_keys
-        printf "%s" "$API_KEY_P8" > ~/private_keys/AuthKey_${KEY_ID}.p8
-        echo "Debugging key:"
-        cat ~/private_keys/AuthKey_${KEY_ID}.p8 || true
+        echo "$API_KEY_P8" | sed 's/\\n/\n/g' > ~/private_keys/AuthKey_${KEY_ID}.p8
+        echo "=== Debugging AuthKey_${KEY_ID}.p8 ==="
+        cat ~/private_keys/AuthKey_${KEY_ID}.p8
+        echo "====================================="
 
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
