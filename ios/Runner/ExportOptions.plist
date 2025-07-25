@@ -4,6 +4,13 @@
 <dict>
   <key>method</key>
   <string>app-store</string>
+  <key>teamID</key>
+  <string>34R325V59A</string>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>com.picapool</key>
+    <string>com.picapool</string>
+  </dict>
   <key>uploadSymbols</key>
   <true/>
   <key>uploadBitcode</key>
