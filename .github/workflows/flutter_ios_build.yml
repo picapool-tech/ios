@@ -69,12 +69,23 @@ jobs:
         echo "P12_BASE64: $(echo $P12_FILE_BASE64 | head -c 8)..."
         echo "PROV_BASE : $(echo $MOBILEPROVISION_BASE64 | head -c 8)..."
         echo "P12_PASSWORD : $(echo $P12_PASSWORD | head -c 8)..."
+        echo "APP_STORE_KEY_P8 : $(echo $APP_STORE_KEY_P8 | head -c 8)..."
       env:
         APP_STORE_ISSUER_ID:   ${{ secrets.APP_STORE_ISSUER_ID }}
         APP_STORE_KEY_ID:      ${{ secrets.APP_STORE_KEY_ID }}
         P12_FILE_BASE64:       ${{ secrets.P12_FILE_BASE64 }}
         MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
         P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        APP_STORE_KEY_P8: ${{ secrets.APP_STORE_KEY_P8 }}
+
+    - name: Debug P12 secrets
+      run: |
+        echo "P12 Password starts with: ${P12_PASSWORD:0:1}"
+        echo "P12 Base64 first 20 chars: $(echo $P12_FILE_BASE64 | head -c 20)"
+      env:
+        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        P12_FILE_BASE64: ${{ secrets.P12_FILE_BASE64 }}
+
 
     # 10. Install signing cert & profile
     - name: Install signing assets
