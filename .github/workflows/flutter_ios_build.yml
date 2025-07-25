@@ -1,15 +1,16 @@
 name: Build iOS IPA and Upload to TestFlight
 
 on:
-  workflow_dispatch:   # Allows manual trigger
+  workflow_dispatch:        # Manual trigger
+    branches:
+      - under_dev           # Enable manual runs for under_dev branch
   push:
     tags:
-      - 'v*'           # Runs only when you push tags like v3.1.9
+      - 'v*'                # Trigger on version tags (v3.1.9 etc.)
 
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -17,16 +18,13 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'  # Change to your version
+          flutter-version: '3.19.0'
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS (IPA)
-        run: |
-          flutter build ipa \
-            --export-options-plist=ios/Runner/ExportOptions.plist \
-            --release
+      - name: Build iOS IPA
+        run: flutter build ipa --release
 
       - name: Upload to App Store Connect
         uses: apple-actions/upload-testflight-build@v1
