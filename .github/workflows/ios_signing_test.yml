@@ -33,49 +33,49 @@ jobs:
     - name: Flutter pub get
       run: flutter pub get
 
-    # 3. CocoaPods
-    - run: |
+    # 3. Patch Podfile to fix Firebase Swift issue
+    - name: Patch Podfile for Firebase
+      run: |
+        cd ios
+        echo "Patching Podfile for stable Firebase versions..."
+        sed -i '' '/pod "Firebase\/Auth"/d' Podfile || true
+        sed -i '' '/pod "Firebase\/Firestore"/d' Podfile || true
+        sed -i '' '/pod "Firebase\/Storage"/d' Podfile || true
+        echo 'pod "Firebase/Auth", ">= 10.24.0", "< 11.0"' >> Podfile
+        echo 'pod "Firebase/Firestore", ">= 10.24.0", "< 11.0"' >> Podfile
+        echo 'pod "Firebase/Storage", ">= 10.24.0", "< 11.0"' >> Podfile
+        cat Podfile
+        cd ..
+
+    # 4. CocoaPods
+    - name: Install CocoaPods
+      run: |
         cd ios
         pod repo update
-        pod update Firebase/Auth || true
         pod install --repo-update
         cd ..
 
-    # 4. Import signing certificate
+    # 5. Import signing certificate
     - name: Import signing certificate
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 5. Install provisioning profile
+    # 6. Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
         echo "Provisioning profile installed"
-
-    - name: Debug provisioning profile
-      run: |
         security cms -D -i profile.mobileprovision | grep -A1 ApplicationIdentifierPrefix
 
-
-    # 6. Build IPA without codesign
-    - name: Build IPA (no-codesign)
+    # 7. Build IPA
+    - name: Build IPA
       run: |
-        flutter build ipa --release --no-codesign
-
-    # 7. Export signed IPA
-    - name: Sign & Export IPA
-      run: |
-        xcodebuild -exportArchive \
-          -archivePath build/ios/archive/Runner.xcarchive \
-          -exportOptionsPlist ios/Runner/ExportOptions.plist \
-          -exportPath build/ios/ipa \
-          DEVELOPMENT_TEAM=$TEAM_ID \
-          PROVISIONING_PROFILE_SPECIFIER="" \
-          CODE_SIGN_STYLE=Manual
+        flutter build ipa --release \
+          --export-options-plist=ios/Runner/ExportOptions.plist
 
     # 8. Upload to TestFlight
     - name: Upload to TestFlight
