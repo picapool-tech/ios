@@ -1,30 +1,52 @@
 name: Build iOS IPA and Upload to TestFlight
 
 on:
-  workflow_dispatch:        # Manual trigger
+  workflow_dispatch:          # Manual trigger
   push:
     branches:
       - under_dev
     tags:
-      - 'v*'               # Trigger on version tags (v3.1.9 etc.)
+      - 'v*'                  # Trigger on version tags (e.g., v3.2.1)
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-14          # Use stable macOS 14 runner
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Show System Info
+        run: |
+          echo "==== SYSTEM INFO ===="
+          sw_vers
+          xcodebuild -version
+          flutter --version || true
+
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.32.7'  # Match your local Flutter version
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Show Flutter Version & App Version
+        run: |
+          flutter --version
+          echo "App version from pubspec.yaml:"
+          grep "version:" pubspec.yaml || true
+
+      - name: Install Dependencies
+        run: |
+          flutter clean
+          flutter pub get
 
       - name: Build iOS IPA
-        run: flutter build ipa --release
+        run: |
+          flutter build ipa \
+            --release \
+            --export-options-plist=ios/Runner/ExportOptions.plist
+
+      - name: List IPA Files
+        run: ls -lh build/ios/ipa || true
 
       - name: Upload to App Store Connect
         uses: apple-actions/upload-testflight-build@v1
