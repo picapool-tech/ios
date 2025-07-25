@@ -98,21 +98,18 @@ jobs:
     # 12. Install signing cert & profile
     - name: Install signing assets
       run: |
-        # Decode certificate & profile
         echo "${{ secrets.P12_FILE_BASE64 }}" | base64 --decode > cert.p12
         echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > profile.mobileprovision
-        
-        # Test if password works
+
+        # Test the P12 password
         echo "Testing P12 password..."
-        openssl pkcs12 -in cert.p12 -nokeys -passin pass:"${{ secrets.P12_PASSWORD }}" \
-          || (echo "❌ Wrong P12 password or corrupted file" && exit 1)
-        
-        # Create & unlock throw‑away keychain
-        security create-keychain -p "" build.keychain
-        security import cert.p12 -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -A
-        security list-keychains -s build.keychain
-        security default-keychain -s build.keychain
-        security unlock-keychain -p "" build.keychain
+        openssl pkcs12 -in cert.p12 -nokeys -passin pass:"${{ secrets.P12_PASSWORD }}"
+
+        # Import into login keychain (default)
+        security unlock-keychain -p "${USER}" ~/Library/Keychains/login.keychain-db
+        security import cert.p12 -k ~/Library/Keychains/login.keychain-db \
+          -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign || \
+          (echo "❌ Keychain import failed" && exit 1)
 
         # Install provisioning profile
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
