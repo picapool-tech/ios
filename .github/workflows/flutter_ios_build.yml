@@ -2,7 +2,6 @@ name: Build iOS IPA and Upload to TestFlight
 
 on:
   workflow_dispatch:          # Manual trigger
-  push:
     branches: [ under_dev ]   # Auto-run on commits to under_dev
     tags: [ 'v*' ]            # Auto-run when pushing a tag like v3.2.1
 
