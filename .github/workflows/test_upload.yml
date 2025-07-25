@@ -39,12 +39,12 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # 4. Write API Key to file
-    - name: Write API Key (.p8) to file
+    # 4. Write API Key to .p8 (NO base64 decode)
+    - name: Write API Key (.p8)
       run: |
         mkdir -p ~/private_keys
-        echo "$API_KEY_P8" | base64 --decode > ~/private_keys/AuthKey_${KEY_ID}.p8
-        ls -lh ~/private_keys
+        echo "$API_KEY_P8" > ~/private_keys/AuthKey_${KEY_ID}.p8
+        cat ~/private_keys/AuthKey_${KEY_ID}.p8 | head -n 5  # debug first 5 lines
 
     # 5. Upload to TestFlight
     - name: Upload to TestFlight
