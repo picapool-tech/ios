@@ -1,14 +1,15 @@
-name: Build & Upload to TestFlight
+name: Build & Upload to TestFlight
 
 on:
   push:
     branches: [ under_dev ]
-    tags: [ 'v*' ]
+    tags:    [ 'v*' ]
   workflow_dispatch:
 
 jobs:
   ios-release:
-    runs-on: macos-14
+    runs-on: macos-14   # Xcode 15.4 runner
+
     env:
       FLUTTER_VERSION: 3.32.7
       P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
@@ -17,69 +18,46 @@ jobs:
       ISSUER_ID:              ${{ secrets.APP_STORE_ISSUER_ID }}
       KEY_ID:                 ${{ secrets.APP_STORE_KEY_ID }}
       API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
-      BUNDLE_ID:              com.picapool
-      TEAM_ID:                34R325V59A
 
     steps:
-    # 1. Checkout
+    # 1 – Checkout
     - uses: actions/checkout@v3
 
-    # 2. Install Flutter
-    - name: Install Flutter
-      uses: subosito/flutter-action@v2
+    # 2 – Flutter toolchain
+    - uses: subosito/flutter-action@v2
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
 
-    - name: Flutter pub get
-      run: flutter pub get
+    # 3 – Packages
+    - run: flutter pub get
 
-    # 3. CocoaPods
+    # 4 – CocoaPods (trunk only)
     - run: |
         cd ios
-        pod repo update
-        pod update || true
+        pod repo update             # pulls latest trunk specs incl. Firebase 11.15.0
         pod install --repo-update
         cd ..
 
-    # 4. Import signing certificate
-    - name: Import signing certificate
-      uses: apple-actions/import-codesign-certs@v2
+    # 5 – Import .p12
+    - uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 5. Install provisioning profile
-    - name: Install provisioning profile
-      run: |
-        echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
+    # 6 – Install provisioning profile
+    - run: |
+        echo "$MOBILEPROVISION_BASE64" | base64 --decode > ~/profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-        echo "Provisioning profile installed"
+        cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    - name: Debug provisioning profile
-      run: |
-        security cms -D -i profile.mobileprovision | grep -A1 ApplicationIdentifierPrefix
+    # 7 – Build & archive (codesigned)
+    - run: |
+        flutter build ipa \
+          --release \
+          --export-options-plist=ios/Runner/ExportOptions.plist
 
-
-    # 6. Build IPA without codesign
-    - name: Build IPA (no-codesign)
-      run: |
-        flutter build ipa --release --no-codesign
-
-    # 7. Export signed IPA
-    - name: Sign & Export IPA
-      run: |
-        xcodebuild -exportArchive \
-          -archivePath build/ios/archive/Runner.xcarchive \
-          -exportOptionsPlist ios/Runner/ExportOptions.plist \
-          -exportPath build/ios/ipa \
-          DEVELOPMENT_TEAM=$TEAM_ID \
-          PROVISIONING_PROFILE_SPECIFIER="" \
-          CODE_SIGN_STYLE=Manual
-
-    # 8. Upload to TestFlight
-    - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@v1
+    # 8 – Upload
+    - uses: apple-actions/upload-testflight-build@v1
       with:
         app-path: build/ios/ipa/*.ipa
         issuer-id:       ${{ env.ISSUER_ID }}
