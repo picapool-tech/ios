@@ -1,22 +1,28 @@
 name: Build iOS IPA and Upload to TestFlight
 
 on:
-  workflow_dispatch:        # Manual trigger
+  workflow_dispatch:          # Manual trigger
   push:
     branches:
-      - under_dev
+      - under_dev             # Only trigger for under_dev
     tags:
-      - 'v*'                # Trigger on version tags (e.g., v3.2.1)
+      - 'v*'                  # e.g., v3.2.1
 
 jobs:
   build:
-    runs-on: macos-14        # Stable macOS 14 runner
+    runs-on: macos-14          # Use stable macOS 14 runner
 
     steps:
+      # Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Show system and Xcode info
+      # Print current branch to confirm trigger
+      - name: Print current branch
+        run: |
+          echo "Triggered from branch: $GITHUB_REF"
+
+      # Show system info
       - name: Show System Info
         run: |
           echo "==== SYSTEM INFO ===="
@@ -27,9 +33,9 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.7'
+          flutter-version: '3.32.7'  # Match your local Flutter version
 
-      # Show Flutter & App version
+      # Show Flutter and app version
       - name: Show Flutter Version & App Version
         run: |
           flutter --version
@@ -42,14 +48,20 @@ jobs:
           flutter clean
           flutter pub get
 
-      # Update CocoaPods
+      # Fix CocoaPods conflicts (Firebase/Auth issue)
       - name: Update CocoaPods
         run: |
           cd ios
           pod repo update
+          pod update Firebase/Auth
           pod install --repo-update
           cd ..
 
+      # Debug bundle identifier
+      - name: Show Bundle Identifier
+        run: |
+          plutil -p ios/Runner/Info.plist | grep CFBundleIdentifier || echo "Bundle ID not found"
+      
       # Setup code signing using Apple API key
       - name: Set up App Store Connect API Key
         uses: apple-actions/import-codesign-certs@v1
@@ -61,15 +73,15 @@ jobs:
       # Build iOS IPA
       - name: Build iOS IPA
         run: |
-          echo "Building iOS IPA with bundle ID com.picapool"
-          flutter build ipa --release \
+          flutter build ipa \
+            --release \
             --export-options-plist=ios/Runner/ExportOptions.plist
 
       # List IPA files
       - name: List IPA Files
         run: ls -lh build/ios/ipa || true
 
-      # Upload to TestFlight
+      # Upload to App Store Connect
       - name: Upload to App Store Connect
         uses: apple-actions/upload-testflight-build@v1
         with:
