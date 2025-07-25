@@ -1,84 +1,89 @@
 name: Build iOS IPA and Upload to TestFlight
 
-# Triggers for this workflow
 on:
-  workflow_dispatch:          # Allows manual runs from GitHub Actions UI
+  workflow_dispatch:          # Manual trigger
   push:
     branches:
-      - under_dev             # Runs automatically on push to "under_dev" branch
+      - under_dev             # Only trigger for under_dev
     tags:
-      - 'v*'                  # Runs when a tag like v3.2.1 is pushed
+      - 'v*'                  # e.g., v3.2.1
 
 jobs:
   build:
-    runs-on: macos-14         # Use macOS 14 runner (stable and Xcode 15.x)
+    runs-on: macos-14          # Use stable macOS 14 runner
 
     steps:
-      # STEP 1: Checkout repository
+      # Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # STEP 2: Print which branch triggered this workflow (debugging)
+      # Print current branch to confirm trigger
       - name: Print current branch
-        run: |
-          echo "Triggered from branch: $GITHUB_REF"
+        run: echo "Triggered from branch: $GITHUB_REF"
 
-      # STEP 3: Show system information (macOS version, Xcode version)
+      # Show system info
       - name: Show System Info
         run: |
           echo "==== SYSTEM INFO ===="
           sw_vers
           xcodebuild -version
 
-      # STEP 4: Install Flutter (specific version to match your local setup)
+      # Install Flutter
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.7'  # Ensure this matches your local version
+          flutter-version: '3.32.7'
 
-      # STEP 5: Show Flutter version and app version from pubspec.yaml
+      # Show Flutter and app version
       - name: Show Flutter Version & App Version
         run: |
           flutter --version
-          echo "App version from pubspec.yaml:"
           grep "version:" pubspec.yaml || true
 
-      # STEP 6: Install dependencies (clean + fetch)
+      # Install dependencies
       - name: Install Dependencies
         run: |
           flutter clean
           flutter pub get
 
-      # STEP 7: Fix CocoaPods conflicts (important for Firebase/Auth version mismatch)
+      # Install CocoaPods
       - name: Update CocoaPods
         run: |
           cd ios
-          pod repo update                  # Update local pod specs
-          pod update Firebase/Auth         # Update specific Firebase/Auth dependency
-          pod install --repo-update        # Install pods with repo update
+          pod repo update
+          pod install --repo-update
           cd ..
 
-      # STEP 8: Show Bundle Identifier (debugging)
-      - name: Show Bundle Identifier
+      # Install Apple Certificates & Provisioning Profile
+      - name: Install Signing Certificates
         run: |
-          plutil -p ios/Runner/Info.plist | grep CFBundleIdentifier || echo "Bundle ID not found"
+          # Decode p12 certificate
+          echo "${{ secrets.P12_FILE_BASE64 }}" | base64 --decode > ios_distribution.p12
+          # Decode mobile provisioning profile
+          echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > build.mobileprovision
+          # Install p12 certificate into keychain
+          security create-keychain -p "" build.keychain
+          security import ios_distribution.p12 -k ~/Library/Keychains/build.keychain -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign
+          security list-keychains -s ~/Library/Keychains/build.keychain
+          security unlock-keychain -p "" ~/Library/Keychains/build.keychain
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp build.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      # STEP 9: Build iOS IPA (release build)
+      # Build iOS IPA
       - name: Build iOS IPA
         run: |
-          flutter build ipa \
-            --release \
+          flutter build ipa --release \
             --export-options-plist=ios/Runner/ExportOptions.plist
 
-      # STEP 10: List generated IPA files (for debugging)
+      # List IPA files
       - name: List IPA Files
         run: ls -lh build/ios/ipa || true
 
-      # STEP 11: Upload IPA to App Store Connect (TestFlight)
+      # Upload to App Store Connect
       - name: Upload to App Store Connect
         uses: apple-actions/upload-testflight-build@v1
         with:
           app-path: build/ios/ipa/*.ipa
-          issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}     # From Apple Developer API key
-          api-key-id: ${{ secrets.APP_STORE_KEY_ID }}       # From Apple Developer API key
-          api-private-key: ${{ secrets.APP_STORE_KEY_P8 }}  # Base64 of your .p8 key
+          issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_KEY_P8 }}
