@@ -18,35 +18,31 @@ jobs:
       API_KEY_P8:             ${{ secrets.APP_STORE_KEY_P8 }}
 
     steps:
-    # 1. Create dummy IPA
     - name: Create dummy IPA
       run: |
         mkdir -p build/ios/ipa
         echo "dummy" > build/ios/ipa/dummy.txt
         zip -r build/ios/ipa/dummy.ipa build/ios/ipa/dummy.txt
 
-    # 2. Import signing certificate
     - name: Import signing certificate
       uses: apple-actions/import-codesign-certs@v2
       with:
         p12-file-base64: ${{ env.P12_FILE_BASE64 }}
         p12-password:    ${{ env.P12_PASSWORD }}
 
-    # 3. Install provisioning profile
     - name: Install provisioning profile
       run: |
         echo "$MOBILEPROVISION_BASE64" | base64 --decode > ~/profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp ~/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # 4. Write API Key to .p8 (NO base64 decode)
-    - name: Write API Key (.p8)
+    - name: Write API Key
       run: |
         mkdir -p ~/private_keys
         echo "$API_KEY_P8" > ~/private_keys/AuthKey_${KEY_ID}.p8
-        cat ~/private_keys/AuthKey_${KEY_ID}.p8 | head -n 5  # debug first 5 lines
+        echo "First few lines of the key:"
+        head -n 5 ~/private_keys/AuthKey_${KEY_ID}.p8
 
-    # 5. Upload to TestFlight
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
       with:
