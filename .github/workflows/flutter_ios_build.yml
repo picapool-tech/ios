@@ -78,6 +78,14 @@ jobs:
         P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         APP_STORE_KEY_P8: ${{ secrets.APP_STORE_KEY_P8 }}
 
+    # 10. Decode cert and provisioning profile first
+    - name: Decode signing files
+      run: |
+        echo "${{ secrets.P12_FILE_BASE64 }}"        | base64 --decode > cert.p12
+        echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > profile.mobileprovision
+        ls -lh cert.p12 profile.mobileprovision
+
+    # 11. Debug P12 password
     - name: Debug P12 secrets
       run: |
         echo "P12 Password starts with: ${P12_PASSWORD:0:1}"
@@ -87,36 +95,29 @@ jobs:
         P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         P12_FILE_BASE64: ${{ secrets.P12_FILE_BASE64 }}
 
-
-    # 10. Install signing cert & profile
+    # 12. Install signing cert & profile
     - name: Install signing assets
       run: |
-        # Decode certificate & profile
-        echo "${{ secrets.P12_FILE_BASE64 }}"        | base64 --decode > cert.p12
-        echo "${{ secrets.MOBILEPROVISION_BASE64 }}" | base64 --decode > profile.mobileprovision
-
-        # Create & unlock throw‑away keychain
         security create-keychain -p "" build.keychain
         security import cert.p12 -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -A
         security list-keychains -s build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
 
-        # Install provisioning profile
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # 11. Build IPA
+    # 13. Build IPA
     - name: Build iOS IPA
       run: |
         flutter build ipa --release \
           --export-options-plist=ios/Runner/ExportOptions.plist
 
-    # 12. List IPA
+    # 14. List IPA
     - name: List IPA files
       run: ls -lh build/ios/ipa || true
 
-    # 13. Upload to TestFlight
+    # 15. Upload to TestFlight
     - name: Upload to App Store Connect
       uses: apple-actions/upload-testflight-build@v1
       with:
