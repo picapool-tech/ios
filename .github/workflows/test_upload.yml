@@ -39,9 +39,14 @@ jobs:
     - name: Write API Key
       run: |
         mkdir -p ~/private_keys
-        echo "$API_KEY_P8" > ~/private_keys/AuthKey_${KEY_ID}.p8
+        printf "%s" "$API_KEY_P8" > ~/private_keys/AuthKey_${KEY_ID}.p8
         echo "First few lines of the key:"
         head -n 5 ~/private_keys/AuthKey_${KEY_ID}.p8
+        echo "Key file size:"
+        wc -c ~/private_keys/AuthKey_${KEY_ID}.p8
+        echo "Validating key structure..."
+        grep "BEGIN PRIVATE KEY" ~/private_keys/AuthKey_${KEY_ID}.p8 || (echo "Key missing BEGIN line!" && exit 1)
+        grep "END PRIVATE KEY" ~/private_keys/AuthKey_${KEY_ID}.p8 || (echo "Key missing END line!" && exit 1)
 
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@v1
