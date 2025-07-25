@@ -21,7 +21,6 @@ jobs:
           echo "==== SYSTEM INFO ===="
           sw_vers
           xcodebuild -version
-          flutter --version || true
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -38,6 +37,13 @@ jobs:
         run: |
           flutter clean
           flutter pub get
+
+      - name: Update CocoaPods
+        run: |
+          cd ios
+          pod repo update
+          pod update
+          cd ..
 
       - name: Build iOS IPA
         run: |
