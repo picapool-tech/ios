@@ -35,7 +35,7 @@ jobs:
     # 3. CocoaPods
     - run: |
         cd ios
-        rm Podfile.lock || true
+        rm -rf Pods Podfile.lock
         pod repo update
         pod install --repo-update
         cd ..

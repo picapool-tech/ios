@@ -3,7 +3,7 @@ name: iOS signing‑sanity
 
 on:
   workflow_dispatch:              # manual trigger
-  push:                           # ⬅︎ remove this block if you don’t want auto‑runs
+                         # ⬅︎ remove this block if you don’t want auto‑runs
     branches: [ under_dev ]
 
 jobs:
