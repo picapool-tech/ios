@@ -1,59 +1,75 @@
 name: Build iOS IPA and Upload to TestFlight
 
 on:
-  workflow_dispatch:          # Manual trigger
+  workflow_dispatch:        # Manual trigger
   push:
     branches:
       - under_dev
     tags:
-      - 'v*'                  # Trigger on version tags (e.g., v3.2.1)
+      - 'v*'                # Trigger on version tags (e.g., v3.2.1)
 
 jobs:
   build:
-    runs-on: macos-14          # Use stable macOS 14 runner
+    runs-on: macos-14        # Stable macOS 14 runner
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Show system and Xcode info
       - name: Show System Info
         run: |
           echo "==== SYSTEM INFO ===="
           sw_vers
           xcodebuild -version
 
+      # Install Flutter
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.7'  # Match your local Flutter version
+          flutter-version: '3.32.7'
 
+      # Show Flutter & App version
       - name: Show Flutter Version & App Version
         run: |
           flutter --version
           echo "App version from pubspec.yaml:"
           grep "version:" pubspec.yaml || true
 
+      # Install dependencies
       - name: Install Dependencies
         run: |
           flutter clean
           flutter pub get
 
+      # Update CocoaPods
       - name: Update CocoaPods
         run: |
           cd ios
           pod repo update
-          pod update
+          pod install --repo-update
           cd ..
 
+      # Setup code signing using Apple API key
+      - name: Set up App Store Connect API Key
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p8-file-base64: ${{ secrets.APP_STORE_KEY_P8 }}
+          api-key-id: ${{ secrets.APP_STORE_KEY_ID }}
+          issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}
+
+      # Build iOS IPA
       - name: Build iOS IPA
         run: |
-          flutter build ipa \
-            --release \
+          echo "Building iOS IPA with bundle ID com.picapool"
+          flutter build ipa --release \
             --export-options-plist=ios/Runner/ExportOptions.plist
 
+      # List IPA files
       - name: List IPA Files
         run: ls -lh build/ios/ipa || true
 
+      # Upload to TestFlight
       - name: Upload to App Store Connect
         uses: apple-actions/upload-testflight-build@v1
         with:
