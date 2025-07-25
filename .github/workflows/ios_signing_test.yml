@@ -1,10 +1,9 @@
 name: Build & Upload to TestFlight
 
 on:
-  push:
+workflow_dispatch:  
     branches: [ under_dev ]
     tags:    [ 'v*' ]
-  workflow_dispatch:
 
 jobs:
   ios-release:

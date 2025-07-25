@@ -1,0 +1,53 @@
+# .github/workflows/ios_signing_sanity.yml
+name: iOS signing‑sanity
+
+on:
+  workflow_dispatch:              # manual trigger
+  push:                           # ⬅︎ remove this block if you don’t want auto‑runs
+    branches: [ under_dev ]
+
+jobs:
+  check-signing:
+    runs-on: macos-14
+
+    env:                          # reuse your existing secrets
+      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
+      P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
+      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
+      TEAM_ID:                34R325V59A          # <- adjust if ever changes
+      BUNDLE_ID:              com.picapool
+
+    steps:
+    - name: ❐ Decode assets
+      run: |
+        echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
+        echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
+        ls -lh cert.p12 profile.mobileprovision
+
+    - name: 🔐 Import .p12 → temp keychain
+      run: |
+        security create-keychain -p temp_pw signing.keychain
+        security unlock-keychain  -p temp_pw signing.keychain
+        security import cert.p12 -k signing.keychain \
+          -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+        security list-keychains -d user -s signing.keychain login.keychain
+        echo
+        echo "=== Available code‑signing identities ==="
+        security find-identity -v -p codesigning signing.keychain || true
+
+    - name: 📄 Install + inspect provisioning profile
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp profile.mobileprovision \
+           ~/Library/MobileDevice/Provisioning\ Profiles/
+
+        echo
+        echo "=== provisioning profile summary ==="
+        security cms -D -i profile.mobileprovision > prof.plist
+        /usr/libexec/PlistBuddy -c "Print :Name"              prof.plist
+        /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0"  prof.plist
+        /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" prof.plist
+
+        echo
+        echo "✅ Profile + certificate have been installed."
+
