@@ -82,6 +82,7 @@ jobs:
       run: |
         echo "P12 Password starts with: ${P12_PASSWORD:0:1}"
         echo "P12 Base64 first 20 chars: $(echo $P12_FILE_BASE64 | head -c 20)"
+        openssl pkcs12 -in cert.p12 -nokeys -passin pass:$P12_PASSWORD || echo "Password is wrong"
       env:
         P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         P12_FILE_BASE64: ${{ secrets.P12_FILE_BASE64 }}
