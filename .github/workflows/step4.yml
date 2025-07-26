@@ -74,20 +74,20 @@ jobs:
       - name: Build iOS (Unsigned)
         run: flutter build ios --release --no-codesign -t lib/test_app.dart
 
-      - name: Archive Runner
+      - name: Archive Runner (Unsigned)
         run: |
-            xcodebuild -workspace ios/Runner.xcworkspace \
+          xcodebuild -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -sdk iphoneos \
             -configuration Release \
             archive -archivePath build/ios/Runner.xcarchive \
-            CODE_SIGNING_ALLOWED=YES \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM=$TEAM_ID \
-            PRODUCT_BUNDLE_IDENTIFIER=$BUNDLE_ID \
-            PROVISIONING_PROFILE_SPECIFIER=$PROFILE_UUID
+            CODE_SIGNING_ALLOWED=NO
 
-
+      - name: Embed Provisioning Profile
+        run: |
+          echo "Embedding provisioning profile into Runner.app"
+          cp ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision \
+             build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision
 
       - name: Debug Build Settings
         run: |
