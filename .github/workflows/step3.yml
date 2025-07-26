@@ -79,8 +79,8 @@ jobs:
           -sdk iphoneos \
           -configuration Release \
           archive -archivePath build/ios/Runner.xcarchive \
-          -xcconfig ios/signing.xcconfig
-
+          -xcconfig ios/signing.xcconfig \
+          CODE_SIGNING_ALLOWED=NO
 
       - name: Export IPA
         run: |
