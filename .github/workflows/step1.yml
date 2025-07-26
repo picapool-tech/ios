@@ -44,6 +44,6 @@ jobs:
           pod install --repo-update
           cd ..
 
-      # Step 7: Build iOS (No codesign)
-      - name: Build iOS (No Code Sign)
-        run: flutter build ios --release --no-codesign
+      # Step 7: Build Test iOS App (No codesign)
+      - name: Build iOS Test App (No Code Sign)
+        run: flutter build ios --release --no-codesign -t lib/test_app.dart
