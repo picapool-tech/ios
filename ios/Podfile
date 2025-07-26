@@ -11,7 +11,7 @@ project 'Runner', {
 }
 
 # Include Flutter's pod helper
-require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), __dir__)
+require File.expand_path(File.join(ENV['FLUTTER_ROOT'], 'packages', 'flutter_tools', 'bin', 'podhelper'))
 flutter_ios_podfile_setup
 
 target 'Runner' do
