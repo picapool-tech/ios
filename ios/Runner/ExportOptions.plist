@@ -9,7 +9,7 @@
   <key>provisioningProfiles</key>
   <dict>
     <key>com.picapool</key>
-    <string>com.picapool</string>
+    <string>222426f2-573a-42bc-a199-e0f309dc3670</string>
   </dict>
   <key>uploadSymbols</key>
   <true/>
