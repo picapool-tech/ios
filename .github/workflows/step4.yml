@@ -1,7 +1,7 @@
-name: Sign iOS IPA
+name: Finally Releasing IPA
 
 on:
-  #push:  
+  push:  
   workflow_dispatch:
 
 jobs:
