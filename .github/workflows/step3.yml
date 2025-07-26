@@ -86,7 +86,7 @@ jobs:
         run: |
           xcodebuild -exportArchive \
           -archivePath build/ios/Runner.xcarchive \
-          -exportOptionsPlist ios/ExportOptions.plist \
+          -exportOptionsPlist ios/Runner/ExportOptions.plist \
           -exportPath build/ios/ipa
 
       - name: Show IPA
