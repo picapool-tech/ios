@@ -86,11 +86,27 @@ jobs:
 
       - name: Debug Build Settings
         run: |
-          echo "=== Debugging Build Settings ==="
-          xcodebuild -workspace ios/Runner.xcworkspace \
-          -scheme Runner \
-          -configuration Release \
-          -showBuildSettings | grep -E 'PRODUCT_BUNDLE_IDENTIFIER|CODE_SIGN_IDENTITY|CODE_SIGN_STYLE|PROVISIONING_PROFILE_SPECIFIER' -c 8 || true
+            echo "=== First 100 lines of Build Settings ==="
+            xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -showBuildSettings | head -n 100
+
+      - name: Check Embedded Provisioning Profile
+        run: |
+            echo "=== Checking embedded.mobileprovision inside xcarchive ==="
+            ls -lh build/ios/Runner.xcarchive/Products/Applications/Runner.app/ | grep mobileprovision || echo "No embedded.mobileprovision found"
+
+      - name: Export IPA Auto
+        run: |
+            xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportOptionsPlist ios/Runner/ExportOptions.plist \
+            -exportPath build/ios/ipa \
+            -allowProvisioningUpdates \
+            -verbose
+
+
 
       # ---------------- Export IPA ----------------
       - name: Export IPA
