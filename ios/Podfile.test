@@ -1,0 +1,31 @@
+source 'https://cdn.cocoapods.org/'
+platform :ios, '16.0'
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+require File.expand_path(File.join(ENV['FLUTTER_ROOT'], 'packages', 'flutter_tools', 'bin', 'podhelper'))
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  # No Firebase pods here
+  pod 'PhoneNumberKit', '~> 3.7.11' # Keep only if needed
+
+  flutter_install_all_ios_pods File.dirname(__FILE__)
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |t|
+    flutter_additional_ios_build_settings(t)
+    t.build_configurations.each do |cfg|
+      cfg.build_settings['SWIFT_VERSION'] = '5.9'
+    end
+  end
+end
