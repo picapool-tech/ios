@@ -1,35 +1,41 @@
 name: Test iOS Build
+
 on:
   push:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-14        # Xcode 15.4 (Swift 5.9)
-    steps:
-      - uses: actions/checkout@v4
+    runs-on: macos-14
 
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.7'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install Flutter 3.32.7 directly
+      - name: Install Flutter 3.32.7
+        run: |
+          git clone https://github.com/flutter/flutter.git --branch 3.32.7 --depth 1
+          echo "$PWD/flutter/bin" >> $GITHUB_PATH
+          flutter --version
 
       - name: Install CocoaPods
         run: |
           sudo gem install cocoapods xcpretty
           pod repo update
 
-      - name: Prepare Flutter
-        run: |
-          flutter clean
-          flutter pub get
+      - name: Flutter clean
+        run: flutter clean
 
-      - name: Install iOS pods
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Install iOS dependencies
         run: |
           cd ios
           rm -rf Pods Podfile.lock
           pod install --repo-update
           cd ..
 
-      - name: Build iOS (no codesign)
+      - name: Build iOS (No Code Sign)
         run: flutter build ios --release --no-codesign
