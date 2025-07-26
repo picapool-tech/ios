@@ -1,29 +1,14 @@
 source 'https://cdn.cocoapods.org/'
 platform :ios, '15.0'
-
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-project 'Runner', {
-  'Debug' => :debug,
-  'Profile' => :release,
-  'Release' => :release,
-}
+project 'Runner', { 'Debug' => :debug, 'Profile' => :release, 'Release' => :release }
 
-def flutter_root
-  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-  unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
-  end
+# ----------  Firebase version that still compiles on Xcode-15  ----------
+firebase_version = '11.14.0'
+# -----------------------------------------------------------------------
 
-  File.foreach(generated_xcode_build_settings_path) do |line|
-    matches = line.match(/FLUTTER_ROOT\=(.*)/)
-    return matches[1].strip if matches
-  end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
-end
-
-require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
-
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), __dir__)
 flutter_ios_podfile_setup
 
 target 'Runner' do
@@ -31,25 +16,25 @@ target 'Runner' do
   use_modular_headers!
 
   pod 'PhoneNumberKit', '~> 3.7.11'
-  pod 'Firebase/Auth'
-  pod 'Firebase/Firestore'
-  pod 'Firebase/Storage'
-  pod 'Firebase/Core'
-  pod 'Firebase/RemoteConfig'
-  pod 'Firebase/Analytics'
+  pod 'Firebase/Auth',          firebase_version
+  pod 'Firebase/Firestore',     firebase_version
+  pod 'Firebase/Storage',       firebase_version
+  pod 'Firebase/Core',          firebase_version
+  pod 'Firebase/RemoteConfig',  firebase_version
+  pod 'Firebase/Analytics',     firebase_version   # brings in FirebaseSharedSwift 11.14.0
 
-  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  flutter_install_all_ios_pods File.dirname(__FILE__)
   target 'RunnerTests' do
     inherit! :search_paths
   end
 end
 
 post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
-    target.build_configurations.each do |config|
-      config.build_settings['SWIFT_VERSION'] = '5.9'
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+  installer.pods_project.targets.each do |t|
+    flutter_additional_ios_build_settings(t)
+    t.build_configurations.each do |cfg|
+      cfg.build_settings['SWIFT_VERSION'] = '5.9'           # match Xcode-15
+      cfg.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_CAMERA=1',
         'PERMISSION_PHOTOS=1',
