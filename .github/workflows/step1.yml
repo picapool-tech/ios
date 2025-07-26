@@ -15,12 +15,11 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.7'  # Your Flutter version
+          flutter-version: '3.22.7'  # Your Flutter version (auto-detected from `flutter --version`)
 
-      - name: Install Ruby & CocoaPods
+      - name: Install CocoaPods
         run: |
           sudo gem install cocoapods
-          sudo gem install xcpretty
           pod repo update
 
       - name: Flutter clean
@@ -32,6 +31,8 @@ jobs:
       - name: Install iOS dependencies
         run: |
           cd ios
+          rm -f Podfile.lock        # Remove old lock file
+          pod repo update
           pod install --repo-update
           cd ..
 
