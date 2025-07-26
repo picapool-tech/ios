@@ -84,12 +84,13 @@ jobs:
           -xcconfig ios/signing.xcconfig \
           CODE_SIGNING_ALLOWED=NO
 
-      - name: Debug Xcode Build Settings
+      - name: Debug Build Settings
         run: |
+          echo "=== Debugging Build Settings ==="
           xcodebuild -workspace ios/Runner.xcworkspace \
           -scheme Runner \
           -configuration Release \
-          -showBuildSettings | grep -E 'PRODUCT_BUNDLE_IDENTIFIER|CODE_SIGN_IDENTITY|PROVISIONING_PROFILE_SPECIFIER'
+          -showBuildSettings | grep -E 'PRODUCT_BUNDLE_IDENTIFIER|CODE_SIGN_IDENTITY|CODE_SIGN_STYLE|PROVISIONING_PROFILE_SPECIFIER' -c 8 || true
 
       # ---------------- Export IPA ----------------
       - name: Export IPA
