@@ -73,7 +73,7 @@ jobs:
           archive -archivePath build/ios/Runner.xcarchive \
           CODE_SIGN_STYLE=Manual \
           DEVELOPMENT_TEAM=$TEAM_ID \
-          PROVISIONING_PROFILE_SPECIFIER=$BUNDLE_ID
+          PROVISIONING_PROFILE_SPECIFIER=.mobileprovision
 
       - name: Export IPA
         run: |
