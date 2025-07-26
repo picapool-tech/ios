@@ -1,7 +1,7 @@
 name: Sign iOS IPA
 
 on:
-  push:
+  push:  
   workflow_dispatch:
 
 jobs:
@@ -59,6 +59,16 @@ jobs:
 
           echo "✅ P12 & mobileprovision installed."
 
+      - name: Debug Signing Info
+        run: |
+          echo "=== Available Identities ==="
+          security find-identity -v -p codesigning
+          echo "=== Installed Provisioning Profiles ==="
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "=== Extracting Profile Details ==="
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision | grep -A1 '<key>Name</key>' || true
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision | grep UUID || true
+
       - name: Build iOS (Unsigned)
         run: flutter build ios --release --no-codesign -t lib/test_app.dart
 
@@ -71,8 +81,7 @@ jobs:
           archive -archivePath build/ios/Runner.xcarchive \
           CODE_SIGN_STYLE=Manual \
           DEVELOPMENT_TEAM=$TEAM_ID \
-          CODE_SIGN_IDENTITY="Apple Distribution" \
-          PROVISIONING_PROFILE_SPECIFIER=$PROFILE_UUID
+          CODE_SIGN_IDENTITY="Apple Distribution"
 
       - name: Export IPA
         run: |
