@@ -2,7 +2,7 @@ name: Test Dummy IPA Upload
 
 on:
   workflow_dispatch:
-  push:
+  #push:
     branches: [ under_dev ]
 
 jobs:
