@@ -101,17 +101,7 @@ jobs:
         run: |
             echo "=== Checking embedded.mobileprovision inside xcarchive ==="
             ls -lh build/ios/Runner.xcarchive/Products/Applications/Runner.app/ | grep mobileprovision || echo "No embedded.mobileprovision found"
-
-      - name: Export IPA Auto
-        run: |
-            xcodebuild -exportArchive \
-            -archivePath build/ios/Runner.xcarchive \
-            -exportOptionsPlist ios/Runner/ExportOptions.plist \
-            -exportPath build/ios/ipa \
-            -allowProvisioningUpdates \
-            -verbose
-
-
+            security cms -D -i build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision || echo "No profile found"
 
       # ---------------- Export IPA ----------------
       - name: Export IPA
