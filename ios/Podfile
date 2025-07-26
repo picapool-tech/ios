@@ -10,6 +10,8 @@ project 'Runner', {
   'Release' => :release,
 }
 
+firebase_version = '11.14.0'
+
 # Include Flutter's pod helper
 require File.expand_path(File.join(ENV['FLUTTER_ROOT'], 'packages', 'flutter_tools', 'bin', 'podhelper'))
 flutter_ios_podfile_setup
@@ -20,13 +22,13 @@ target 'Runner' do
 
   # Firebase SDKs (no version pinning, auto-sync with plugins)
   pod 'PhoneNumberKit', '~> 3.7.11'
-  pod 'Firebase/Auth'
-  pod 'Firebase/Firestore'
-  pod 'Firebase/Storage'
-  pod 'Firebase/Core'
-  pod 'Firebase/RemoteConfig'
-  pod 'Firebase/Analytics'
-  pod 'Firebase/DynamicLinks'
+  pod 'Firebase/Auth',          firebase_version
+  pod 'Firebase/Firestore',     firebase_version
+  pod 'Firebase/Storage',       firebase_version
+  pod 'Firebase/Core',          firebase_version
+  pod 'Firebase/RemoteConfig',  firebase_version
+  pod 'Firebase/Analytics',     firebase_version
+  pod 'Firebase/DynamicLinks',  firebase_version
 
   flutter_install_all_ios_pods File.dirname(__FILE__)
 
