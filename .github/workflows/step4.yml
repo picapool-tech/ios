@@ -82,7 +82,7 @@ jobs:
           -configuration Release \
           archive -archivePath build/ios/Runner.xcarchive \
           -xcconfig ios/signing.xcconfig \
-          CODE_SIGN_STYLE=Manual
+          CODE_SIGNING_ALLOWED=NO
 
       - name: Debug Xcode Build Settings
         run: |
