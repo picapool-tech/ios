@@ -1,7 +1,7 @@
 name: Finally Releasing IPA
 
 on:
-  push:  
+  push:
   workflow_dispatch:
 
 jobs:
@@ -44,6 +44,7 @@ jobs:
           pod install --repo-update
           cd ..
 
+      # ---------------- Signing Setup ----------------
       - name: Decode & Install Signing Assets
         run: |
           echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
@@ -55,7 +56,7 @@ jobs:
           security list-keychains -d user -s signing.keychain login.keychain
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
 
           echo "✅ P12 & mobileprovision installed."
 
@@ -66,9 +67,10 @@ jobs:
           echo "=== Installed Provisioning Profiles ==="
           ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
           echo "=== Extracting Profile Details ==="
-          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision | grep -A1 '<key>Name</key>' || true
-          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision | grep UUID || true
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision | grep -A2 UUID || true
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision | grep -A2 application-identifier || true
 
+      # ---------------- Build ----------------
       - name: Build iOS (Unsigned)
         run: flutter build ios --release --no-codesign -t lib/test_app.dart
 
@@ -80,14 +82,23 @@ jobs:
           -configuration Release \
           archive -archivePath build/ios/Runner.xcarchive \
           -xcconfig ios/signing.xcconfig \
-          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGN_STYLE=Manual
 
+      - name: Debug Xcode Build Settings
+        run: |
+          xcodebuild -workspace ios/Runner.xcworkspace \
+          -scheme Runner \
+          -configuration Release \
+          -showBuildSettings | grep -E 'PRODUCT_BUNDLE_IDENTIFIER|CODE_SIGN_IDENTITY|PROVISIONING_PROFILE_SPECIFIER'
+
+      # ---------------- Export IPA ----------------
       - name: Export IPA
         run: |
           xcodebuild -exportArchive \
           -archivePath build/ios/Runner.xcarchive \
           -exportOptionsPlist ios/Runner/ExportOptions.plist \
-          -exportPath build/ios/ipa
+          -exportPath build/ios/ipa \
+          -verbose
 
       - name: Show IPA
         run: ls -lh build/ios/ipa
