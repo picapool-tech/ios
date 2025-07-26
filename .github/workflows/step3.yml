@@ -1,12 +1,19 @@
 name: Sign iOS IPA
 
 on:
-  #push:
+  push:
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-14
+
+    env:
+      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
+      P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
+      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
+      TEAM_ID:                ${{ secrets.TEAM_ID }}
+      BUNDLE_ID:              ${{ secrets.BUNDLE_ID }}
 
     steps:
       - name: Checkout repository
@@ -36,6 +43,24 @@ jobs:
           pod install --repo-update
           cd ..
 
+      - name: Decode & Install Signing Assets
+        run: |
+          # Decode P12 and provisioning profile
+          echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
+          echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
+
+          # Create a keychain and import the certificate
+          security create-keychain -p temp_pw signing.keychain
+          security unlock-keychain  -p temp_pw signing.keychain
+          security import cert.p12 -k signing.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security list-keychains -d user -s signing.keychain login.keychain
+
+          # Install the provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+          echo "✅ P12 & mobileprovision installed."
+
       - name: Build iOS (Unsigned)
         run: flutter build ios --release --no-codesign -t lib/test_app.dart
 
@@ -47,8 +72,8 @@ jobs:
           -configuration Release \
           archive -archivePath build/ios/Runner.xcarchive \
           CODE_SIGN_STYLE=Manual \
-          DEVELOPMENT_TEAM=${{ secrets.TEAM_ID }} \
-          PROVISIONING_PROFILE_SPECIFIER=com.picapool
+          DEVELOPMENT_TEAM=$TEAM_ID \
+          PROVISIONING_PROFILE_SPECIFIER=$BUNDLE_ID
 
       - name: Export IPA
         run: |
