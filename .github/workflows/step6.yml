@@ -1,6 +1,7 @@
 name: Release IPA
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
@@ -69,11 +70,12 @@ jobs:
           ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
 
       # ---------------- Build + Archive ----------------
-      - name: Build and Archive (Signed)
-        run: |
-          flutter build ios --release -t lib/test_app.dart
+      - name: Build iOS (Unsigned)
+        run: flutter build ios --release --no-codesign -t lib/test_app.dart
 
-          xcodebuild -workspace ios/Runner.xcworkspace \
+      - name: Archive Runner (Signed)
+        run: |
+            xcodebuild -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -sdk iphoneos \
             -configuration Release \
