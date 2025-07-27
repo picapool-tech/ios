@@ -1,0 +1,82 @@
+name: Build and Export IPA
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+
+    env:
+      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
+      P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
+      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
+      TEAM_ID:                ${{ secrets.TEAM_ID }}
+      BUNDLE_ID:              ${{ secrets.BUNDLE_ID }}
+
+    steps:
+      # 1. Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Flutter
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.7'
+
+      # 3. Install CocoaPods
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods
+          pod repo update
+
+      # 4. Flutter Clean
+      - name: Flutter clean
+        run: flutter clean
+
+      # 5. Get Flutter dependencies
+      - name: Get dependencies
+        run: flutter pub get
+
+      # 6. Install iOS dependencies
+      - name: Install iOS dependencies
+        run: |
+          cd ios
+          cp Podfile.test Podfile
+          rm -rf Pods Podfile.lock
+          pod install --repo-update
+          cd ..
+
+      # 7. Setup Signing
+      - name: Decode & Install Signing Assets
+        run: |
+          echo "$P12_FILE_BASE64" | base64 --decode > cert.p12
+          echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
+
+          security create-keychain -p temp_pw build.keychain
+          security unlock-keychain -p temp_pw build.keychain
+          security import cert.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security list-keychains -d user -s build.keychain login.keychain
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+          echo "✅ Signing assets installed."
+
+      - name: Debug Signing Info
+        run: |
+          security find-identity -v -p codesigning
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      # 8. Build IPA (Flutter)
+      - name: Build IPA
+        run: |
+          flutter build ipa \
+            --export-options-plist=ios/Runner/ExportOptions.plist \
+            -t lib/test_app.dart
+
+      # 9. Show IPA
+      - name: Show IPA
+        run: ls -lh build/ios/ipa

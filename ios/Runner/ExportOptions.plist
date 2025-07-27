@@ -11,6 +11,8 @@
     <key>com.picapool</key>
     <string>Picapool_AppStore_Profile</string>
   </dict>
+  <key>compileBitcode</key>
+  <true/>
   <key>signingStyle</key>
   <string>manual</string>
 </dict>
