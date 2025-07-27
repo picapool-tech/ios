@@ -1,4 +1,4 @@
-name: Finally Releasing IPA[2]
+name: Finally Releasing IPA
 
 on:
   push:
@@ -27,17 +27,23 @@ jobs:
 
       - name: Install CocoaPods
         run: |
+          set -x
           sudo gem install cocoapods xcpretty
           pod repo update
 
       - name: Flutter clean
-        run: flutter clean
+        run: |
+          set -x
+          flutter clean
 
       - name: Get dependencies
-        run: flutter pub get
+        run: |
+          set -x
+          flutter pub get
 
       - name: Install iOS dependencies
         run: |
+          set -x
           cd ios
           cp Podfile.test Podfile
           rm -rf Pods Podfile.lock
@@ -47,6 +53,7 @@ jobs:
       # ---------------- Signing Setup ----------------
       - name: Decode & Install Signing Assets
         run: |
+          set -x
           echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
           echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
 
@@ -62,6 +69,7 @@ jobs:
 
       - name: Debug Signing Info
         run: |
+          set -x
           echo "=== Available Identities ==="
           security find-identity -v -p codesigning
           echo "=== Installed Provisioning Profiles ==="
@@ -72,10 +80,13 @@ jobs:
 
       # ---------------- Build ----------------
       - name: Build iOS (Unsigned)
-        run: flutter build ios --release --no-codesign -t lib/test_app.dart
+        run: |
+          set -x
+          flutter build ios --release --no-codesign -t lib/test_app.dart
 
       - name: Archive Runner (Unsigned)
         run: |
+          set -x
           xcodebuild -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -sdk iphoneos \
@@ -85,12 +96,25 @@ jobs:
 
       - name: Embed Provisioning Profile
         run: |
+          set -x
           echo "Embedding provisioning profile into Runner.app"
           cp ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision \
              build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision
 
+      - name: Manual Code Signing
+        run: |
+          set -x
+          echo "Manually signing Runner.app..."
+          SIGN_ID=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -n 1 | cut -d '"' -f2)
+          echo "Using Signing Identity: $SIGN_ID"
+          codesign --force --sign "$SIGN_ID" \
+            --entitlements ios/Runner/Runner.entitlements \
+            build/ios/Runner.xcarchive/Products/Applications/Runner.app
+          codesign --verify --deep --strict build/ios/Runner.xcarchive/Products/Applications/Runner.app || echo "Codesign verify failed"
+
       - name: Debug Build Settings
         run: |
+          set -x
           echo "=== First 100 lines of Build Settings ==="
           xcodebuild -workspace ios/Runner.xcworkspace \
             -scheme Runner \
@@ -99,25 +123,29 @@ jobs:
 
       - name: Check Embedded Provisioning Profile
         run: |
-            echo "=== Checking embedded.mobileprovision inside xcarchive ==="
-            ls -lh build/ios/Runner.xcarchive/Products/Applications/Runner.app/ | grep mobileprovision || echo "No embedded.mobileprovision found"
-            security cms -D -i build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision || echo "No profile found"
+          set -x
+          echo "=== Checking embedded.mobileprovision inside xcarchive ==="
+          ls -lh build/ios/Runner.xcarchive/Products/Applications/Runner.app/ | grep mobileprovision || echo "No embedded.mobileprovision found"
+          security cms -D -i build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision || echo "No profile found"
 
       - name: Inspect Archive Before Export
         run: |
-            echo "=== Listing xcarchive Contents ==="
-            ls -R build/ios/Runner.xcarchive | head -n 50
-            echo "=== Info.plist from archive ==="
-            cat build/ios/Runner.xcarchive/Info.plist || echo "No Info.plist"
+          set -x
+          echo "=== Listing xcarchive Contents ==="
+          ls -R build/ios/Runner.xcarchive | head -n 50
+          echo "=== Info.plist from archive ==="
+          cat build/ios/Runner.xcarchive/Info.plist || echo "No Info.plist"
       
       - name: Install coreutils (for timeout)
-        run: brew install coreutils
+        run: |
+          set -x
+          brew install coreutils
 
       # ---------------- Export IPA ----------------
       - name: Export IPA (Debug Mode)
         run: |
-            set -o pipefail
-            gtimeout 25m xcodebuild -exportArchive \
+          set -o pipefail
+          gtimeout 25m xcodebuild -exportArchive \
             -archivePath build/ios/Runner.xcarchive \
             -exportOptionsPlist ios/Runner/ExportOptions.plist \
             -exportPath build/ios/ipa \
@@ -127,8 +155,8 @@ jobs:
       - name: Show Export Logs
         if: always()
         run: |
-          echo "=== Export Debug Log (Last 200 lines) ==="
-          tail -n 200 export_debug.log || echo "No export_debug.log found"
+          echo "=== Export Debug Log ==="
+          cat export_debug.log || echo "No export_debug.log found"
 
       - name: Show IPA
         if: always()
