@@ -1,23 +1,14 @@
 name: Finally Releasing IPA
 
 on:
-  push:
   workflow_dispatch:
+  push:
 
 jobs:
   build:
     runs-on: macos-14
 
-    env:
-      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
-      P12_PASSWORD:           ${{ secrets.P12_PASSWORD }}
-      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
-      TEAM_ID:                ${{ secrets.TEAM_ID }}
-      BUNDLE_ID:              ${{ secrets.BUNDLE_ID }}
-      PROFILE_UUID:           23ca837c-3da0-4490-89e1-e74de0f7d55a
-
     steps:
-      # ---------------- Checkout & Setup ----------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -46,85 +37,34 @@ jobs:
           cd ..
 
       # ---------------- Signing Setup ----------------
-      - name: Decode & Install Signing Assets
+      - name: Install Signing Assets
         run: |
-          echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
-          echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
-
+          echo "Using local SigningAssets..."
           security create-keychain -p temp_pw signing.keychain
-          security unlock-keychain  -p temp_pw signing.keychain
-          security import cert.p12 -k signing.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security unlock-keychain -p temp_pw signing.keychain
+          security import ios/SigningAssets/cert.p12 -k signing.keychain -P "dipan" -T /usr/bin/codesign
           security list-keychains -d user -s signing.keychain login.keychain
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
-
+          cp ios/SigningAssets/Picapool_AppStore_Profile.mobileprovision \
+             ~/Library/MobileDevice/Provisioning\ Profiles/23ca837c-3da0-4490-89e1-e74de0f7d55a.mobileprovision
           echo "✅ P12 & mobileprovision installed."
 
       - name: Debug Signing Info
         run: |
           echo "=== Available Identities ==="
           security find-identity -v -p codesigning
-          echo "=== Installed Provisioning Profiles ==="
+          echo "=== Provisioning Profiles ==="
           ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      # ---------------- Build & Archive ----------------
-      - name: Build iOS (Unsigned)
-        run: flutter build ios --release --no-codesign -t lib/test_app.dart
-
-      - name: Archive Runner (Unsigned)
+      # ---------------- Build IPA ----------------
+      - name: Build IPA
         run: |
-          xcodebuild -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -sdk iphoneos \
-            -configuration Release \
-            archive -archivePath build/ios/Runner.xcarchive \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Embed Provisioning Profile
-        run: |
-          echo "Embedding provisioning profile into Runner.app"
-          cp ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision \
-             build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision
-
-      # ---------------- Manual Signing ----------------
-      - name: Manual Code Signing
-        run: |
-          echo "Manually signing Runner.app..."
-          SIGN_ID=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -n 1 | cut -d '"' -f2)
-          echo "Using Signing Identity: $SIGN_ID"
-
-          # Sign all frameworks
-          find build/ios/Runner.xcarchive/Products/Applications/Runner.app/Frameworks -type f \
-            -exec codesign --force --sign "$SIGN_ID" {} \;
-
-          # Sign the app bundle
-          codesign --force --sign "$SIGN_ID" \
-            --entitlements ios/Runner/Runner.entitlements \
-            build/ios/Runner.xcarchive/Products/Applications/Runner.app
-
-          codesign --verify --deep --strict build/ios/Runner.xcarchive/Products/Applications/Runner.app || echo "Codesign verify failed"
-
-      # ---------------- IPA Export ----------------
-      - name: Install coreutils (for timeout)
-        run: brew install coreutils
-
-      - name: Export IPA
-        run: |
-          set -o pipefail
-          gtimeout 20m xcodebuild -exportArchive \
-            -archivePath build/ios/Runner.xcarchive \
-            -exportOptionsPlist ios/Runner/ExportOptions.plist \
-            -exportPath build/ios/ipa \
-            -allowProvisioningUpdates \
-            -verbose | tee export_debug.log || true
-
-      - name: Show Export Logs
-        if: always()
-        run: |
-          echo "=== Export Debug Log (Last 200 lines) ==="
-          tail -n 200 export_debug.log || echo "No export_debug.log found"
+          echo "Building IPA..."
+          flutter build ipa --release \
+            --export-options-plist=ios/Runner/ExportOptions.plist
 
       - name: Show IPA
-        if: always()
-        run: ls -lh build/ios/ipa || echo "IPA not generated."
+        run: |
+          echo "=== IPA Files ==="
+          ls -lh build/ios/ipa || echo "IPA not generated"
