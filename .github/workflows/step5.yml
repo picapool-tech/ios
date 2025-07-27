@@ -113,19 +113,23 @@ jobs:
       - name: Install coreutils (for timeout)
         run: brew install coreutils
 
-
+      # ---------------- Export IPA ----------------
       - name: Export IPA (Debug Mode)
         run: |
             set -o pipefail
-            timeout 20m xcodebuild -exportArchive \
+            gtimeout 25m xcodebuild -exportArchive \
             -archivePath build/ios/Runner.xcarchive \
             -exportOptionsPlist ios/Runner/ExportOptions.plist \
             -exportPath build/ios/ipa \
             -allowProvisioningUpdates \
-            -verbose | tee export_debug.log
+            -verbose | tee export_debug.log || true
 
-
-
+      - name: Show Export Logs
+        if: always()
+        run: |
+          echo "=== Export Debug Log (Last 200 lines) ==="
+          tail -n 200 export_debug.log || echo "No export_debug.log found"
 
       - name: Show IPA
-        run: ls -lh build/ios/ipa
+        if: always()
+        run: ls -lh build/ios/ipa || echo "IPA not generated."

@@ -12,7 +12,7 @@
     <string>Picapool_AppStore_Profile</string>
   </dict>
   <key>compileBitcode</key>
-  <true/>
+  <false/>
   <key>uploadSymbols</key>
   <true/>
   <key>signingStyle</key>
