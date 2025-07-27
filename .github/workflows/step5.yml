@@ -99,18 +99,29 @@ jobs:
 
       - name: Check Embedded Provisioning Profile
         run: |
-          echo "=== Checking embedded.mobileprovision inside xcarchive ==="
-          ls -lh build/ios/Runner.xcarchive/Products/Applications/Runner.app/ | grep mobileprovision || echo "No embedded.mobileprovision found"
-          security cms -D -i build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision || echo "No profile found"
+            echo "=== Checking embedded.mobileprovision inside xcarchive ==="
+            ls -lh build/ios/Runner.xcarchive/Products/Applications/Runner.app/ | grep mobileprovision || echo "No embedded.mobileprovision found"
+            security cms -D -i build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision || echo "No profile found"
 
-      # ---------------- Export IPA ----------------
-      - name: Export IPA
+      - name: Inspect Archive Before Export
         run: |
-          xcodebuild -exportArchive \
+            echo "=== Listing xcarchive Contents ==="
+            ls -R build/ios/Runner.xcarchive | head -n 50
+            echo "=== Info.plist from archive ==="
+            cat build/ios/Runner.xcarchive/Info.plist || echo "No Info.plist"
+
+      - name: Export IPA (Debug Mode)
+        run: |
+            set -o pipefail
+            timeout 20m xcodebuild -exportArchive \
             -archivePath build/ios/Runner.xcarchive \
             -exportOptionsPlist ios/Runner/ExportOptions.plist \
             -exportPath build/ios/ipa \
-            -verbose
+            -allowProvisioningUpdates \
+            -verbose | tee export_debug.log
+
+
+
 
       - name: Show IPA
         run: ls -lh build/ios/ipa
