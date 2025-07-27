@@ -107,10 +107,18 @@ jobs:
           echo "Manually signing Runner.app..."
           SIGN_ID=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -n 1 | cut -d '"' -f2)
           echo "Using Signing Identity: $SIGN_ID"
+
+          # Sign all frameworks first
+          find build/ios/Runner.xcarchive/Products/Applications/Runner.app/Frameworks -type f -exec codesign --force --sign "$SIGN_ID" {} \;
+
+          # Sign the app bundle
           codesign --force --sign "$SIGN_ID" \
             --entitlements ios/Runner/Runner.entitlements \
+            --preserve-metadata=entitlements \
             build/ios/Runner.xcarchive/Products/Applications/Runner.app
+
           codesign --verify --deep --strict build/ios/Runner.xcarchive/Products/Applications/Runner.app || echo "Codesign verify failed"
+
 
       - name: Debug Build Settings
         run: |
