@@ -1,12 +1,19 @@
 name: Finally Releasing IPA
 
 on:
-  workflow_dispatch:
   push:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-14
+
+    env:
+      P12_FILE_BASE64:        ${{ secrets.P12_FILE_BASE64 }}
+      MOBILEPROVISION_BASE64: ${{ secrets.MOBILEPROVISION_BASE64 }}
+      TEAM_ID:                ${{ secrets.TEAM_ID }}
+      BUNDLE_ID:              ${{ secrets.BUNDLE_ID }}
+      PROFILE_UUID:           23ca837c-3da0-4490-89e1-e74de0f7d55a
 
     steps:
       - name: Checkout repository
@@ -37,34 +44,39 @@ jobs:
           cd ..
 
       # ---------------- Signing Setup ----------------
-      - name: Install Signing Assets
+      - name: Decode & Install Signing Assets
         run: |
-          echo "Using local SigningAssets..."
+          echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
+          echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
+
           security create-keychain -p temp_pw signing.keychain
-          security unlock-keychain -p temp_pw signing.keychain
-          security import ios/SigningAssets/cert.p12 -k signing.keychain -P "dipan" -T /usr/bin/codesign
+          security unlock-keychain  -p temp_pw signing.keychain
+          security import cert.p12 -k signing.keychain -T /usr/bin/codesign
           security list-keychains -d user -s signing.keychain login.keychain
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp ios/SigningAssets/Picapool_AppStore_Profile.mobileprovision \
-             ~/Library/MobileDevice/Provisioning\ Profiles/23ca837c-3da0-4490-89e1-e74de0f7d55a.mobileprovision
-          echo "✅ P12 & mobileprovision installed."
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
+
+          echo "✅ Signing assets installed."
 
       - name: Debug Signing Info
         run: |
           echo "=== Available Identities ==="
           security find-identity -v -p codesigning
-          echo "=== Provisioning Profiles ==="
+          echo "=== Installed Provisioning Profiles ==="
           ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "=== Extracting Profile Details ==="
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision | grep -A2 UUID || true
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision | grep -A2 application-identifier || true
 
       # ---------------- Build IPA ----------------
       - name: Build IPA
         run: |
-          echo "Building IPA..."
+          CODE_SIGN_IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -n 1 | cut -d '"' -f2)
+          echo "Using CODE_SIGN_IDENTITY=$CODE_SIGN_IDENTITY"
           flutter build ipa --release \
-            --export-options-plist=ios/Runner/ExportOptions.plist
+            --export-options-plist=ios/Runner/ExportOptions.plist \
+            --no-tree-shake-icons
 
       - name: Show IPA
-        run: |
-          echo "=== IPA Files ==="
-          ls -lh build/ios/ipa || echo "IPA not generated"
+        run: ls -lh build/ios/ipa || echo "IPA not generated."
