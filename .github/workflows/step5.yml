@@ -109,6 +109,10 @@ jobs:
             ls -R build/ios/Runner.xcarchive | head -n 50
             echo "=== Info.plist from archive ==="
             cat build/ios/Runner.xcarchive/Info.plist || echo "No Info.plist"
+      
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
 
       - name: Export IPA (Debug Mode)
         run: |
