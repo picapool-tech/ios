@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>method</key>
-  <string>app-store-connect</string>
+  <string>app-store</string>
   <key>teamID</key>
   <string>34R325V59A</string>
   <key>provisioningProfiles</key>
@@ -11,10 +11,6 @@
     <key>com.picapool</key>
     <string>Picapool_AppStore_Profile</string>
   </dict>
-  <key>compileBitcode</key>
-  <false/>
-  <key>uploadSymbols</key>
-  <true/>
   <key>signingStyle</key>
   <string>manual</string>
 </dict>
