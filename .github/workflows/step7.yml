@@ -17,20 +17,17 @@ jobs:
       PROFILE_UUID:           23ca837c-3da0-4490-89e1-e74de0f7d55a
 
     steps:
-      # ---------------- Checkout ----------------
+      # ---------------- Checkout & Setup ----------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ---------------- Install Flutter ----------------
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.7'
 
-      # ---------------- iOS Dependencies ----------------
       - name: Install CocoaPods
         run: |
-          set -x
           sudo gem install cocoapods xcpretty
           pod repo update
 
@@ -42,7 +39,6 @@ jobs:
 
       - name: Install iOS dependencies
         run: |
-          set -x
           cd ios
           cp Podfile.test Podfile
           rm -rf Pods Podfile.lock
@@ -52,38 +48,83 @@ jobs:
       # ---------------- Signing Setup ----------------
       - name: Decode & Install Signing Assets
         run: |
-          set -x
           echo "$P12_FILE_BASE64"        | base64 --decode > cert.p12
           echo "$MOBILEPROVISION_BASE64" | base64 --decode > profile.mobileprovision
 
           security create-keychain -p temp_pw signing.keychain
-          security unlock-keychain -p temp_pw signing.keychain
+          security unlock-keychain  -p temp_pw signing.keychain
           security import cert.p12 -k signing.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
           security list-keychains -d user -s signing.keychain login.keychain
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
 
-          echo "✅ Signing assets installed."
+          echo "✅ P12 & mobileprovision installed."
 
       - name: Debug Signing Info
         run: |
-          set -x
+          echo "=== Available Identities ==="
           security find-identity -v -p codesigning
+          echo "=== Installed Provisioning Profiles ==="
           ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      # ---------------- Build IPA ----------------
-      - name: Build IPA with Flutter
-        run: |
-          set -x
-          export CODE_SIGN_IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -n 1 | cut -d '"' -f2)
-          echo "Using CODE_SIGN_IDENTITY=$CODE_SIGN_IDENTITY"
-          flutter build ipa \
-            --release \
-            --export-options-plist=ios/Runner/ExportOptions.plist
+      # ---------------- Build & Archive ----------------
+      - name: Build iOS (Unsigned)
+        run: flutter build ios --release --no-codesign -t lib/test_app.dart
 
-      # ---------------- Show IPA ----------------
-      - name: Show IPA
+      - name: Archive Runner (Unsigned)
         run: |
-          set -x
-          ls -lh build/ios/ipa || echo "IPA not generated."
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -sdk iphoneos \
+            -configuration Release \
+            archive -archivePath build/ios/Runner.xcarchive \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Embed Provisioning Profile
+        run: |
+          echo "Embedding provisioning profile into Runner.app"
+          cp ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision \
+             build/ios/Runner.xcarchive/Products/Applications/Runner.app/embedded.mobileprovision
+
+      # ---------------- Manual Signing ----------------
+      - name: Manual Code Signing
+        run: |
+          echo "Manually signing Runner.app..."
+          SIGN_ID=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -n 1 | cut -d '"' -f2)
+          echo "Using Signing Identity: $SIGN_ID"
+
+          # Sign all frameworks
+          find build/ios/Runner.xcarchive/Products/Applications/Runner.app/Frameworks -type f \
+            -exec codesign --force --sign "$SIGN_ID" {} \;
+
+          # Sign the app bundle
+          codesign --force --sign "$SIGN_ID" \
+            --entitlements ios/Runner/Runner.entitlements \
+            build/ios/Runner.xcarchive/Products/Applications/Runner.app
+
+          codesign --verify --deep --strict build/ios/Runner.xcarchive/Products/Applications/Runner.app || echo "Codesign verify failed"
+
+      # ---------------- IPA Export ----------------
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
+      - name: Export IPA
+        run: |
+          set -o pipefail
+          gtimeout 20m xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportOptionsPlist ios/Runner/ExportOptions.plist \
+            -exportPath build/ios/ipa \
+            -allowProvisioningUpdates \
+            -verbose | tee export_debug.log || true
+
+      - name: Show Export Logs
+        if: always()
+        run: |
+          echo "=== Export Debug Log (Last 200 lines) ==="
+          tail -n 200 export_debug.log || echo "No export_debug.log found"
+
+      - name: Show IPA
+        if: always()
+        run: ls -lh build/ios/ipa || echo "IPA not generated."
